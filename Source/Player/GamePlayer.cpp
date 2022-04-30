@@ -490,6 +490,7 @@ void CGamePlayer::OnPaint()
 {
     if (m_NeMoContext.GetRenderContext() && !m_NeMoContext.GetRenderContext()->IsFullScreen())
     {
+        // In windowed mode call render when WM_PAINT
         m_NeMoContext.GetRenderContext()->Render(CK_RENDER_USECURRENTSETTINGS);
     }
 }
@@ -548,7 +549,6 @@ int CGamePlayer::OnKeyDown(UINT uKey)
 int CGamePlayer::OnSysKeyDown(UINT uKey)
 {
     // Manage system key (ALT + KEY)
-    // system keys can be disable using eDisableKeys
     switch (uKey)
     {
     case VK_RETURN:
