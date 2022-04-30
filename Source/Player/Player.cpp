@@ -14,7 +14,7 @@
 
 RESOURCEMAP g_ResMap;
 
-extern bool AntiPiracyCheck();
+// extern bool AntiPiracyCheck();
 
 static inline void InitGameInfo(CGameInfo &gameInfo)
 {
@@ -30,16 +30,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
                      LPSTR lpCmdLine,
                      int nCmdShow)
 {
-    HANDLE hMutex;
-    DWORD dwLangId;
-    HKEY hkSettings;
-    DWORD dwDXVersion;
-    DWORD dwDXMinorVersion;
-    DWORD dwRegValSize = sizeof(DWORD);
-    DWORD dwRegValType = REG_DWORD;
-    char buffer[512];
-
-    hMutex = ::CreateMutexA(NULL, FALSE, g_ResMap.gameName);
+    HANDLE hMutex = ::CreateMutexA(NULL, FALSE, g_ResMap.gameName);
     if (::GetLastError() == ERROR_ALREADY_EXISTS)
         exit(-1);
 
@@ -48,16 +39,25 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 
     CGamePlayer player(&gameInfo, 1, true, hMutex, false);
 
-    dwLangId = -1;
+    char buffer[512];
+    HKEY hkSettings;
+    DWORD dwLangId = -1;
     ::LoadStringA(g_ResMap.hResDll, 2, buffer, 512);
     if (::RegOpenKeyExA(HKEY_LOCAL_MACHINE, buffer, 0, KEY_QUERY_VALUE, &hkSettings) != ERROR_SUCCESS)
     {
         if (::LoadStringA(g_ResMap.hResDll, 24, buffer, 512))
             dwLangId = atoi(buffer);
     }
+    
+    DWORD dwRegValSize = sizeof(DWORD);
+    DWORD dwRegValType = REG_DWORD;
     if (::RegQueryValueExA(hkSettings, "Language", 0, (LPDWORD)&dwRegValType, (LPBYTE)&dwLangId, (LPDWORD)&dwRegValSize) == ERROR_SUCCESS)
+    {
         ::RegCloseKey(hkSettings);
+    }
 
+    DWORD dwDXVersion;
+    DWORD dwDXMinorVersion;
     if (!DirectXSetupGetVersion(&dwDXVersion, &dwDXMinorVersion))
     {
         ::LoadStringA(g_ResMap.hResDll, RES_STR_ID[dwLangId * 8 + 1], buffer, 512);
