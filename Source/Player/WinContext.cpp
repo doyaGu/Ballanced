@@ -112,7 +112,7 @@ void CWinContext::CreateWindows()
             WS_EX_LEFT,
             m_MainWndClassName,
             m_MainWndName,
-            WS_POPUP | WS_CAPTION | WS_SIZEBOX,
+            WS_POPUP | WS_CAPTION,
             m_MainWndX,
             m_MainWndY,
             mainWidth,
