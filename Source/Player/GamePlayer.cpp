@@ -823,7 +823,8 @@ LRESULT CGamePlayer::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 void CGamePlayer::Init(HINSTANCE hInstance, LPFNWNDPROC lpfnWndProc)
 {
-    bool settingChanged, engineReinitialized;
+    bool settingChanged = false;
+	bool engineReinitialized = false;
 
     m_State = eInitial;
 
@@ -848,12 +849,8 @@ void CGamePlayer::Init(HINSTANCE hInstance, LPFNWNDPROC lpfnWndProc)
                 engineReinitialized = ReInitEngine();
                 settingChanged = true;
             }
-            else
-            {
-                settingChanged = false;
-            }
 
-            if (!m_DefaultSetting || engineReinitialized)
+            if (!m_DefaultSetting || !engineReinitialized)
             {
 
                 if (::DialogBoxParamA(m_WinContext.GetAppInstance(), (LPCSTR)IDD_FULLSCREEN_SETUP, NULL, DialogProc, 0) != 1)
@@ -876,6 +873,7 @@ void CGamePlayer::Init(HINSTANCE hInstance, LPFNWNDPROC lpfnWndProc)
 
         m_WinContext.ShowWindows();
         m_WinContext.UpdateWindows();
+        
         m_NeMoContext.GetRenderContext()->Clear(CK_RENDER_USECURRENTSETTINGS, 0);
         m_NeMoContext.GetRenderContext()->BackToFront(CK_RENDER_USECURRENTSETTINGS);
         m_NeMoContext.GetRenderContext()->Clear(CK_RENDER_USECURRENTSETTINGS, 0);
