@@ -3,8 +3,8 @@
 //      are changed infrequently
 //
 
-#if !defined(AFX_STDAFX_H__A9DB83DB_A9FD_11D0_BFD1_444553540000__INCLUDED_)
-#define AFX_STDAFX_H__A9DB83DB_A9FD_11D0_BFD1_444553540000__INCLUDED_
+#ifndef PLAYER_STDAFX_H
+#define PLAYER_STDAFX_H
 
 #if _MSC_VER > 1000
 #pragma once
@@ -20,7 +20,5 @@
 
 #define DEFAULT_WIDTH 640
 #define DEFAULT_HEIGHT 480
-//{{AFX_INSERT_LOCATION}}
-// Microsoft Visual C++ will insert additional declarations immediately before the previous line.
 
-#endif // !defined(AFX_STDAFX_H__A9DB83DB_A9FD_11D0_BFD1_444553540000__INCLUDED_)
+#endif // PLAYER_STDAFX_H
