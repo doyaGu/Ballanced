@@ -6,7 +6,6 @@
 #include "InterfaceManager.h"
 
 #define TT_INTERFACE_MANAGER_BEHAVIOR CKGUID(0x1B5171D8, 0x41B60E5F)
-#define INTERFACE_MANAGER_BEHAVIOR CKGUID(0x30833801, 0x6DEE620D)
 
 #ifdef CK_LIB
 #define RegisterBehaviorDeclarations Register_TT_Interface_Manager_BehaviorDeclarations
@@ -27,16 +26,16 @@
 CKERROR InitInstance(CKContext *context)
 {
     new CTTInterfaceManager(context);
-
     return CK_OK;
 }
 
 CKERROR ExitInstance(CKContext *context)
 {
-    CTTInterfaceManager *man = (CTTInterfaceManager *)context->GetManagerByGuid(TT_INTERFACE_MANAGER_GUID);
+    CTTInterfaceManager *man = CTTInterfaceManager::GetManager(context);
     if (man)
+    {
         delete man;
-
+    }
     return CK_OK;
 }
 
@@ -63,7 +62,7 @@ PLUGIN_EXPORT CKPluginInfo *CKGetPluginInfo(int Index)
     g_Interface_PluginInfo[1].m_Version = 0x000001;
     g_Interface_PluginInfo[1].m_InitInstanceFct = InitInstance;
     g_Interface_PluginInfo[1].m_ExitInstanceFct = ExitInstance;
-    g_Interface_PluginInfo[1].m_GUID = INTERFACE_MANAGER_BEHAVIOR;
+    g_Interface_PluginInfo[1].m_GUID = TT_INTERFACE_MANAGER_GUID;
     g_Interface_PluginInfo[1].m_Summary = "Interface Manager";
 
     return &g_Interface_PluginInfo[Index];
@@ -148,12 +147,12 @@ void RegisterBehaviorDeclarations(XObjectDeclarationArray *reg)
     RegisterBehavior(reg, FillBehaviorSetIntegerValueToRegistryDecl);
     RegisterBehavior(reg, FillBehaviorSetFloatValueToRegistryDecl);
     RegisterBehavior(reg, FillBehaviorSetBooleanValueToRegistryDecl);
-    
+
     RegisterBehavior(reg, FillBehaviorGetStringValueFromRegistryDecl);
     RegisterBehavior(reg, FillBehaviorGetIntegerValueFromRegistryDecl);
     RegisterBehavior(reg, FillBehaviorGetFloatValueFromRegistryDecl);
     RegisterBehavior(reg, FillBehaviorGetBooleanValueFromRegistryDecl);
-    
+
     RegisterBehavior(reg, FillBehaviorWriteRegistryDecl);
     RegisterBehavior(reg, FillBehaviorReadRegistryDecl);
 
