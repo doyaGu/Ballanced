@@ -1,5 +1,5 @@
-#ifndef COMMON_NEMOARRAY_H
-#define COMMON_NEMOARRAY_H
+#ifndef BUILDINGBLOCKS_NEMOARRAY_H
+#define BUILDINGBLOCKS_NEMOARRAY_H
 
 #include <CKDataArray.h>
 
@@ -95,4 +95,4 @@ private:
     XArray<CNemoArray> m_Arrays;
 };
 
-#endif // COMMON_NEMOARRAY_H
+#endif // BUILDINGBLOCKS_NEMOARRAY_H
