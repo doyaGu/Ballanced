@@ -4,16 +4,16 @@
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
 # Ballance directories and files
-3D Entities/
-Bin/
-BuildingBlocks/
-Managers/
-Plugins/
-RenderEngines/
-Sounds/
-Sounds_low/
-Text/
-Textures/
+/3D Entities/
+/Bin/
+/BuildingBlocks/
+/Managers/
+/Plugins/
+/RenderEngines/
+/Sounds/
+/Sounds_low/
+/Text/
+/Textures/
 *.cmo
 *.tdb
 *.csv
