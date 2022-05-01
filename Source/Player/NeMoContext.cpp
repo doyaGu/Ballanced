@@ -592,7 +592,7 @@ bool CNeMoContext::CreateRenderContext()
     {
         CKRenderManager *renderManager = m_CKContext->GetRenderManager();
         CKRECT rect = {0, 0, m_Width, m_Height};
-        m_RenderContext = renderManager->CreateRenderContext(m_WinContext->GetMainWindow(), 0, &rect, FALSE, -1, -1, -1, 0);
+        m_RenderContext = renderManager->CreateRenderContext(m_WinContext->GetMainWindow(), m_DriverIndex, &rect, FALSE, -1, -1, -1, 0);
         if (!m_RenderContext)
         {
             return false;
