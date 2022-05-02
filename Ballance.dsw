@@ -3,7 +3,7 @@ Microsoft Developer Studio Workspace File, Format Version 6.00
 
 ###############################################################################
 
-Project: "Common"=".\Source\Common\Common.dsp" - Package Owner=<4>
+Project: "Common"=.\Source\Common\Common.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -15,7 +15,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "Player"=".\Source\Player\Player.dsp" - Package Owner=<4>
+Project: "Player"=.\Source\Player\Player.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -29,14 +29,11 @@ Package=<4>
     Begin Project Dependency
     Project_Dep_Name Common
     End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name TT_InterfaceManager_RT
-    End Project Dependency
 }}}
 
 ###############################################################################
 
-Project: "ResDll"=".\Source\ResDll\ResDll.dsp" - Package Owner=<4>
+Project: "ResDll"=.\Source\ResDll\ResDll.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
@@ -48,7 +45,19 @@ Package=<4>
 
 ###############################################################################
 
-Project: "TT_InterfaceManager_RT"=".\Source\BuildingBlocks\TT_InterfaceManager_RT\TT_InterfaceManager_RT.dsp" - Package Owner=<4>
+Project: "TT_DatabaseManager_RT"=.\Source\BuildingBlocks\TT_DatabaseManager_RT\TT_DatabaseManager_RT.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "TT_InterfaceManager_RT"=.\Source\BuildingBlocks\TT_InterfaceManager_RT\TT_InterfaceManager_RT.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
