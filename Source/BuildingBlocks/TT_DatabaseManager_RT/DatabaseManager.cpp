@@ -81,7 +81,7 @@ int CTTDatabaseManager::Clear()
     return true;
 }
 
-int CTTDatabaseManager::Load(CKContext *context, bool autoRegister, const CKSTRING arrayName)
+int CTTDatabaseManager::Load(CKContext *context, bool autoRegister, CKSTRING arrayName)
 {
     int i, c;
 
