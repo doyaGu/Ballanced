@@ -1,5 +1,5 @@
-#ifndef COMMON_FIXEDSTRING_H
-#define COMMON_FIXEDSTRING_H
+#ifndef FIXEDSTRING_H
+#define FIXEDSTRING_H
 
 #include <string.h>
 #include <tchar.h>
@@ -75,4 +75,4 @@ private:
     LPSTR m_Str;
 };
 
-#endif // COMMON_FIXEDSTRING_H
+#endif // FIXEDSTRING_H
