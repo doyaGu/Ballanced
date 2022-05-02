@@ -107,10 +107,6 @@ SOURCE=.\ErrorProtocol.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\FixedString.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\GameInfo.h
 # End Source File
 # Begin Source File
