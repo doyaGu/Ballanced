@@ -651,38 +651,32 @@ bool CNeMoContext::CreateRenderContext()
 
 int CNeMoContext::GetRenderEnginePluginIdx()
 {
-    char filename[512];
-    int pluginIndex = 0;
-    int pluginCount = m_PluginManager->GetPluginCount(CKPLUGIN_RENDERENGINE_DLL);
     if (m_RenderEnginePath.Length() == 0)
     {
         return -1;
     }
 
-    if (pluginCount > 0)
+    char filename[512];
+    const int pluginCount = m_PluginManager->GetPluginCount(CKPLUGIN_RENDERENGINE_DLL);
+    for (int i = 0; i < pluginCount; ++i)
     {
-        while (true)
+        CKPluginEntry* plugin = m_PluginManager->GetPluginInfo(CKPLUGIN_RENDERENGINE_DLL, i);
+        if (!plugin)
         {
-            CKPluginEntry *plugin = m_PluginManager->GetPluginInfo(CKPLUGIN_RENDERENGINE_DLL, pluginIndex);
-            if (!plugin)
-            {
-                return -1;
-            }
-            char *dllname = m_PluginManager->GetPluginDllInfo(plugin->m_PluginDllIndex)->m_DllFileName.Str();
-            if (!dllname)
-            {
-                extern char RenderWindowName[8];
-                dllname = RenderWindowName;
-            }
-            _splitpath(dllname, NULL, NULL, filename, NULL);
-            if (!_strnicmp(m_RenderEnginePath.Str(), filename, strlen(filename)))
-            {
-                break;
-            }
-            if (++pluginIndex >= pluginCount)
-                return -1;
+            return -1;
         }
-        return pluginIndex;
+
+        char* dllname = m_PluginManager->GetPluginDllInfo(plugin->m_PluginDllIndex)->m_DllFileName.Str();
+        if (!dllname)
+        {
+            return -1;
+        }
+
+        _splitpath(dllname, NULL, NULL, filename, NULL);
+        if (!_strnicmp(m_RenderEnginePath.Str(), filename, strlen(filename)))
+        {
+            return i;
+        }
     }
     return -1;
 }
