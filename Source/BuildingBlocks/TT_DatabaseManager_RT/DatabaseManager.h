@@ -39,7 +39,7 @@ public:
 
 	int Clear();
 
-	int Load(CKContext *context, bool autoRegister, const CKSTRING arrayName);
+	int Load(CKContext *context, bool autoRegister, CKSTRING arrayName);
 
 	int Save(CKContext *context);
 
