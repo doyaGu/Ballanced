@@ -84,8 +84,8 @@ void CWinContext::RegisterWindowClasses(LPFNWNDPROC lpfnWndProc, int width, int 
 
 void CWinContext::CreateWindows()
 {
-    int mainWidth = m_Width + 2 * ::GetSystemMetrics(SM_CXBORDER);
-    int mainHeight = m_Height + ::GetSystemMetrics(SM_CYCAPTION) + 2 * ::GetSystemMetrics(SM_CYBORDER);
+    int mainWidth = m_Width + 2 * (::GetSystemMetrics(SM_CXFRAME));
+    int mainHeight = m_Height + ::GetSystemMetrics(SM_CYCAPTION) + 2 * (::GetSystemMetrics(SM_CYFRAME));
 
     m_MainWndX = (::GetSystemMetrics(SM_CXSCREEN) - mainWidth) / 2;
     m_MainWndY = (::GetSystemMetrics(SM_CYSCREEN) - mainHeight) / 2;
@@ -112,7 +112,7 @@ void CWinContext::CreateWindows()
             WS_EX_LEFT,
             m_MainWndClassName,
             m_MainWndName,
-            WS_POPUP | WS_CAPTION,
+            WS_OVERLAPPEDWINDOW & ~(WS_MAXIMIZEBOX|WS_MINIMIZEBOX|WS_SYSMENU),
             m_MainWndX,
             m_MainWndY,
             mainWidth,
