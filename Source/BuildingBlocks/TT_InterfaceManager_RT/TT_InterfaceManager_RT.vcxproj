@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <SccProjectName />
+    <SccLocalPath />
+    <ProjectGuid>{D1F5B337-5FD7-437A-B06A-D3AAFAECD172}</ProjectGuid>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v142</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v142</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.Cpp.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.Cpp.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(SolutionDir)BuildingBlocks\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(SolutionDir)BuildingBlocks\</OutDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalIncludeDirectories>$(SolutionDir)Include;$(SolutionDir)Source\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;TT_INTERFACEMANAGER_RT_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader>Create</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+    </ClCompile>
+    <Midl>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <TypeLibraryName>.\Debug\TT_InterfaceManager_RT.tlb</TypeLibraryName>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <TargetEnvironment>Win32</TargetEnvironment>
+    </Midl>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Bscmake>
+    <Link>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <LinkDLL>true</LinkDLL>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <AdditionalLibraryDirectories>$(SolutionDir)Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Common.lib;CK2.lib;VxMath.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ModuleDefinitionFile>$(ProjectDir)$(ProjectName).def</ModuleDefinitionFile>
+      <ImportLibrary>$(SolutionDir)Lib\$(TargetName).lib</ImportLibrary>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalIncludeDirectories>$(SolutionDir)Include;$(SolutionDir)Source\Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;TT_INTERFACEMANAGER_RT_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeader>Create</PrecompiledHeader>
+    </ClCompile>
+    <Midl>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <TypeLibraryName>.\Release\TT_InterfaceManager_RT.tlb</TypeLibraryName>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <TargetEnvironment>Win32</TargetEnvironment>
+    </Midl>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Bscmake>
+    <Link>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <LinkDLL>true</LinkDLL>
+      <SubSystem>Console</SubSystem>
+      <AdditionalLibraryDirectories>$(SolutionDir)Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Common.lib;CK2.lib;VxMath.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ModuleDefinitionFile>$(ProjectDir)$(ProjectName).def</ModuleDefinitionFile>
+      <ImportLibrary>$(SolutionDir)Lib\$(TargetName).lib</ImportLibrary>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="ChangeScreenMode.cpp" />
+    <ClCompile Include="CreateGameInfo.cpp" />
+    <ClCompile Include="DeleteGameInfo.cpp" />
+    <ClCompile Include="ExistsGameInfo.cpp" />
+    <ClCompile Include="GetBooleanValueFromRegistry.cpp" />
+    <ClCompile Include="GetFloatValueFromRegistry.cpp" />
+    <ClCompile Include="GetGameBonus.cpp" />
+    <ClCompile Include="GetGameData.cpp" />
+    <ClCompile Include="GetGameID.cpp" />
+    <ClCompile Include="GetGameName.cpp" />
+    <ClCompile Include="GetGameScore.cpp" />
+    <ClCompile Include="GetIntegerValueFromRegistry.cpp" />
+    <ClCompile Include="GetLevelBonus.cpp" />
+    <ClCompile Include="GetLevelData.cpp" />
+    <ClCompile Include="GetLevelID.cpp" />
+    <ClCompile Include="GetLevelName.cpp" />
+    <ClCompile Include="GetLevelReached.cpp" />
+    <ClCompile Include="GetLevelScore.cpp" />
+    <ClCompile Include="GetStringValueFromRegistry.cpp" />
+    <ClCompile Include="InstallArray.cpp" />
+    <ClCompile Include="InterfaceManager.cpp" />
+    <ClCompile Include="IsRookie.cpp" />
+    <ClCompile Include="LimitFramerate.cpp" />
+    <ClCompile Include="ListDrivers.cpp" />
+    <ClCompile Include="ListScreenModes.cpp" />
+    <ClCompile Include="NemoArray.cpp" />
+    <ClCompile Include="PlayerActive.cpp" />
+    <ClCompile Include="ReadArray.cpp" />
+    <ClCompile Include="ReadRegistry.cpp" />
+    <ClCompile Include="SendCMOLoad.cpp" />
+    <ClCompile Include="SendCMORestart.cpp" />
+    <ClCompile Include="SendExitToSystem.cpp" />
+    <ClCompile Include="SetBooleanValueToRegistry.cpp" />
+    <ClCompile Include="SetFloatValueToRegistry.cpp" />
+    <ClCompile Include="SetGameBonus.cpp" />
+    <ClCompile Include="SetGameData.cpp" />
+    <ClCompile Include="SetGameID.cpp" />
+    <ClCompile Include="SetGameName.cpp" />
+    <ClCompile Include="SetGameScore.cpp" />
+    <ClCompile Include="SetIntegerValueToRegistry.cpp" />
+    <ClCompile Include="SetLevelBonus.cpp" />
+    <ClCompile Include="SetLevelData.cpp" />
+    <ClCompile Include="SetLevelID.cpp" />
+    <ClCompile Include="SetLevelName.cpp" />
+    <ClCompile Include="SetLevelReached.cpp" />
+    <ClCompile Include="SetLevelScore.cpp" />
+    <ClCompile Include="SetRookie.cpp" />
+    <ClCompile Include="SetStringValueToRegistry.cpp" />
+    <ClCompile Include="SetTaskSwitchHandler.cpp" />
+    <ClCompile Include="StdAfx.cpp" />
+    <ClCompile Include="TT_InterfaceManager_RT.cpp" />
+    <ClCompile Include="UninstallArray.cpp" />
+    <ClCompile Include="WindowActivated.cpp" />
+    <ClCompile Include="WriteArray.cpp" />
+    <ClCompile Include="WriteRegistry.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="TT_InterfaceManager_RT.def" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="InterfaceManager.h" />
+    <ClInclude Include="NemoArray.h" />
+    <ClInclude Include="StdAfx.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
