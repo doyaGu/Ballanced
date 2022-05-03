@@ -12,23 +12,19 @@
 #include "CKMovieReader.h"
 
 
-#define CKBITMAPDATA_INVALID				1		
+#define CKBITMAPDATA_INVALID		1		
 
-#define CKBITMAPDATA_TRANSPARENT			2		
+#define CKBITMAPDATA_TRANSPARENT	2		
 
-#define CKBITMAPDATA_FORCERESTORE			4		
+#define CKBITMAPDATA_FORCERESTORE	4		
 
-#define CKBITMAPDATA_CLAMPUPTODATE			8		
+#define CKBITMAPDATA_CLAMPUPTODATE	8		
 
-#define CKBITMAPDATA_CUBEMAP				16		
+#define CKBITMAPDATA_CUBEMAP		16		
 
-#define CKBITMAPDATA_FREEVIDEOMEMORY		32		
+#define CKBITMAPDATA_FREEVIDEOMEMORY 32		
 
-#define CKBITMAPDATA_DYNAMIC				64		
-
-#define CKBITMAPDATA_VOLUMEMAP				128		
-
-#define CKBITMAPDATA_CONDITIONALNONPOW2		256		
+#define CKBITMAPDATA_DYNAMIC		 64		
 
 
 class CKBitmapSlot {
@@ -42,7 +38,7 @@ public:
 
 public:
 	CKBitmapSlot() {
-		m_DataBuffer = NULL;
+		m_DataBuffer 		= NULL;
 #ifdef PSX2
 		m_ColorMap			= NULL;
 		m_ColorMapCount 	= 0;		
@@ -549,48 +545,17 @@ Remarks:
 *************************************************/
 	void	SetCubeMap(CKBOOL CubeMap) { if (CubeMap)	{
 															SetSlotCount(6);
-															m_BitmapFlags&=~CKBITMAPDATA_VOLUMEMAP;	
 															m_BitmapFlags|=CKBITMAPDATA_CUBEMAP; 
 														} else {
 															m_BitmapFlags&=~CKBITMAPDATA_CUBEMAP;	
 														}
 										}
-				
-	
-
+														
 
 	CKBOOL	IsCubeMap() { 
 		return m_BitmapFlags & CKBITMAPDATA_CUBEMAP; 
 	}
 
-
-/*************************************************
-Summary: Setup the bitmap to store a volume map
-Return Value:
-	TRUE if the bitmap is set to store a volume map.
-Arguments:
-	CubeMap: TRUE if bitmap is to hold a volume map.
-Remarks:
-If VolumeMap is TRUE , the texture slots are used to generate volume slices (Depth).
-
-*************************************************/
-	void	SetVolumeMap(CKBOOL VolumeMap) { if (VolumeMap && !(m_BitmapFlags&CKBITMAPDATA_VOLUMEMAP))	{
-												
-												m_BitmapFlags&=~CKBITMAPDATA_CUBEMAP;	
-												m_BitmapFlags|=(CKBITMAPDATA_VOLUMEMAP|CKBITMAPDATA_FORCERESTORE); 
-											}else 
-											if(m_BitmapFlags&CKBITMAPDATA_VOLUMEMAP )
-											{											
-												m_BitmapFlags&=~CKBITMAPDATA_VOLUMEMAP;	
-												m_BitmapFlags|=CKBITMAPDATA_FORCERESTORE; 
-											}
-										}
-
-
-	CKBOOL	IsVolumeMap() { 
-		return m_BitmapFlags & CKBITMAPDATA_VOLUMEMAP; 
-	}
-	
 	
 /*************************************************
 Summary: tells if the bitmap can be restored from the original file
@@ -639,7 +604,7 @@ See also:CreateImage
 *******************************************************/
 	CKBOOL		ResizeImages(int Width,int Height);
 
-
+	
 /************************************************
 Summary: Sets a hint to indicate the bitmap is changed frequently.
 
@@ -663,34 +628,6 @@ See Also:
 
 	CKBOOL GetDynamicHint() {
 		return m_BitmapFlags & CKBITMAPDATA_DYNAMIC;
-	}
-
-/************************************************
-Summary: Do we authorize to create the video texture with a 
-non power of two size when the video cards implies the following
-limitations on those:
-	+ Addressing mode is set to clamp.
-	+ Mipmapping is disabled.
-	+ DXT formats are not supported for these textures.
-
-Remarks:
-	+ Graphic cards with the following caps 
-	+ On recent graphics card this hint can be taken into account to generate 
-	efficient dynamic textures.
-	+ If the Texture or sprite is already in video memory you will have to 
-	reload it in video memory using FreeVideoMemory/SystemToVideoMemory
-See Also:
-************************************************/
-	void AuthorizeConditionalNonPow2(CKBOOL iAuthorize) {
-		if ( iAuthorize )
-			m_BitmapFlags |= CKBITMAPDATA_CONDITIONALNONPOW2;
-		else
-			m_BitmapFlags &= ~CKBITMAPDATA_CONDITIONALNONPOW2;
-	}
-
-	
-	CKBOOL IsConditionalNonPow2Authorized() {
-		return m_BitmapFlags & CKBITMAPDATA_CONDITIONALNONPOW2;
 	}
 
 //-------------------------------------------------------------------

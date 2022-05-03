@@ -247,7 +247,7 @@ Examples:
 // which will be 5 frames long then anim will be played from the start.
 	SetNextActiveAnimation(anim,CK_TRANSITION_LOOPIFEQUAL|CK_TRANSITION_USEVELOCITY|CK_TRANSITION_WARPSTART,5.0f);
 
-See also: SetNextActiveAnimation2,GetActiveAnimation,SetActiveAnimation,CK_ANIMATION_TRANSITION_MODE
+See also: GetActiveAnimation,SetActiveAnimation,CK_ANIMATION_TRANSITION_MODE
 *************************************************/	
 virtual CKERROR  SetNextActiveAnimation(CKAnimation *anim,CKDWORD transitionmode,float warplength=0.0f) CK_PURE;
 
@@ -432,16 +432,6 @@ Remarks:
 See also: GetWarper
 ************************************************/
 virtual void 	GetWarperParameters(CKDWORD* TransitionMode,CKAnimation** AnimSrc,float* FrameSrc,CKAnimation** AnimDest,float* FrameDest) CK_PURE;	
-
-/*************************************************
-Summary: Sets the next animation to be played by the character 
-
-Remarks:
-This function is a extended version of the  SetNextActiveAnimation
-where you can give the position in which to start the destination animation.
-See also: SetNextActiveAnimation,CK_ANIMATION_TRANSITION_MODE
-*************************************************/
-virtual CKERROR  SetNextActiveAnimation2(CKAnimation *anim,CKDWORD transitionmode,float warplength=0.0f,float frameTo = 0) CK_PURE;
 
 /*************************************************
 Summary: Dynamic cast operator. 

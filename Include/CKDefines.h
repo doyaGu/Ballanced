@@ -46,11 +46,11 @@
 
 // Current Version of CK Engine (Day/Month/Year)
 
-#define CKVERSION 0x26052005
+#define CKVERSION 0x05082002
 
 // Current Version of Dev
 
-#define DEVVERSION 0x03050000
+#define DEVVERSION 0x02050000
 
 
 
@@ -198,12 +198,24 @@ typedef void (*CK_MESHRENDERCALLBACK)(CKRenderContext *Dev,CK3dEntity* Mov,CKMes
 
 
 /****************************************************************
-{secret}
-Removed
+Summary: Mesh sub part rendering callback function.
+
+Remarks:
+	+ A function can be called before and after the rendering each part (per material) of a mesh occurs.
+See Also: CKMesh::AddSubMeshPreRenderCallBack,,CKMesh::AddSubMeshPostRenderCallBack,The Virtools Render Loop
 ****************************************************************/
 typedef void (*CK_SUBMESHRENDERCALLBACK)(CKRenderContext *Dev,CK3dEntity* Mov,CKMesh *Object,CKMaterial* mat,void *Argument);
 
+/****************************************************************
+Summary: Material rendering callback function.
 
+Remarks:
+	+ A function can be called each time a material is set as current on a rendering context.
+	+ If the function returns 0 the material data is set on the rendercontext otherwise it is skipped 
+	(we suppose the callback function has already set the valid render states...)
+See Also: CKMaterial::SetCallback,CKMaterial::SetAsCurrent,The Virtools Render Loop
+****************************************************************/
+typedef int (*CK_MATERIALCALLBACK)(CKRenderContext *Dev,CKMaterial* mat,void *Argument);
 
 
 typedef CKERROR  (*CKUICALLBACKFCT)(CKUICallbackStruct& param,void *data);
@@ -322,15 +334,8 @@ typedef CK_LOADMODE	(*CK_LOADRENAMECALLBACK)(CK_CLASSID Cid,CKSTRING OldName,CKS
 	#define CKCID_CRITICALSECTION			49	
 	#define CKCID_LAYER						51	
 	#define CKCID_PROGRESSIVEMESH			54	
-	#define CKCID_SYNCHRO					20	
-
-#ifdef _XBOX
 	#define CKCID_MAXCLASSID				56		
-#else
-	#define CKCID_3DPOINTCLOUD				56	
-	#define CKCID_VIDEO						57	
-	#define CKCID_MAXCLASSID				58		
-#endif
+	#define CKCID_SYNCHRO					20	
 
 //-------------------------------------------------------------------------
 // Internal functions 
@@ -353,7 +358,6 @@ typedef CK_LOADMODE	(*CK_LOADRENAMECALLBACK)(CK_CLASSID Cid,CKSTRING OldName,CKS
 	#define  CKCID_GRIDMANAGER				91	
 	#define  CKCID_SOUNDMANAGER				92	
 	#define  CKCID_TIMEMANAGER				93	
-	#define  CKCID_VIDEOMANAGER				94	
 	#define  CKCID_CUIKBEHDATA				-1	
 
 //----------------------------------------------------------//
@@ -709,8 +713,6 @@ typedef struct CKParameterTypeDesc {
 		#define CKWM_GETMARGIN	CKWM_BASE + 14	//	WParam: client LPPOINT lParam:CK_CLASSID 
 		#define CKWM_STARTPICK		CKWM_BASE + 15 // 
 		#define CKWM_ENDPICK		CKWM_BASE + 16 // 
-		#define CKWM_ENDPICK		CKWM_BASE + 16 // 
-		#define	CKWM_GETPARAMDIALOG CKWM_BASE + 17 //
 
 #endif // Docjet secret macro
 //----------------------------------------------------------//

@@ -61,8 +61,7 @@ Summary: Loads a image slot from a file.
 
 Arguments:
 	Name: Name of the file to load.
-	Slot: In a multi-images texture, index of the image slot to load. 
-	(-1 means load all slots)
+	Slot: In a multi-images texture, index of the image slot to load.
 Return Value: 
 	TRUE if successful, FALSE otherwise.
 Remarks:
@@ -280,25 +279,6 @@ See Also:GetRstTextureObject,CKRenderContext::GetRasterizerContext
 virtual int	GetRstTextureIndex() = 0;
 
 /************************************************
-Summary: Gives access to the video memory surface pointer.
-
-Return Value:
-	TRUE if succesful, FALSE if the texture is not currently in video memory
-Remarks:
-+ This method fills the Surface structure with information regarding the 
-video memory surface. Surface pointer is stored in the Surface.Image member.
-+ Once finish with the surface pointer you must release it by calling UnlockVideoMemory.
- Any rendering with a locked texture will fail.
-+ On some implementations such as GL or DX8 that do not support direct access to video memory
-the returned pointer can be on a system memory copy which can be very slow for partial write access.
-See Also:VxImageDescEx,LockSurfacePtr,
-************************************************/
-virtual BOOL	LockVideoMemory(VxImageDescEx& Surface,int MipLevel = 0,VX_LOCKFLAGS Flags = VX_LOCK_DEFAULT) = 0;
-
-virtual void	Un(int MipLevel = 0) = 0;
-
-
-/************************************************
 Summary: Transfers the content of the video memory to the system memory copy.
 
 Return Value:
@@ -306,7 +286,7 @@ Return Value:
 Remarks:
 + The System Caching mode must be CKBITMAP_PROCEDURAL or CKBITMAP_VIDEOSHADOW
 for this method to work (that is a system copy must exist)
-See Also:,LockSurfacePtr,
+See Also:LockVideoMemory,LockSurfacePtr,
 ************************************************/
 virtual BOOL	VideoToSystemMemory() = 0;
 
@@ -325,16 +305,6 @@ data for this texture by casting the returned pointer in the appropriate structu
 See Also:GetRstTextureIndex,CKRenderContext::GetRasterizerContext
 ************************************************/
 virtual void*	GetRstTextureObject() = 0;
-
-/************************************************
-Summary: This function ensure the correct representation of the texture is in video memory.
-Remarks:
-+ This method is automatically called by SetAsCurrent to ensure 
-the correct data is present in video memory (in the case of a movie texture for example).
-+ It can be called by a shader manager to ensure the texture is ready in video memory.
-See Also:SetAsCurrent,SystemToVideoMemory,Restore
-************************************************/
-virtual BOOL	EnsureVideoMemory(CKRenderContext* ctx,CKBOOL Clamping =FALSE) = 0;
 
 
 CKTexture(CKContext *Context,CKSTRING name=NULL)  : CKBeObject(Context,name),CKBitmapData(Context) {}	

@@ -69,7 +69,6 @@ VX_EXPORT BOOL VxGetCurrentDirectory(char *path);
 VX_EXPORT BOOL VxSetCurrentDirectory(char *path);
 VX_EXPORT BOOL VxMakePath(char *fullpath,char *path, char *file);		
 VX_EXPORT BOOL VxTestDiskSpace(const char* dir,DWORD size);
-VX_EXPORT BOOL	VxGetMouseButtonsSwapped		();
 
 
 VX_EXPORT int VxMessageBox(WIN_HANDLE hWnd,char* lpText,char* lpCaption,DWORD uType);
@@ -119,7 +118,6 @@ typedef enum VXTEXT_ALIGNMENT {
 VX_EXPORT FONT_HANDLE		VxCreateFont		(char* FontName,int FontSize,int Weight,BOOL italic,BOOL underline);
 VX_EXPORT BOOL				VxGetFontInfo		(FONT_HANDLE Font,VXFONTINFO& desc);
 VX_EXPORT BOOL				VxDrawBitmapText	(BITMAP_HANDLE Bitmap,FONT_HANDLE Font,char* string,CKRECT* rect,DWORD Align,DWORD BkColor,DWORD FontColor);
-VX_EXPORT BOOL				VxDrawBitmapTextW	(BITMAP_HANDLE Bitmap,FONT_HANDLE Font,unsigned short* string,CKRECT* rect,DWORD Align,DWORD BkColor,DWORD FontColor);
 VX_EXPORT void				VxDeleteFont		(FONT_HANDLE   Font);
 
 #endif // __VXWINDOWFUNCTION_H__

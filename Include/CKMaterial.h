@@ -10,6 +10,8 @@
 
 #include "CKBeObject.h" 
 
+// class CKShader;
+
 /***********************************************************************
 {filename:CKMaterial}
 Summary: Color and texture settings for objects.
@@ -552,6 +554,21 @@ See also: GetAlphaRef,SetAlphaFunc,EnableAlphaTest
 *************************************************/ 
 virtual 	void		SetAlphaRef(CKBYTE AlphaRef=0) = 0;
 
+
+//--------------------------------------------------------------
+//  Callback Extension : Need for access to vertex shader, etc...
+
+/*************************************************
+Summary: Sets a callback function to be called each time CKMaterial::SetAsCurrent is called.
+
+Arguments:
+	Fct: A pointer to a CK_MATERIALCALLBACK function that will be called at the beginning of the SetAsCurrent method.
+	Argument: A void pointer that will be passed to the callback function
+See also: GetCallback
+*************************************************/ 
+virtual 	void SetCallback(CK_MATERIALCALLBACK Fct,void* Argument ) = 0;
+
+virtual 	CK_MATERIALCALLBACK GetCallback(void** Argument = NULL ) = 0;
 
 /*************************************************
 Summary: Sets a special effect on a material.

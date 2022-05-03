@@ -11,7 +11,6 @@
 #include "CKObject.h"
 #include "CKParameterOut.h"
 
-
 /**********************************************************************
 Name: CKParameterIn
 

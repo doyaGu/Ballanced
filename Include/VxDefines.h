@@ -15,7 +15,7 @@
 #if _MSC_VER > 1000
 	#pragma warning( disable : 4251 )
 #endif
- 
+
 class CKRasterizerContext;	
 class CKRasterizer;			
 class CKRasterizerDriver;	
@@ -46,11 +46,6 @@ public:
 public:
 	VxUV(float _u=0,float _v=0):u(_u),v(_v) {}
 
-	void Set(float _u,float _v) {
-		u = _u;
-		v = _v;
-	}
-	
 	VxUV& operator += (const VxUV& uv) { u+=uv.u; v+=uv.v; return *this; }
 	VxUV& operator -= (const VxUV& uv) { u-=uv.u; v-=uv.v; return *this; }
 	VxUV& operator *= (float s) { u*=s; v*=s; return *this; }
@@ -71,7 +66,6 @@ public:
 	friend VxUV operator * (float s, const VxUV& uv) { return VxUV(uv.u*s,uv.v*s); }
 	friend VxUV operator / (const VxUV& uv, float s) { return VxUV(uv.u/s,uv.v/s); }
 };
-
 
 /**************************************************************
 Summary: Vertex format and draw primitive options.
@@ -100,7 +94,6 @@ typedef enum CKRST_DPFLAGS
 	CKRST_DP_DOCLIP	   = 0x00000004UL,	// Perfom frustum clipping
 	CKRST_DP_DIFFUSE   = 0x00000010UL,	// Diffuse Color
 	CKRST_DP_SPECULAR  = 0x00000020UL,	// Specular Color
-	CKRST_DP_TANSPACE  = 0x00000040UL,	// Tangent Space info (2x 3dcoords)
 	CKRST_DP_STAGESMASK= 0x0001FE00UL,	// Mask for texture coord sets		
 	CKRST_DP_STAGES0   = 0x00000200UL,	// Texture coords up to Stage 0 		
 	CKRST_DP_STAGES1   = 0x00000400UL,	// Texture coords up to Stage 1 		
@@ -120,7 +113,6 @@ typedef enum CKRST_DPFLAGS
 	CKRST_DP_MATRIXPAL = 0x02000000UL,	// The last weight is a DWORD which contains the indices of matrix to which the weights are associated.
 	
 	CKRST_DP_VBUFFER   = 0x10000000UL,	// If a Vertex Buffer can be created, the returned structure should directly point to it.
-	CKRST_DP_TRANSFORMW = 0x20000000UL,	// Vertex format contains transformed and clipped (x, y, z, w).  This constant is designed for, and can only be used with, the programmable vertex pipeline.
 
 	CKRST_DP_TR_CL_VNT	   = 0x00000207UL,	// non-transformed vertices with normal and texture coords  		
 	CKRST_DP_TR_CL_VCST	   = 0x00000235UL,	// non-transformed vertices with colors (diffuse+specular) and texture coords  		
@@ -151,13 +143,7 @@ typedef enum CKRST_DPFLAGS
 #define CKRST_DP_IWEIGHT(x)	(x ? (CKRST_DP_MATRIXPAL|(CKRST_DP_WEIGHTS1 << (x-1))) : 0)	
 #define CKRST_DP_STAGE(i)	(CKRST_DP_STAGES0 << i)					
 #define CKRST_DP_STAGEFLAGS(f)	((f & CKRST_DP_STAGESMASK) >> 9)	
-
-
-#if defined(_XBOX) && (_XBOX_VER>=200)
-	#define CKRST_MAX_STAGES 16											
-#else
-	#define CKRST_MAX_STAGES 8											
-#endif
+#define CKRST_MAX_STAGES 8											
 
 
 /**************************************************************
@@ -179,19 +165,27 @@ See Also: CKRST_DPFLAGS,CKRenderContext::DrawPrimitive,CKRenderContext::GetDrawP
 struct VxDrawPrimitiveDataSimple {
 	int				VertexCount;		// Number of vertices to draw
 	unsigned int	Flags;				// CKRST_DPFLAGS
-	VxVector4*		Positions;
-	VxVector*		Normals;
-	DWORD			Colors;
-	DWORD			SpecularColors;
-	VxUV*			TexCoord;
+	void*			PositionPtr;		// A pointer to position data (minimum VxVector if transformation should be applied, VxVector4(xs,ys,zs,rhw) if screen coordinates) 
+	unsigned int	PositionStride;		// Amount in bytes between two positions in the PositionPtr bufffer
+	void*			NormalPtr;			// A pointer to normals data
+	unsigned int	NormalStride;		// Amount in bytes between two positions in the NormalPtr bufffer
+	void*			ColorPtr;			// A pointer to colors data
+	unsigned int	ColorStride;		// Amount in bytes between two positions in the ColorPtr bufffer
+	void*			SpecularColorPtr;	// A pointer to specular colors data
+	unsigned int	SpecularColorStride;// Amount in bytes between two positions in the SpecularColorPtr bufffer
+	void*			TexCoordPtr;		// A pointer to texture coordinates data
+	unsigned int	TexCoordStride;		// Amount in bytes between two positions in the TexCoordPtr bufffer
 };
 
 
 struct VxDrawPrimitiveData : public VxDrawPrimitiveDataSimple
 {
-	VxUV*		TexCoords[CKRST_MAX_STAGES-1];
-	void*		Weights;
-	DWORD		MatIndex;
+	void*			TexCoordPtrs	[CKRST_MAX_STAGES-1];		// A pointer to texture coordinates  data per stage of textures
+	unsigned int	TexCoordStrides	[CKRST_MAX_STAGES-1];		// ...
+	void*			WeightsPtr;									// A pointer to weights for each vertex
+	unsigned int	WeightsStride;								// Amount in bytes between two weights in the WeightsPtr bufffer
+	void*			MatIndexPtr;								// A pointer to matrix indices for each vertex
+	unsigned int	MatIndexStride;								// Amount in bytes between two weights in the MatIndexPtr bufffer
 };
 
 
@@ -248,16 +242,6 @@ Remarks:
 + The data stored in the structure are only available when using a DirectX based rasterizer
 (CKDX8Rasterizer,CKDX7Rasterizer or CKDX5Rasterizer)
 + The type and version of objects depends on the version of the rasterizer used.
-+ CKDX9Rasterizer:
-		DDBackBuffer	- LPDIRECT3DSURFACE9
-		DDPrimaryBuffer	- NULL		
-		DDZBuffer		- LPDIRECT3DSURFACE9		
-		DirectDraw		- NULL			
-		Direct3D		- LPDIRECT3D9			
-		DDClipper		- NULL			
-		D3DDevice		- LPDIRECT3DDEVICE9
-		D3DViewport		- NULL	
-		DxVersion		- 0x0900    
 + CKDX8Rasterizer:
 		DDBackBuffer	- LPDIRECT3DSURFACE8
 		DDPrimaryBuffer	- NULL		
@@ -323,7 +307,7 @@ Summary: Lock Flags.
 Remarks:
 + When accessing a video memory surface, these flags should be
 used to warn the drivers of the intended operation (Write or Read Only)
-See also: CKTexture::,CKSprite::
+See also: CKTexture::LockVideoMemory,CKSprite::LockVideoMemory
 ******************************************************************/
 typedef enum VX_LOCKFLAGS {
 	VX_LOCK_DEFAULT		= 0x00000000,   // No assumption
@@ -609,7 +593,6 @@ typedef enum VXSPRITE_RENDEROPTIONS2
 	VXSPRITE2_DISABLE_AA_CORRECTION			= 0x00000001UL// Disable Antialiasing special processing on the sprite (UV offset,...) .
 } VXSPRITE_RENDEROPTIONS2;
 
-
 /****************************************************************
 {filename:VxSpriteRenderOptions}
 Summary: Sprite rendering options structure
@@ -627,8 +610,8 @@ struct VxSpriteRenderOptions {
 	VXCMPFUNC			   AlphaTestFunc	: 4;	// if VXSPRITE_ALPHATEST is enabled, the alpha test function.
 	VXBLEND_MODE		   SrcBlendMode		: 4;	// If blending is enabled (VXSPRITE_BLEND), source blend mode
 	DWORD				   Options2			: 4;	// A combinaison of VXSPRITE_RENDEROPTIONS2 used to render the sprite 
-	DWORD				   DstBlendMode		: 8;		// If blending is enabled (VXSPRITE_BLEND), destination blend mode
-	DWORD				   AlphaRefValue	: 8;		// If alpha test is enabled (VXSPRITE_ALPHATEST), reference value
+	VXBLEND_MODE		   DstBlendMode		: 8;	// If blending is enabled (VXSPRITE_BLEND), destination blend mode
+	BYTE				   AlphaRefValue	: 8;	// If alpha test is enabled (VXSPRITE_ALPHATEST), reference value
 };
 
 /******************************************************************
@@ -920,32 +903,13 @@ typedef enum VXRENDERSTATETYPE {
     VXRENDERSTATE_COLORVERTEX        = 141, //Enable or disable per-vertex color 
 	VXRENDERSTATE_LOCALVIEWER        = 142, //Camera relative specular highlights (TRUE/FALSE)
     VXRENDERSTATE_NORMALIZENORMALS   = 143, //Enable automatic normalization of vertex normals 
-    VXRENDERSTATE_DIFFUSEFROMVERTEX  = 145, //If VXRENDERSTATE_COLORVERTEX is TRUE this flags indicate whether diffuse color is taken from the vertex color (TRUE) or from the currently set material (FALSE)
-    VXRENDERSTATE_SPECULARFROMVERTEX = 146, //If VXRENDERSTATE_COLORVERTEX is TRUE this flags indicate whether specular color is taken from the vertex color (2) or from the currently set material (0)
-    VXRENDERSTATE_AMBIENTFROMVERTEX  = 147, //If VXRENDERSTATE_COLORVERTEX is TRUE this flags indicate whether ambient color is taken from the vertex color (TRUE) or from the currently set material (FALSE)
-    VXRENDERSTATE_EMISSIVEFROMVERTEX = 148, //If VXRENDERSTATE_COLORVERTEX is TRUE this flags indicate whether emissive color is taken from the vertex color (TRUE) or from the currently set material (FALSE)
-
     VXRENDERSTATE_VERTEXBLEND		 = 151, //Enable vertex blending and set the number of matrices to use (VXVERTEXBLENDFLAGS)
 	VXRENDERSTATE_SOFTWAREVPROCESSING= 153, //When using a T&L driver in mixed mode, for the usage of software processing 
-    
-	VXRENDERSTATE_POINTSIZE          = 154, //Size of point when drawing point sprites. This value is in screen space units if VXRENDERSTATE_POINTSCALEENABLE is FALSE; otherwise this value is in world space units.
-    VXRENDERSTATE_POINTSIZE_MIN      = 155, //Specifies the minimum size of point primitives. If below 1 the points drawn will disappear when smaller than a pixel 
-	VXRENDERSTATE_POINTSIZE_MAX      = 166,	//Specifies the maximum size of point primitives. If below 1 the points drawn will disappear when smaller than a pixel 
-    VXRENDERSTATE_POINTSPRITEENABLE  = 156, // 
-
-    VXRENDERSTATE_POINTSCALEENABLE   = 157,	// If true the size of point will be attenuated according to distance :
-											// Size = pointSize * sqrt(1/ (a + b*dist + c * dist*dist)) where dist 
-											// is the distance from viewpoint to point.
-    VXRENDERSTATE_POINTSCALE_A       = 158, // constant attenuation factor for point size computation (see VXRENDERSTATE_POINTSCALEENABLE)
-    VXRENDERSTATE_POINTSCALE_B       = 159, // linear attenuation factor for point size computation (see VXRENDERSTATE_POINTSCALEENABLE)
-    VXRENDERSTATE_POINTSCALE_C       = 160,	// quadratic attenuation factor for point size computation (see VXRENDERSTATE_POINTSCALEENABLE)
-
 	VXRENDERSTATE_CLIPPLANEENABLE    = 152, //Enable one or more user-defined clipping planes ( DWORD mask of planes)
 	VXRENDERSTATE_INDEXVBLENDENABLE  = 167, //Enable indexed vertex blending (to use with VXRENDERSTATE_VERTEXBLEND)
 	VXRENDERSTATE_BLENDOP			 = 171, //Set blending operation VXBLENDOP
 
 // Virtools Specific Render States	
-	VXRENDERSTATE_LOCKMATERIALSTATES	= 252,	// if Enabled, subsequent calls to CKRasterizerContext::SetMaterial are ignored	
 	VXRENDERSTATE_TEXTURETARGET			= 253,	// Hint: context is used to render on a texture	
 	VXRENDERSTATE_INVERSEWINDING		= 254,	// Invert Cull CW and cull CCW (TRUE/FALSE)
 	VXRENDERSTATE_MAXSTATE				= 256,	
@@ -1014,8 +978,7 @@ Remarks:
 	+ The Vx3DCapsDesc contains the 3D capabilities of a render driver.
 	+ 3D Capabilities concerns texture size limitations, texture filtering capabilities,
 	blending capabilities, monopass multi-texturing capabilities,etc.
-	+ The StencilBpps member is 0 for all render drivers except Directx7 and OpenGL based ones
-See Also: VxDriverDesc,CKRenderManager::GetRenderDriverDescription,CKRenderManager::CreateRenderContext
+See Also: VxDriverDesc,CKRenderManager::GetRenderDriverDescription
 ****************************************************************/
 typedef struct Vx3DCapsDesc
 {
@@ -1046,7 +1009,6 @@ typedef struct Vx3DCapsDesc
 	DWORD	DestBlendCaps;						// Destination Blend Caps CKRST_BLENDCAPS
 	DWORD   CKRasterizerSpecificCaps;			// Specific to CKRasterizers CKRST_SPECIFICCAPS
 	DWORD   MaxIndexedBlendMatrices;			// Number of indexed Matrices	
-	DWORD   MaxVertexCountPerCall;				// Max Number of vertex that can be stored in a vertex buffer	
 } Vx3DCapsDesc;
 
 
@@ -1074,18 +1036,8 @@ typedef enum CKRST_SPECIFICCAPS {
 	CKRST_SPECIFICCAPS_DX5					=0x00000100UL,		// DX 5 implementation (if Family ==  CKRST_DIRECTX)
 	CKRST_SPECIFICCAPS_DX7					=0x00000200UL,		// DX 7 implementation (if Family ==  CKRST_DIRECTX)
 	CKRST_SPECIFICCAPS_DX8					=0x00000400UL,		// DX 8.1 implementation (if Family ==  CKRST_DIRECTX)
-	CKRST_SPECIFICCAPS_DX9					=0x00000800UL,		// DX 9 implementation (if Family ==  CKRST_DIRECTX)
-
-	CKRST_SPECIFICCAPS_SUPPORTSHADERS		=0x00001000UL,		// CKShaders are supported by this implementation
-	CKRST_SPECIFICCAPS_POINTSPRITES			=0x00002000UL,		// Point sprites are supported
-	
-	CKRST_SPECIFICCAPS_VERTEXCOLORABGR		=0x00004000UL,		// OGL implementation : if set, CK2_3D will send colors of Vertex Buffers into the appropriate format
-	CKRST_SPECIFICCAPS_BLENDTEXTEFFECT		=0x00008000UL,		// OGL implementation : if set, CK2_3D do BlendTexturesEffect (Texture Combine Effect)
 
 	CKRST_SPECIFICCAPS_CANDOINDEXBUFFER		=0x00010000UL,		// Index buffers can be lock to be read or write
-	CKRST_SPECIFICCAPS_HW_SKINNING			=0x00020000UL,		// Implementation can perform hardware accelerated skinning
-
-	CKRST_SPECIFICCAPS_AUTGENMIPMAP			=0x00040000UL,		// Graphics card supports automatic mipmap generation
 
 } CKRST_SPECIFICCAPS;
 
@@ -1138,10 +1090,6 @@ typedef enum CKRST_TEXTURECAPS {
 	,CKRST_TEXTURECAPS_POW2					=0x00000002UL	// Texture size must be powers of 2 
 	,CKRST_TEXTURECAPS_ALPHA				=0x00000004UL	// Supports texture with alpha values with VXTEXTUREBLEND_DECAL and VXTEXTUREBLEND_MODULATE blending modes.
 	,CKRST_TEXTURECAPS_SQUAREONLY			=0x00000020UL	// Textures must have the same witdh than height. 
-	,CKRST_TEXTURECAPS_CONDITIONALNONPOW2	=0x00000100UL	// Device support conditionnal pow2 textures
-	,CKRST_TEXTURECAPS_PROJECTED			=0x00000400UL	// Device supports the CKRST_TTF_PROJECTED transform flags: If this capability is present, then the projective divide occurs per pixel
-	,CKRST_TEXTURECAPS_CUBEMAP				=0x00000800UL	// Device can do cube maps
-	,CKRST_TEXTURECAPS_VOLUMEMAP			=0x00002000UL	// Device can do volume maps.
 } CKRST_TEXTURECAPS;
 
 

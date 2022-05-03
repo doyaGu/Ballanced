@@ -6,6 +6,7 @@
 /*	Copyright (c) Virtools 2000, All Rights Reserved.					 */	
 /*************************************************************************/
 #ifndef CK2DCURVEPOINT_H
+
 #define CK2DCURVEPOINT_H "$Id:$"
 
 #include "CKDefines.h"

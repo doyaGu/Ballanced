@@ -8,6 +8,7 @@
 #ifndef _XUTIL_H_
 #define _XUTIL_H_
 
+#include <stdio.h>
 #ifdef _DEBUG
 	#define _DEBUG_BREAKPOINT() DebugBreak();
 #else
@@ -69,16 +70,13 @@ typedef unsigned int XDWORD;
 	#endif
 #endif
 
-// Summary: Sort function prototype for XArray,XBinaryTree sort operations
-// 
-typedef int (__cdecl  *VxSortFunc)(const void *elem1, const void *elem2 );
-
-inline float XCos(float f) {
-	return (float)cos(f);
-}
-inline float XSin(float f) {
-	return (float)sin(f);
-}
+#ifdef WIN32
+	// Summary: Sort function prototype for XArray,XBinaryTree sort operations
+	// 
+	typedef int (__cdecl  *VxSortFunc)(const void *elem1, const void *elem2 );
+#else
+	typedef int (*VxSortFunc)(const void *elem1, const void *elem2 );
+#endif
 
 /*************************************************
 Summary: Enables the initialisation of a reference from two values.
@@ -315,7 +313,7 @@ inline float XFabs(float a)
 
 #define VxNew(a) (new unsigned char[a])
 
-#define VxDelete(a) (delete[] (unsigned char*) a)
+#define VxDelete(a) (delete[] a)
 
 
 template <class T> T* VxAllocate	(int n);

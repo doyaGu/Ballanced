@@ -13,7 +13,6 @@
 #include "CKObject.h"
 #include "CKDependencies.h"
 
-
 //-------------------------------------------------------------------
 #ifdef DOCJETDUMMY // Docjet secret macro
 #else

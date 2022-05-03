@@ -271,7 +271,6 @@ public:
 //---- Init {secret}
 	void ReleaseAllPlugins();									
 	void InitializePlugins(CKContext* context);					
-	void DeInitializePlugins(CKContext* context);				
 	void ComputeDependenciesList(CKFile* file);					
 	void MarkComponentAsNeeded(CKGUID Component,int catIdx);	
 

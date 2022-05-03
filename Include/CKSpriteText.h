@@ -131,7 +131,6 @@ See also: CKSPRITETEXT_ALIGNMENT, SetAlign
 ************************************************/
 virtual CKSPRITETEXT_ALIGNMENT GetAlign() CK_PURE;
 
-
 /*************************************************
 Summary: Dynamic cast operator. 
 Arguments:

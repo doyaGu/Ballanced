@@ -76,6 +76,7 @@ typedef enum CK_SOUNDMANAGER_CAPS {
 
 
 //
+//Sound Settings 
 struct CKWaveSoundSettings
 {
 	CKWaveSoundSettings() : m_Gain(1.0f),m_Eq(1.0f),m_Pitch(1.0f),m_Priority(0.5f),m_Pan(0.0f) {}
@@ -165,7 +166,7 @@ Summary: Sound Engine Manager.
 
 Remarks:
 
-+ The sound manager is implemented by an external plugin.The default implementation is made using DirectSound.
++ The sound manager is implemented by an external plugin.The default implmentation Virtools is made using DirectSound.
 
 + Sound management is done by the SoundManager which process sounds to play and updates the listener (player ) position and settings.
 	
@@ -204,14 +205,16 @@ public :
 	virtual CKERROR Lock(void* source,CKDWORD WriteCursor,CKDWORD NumBytes,void **AudioPtr1,CKDWORD *dwAudioBytes1,void **pvAudioPtr2,CKDWORD *dwAudioBytes2,CK_WAVESOUND_LOCKMODE dwFlags) = 0;
 	virtual CKERROR Unlock(void* source,void *AudioPtr1,CKDWORD NumBytes1,void *AudioPtr2,CKDWORD dwAudioBytes2) = 0;
 
-
 	// 2D/3D Members Functions 
 	virtual void SetType(void* source,CK_WAVESOUND_TYPE type) = 0;
 	virtual CK_WAVESOUND_TYPE GetType(void* source) = 0;
 
-	
+	//----------------------------------------------------------
+	// 2D/3D Settings
 	virtual void UpdateSettings(void* source,CK_SOUNDMANAGER_CAPS settingsoptions,CKWaveSoundSettings& settings,CKBOOL set = TRUE) = 0;
 	
+	//----------------------------------------------------------
+	// 3D Settings
 	virtual void Update3DSettings(void* source,CK_SOUNDMANAGER_CAPS settingsoptions,CKWaveSound3DSettings& settings,CKBOOL set = TRUE) = 0;
 #endif
 	

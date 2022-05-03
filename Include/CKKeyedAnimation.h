@@ -88,8 +88,6 @@ See also: RemoveAnimation
 *************************************************/
 virtual	void Clear() CK_PURE;
 
-virtual	void UpdateRoot() CK_PURE;
-
 // Dynamic Cast method (returns NULL if the object can't be casted)
 static CKKeyedAnimation* Cast(CKObject* iO) 
 {

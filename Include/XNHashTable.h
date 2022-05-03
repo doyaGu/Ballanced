@@ -1,12 +1,10 @@
 /*************************************************************************/
-/*	File : XNHashTable.h													 */
+/*	File : XNHashTable.h												 */
 /*	Author :  Aymeric Bard												 */	
 /*																		 */	
-/*	Virtools SDK 															 */	 
-/*	Copyright (c) Virtools 2000, All Rights Reserved.						 */	
+/*	Virtools SDK 														 */	 
+/*	Copyright (c) Virtools 2000, All Rights Reserved.					 */	
 /*************************************************************************/
-
-
 #ifndef _XNHashTable_H_
 #define _XNHashTable_H_
 

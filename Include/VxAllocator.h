@@ -10,6 +10,7 @@
 // delete operator on VxPoolObject structure
 #pragma warning(disable:4291)
 
+
 class XString;
 class XFixedSizeAllocator;
 
@@ -98,6 +99,7 @@ protected:
 class VxFreeSizeAllocator  
 {
 	friend class VxAllocator;
+
 public:
 	VxFreeSizeAllocator(const unsigned int iPageSize = 1048576); // Default to 1 Mo Pages
 	~VxFreeSizeAllocator();
@@ -216,7 +218,7 @@ public:
 		MAXSIZE			= 1<<(MUSIZE+1),
 		FREEQUEUESCOUNT	= MAXSIZE>>2
 	};
- 
+
 private:
 
 	///
@@ -364,11 +366,9 @@ class VxAllocator
 {
 	friend class VxScratch;
 	friend class RCKRenderManager;
-	friend class RCKTriangles;
 	// Allocation Mutex
 	VxMutex							m_Mutex;
 public:
-
 	// CTor
 	VxAllocator();
 	// Dtor
@@ -379,8 +379,6 @@ VX_EXPORT	void* Allocate(size_t iSize);
 
 	// Standard Deallocation
 VX_EXPORT	void Release(void* iMem);
-
-VX_EXPORT	void DeleteAllAllocatedDatas();
 
 	// Gets an instance on the allocator
 VX_EXPORT	static VxAllocator& Instance();
@@ -700,7 +698,8 @@ Remarks
 class VxScratchString
 {
 public:
-	VxScratchString(const char* iString = "")
+	
+	VxScratchString(const char* iString = "")	
 	{
 		m_String = VxAllocator::Instance().AllocateScratchString();
 		*m_String = iString;		

@@ -12,22 +12,7 @@
 #include "VxDefines.h"
 
 
-//#define CKCHANNELMASK(Channel) (1<<Channel)
-
-/************************************************
-{filename:ChannelType}
-Summary : Size of texture coordinates created on a mesh channel
-
-*************************************************/
-enum ChannelType {
-	CHANNELTYPE_MATERIAL	= 0,	// Standard material channel (rendered using blend modes) 
-	CHANNELTYPE_FLOAT1		= 1,	// Extended Channel will contain 1 float (u) texture coordinates 	
-	CHANNELTYPE_FLOAT2		= 2,	// Extended Channel will contain 2 float (u,v) texture coordinates 
-	CHANNELTYPE_FLOAT3		= 3,	// Extended Channel will contain 3 float (u,v,s) texture coordinates 
-	CHANNELTYPE_FLOAT4		= 4,	// Extended Channel will contain 4 float (u,v,s,t) texture coordinates 
-
-	CHANNELTYPE_COUNT
-};
+#define CKCHANNELMASK(Channel) (1<<Channel)
 
 /**************************************************************************
 {filename:CKMesh}
@@ -253,13 +238,9 @@ virtual void	SetModifierUV(int iIndex, float iU, float iV, int channel=-1) = 0;
 /*************************************************
 Summary: Notifies when texture coordinates have been changed.
 
-Arguments:
-	channel: Channel index.
-Remarks:
-	+ channel -1 means the bas emesh texture coordinates, additionnal channels start at index 0.
-See Also: UVChanged,GetModifierUVs,GetModifierUVCount
+See Also: GetModifierUVs,GetModifierUVCount
 *************************************************/
-virtual void	ModifierUVMove (int Channel = -1) = 0;   
+virtual void	ModifierUVMove () = 0;   
 
 //------------------------------------------------------------------------
 // VERTEX ACCES 
@@ -537,16 +518,13 @@ virtual	void	VertexMove() = 0;
 /*************************************************
 Summary: Notifies texture coordinates modifications
 
-Arguments:
-	channel: Channel index.
 Remarks:
-	+ channel -1 means the bas emesh texture coordinates, additionnal channels start at index 0.
-    + Notifies at least a vertex texture coordinates have changed.
+	+ Notifies at least a vertex texture coordinates have changed.
 	+ This should be called if a vertex texture coordinates were changed after a call
 	to GetTextureCoordinatesPtr.
 See Also: GetTextureCoordinatesPtr
 *************************************************/
-virtual	void	UVChanged(int Channel = -1) = 0;
+virtual	void	UVChanged() = 0;
 
 /*************************************************
 Summary: Notifies normal modifications.
@@ -646,8 +624,39 @@ See Also: SetFaceNormal,BuildNormals,BuildFaceNormals
 *************************************************/
 virtual const VxVector&	GetFaceNormal(int Index) = 0;
 
+/*************************************************
+Summary: Gets the channel mask of a face.
 
+Arguments:
+	FaceIndex: Index of face which channel mask has to be obtained.
+Return Value:
+	Channel Mask.
+
+Remarks:
+	+ When adding a channel to a mesh, it is added to all the faces of the
+	mesh, but you can exclude some faces from a channel so the additionnal
+	material is not applied to them.
+	+ The mask is a set of bit , each channel mask is given by the CKCHANNELMASK(channel)
+	macro. A Mask of 0xFFFF indicates the face is included in all the channels.
+
+Example:
+	//  Search for the first face that does not belongs to the given channel
+	int Channel = 2;
+	CKWORD ChannelMask = CKCHANNELMASK(channel);
+	int FaceCount = mesh->GetFacesCount();
+	int TheFace = -1;
+
+	for (int i=0; i < FaceCount; ++i) {
+		if (! (GetFaceChannelMask(i) & ChannelMask)) {
+			TheFace = i;
+			break;
+		}
+	}
+
+See Also: SetFaceChannelMask, ChangeFaceChannelMask
+*************************************************/
 virtual CKWORD	GetFaceChannelMask(int FaceIndex) = 0;
+
 
 /*************************************************
 Summary: Gets a vertex from face.
@@ -691,7 +700,7 @@ Arguments:
 	Vertex2: Second vertex index in the face.
 	Vertex3: Third vertex index in the face.
 
-See Also: GetFaceVertexIndex,GetFacesIndices
+See Also: GetFaceVertexIndex,GetFaceIndices
 *************************************************/
 virtual void	SetFaceVertexIndex(int FaceIndex,int Vertex1,int Vertex2,int Vertex3) = 0;
 
@@ -712,6 +721,9 @@ See Also: GetFaceMaterial,ReplaceMaterial
 virtual void	SetFaceMaterial(int FaceIndex, CKMaterial *Mat) = 0;
 virtual void	SetFaceMaterial(int* FaceIndices,int FaceCount, CKMaterial *Mat) = 0;
 
+
+virtual void	SetFaceChannelMask(int FaceIndex,CKWORD ChannelMask) = 0;
+
 /*************************************************
 Summary: Replaces any reference to a material by a new.
 
@@ -719,17 +731,44 @@ Arguments:
 	oldMat	: A pointer to the old material to be replaced.
 	newMat	: A pointer to the new material to be set.
 Remarks:
-+ Using this method is recommended to set a new material to 
-some faces which previously used oldMat. The replace operation
-does not force the render engine to re-sort its per-material 
-runtime specific structures so it's much faster than using SetFaceMaterial.
-+ If the mesh is already having faces using newMat, replacing oldMat by newMat
-could cause internal rendering structures to be rebuild if decided to merge all
-the faces sharing the same material. 
+	+ Using this method is recommended to set a new material to 
+	some faces which previously used oldMat. The replace operation
+	does not force the render engine to re-sort its per-material 
+	runtime specific structures so it's much faster than using SetFaceMaterial.
 
 See Also: GetFaceMaterial, SetFaceMaterial
 *************************************************/
-virtual void	ReplaceMaterial(CKMaterial *oldMat, CKMaterial *newMat,CKBOOL Merge = FALSE) = 0;
+virtual void	ReplaceMaterial(CKMaterial *oldMat, CKMaterial *newMat) = 0;
+
+/*************************************************
+Summary: Modifies the channel mask of a face.
+
+Arguments:
+	FaceIndex: Index of face which channel mask has to be modified.
+	AddChannelMask : Mask to be set.
+	RemoveChannelMask: Mask to be removed.
+Remarks:
+	+ When adding a channel to a mesh, it is added to all the faces of the
+	mesh, but you can exclude some faces from a channel so the additionnal
+	material is not applied to them.
+	+ The mask is a set of bit , each channel mask is given by the CKCHANNELMASK(channel)
+	macro. A Mask of 0xFFFF indicates the face is included in all the channels.
+	+ If you want all the faces to be exclude from a channel, de-activate the channel
+	with ActivateChannel(channel,FALSE) rather than using this method for all the faces.
+
+Example:
+	//  Sets additionnal channel 0 to be displayed on all faces
+	int Channel = 0;
+	CKWORD ChannelMask = CKCHANNELMASK(channel);
+	int FaceCount = mesh->GetFacesCount();
+
+	for (int i=0; i < FaceCount; ++i) {
+		ChangeFaceChannelMask(i,ChannelMask,0);
+	}
+
+See Also: GetFaceChannelMask, AddChannel
+*************************************************/
+virtual void	ChangeFaceChannelMask(int FaceIndex,CKWORD AddChannelMask,CKWORD RemoveChannelMask) = 0;
 
 /*************************************************
 Summary: Sets the same material to all faces.
@@ -747,7 +786,7 @@ Remarks:
 	+ This method duplicates vertices so that faces do not 
 	share any vertices any more. The number of vertices then
 	becomes 3 times the number of faces in the mesh.
-See Also: GetFaceVertexIndices,
+See Also: GetFaceIndices,
 *************************************************/
 virtual void	DissociateAllFaces() = 0;
 
@@ -842,7 +881,7 @@ Summary: Inverse the faces by changing the winding order of the vertices.
 
 Remarks:
 	+ This method also updates the normals of the faces and vertices.
-See Also: GetFacesIndices,GetFaceNormal,GetFaceVertexIndex
+See Also: GetFaceIndices,GetFaceNormal,GetFaceVertexIndex
 ************************************************/
 virtual void	InverseWinding() = 0;
 
@@ -1447,100 +1486,53 @@ See Also: SetPMGeoMorphStep
 virtual int		GetPMGeoMorphStep() = 0;
 
 
+/*************************************************
+Summary: Adds a function to be called before rendering of a sub-part of the mesh.
 
+Arguments:
+	Function: A function of type CK_SUBMESHRENDERCALLBACK which will be called before drawing the mesh sub-part.
+	Argument: Argument that will be passed to the function.
+	Temporary: A Boolean to indicate if the callback should be called only once and then removed
+Return Value: TRUE if successful, FALSE otherwise.
+Remarks:
+	+ A Mesh is divided in sub-parts when it uses several materials,each sub-parts only use a given material.
+See also: RemoveSubMeshPreRenderCallBack,AddSubMeshPostRenderCallBack
+*************************************************/
 virtual CKBOOL	AddSubMeshPreRenderCallBack(CK_SUBMESHRENDERCALLBACK Function,void *Argument,BOOL Temporary = FALSE) = 0;
 
+/*************************************************
+Summary: Removes a pre-render callback function.
+
+Arguments:
+	Function: Function to be removed.
+	Argument: Argument of that function (as passed to AddSubMeshPreRenderCallBack).
+Return Value: TRUE if successful, FALSE otherwise.
+See also: AddPreRenderCallBack, SetRenderCallBack
+*************************************************/
 virtual CKBOOL	RemoveSubMeshPreRenderCallBack(CK_SUBMESHRENDERCALLBACK Function,void *Argument) = 0;
 
+/*************************************************
+Summary: Adds a function to be called after rendering a mesh sub-part.
+
+Arguments:
+	Function: A function of type CK_SUBMESHRENDERCALLBACK which will be called after drawing the mesh sub-part.
+	Argument: Argument that will be passed to the function.
+	Temporary: A Boolean to indicate if the callback should be called only once and then removed
+Return Value: TRUE if successful, FALSE otherwise.
+See also: RemoveSubMeshPostRenderCallBack, AddSubMeshPreRenderCallBack
+*************************************************/
 virtual CKBOOL	AddSubMeshPostRenderCallBack(CK_SUBMESHRENDERCALLBACK Function,void *Argument,BOOL Temporary = FALSE) = 0;
 
+/*************************************************
+Summary: Removes a post-render callback function.
+
+Arguments:
+	Function: Function to be removed.
+	Argument: Argument of that function (as passed to AddSubMeshPostRenderCallBack).
+Return Value: TRUE if successful, FALSE otherwise.
+See also: AddPostRenderCallBack, RemoveSubMeshPreRenderCallBack
+*************************************************/
 virtual CKBOOL	RemoveSubMeshPostRenderCallBack(CK_SUBMESHRENDERCALLBACK Function,void *Argument) = 0;
-
-
-/*************************************************
-Summary: Sets the indices for a given channel.
-
-Arguments: 
-	Index : Index of the channel
-	IndexCount: Number of face indices being set (should be number of faces * 3).
-	Indices: A set of NbFace*3 indices into the vertex array for each face being on which 
-	the channel should be applied.
-Remarks:
-	If IndexCount is 0 and Indices is NULL , the channel will be applied to all faces.
-This function takes the place of ChangeFaceChannelMask, SetFaceChannelMask
-to indicate which on which faces the channel should be applied..
-See Also: GetFacesIndices
-*************************************************/
-virtual void	SetChannelFaceIndices(int Index,int IndexCount,WORD* Indices) = 0;
-
-
-virtual int	MapPMVertex(int vertex) = 0;
-
-//---------------------------------------------------
-//	Extended Channels Features
-
-/*************************************************
-Summary: Adds a channel to the mesh and specify its type.
-
-Arguments: 
-	Mat: A pointer to the material used by the channel.
-	CopySrcUv: TRUE if default texture coordinates have to be copied to this channel,
-				FALSE otherwise.
-Return Value:
-	Index of the newly created channel.
-See Also: RemoveChannel, GetChannelCount, GetChannelType, SetChannelType
-*************************************************/
-virtual int		AddChannelExt(CKMaterial *Mat,CKBOOL CopySrcUv=TRUE, ChannelType ChanType=CHANNELTYPE_MATERIAL ) = 0;
-
-/*************************************************
-Summary: Retrieves the channel type
-
-Arguments: 
-	ChanIndex: Index of the channel to retrieve the type from.
-Return Value:
-	The channel type.
-See Also: RemoveChannel, GetChannelCount, AddChannelExt, SetChannelType
-*************************************************/
-virtual ChannelType		GetChannelType( int ChanIndex ) = 0;
-
-/*************************************************
-Summary: Set the channel type
-
-Arguments: 
-	ChanIndex: Index of the channel to modify.
-	ChanType: New channel type.
-Return Value:
-	The channel type.
-See Also: RemoveChannel, GetChannelCount, AddChannelExt, GetChannelType
-*************************************************/
-virtual void SetChannelType( int ChanIndex, ChannelType ChanType, BOOL ForceReallocation=FALSE ) = 0;
-
-/*************************************************
-Summary: Sets the data of a vertex (can be 1 float or 2 or 3 or 4).
-
-Arguments:
-	Index: Index of the vertex.
-	ChanIndex: Index of the channel from 0 to MAX_CHANNELS
-	Data: Pointer to the source vertex's data. If channel type is FLOATN,
-	the src pointer should point to N floats.
-See Also: GetVertexTextureCoordinates, GetTextureCoordinatesPtr, GetVertexData
-*************************************************/
-virtual void	SetVertexData(int Index, int ChanIndex, void* src ) = 0;
-
-/*************************************************
-Summary: Gets the data of a vertex (can be 1 float or 2 or 3 or 4).
-
-Arguments:
-	Index: Index of the vertex.
-	ChanIndex: Index of the channel from 0 to MAX_CHANNELS
-	Data: Pointer to the destination vertex's data. If channel type is FLOATN,
-	the dest pointer should point to N floats.
-See Also: GetVertexTextureCoordinates, GetTextureCoordinatesPtr, SetVertexData
-*************************************************/
-virtual void	GetVertexData(int Index, int ChanIndex, void* dest ) = 0;
-
-//---------------------------------------------------
-
 
 /*************************************************
 Summary: Dynamic cast operator. 

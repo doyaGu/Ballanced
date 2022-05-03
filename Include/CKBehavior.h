@@ -15,6 +15,10 @@
 struct BehaviorBlockData;		
 struct BehaviorGraphData;		
 
+
+
+
+
 /**************************************************************************
 {filename:CKBehavior}
 Name: CKBehavior
@@ -206,6 +210,7 @@ int				GetOutputPosition(CKBehaviorIO *pbio);
 	int				AddOutput(CKSTRING name);
 CKBehaviorIO*	ReplaceOutput(int pos,CKBehaviorIO *io);
  CKBehaviorIO*	CreateOutput(CKSTRING name); 
+void			InsertOutput(int pos,CKBehaviorIO *io); 
 
 
 //----------------------------------------------------------------
@@ -220,6 +225,7 @@ int				GetInputPosition(CKBehaviorIO *pbio);
 	int				AddInput(CKSTRING name);
 CKBehaviorIO*	ReplaceInput(int pos,CKBehaviorIO *io);
 CKBehaviorIO*	CreateInput(CKSTRING name); 
+void			InsertInput(int pos,CKBehaviorIO *io); 
 
 //----------------------------------------------------------------
 // inputs Parameters

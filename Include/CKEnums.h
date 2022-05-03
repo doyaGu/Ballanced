@@ -37,8 +37,6 @@ typedef enum CK_OBJECT_FLAGS {
 	CK_OBJECT_APPDATA				=	 0x00004000,		// This object has app data	
 	CK_OBJECT_SINGLEACTIVITY		=	 0x00008000,		// this object has an information of single activity (active at scene start,etc..)
 	CK_OBJECT_LOADSKIPBEOBJECT		=	 0x00010000,		// When loading this object the CKBeObject part should be skipped
-	CK_OBJECT_KEEPSINGLEACTIVITY	=	 0x00020000,		// this object must keep its information of single activity (active at scene start,etc..)
-	CK_OBJECT_LOADREPLACINGOBJECT	=	 0x00040000,		// Indicates the object being loaded is being replaced
 	
 	CK_OBJECT_NOTTOBELISTEDANDSAVED	=	 0x00000023,		// Combination of Private and Not To Be Saved
 
@@ -91,8 +89,6 @@ typedef enum CK_3DENTITY_FLAGS {
 		CK_3DENTITY_IKJOINTVALID		=	0x00040000,		// Special flag for Bodyparts : IK Joint data is valid
 		CK_3DENTITY_PORTAL				=	0x00080000,		// The 3dEntity is a portal
 		CK_3DENTITY_ZORDERVALID			=	0x00100000,		// The 3dEntity has a non-zero ZOrder
-
-		CK_3DENTITY_HWSKINING			=	0x40000000,		// Special flag for Skins : Use a shader for skinning
 		CK_3DENTITY_CHARACTERDOPROCESS	=	0x80000000,		// Special flag for Characters : Automatic process of animation
 } CK_3DENTITY_FLAGS;
 
@@ -112,6 +108,7 @@ typedef enum VX_MOVEABLE_FLAGS {
 		VX_MOVEABLE_PICKABLE				=0x00000001,	// (User)If not set this entity cannot be returned by CKRenderContext::Pick() or CKRenderContext::RectPict() functions.
 		VX_MOVEABLE_VISIBLE					=0x00000002,	// (Engine) See CKObject::Show,CK3dEntity::IsVisible
 		VX_MOVEABLE_UPTODATE				=0x00000004,	// (Engine) Used to Notify change in the data of the entity.
+		VX_MOVEABLE_RENDERCHANNELS			=0x00000008,	// (User) If not set, additional material channels on the mesh used by this entity won't be rendered (CK3dEntity::SetRenderChannels)	
 		VX_MOVEABLE_USERBOX					=0x00000010,	// (Engine) When CK3dEntity::SetBoundingBox is called with a user box, this flag is set.
 		VX_MOVEABLE_EXTENTSUPTODATE			=0x00000020,	// (Engine) Indicate that object 2D extents are up to date
 		VX_MOVEABLE_BOXVALID				=0x00004000,	// (Engine) If not set the moveable has no mesh associated so its bounding box is irrelevant (a point).
@@ -133,6 +130,7 @@ typedef enum VX_MOVEABLE_FLAGS {
 
 
 /*****************************************************************
+{filename:VXMESH_FLAGS}
 Summary:Mesh Flags Options
 
 Remarks:
@@ -145,7 +143,7 @@ typedef enum VXMESH_FLAGS
 		VXMESH_BOUNDINGUPTODATE		= 0x00000001,	//	If set the bounding box is up to date (internal).
 		VXMESH_VISIBLE				= 0x00000002,	//	If not set the mesh will not be rendered (CKMesh::Show)
 		VXMESH_OPTIMIZED			= 0x00000004,	//	Set by the render engine if the mesh is optimized for rendering. Unset it to force to recreate optimized structures (when changing materials or face organization ) (CKMesh::VertexMove)
-		VXMESH_FACENORMALSCOMPUTED	= 0x00000008,	//	Set by the render engine if the mesh face normal information is valid (internal)
+		VXMESH_RENDERCHANNELS		= 0x00000008,	//  If not set  Additional material channels won't be rendered.
 		VXMESH_HASTRANSPARENCY		= 0x00000010,	//	If set indicates that one or more of the faces of this mesh use a transparent material (internal)
 		VXMESH_PRELITMODE			= 0x00000080,	//	If set, no lightning should occur for this mesh, vertex color should be used instead (CKMesh::SetLitMode)
 		VXMESH_WRAPU				= 0x00000100,	//	Texture coordinates wrapping among u texture coordinates. (CKMesh::SetWrapMode) 
@@ -164,21 +162,30 @@ typedef enum VXMESH_FLAGS
 		VXMESH_MONOMATERIAL			= 0x00800000,	//  Set by the render engine if the mesh use only one material.
 		VXMESH_PM_BUILDNORM			= 0x01000000,	//  Build normals when performing progressive meshing : Do not save (internal)
 		VXMESH_BWEIGHTS_CHANGED		= 0x02000000,	//	Must be set if vertex blend weights have changed to enable the render engine to reconstruct potential display lists or vertex buffers. (CKMesh::VertexMove)
-		VXMESH_GENTANSPACE			= 0x04000000,	//	Generates tangent space vectors.
-		VXMESH_UPDATEINDEXBUF		= 0x08000000,	//	Index Buffer should be updated...
-		VXMESH_USECOLORANDNORMAL	= 0x10000000,	//	Use Color AND Normal in the vertex buffer.
-		VXMESH_ALLFLAGS				= 0x1FFFF39F
+		VXMESH_ALLFLAGS				= 0x007FF39F
 } VXMESH_FLAGS;
 
 
+/*************************************************
+{filename:CKAXIS}
+Summary: Axis index
 
+Remarks: 
+To Document
+*************************************************/
 enum CKAXIS {
 		CKAXIS_X,
 		CKAXIS_Y,
 		CKAXIS_Z
 };
 
+/*************************************************
+{filename:CKSUPPORT}
+Summary: Axis support
 
+Remarks:
+To Document 
+*************************************************/
 enum CKSUPPORT {
 		CKSUPPORT_FRONT,
 		CKSUPPORT_CENTER,
@@ -269,13 +276,11 @@ See Also: CKMesh,CKMesh::AddChannel,CKMesh::IsChannelLit,CKMesh::IsChannelActive
 ******************************************************************/
 typedef enum VXCHANNEL_FLAGS {
 	VXCHANNEL_ACTIVE	=	0x00000001,		// This channel is active
-	VXCHANNEL_KEEPFOG	=	0x00400000,		// By default fog is deactivated when rendering channels in multipass.. This flag prevent this from happening.
 	VXCHANNEL_SAMEUV	=	0x00800000,		// This channel should use the texture coordinates of the base mesh.
 	VXCHANNEL_NOTLIT	=	0x01000000,		// Additionnal Material Channel should not be lit (some channels may not be rendered in one pass with this option)
-	VXCHANNEL_MONO		=	0x02000000,		// Internal use : Set at runtime by render engine to indicate whether this channel was rendered using multiple pass or not.(Dot Not Modify)
-	VXCHANNEL_RESERVED1  =	0x04000000,		// Internal use : Reserved
-	VXCHANNEL_LAST		=	0x08000000,		// Internal use : Set at runtime by render engine to indicate this channel isthe last to be rendered. Dot Not Modify 
-	VXCHANNEL_UPTODATE	=	0x10000000,		// Internal use : Vertex data hold in vertex buffer is uptodate... 
+	VXCHANNEL_MONO		=	0x02000000,		// Set at runtime by render engine to indicate whether this channel was rendered using multiple pass or not.(Dot Not Modify)
+	VXCHANNEL_RESERVED1  =	0x04000000,		// Reserved for internal use
+	VXCHANNEL_LAST		=	0x08000000,		// Set at runtime by render engine to indicate this channel isthe last to be rendered. Dot Not Modify 
 } VXCHANNEL_FLAGS;
 
 /****************************************************************
@@ -403,8 +408,8 @@ typedef enum CK_BEHAVIOR_RETURN
 	CKBR_ACTIVATENEXTFRAME		= 1,		// The behavior will be reactivated  next frame
 	CKBR_ATTACHFAILED			= 2,		// The attach failed
 	CKBR_DETACHFAILED			= 4,		// The attach failed
-	CKBR_LOCKED					= 6,		// obsolete..
-	CKBR_INFINITELOOP			= 8,		// The behavior has reached the infinite loop limit...
+	CKBR_LOCKED					= 6,		// The behavior is locked
+	CKBR_INFINITELOOP			= 8,		// The behavior is locked
 	CKBR_BREAK					= 10,		// Break the processing here => Keep on processing windows messages but keep on calling the behavior until 
 											// it returns a different value (Used by script debugger )
 	CKBR_GENERICERROR			= 0xA000,	// Something went wrong
@@ -505,7 +510,6 @@ typedef enum CK_ANIMATION_FLAGS {
 			CKANIMATION_ALIGNORIENTATION=			0x00000010,	// Character will take animation orienation	(CKAnimation::SetCharacterOrientation)
 			CKANIMATION_SECONDARYWARPER	=			0x00000020,	// This animation is used to made a transition for secondary animations (used internally)
 			CKANIMATION_SUBANIMSSORTED	=			0x00000040,	// For keyed animations this flag is set when all the sub-objects animations have been sorted accorded to their importance (contribution) in the whole animation (used internally)
-			CKANIMATION_HANDLELOD		=			0x00000080,	// When setting this flags, calling SetStep on a character the engine only animates the character root if it was not rendered last frame. 
 
 // Transition Options... 
 
@@ -516,8 +520,7 @@ typedef enum CK_ANIMATION_FLAGS {
 
 			CKANIMATION_TRANSITION_WARPTOSTART		= 0x00001000,	//  warp to the start of next animation
 			CKANIMATION_TRANSITION_WARPTOBEST		= 0x00002000,	//  warp to the best suited position in the next animation
-			CKANIMATION_TRANSITION_WARPTOSAMEPOS	= 0x00010000,	//  warp to the same current position in the source animation to the destination animation
-			CKANIMATION_TRANSITION_WARPTOPOS		= 0x00040000,	//  warp to the given position of next animation
+			CKANIMATION_TRANSITION_WARPTOSAMEPOS	= 0x00010000,	//  warp to the given position of next animation
 													
 			CKANIMATION_TRANSITION_USEVELOCITY		= 0x00004000,	//  use current animation and next animation velocities to extrapolate a velocity for the root bodypart
 			CKANIMATION_TRANSITION_LOOPIFEQUAL		= 0x00008000,	//  if current and next animation are the same act as a loop
@@ -525,7 +528,6 @@ typedef enum CK_ANIMATION_FLAGS {
 			CKANIMATION_TRANSITION_WARPSTART		= 0x00001200,	//	(CK_TRANSITION_FROMWARPFROMCURRENT|CK_TRANSITION_WARPTOSTART)
 			CKANIMATION_TRANSITION_WARPBEST			= 0x00002200,	//	(CK_TRANSITION_FROMWARPFROMCURRENT|CK_TRANSITION_WARPTOBEST)
 			CKANIMATION_TRANSITION_WARPSAMEPOS		= 0x0001FB00,	//	(CK_TRANSITION_FROMWARPFROMCURRENT|CK_TRANSITION_WARPTOSAMEPOS)
-			CKANIMATION_TRANSITION_WARPPOS			= 0x0004FB00,	//	(CK_TRANSITION_FROMWARPFROMCURRENT|CK_TRANSITION_WARPTOOS)
 
 			CKANIMATION_TRANSITION_ALL				= 0x0001FF00,
 
@@ -540,7 +542,6 @@ typedef enum CK_ANIMATION_FLAGS {
 
 			CKANIMATION_TRANSITION_PRESET			= 0x01000000,	// Set by the Exporter or user to indicate to ignore flags specified in CKCharacter::SetNextActiveAnimation ( They should be set trough CKAnimation::SetTransitionMode )
 			CKANIMATION_SECONDARY_PRESET			= 0x02000000,	// Set by the Exporter or user to indicate to ignore flags specified in CKCharacter::PlaySecondaryAnimation ( They should be set trough CKAnimation::SetSecondaryAnimationMode )
-			
 } CK_ANIMATION_FLAGS;
 
 
@@ -560,8 +561,7 @@ typedef enum CK_ANIMATION_TRANSITION_MODE {
 
 		CK_TRANSITION_WARPTOSTART			=0x00000010,	//  warp to the start of next animation
 		CK_TRANSITION_WARPTOBEST			=0x00000020,	//  warp to the best suited position in the next animation
-		CK_TRANSITION_WARPTOSAMEPOS			=0x00000100,	//  warp to the same current position in the source animation to the destination animation
-		CK_TRANSITION_WARPTOPOS				=0x00000400,	//  warp to a given position in the destination animation
+		CK_TRANSITION_WARPTOSAMEPOS			=0x00000100,	//  warp to the same current position int the source animation to the destination animation
 
 		CK_TRANSITION_USEVELOCITY			=0x00000040,	//  use current animation and next animation velocities to extrapolate a velocity for the root bodypart
 		CK_TRANSITION_LOOPIFEQUAL			=0x00000080,	//  if current and next animation are the same act as a loop
@@ -570,8 +570,7 @@ typedef enum CK_ANIMATION_TRANSITION_MODE {
 		
 		CK_TRANSITION_WARPSTART				=0x00000012,	//	(CK_TRANSITION_FROMWARPFROMCURRENT|CK_TRANSITION_WARPTOSTART)
 		CK_TRANSITION_WARPBEST				=0x00000022,	//	(CK_TRANSITION_FROMWARPFROMCURRENT|CK_TRANSITION_WARPTOBEST)
-		CK_TRANSITION_WARPSAMEPOS			=0x00000102,	//	(CK_TRANSITION_FROMWARPFROMCURRENT|CK_TRANSITION_WARPTOSAMEPOS)
-		CK_TRANSITION_WARPPOS				=0x00000402,	//	(CK_TRANSITION_FROMWARPFROMCURRENT|CK_TRANSITION_WARPTOPOS)
+		CK_TRANSITION_WARPSAMEPOS			=0x00000102,	//	(CK_TRANSITION_FROMWARPFROMCURRENT|CK_TRANSITION_WARPTOPOS)
 		CK_TRANSITION_WARPMASK				=0x00000132		// Mask for all warping modes 
 		
 } CK_ANIMATION_TRANSITION_MODE;
@@ -635,7 +634,6 @@ typedef enum CK_RENDER_FLAGS {
 		CK_RENDER_OPTIONSMASK			=   0x0000FFFF,		// All rendering flags
 
 		CK_RENDER_PLAYERCONTEXT			=	0x00010000,		// Use by behaviors to know render contextes on which they should act.
-		CK_RENDER_RESTORENEXTFRAME		=	0x00020000,		// Restores the clear flags and skipt draw scene next frame, and removes itself.
 
 		CK_RENDER_USECURRENTSETTINGS	=	0x00000000		// When calling CKRenderContext::Render,CKRenderContext::DrawScene,CKRenderContext::Clear and CKRenderContext::BackToFront use this flag to use default options specified in SetCurrentRenderOptions
 } CK_RENDER_FLAGS;
@@ -661,8 +659,7 @@ typedef enum CK_PARAMETERTYPE_FLAGS {
 			CKPARAMETERTYPE_STRUCT		 =	   0x00000010,	// This parameter type is a structure of parameters (See CKParameterManager::RegisterNewStructure)
 			CKPARAMETERTYPE_ENUMS		 =	   0x00000020,	// This parameter type is an enumeration (See CKParameterManager::RegisterNewEnum)
 			CKPARAMETERTYPE_USER		 =	   0x00000040,	// This parameter type is a user-defined one created in the interface
-			CKPARAMETERTYPE_NOENDIANCONV =	   0x00000080,	// Do not try to convert this parameter buffer On Big-Endian processors (strings, void buffer have this flags)
-			CKPARAMETERTYPE_TOSAVE		 =	   0x00000100,	// Temporary flag set in CKFile::EndSave(). This parameter type is to be saved in the SaveData callback of managers. Used in Parameter Manager (used user's flags & enums)
+			CKPARAMETERTYPE_NOENDIANCONV =	   0x00000080	// Do not try to convert this parameter buffer On Big-Endian processors (strings, void buffer have this flags)
 } CK_PARAMETERTYPE_FLAGS;
 
 
@@ -741,7 +738,6 @@ typedef enum CK_ATTRIBUT_FLAGS {
 	CK_ATTRIBUT_USER			 = 0x00000010,	// This Attribute type was created by a user (in the Dev interface for example)
 	CK_ATTRIBUT_SYSTEM			 = 0x00000020,	// This Attribute type was created by the system (Behavior Dll,Manager,etc...)
 	CK_ATTRIBUT_DONOTCOPY		 = 0x00000040,	// This Attribute type will not be copied when the object that holds it is copied		
-	CK_ATTRIBUT_TOSAVE			 = 0x00000080,	// Temporary flag set in CKFile::EndSave(). This parameter type is to be saved in the SaveData callback of managers. Used in Attribute Manager (used attributes)
 } CK_ATTRIBUT_FLAGS;
 
 
@@ -901,7 +897,6 @@ typedef enum CK_SOUND_SAVEOPTIONS
 /*************************************************
 {filename:CK_CONFIG_FLAGS}
 Summary: Flags specifying start options for Virtools
-
 Remarks:
 	Flags specifying start options for Virtools
 
@@ -919,9 +914,7 @@ typedef enum CK_CONFIG_FLAGS {
 /*************************************************
 {filename:CK_DESTROY_FLAGS}
 Summary: Objects destruction Flags
-
 Remarks: Flags specifying how objects should be deleted.
-
 
 See also: CKContext::DestroyObjects,CKContext::DestroyObject
 *************************************************/
@@ -991,7 +984,6 @@ typedef enum CK_WAVESOUND_STATE {
 /************************************************
 {filename:CK_GEOMETRICPRECISION}
 Summary: Geometric precision for collision tests
-
 Remarks:
 	This enum is also used when asking for a collision detection. In this case it can override the precision attributed to the 
 obstacles (by asking for box testing, for example) or it can use this default values by using CKCOLLISION_NONE (the preferred way).
@@ -1016,9 +1008,7 @@ enum CK_RAYINTERSECTION {
 	CKRAYINTERSECTION_DEFAULT		= 0x00000000,		// Default Behavior
 	CKRAYINTERSECTION_SEGMENT		= 0x00000001,		// The ray will be considered as a segment
 	CKRAYINTERSECTION_IGNOREALPHA	= 0x00000002,		// The ray will ignore the pick threshold set in the textures
-	CKRAYINTERSECTION_FIRSTCONTACT	= 0x00000004,		// The ray will stop at the first face touched, not the nearest
-	CKRAYINTERSECTION_IGNORECULLING	= 0x00000008,		// The ray will ignore whether a face is clockwise or counterclockwise, otherwise we use the material "both sided" to determine if culling should done.
-	CKRAYINTERSECTION_IGNOREBOTHSIDED	= 0x00000010		// The ray consider the face culling even if material's both sided flag is set to TRUE.
+	CKRAYINTERSECTION_FIRSTCONTACT	= 0x00000004		// The ray will stop at the first face touched, not the nearest
 };
 
 /************************************************
@@ -1111,7 +1101,7 @@ typedef enum CKGRID_LAYER_FORMAT{
 {filename:CK_BINARYOPERATOR}
 Summary: Available operations between colums of a DataArray
 
-See Also: CKDataArray::ColumnTransform, CKDataArray::ColumnsOperate
+See Also: CKDataArray::ColumnTransform, CKDataArray::ColumnOperate
 ************************************************/
 typedef enum CK_BINARYOPERATOR{
 	CKADD	= 1,	// Addition
@@ -1317,8 +1307,6 @@ typedef enum CK_PLUGIN_TYPE {
 
 #define CKPGUID_PERCENTAGE		CKDEFINEGUID(0xf3c84b4e,0x0ffacc34)		
 
-#define CKPGUID_FLOATSLIDER		CKDEFINEGUID(0x429d42cf,0x211c0cc2)		
-
 #define CKPGUID_INT 			CKDEFINEGUID(0x5a5716fd,0x44e276d7)
 
 #define CKPGUID_KEY 			CKDEFINEGUID(0xfa6e1bdd,0x62d2abd7)
@@ -1330,8 +1318,6 @@ typedef enum CK_PLUGIN_TYPE {
 #define CKPGUID_RECT			CKDEFINEGUID(0x7ab20d20,0x693044a9)
 
 #define CKPGUID_VECTOR			CKDEFINEGUID(0x48824eae,0x2fe47960)
-
-#define CKPGUID_VECTOR4			CKDEFINEGUID(0x6c439ee0,0x2fe47960)
 
 #define CKPGUID_2DVECTOR		CKDEFINEGUID(0x4efcb34a,0x6079e42f)
 
@@ -1402,8 +1388,6 @@ typedef enum CK_PLUGIN_TYPE {
 #define CKPGUID_WAVESOUND		CKDEFINEGUID(0x4bf74e5e,0x45f409ef)
 
 #define CKPGUID_MIDISOUND		CKDEFINEGUID(0x4b81218b,0x2eb7145e)
-
-#define CKPGUID_VIDEO			CKDEFINEGUID(0x1a2146f4,0x28d2155d)
 
 #define CKPGUID_OBJECTANIMATION	CKDEFINEGUID(0x43476550,0x11e52c0e)
 
@@ -1541,13 +1525,10 @@ typedef enum CK_PLUGIN_TYPE {
 
 #define CKPGUID_OLDATTRIBUTE		CKDEFINEGUID(0x13b97e4c,0x982e8b4f)
 
-#define CKPGUID_3DPOINTCLOUD		CKDEFINEGUID(0x4d111cea,0x1ab12e02)
 
-#define CKPGUID_HOST_PLATFORM		CKDEFINEGUID(0x74e426fa,0xa3e48963)
 
-#define CKPGUID_UNICODESTRING		CKDEFINEGUID(0x2893670,0x482d5151)
 
-#define CKPGUID_FOCUSLOST_BEHAVIOR	CKDEFINEGUID(0x37944a65,0x477e3666)
+
 
 
 typedef enum CK_VIRTOOLS_VERSION {
@@ -1581,43 +1562,18 @@ typedef enum CK_VIRTOOLS_VERSION {
 #define CKMAX_JOY 4
 
 typedef enum CK_PARAMETER_FLAGS {
-	CKPARAMETER_LOCAL	=0,  // The parameter is local to a CKBehavior
-	CKPARAMETER_IN		=1,	 // The parameter is an input of a CKBehavior	
-	CKPARAMETER_OUT		=2,	 // The	parameter is an output of a CKBehavior or a parameter of a CKBeObject
-	CKPARAMETER_SETTING =3,	 // The	parameter is used as a setting parameter by a CKBehavior.
+				CKPARAMETER_LOCAL	=0,  // The parameter is local to a CKBehavior
+				CKPARAMETER_IN		=1,	 // The parameter is an input of a CKBehavior	
+				CKPARAMETER_OUT		=2,	 // The	parameter is an output of a CKBehavior or a parameter of a CKBeObject
+				CKPARAMETER_SETTING =3,	 // The	parameter is used as a setting parameter by a CKBehavior.
 } CK_PARAMETER_FLAGS;
+
+
 
 typedef enum CK_PROFILE_CATEGORY {
 	CK_PROFILE_RENDERTIME		= 3,
 	CK_PROFILE_IKTIME			= 7,
 	CK_PROFILE_ANIMATIONTIME	= 6,
 } CK_PROFILE_CATEGORY;
-
-/**********************************************************
-{filename:CK_BONES_REFERENTIAL}
-Summary : Type of bone matrices send to the skinning shader
-
-***************************************************************/
-typedef enum CK_BONES_REFERENTIAL {
-	
-	CK_BONE_LOCAL			=	0x00000000,	// Matrices transformed from bones referential to skin holder referential
-	CK_BONE_WORLD			,				// Matrices transformed from bones referential to world referential
-	CK_BONE_WORLDVIEW		,				// Matrices transformed from bones referential to camera referential 
-
-}CK_BONES_REFERENTIAL;
-
-
-/**********************************************************
-{filename:CK_FOCUSLOST_BEHAVIOR}
-Summary : web player's behavior when it losts focus 
-(used by webplayer)
-
-***************************************************************/
-typedef enum CK_FOCUSLOST_BEHAVIOR {
-	CK_FOCUSLOST_NONE				=	0,
-	CK_FOCUSLOST_PAUSEINPUT_MAIN	=	1,
-	CK_FOCUSLOST_PAUSEINPUT_PLAYER	=	2,
-	CK_FOCUSLOST_PAUSEALL			=	3
-} CK_FOCUSLOST_BEHAVIOR;
 
 #endif

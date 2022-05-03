@@ -23,121 +23,6 @@ typedef struct CKFileManagerData
 	CKGUID Manager;
 } CKFileManagerData;
 
-/*************************************************
-Summary: Handle the saving of .cmo/.nmo files in stream (memory,file,etc..).
-
-Remarks: 
-A CMO,NMO or NMS is saved using a standard file by default but this
-the save operation can made in any stream (memory , file) provided that 
-a instance of this class is given to handle the different operation.
-The various method of this class should be overriden if a inheritated class
-and will be called by the framework when trying to save a file.
-Example:
-//-----------------------------------------
-//The default file saver for a CKFile
-struct CKFileStreamWriter : public CKStreamWriter {
-	CKFileStreamWriter() {
-		m_Filename = NULL;
-	}
-	virtual ~CKFileStreamWriter() {
-	}
-	virtual XBOOL Open(CKSTRING filename) {
-		m_Filename = filename;
-		return m_File.Open(filename,VxFile::WRITEONLY);
-	}
-	virtual XDWORD Write(const void* iBuffer,XDWORD iSize) {
-		return m_File.Write(iBuffer,iSize);
-	}
-	virtual XBOOL Close() {
-		m_Filename = NULL;
-		return m_File.Close();
-	}
-	virtual XBOOL IsValid(CKSTRING filename) {
-		if (!m_File.Open(filename,VxFile::APPEND)) {
-			return FALSE;
-		}
-		m_File.Close();
-		return TRUE;
-	}
-	CKSTRING m_Filename;
-	VxFile 	 m_File;
-};
-
-//---------------------------------------
-//A writer to a memory buffer
-struct CKMemoryStreamWriter : public CKStreamWriter {
-	CKMemoryStreamWriter() {
-	}
-	virtual ~CKMemoryStreamWriter() {
-	}
-	virtual XBOOL Open(CKSTRING filename) {
-		m_Buffer.Resize(0);
-	}
-	virtual XDWORD Write(const void* iBuffer,XDWORD iSize) {
-		XDWORD OldSize = m_Buffer.Size();
-		m_Buffer.Resize(OldSize + iSize);
-		memcpy(m_Buffer.Begin()+OldSize, iBuffer, iSize);
-	}
-	virtual XBOOL Close() {
-	}
-	virtual XBOOL IsValid(CKSTRING filename) {
-		return TRUE;
-	}
-	XArray<BYTE> m_Buffer;
-};
-
-
-
-//Usage example
-//Saving a content in memory
-
-CKObjectArray* objectToSave;
-CKStreamWriter* myWriter = new CKMemoryStreamWriter;
-
-//Install our writer
-g_Context->SetStreamWriter(myWriter);
-
-//Save Data : No file will be created instead we will call
-//the writer methods
-g_Context->Save("testFile.cmo",objectToSave);
-
-//Restore default saving behavior
-g_Context->SetStreamWriter(NULL);
-//And free our saving object
-delete myWriter;
-
-See also: CKContext::SetStreamWriter
-*************************************************/
-struct CKStreamWriter {
-	virtual ~CKStreamWriter() {};
-	/*************************************************
-	Summary: Called by the framework when opening a stream to write to
-	Remarks:
-		The filename that given in argument is only useful if this writer handles writing
-	to a file otherwise it can be ignored.
-	***************************************************/
-	virtual XBOOL Open(CKSTRING filename) = 0;
-	/************************************************************
-	Summary: Called by the framework to write data to the stream.
-	Remarks:
-		This method should return the number of bytes actually written.
-	*************************************************************/
-	virtual XDWORD Write(const void* iBuffer,XDWORD iSize) = 0;
-	/************************************************************
-	Summary: Called by the framework when the stream can be closed.
-	*************************************************************/
-	virtual XBOOL Close() = 0;
-	/***************************************************
-	Summary: Called by the framework when starting to save a composition.
-	Remarks:
-		This method is called to ensure that the save operation can continue.
-	For example to check that a file can be written. 
-		The filename that given in argument is only useful if this writer handles writing
-	to a file otherwise it can be ignored.
-	It should return TRUE if the save operation can continue.
-	*****************************************************/
-	virtual XBOOL IsValid(CKSTRING filename) = 0;
-};
 
 /*************************************************
 Summary: List of Plugins guids used by a file.
@@ -293,6 +178,7 @@ public:
 // Loading (OpenFile  then LoadFileData )
 CKERROR OpenFile(CKSTRING filename,CK_LOAD_FLAGS Flags=CK_LOAD_DEFAULT);
 CKERROR OpenMemory(void* MemoryBuffer,int BufferSize,CK_LOAD_FLAGS Flags=CK_LOAD_DEFAULT);
+// CKERROR OpenStream(VxStream* stream,CK_LOAD_FLAGS Flags=CK_LOAD_DEFAULT);
 
 CKERROR LoadFileData(CKObjectArray *list);
 
@@ -300,6 +186,8 @@ CKERROR LoadFileData(CKObjectArray *list);
 // Direct Loading
 CKERROR Load(CKSTRING filename,CKObjectArray *list,CK_LOAD_FLAGS Flags=CK_LOAD_DEFAULT);
 CKERROR Load(void* MemoryBuffer,int BufferSize,CKObjectArray *list,CK_LOAD_FLAGS Flags=CK_LOAD_DEFAULT);
+// CKERROR Load(VxStream* stream,CKObjectArray *list,CK_LOAD_FLAGS Flags=CK_LOAD_DEFAULT);
+
 
 void	UpdateAndApplyAnimationsTo(CKCharacter* character);
 
@@ -318,7 +206,6 @@ CKBOOL	IncludeFile(CKSTRING FileName,int SearchPathCategory = -1);
 
 CKBOOL	IsObjectToBeSaved(CK_ID iID);
 
-
 //-------------------------------------------------
 // Used to update from old file formats
 void LoadAndSave(CKSTRING filename,CKSTRING filename_new);
@@ -332,8 +219,6 @@ XClassArray<CKFilePluginDependencies> *GetMissingPlugins();
 #ifdef DOCJETDUMMY	  // Docjet secret macro
 #else
 
-
-	
 	CKFile(CKContext* Context);
 	~CKFile();
 
@@ -386,10 +271,6 @@ protected:
 // (List of indices in the m_FileObjects table)
 //--------------------------------------------- 
 	void CheckDuplicateNames();
-	
-//This method saves a thumbnail for Windows explorer in the CKFile if the 
-//File Options/Save Thumbnail of the variable manager is TRUE.
-	CKBOOL SaveThumbnail();
 
 public:
 	int							m_SaveIDMax;			// Maximum CK_ID found when saving or loading objects  {secret}
@@ -425,6 +306,7 @@ public:
 	XBitArray					m_AlreadyReferencedMask;	// BitArray of IDs already referenced  {secret}
 	XObjectPointerArray			m_ReferencedObjects;
 	VxTimeProfiler				m_Chrono;
+
 #endif // Docjet secret macro
 }; 
 

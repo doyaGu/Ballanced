@@ -10,7 +10,6 @@
 
 #include "CKBeObject.h"
 
-
 /***************************************************************************
 {filename:CKRenderObject}
 Summary: Base class for CKObjects that can be rendered in a CKRenderContext (3D and 2D)
@@ -77,11 +76,10 @@ Arguments:
 	Function: A function of type CK_RENDEROBJECT_CALLBACK which will be called before the object is rendereded.
 	Argument: Argument that will be passed to the function.
 	Temp : TRUE if the callback should be removed after being called.
-	ModifyRenderPipeline : Hint for render engine must be TRUE if the callback function will be changing render states ,textures or materials  or drawing primitives
 Return Value: TRUE if successful, FALSE otherwise.
 See also: CK_RENDEROBJECT_CALLBACK, RemovePreRenderCallBack
 *************************************************/
-	virtual  CKBOOL	AddPreRenderCallBack(CK_RENDEROBJECT_CALLBACK Function,void *Argument,CKBOOL Temp = FALSE , CKBOOL ModifyRenderPipeline = TRUE ) = 0;
+	virtual  CKBOOL	AddPreRenderCallBack(CK_RENDEROBJECT_CALLBACK Function,void *Argument,CKBOOL Temp = FALSE) = 0;
 
 /*************************************************
 Summary: Removes a pre-render callback function.
@@ -123,11 +121,10 @@ Arguments:
 	Function: A function of type CK_RENDEROBJECT_CALLBACK which will be called after the object has been rendered.
 	Argument: Argument that will be passed to the function.
 	Temp : TRUE if the callback should be removed after being called.
-	ModifyRenderPipeline : Hint for render engine must be TRUE if the callback function will be changing render states ,textures or materials  or drawing primitives
 Return Value: TRUE if successful, FALSE otherwise.
 See also: CK_RENDEROBJECT_CALLBACK, RemovePostRenderCallBack
 *************************************************/
-	virtual CKBOOL	AddPostRenderCallBack(CK_RENDEROBJECT_CALLBACK Function,void *Argument,CKBOOL Temp = FALSE, CKBOOL ModifyRenderPipeline = TRUE) = 0;
+	virtual CKBOOL	AddPostRenderCallBack(CK_RENDEROBJECT_CALLBACK Function,void *Argument,CKBOOL Temp = FALSE) = 0;
 
 /*************************************************
 Summary: Removes a post-render callback function.
@@ -160,6 +157,7 @@ static CKRenderObject* Cast(CKObject* iO)
 }
 
 };
+
 
 #endif
 

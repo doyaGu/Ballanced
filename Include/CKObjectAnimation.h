@@ -12,6 +12,7 @@
 #include "CKKeyFrameData.h"
 
 
+
 typedef struct CKAnimKey {
 	VxVector	 m_Pos;
 	VxVector	 m_Scl;

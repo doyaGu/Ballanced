@@ -50,16 +50,6 @@ Remarks:
 See Also:CKSkin,CKSkinVertexData::SetInitialPos,CK3dEntity::GetInverseWorldMatrix
 **********************************************/	
 	virtual void SetBoneInitialInverseMatrix(const VxMatrix& M) =0;
-/*********************************************
-Summary: Gets the bone original orientation.
-Return Value: A VxMatrix that represents the bone original inverse world matrix.
-Remarks:
-+ The vertices of a skin are transformed according to 
-the relative transformation between the original bone orientation
-and its current orientation.
-See Also:CKSkin,SetBoneInitialInverseMatrix
-**********************************************/	
-	virtual VxMatrix& GetBoneInitialInverseMatrix() = 0;
 };
 
 /******************************************************
@@ -184,14 +174,6 @@ Arguments:
 See Also:CK3dEntity::CreateSkin
 **********************************************/
 	virtual void SetObjectInitMatrix(const VxMatrix& Mat) = 0;
-/*********************************************
-Summary: Gets the owner 3d Entity initial orientation.
-
-Arguments:
-Mat: Original world matrix of the owner 3dEntity.
-See Also:CK3dEntity::CreateSkin
-**********************************************/
-	virtual void GetObjectInitMatrix(VxMatrix& Mat) = 0;
 /*********************************************
 Summary: Sets the number of bones in the skin.
 
@@ -332,38 +314,6 @@ Remarks:
 See Also:ConstructBoneTransfoMatrices
 **********************************************/
 	virtual CKBOOL CalcPoints(int VertexCount,BYTE* VertexPtr,CKDWORD VStride,BYTE* NormalPtr,CKDWORD NStride) = 0;
-
-	
-/*************************************************
-Summary: returns a pointer to the internal bones matrix array
-
-*************************************************/
-virtual VxMatrix * GetTransformedBonesArray() = 0;
-
-
-/*************************************************
-Summary: Sets the referential in which the bones matrix array is calculated
-
-*************************************************/
-virtual void SetHardwareSkinningRef(CK_BONES_REFERENTIAL ref) =0;
-
-/*************************************************
-Summary: Gets the referential in which the bones matrix array is calculated
-
-*************************************************/
-virtual CK_BONES_REFERENTIAL GetHardwareSkinningRef() =0;
-
-/*************************************************
-Summary: reposition vertices and normals to their original positions
-
-*************************************************/
-virtual void RestoreOriginalVNPositions(CK3dEntity* Entity)=0;
-
-/*************************************************
-Summary: returns the maximum number of bones per vertex
-
-*************************************************/
-virtual int GetMaxBonesPerVertex() = 0;
 
 };
 

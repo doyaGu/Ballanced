@@ -26,7 +26,7 @@
 #include "CKPathManager.h"
 
 // External Managers
-// #include "CKFloorManager.h"
+#include "CKFloorManager.h"
 #include "CKGridManager.h"
 #include "CKInterfaceManager.h"
 #include "CKSoundManager.h"
@@ -35,7 +35,6 @@
 #include "CKCollisionManager.h"
 
 // Misc
-
 #include "CKMaterial.h"
 #include "CKTexture.h"
 #include "CKRenderContext.h"
@@ -46,7 +45,6 @@
 #include "CKParameterOut.h"
 #include "CKParameterLocal.h"
 #include "CKParameterOperation.h"
-//#include "CKParameterVariable.h"
 // Behaviors
 #include "CKBehaviorIO.h"
 #include "CKBehaviorLink.h"

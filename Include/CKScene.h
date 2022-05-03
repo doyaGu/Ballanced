@@ -43,28 +43,28 @@ See Also:CKScene::GetObjectIterator
 class CKSceneObjectIterator {
 public:
 
-	CKSceneObjectIterator(CKSODHashIt it, CKSODHash& iHash):m_Iterator(it),m_Hash(iHash) {}
+	CKSceneObjectIterator(CKSODHashIt it):m_Iterator(it) {}
 //Summary:Returns the ID of the current object.
 //Return Value
 //	CK_ID of the current object.
 	CK_ID				GetObjectID() {return m_Iterator.GetKey();}
 
-	CKSceneObjectDesc*	GetObjectDesc() {return &(*m_Iterator);}
+	CKSceneObjectDesc*	GetObjectDesc() {return m_Iterator;}
 //Summary:Reset iterator to start of the list.
 	void				Rewind() 
 	{
-		m_Iterator = m_Hash.Begin();
+		m_Iterator = m_Iterator.m_Table->Begin();
 	}
 
 	void				RemoveAt() 
 	{
-		m_Iterator = m_Hash.Remove(m_Iterator);
+		m_Iterator = m_Iterator.m_Table->Remove(m_Iterator);
 	}
 
 //Summary:Indicates if end of list is reached.
 //Return Value
 //	Returns TRUE if the iterator is at the end of the list of objects.
-	int					End() {return m_Iterator == m_Hash.End();}
+	int					End() {return m_Iterator == m_Iterator.m_Table->End();}
 
 	CKSceneObjectIterator& operator++(int) { 
 		++m_Iterator;
@@ -72,10 +72,10 @@ public:
 	}
 
 	CKSODHashIt m_Iterator;
-	CKSODHash&  m_Hash;
 };
 
 /*****************************************************************************
+{filename:CKScene}
 Summary: Narrative management. 
 
 Remarks: 

@@ -52,27 +52,25 @@ Summary: Managing device for rendering
 
 Remarks:
 {Image:RenderContext}
-
-+A CKRenderContext is where rendering occurs. It manages a list of objects to
++ A CKRenderContext is where rendering occurs. It manages a list of objects to
 be rendered.
 
-+At Creation time, a render context is attached to a window from which it 
++ At Creation time, a render context is attached to a window from which it 
 will take size information. At anytime the rendercontext can be switch forth and back
 to fullscreen mode.
 
-+CKRenderContext provides methods for Fog management, Primitive drawing, ambient lighting
++ CKRenderContext provides methods for Fog management, Primitive drawing, ambient lighting
 and cameras management.
 
-+Callbacks can be set to have functions called before and after rendering occurs.
++ Callbacks can be set to have functions called before and after rendering occurs.
 
-+The rendercontext contains a list of objects to be rendered. When creating a level all the objects
++ The rendercontext contains a list of objects to be rendered. When creating a level all the objects
 of the level will be added to its render contextes (attached through the function CKLevel::AddRenderContext).
 If a rendercontext is used without a level the user must attach the objects he wants to be rendered.
 
-+CKRenderContext is created through the CKRenderManager::CreateRenderContext() method.
++ CKRenderContext is created through the CKRenderManager::CreateRenderContext() method.
 
-+The class ID of CKRenderContext is CKCID_RENDERCONTEXT.
-
++ The class ID of CKRenderContext is CKCID_RENDERCONTEXT.
 See also: CKRenderManager
 *********************************************************************/
 class CKRenderContext : public CKObject  {
@@ -1087,9 +1085,8 @@ Arguments:
 Return Value:
 	The size of the resultant buffer.
 Remarks:
-+ First call this function with a desc.Image set to NULL to get the size of the buffer. You can then allocate
-your data buffer and call the function again with this parameter.
-+ If AntiAliasing is enabled, the back buffer can not be dumped
+	First call this function with a desc.Image set to NULL to get the size of the buffer. You can then allocate
+	your data buffer and call the function again with this parameter.
 Example: 
 		VxImageDescEx ImgDesc;
 		BYTE* ImgBuffer = NULL;
@@ -1139,7 +1136,6 @@ Remarks:
 + DumpToFile locks the specified buffer and writes its data into a bitmap file.
 + The file format can be of any type supported by Virtools but the extension must 
 be given.
-+ If AntiAliasing is enabled, the back buffer can not be dumped
 See also:DumpToMemory
 *************************************************/ 
 	virtual	CKERROR	DumpToFile(CKSTRING filename,const VxRect* rect,VXBUFFER_TYPE buffer) = 0;
@@ -1152,24 +1148,25 @@ Summary: Returns pointers to the DirectX objects.
 Return Value:
 	A pointer to a VxDirectXData that contain the pointers to the DirectDraw and Direct3D objects.
 Remarks:
-	+ When using a DirectX based rasterizer, one can access the DirectDraw and Direct3D objects through this method.
+	+ When using a DirectX based rasterizers, one can access the DirectDraw and Direct3D objects through this method.
 See also:VxDirectXData
 *************************************************/ 
 	virtual VxDirectXData* GetDirectXInfo() = 0;
 
 
 
+	//--- Thread specific functions
 /*****************************************************
-Summary: Multi thread specific
+Summary: Multi thread 
 
 Remarks:	
-Some rasterizers (OpenGL) functions will failed 
-if called from 2 differents threads without changing 
-the active thread before calling them.
-In a multi-thread application where more than
-one thread may access a render context you need to
-call these methods before and after any other methods if you are not in
-the thread that created the render context.
+	+ Some rasterizers (OpenGL) functions will failed 
+	if called from 2 differents threads without changing 
+	the active thread before calling them.
+	+ In a multi-thread application where more than
+	one thread may access a render context you need to
+	calls these methods before and after any other methods if you are not in
+	the thread that created the render context.
 *****************************************************/
 	virtual	void	WarnEnterThread() = 0;
 
@@ -1335,91 +1332,6 @@ See also: SetViewRect
 	See also: SetViewRect
 	*****************************************************/
 	virtual	void 	ScreenToViewpoint(const Vx2DVector& i2DPosition, VxVector* o3DPosition, CKBOOL iScreen = TRUE) = 0;
-	
-	/****************************************************
-	Summary: Overrides the rendering of objects.
-	Remarks:
-		This method enables to override the way objects are drawn during a CKRenderContext::DrawScene
-		operation. Object Materials can be ignored,replaced by a unique material or a specific pass can be used when 
-		rendering object using material effects.
-	See also:CK_OVERRIDE_RENDERING,CKMaterial,CKShader,Shaders and Effects
-	****************************************************/
-	virtual void	SetOverriddenRendering(CK_OVERRIDE_RENDERING Or, CKMaterial* mat = NULL, const char* pass = NULL) = 0;
-	
-	/****************************************************
-	Summary: Setup the lights position and activity.
-	
-	Remarks:
-		This method is automatically called at the beginning of the scene rendering (DrawScene)
-	and modifies the current World and View transformation matrices.
-		It resets all the lights position and activity according to their flags
-	and world matrices and pass the according parameters to the rasterizer. 
-		This should be used unless you specifically want to control which lights are on during a rendering
-	****************************************************/
-	virtual void	SetupLights() = 0;
-
-	/*********************************************************
-	Summary: Set values of all automatic parameters used
-			 by the "iFx" shader.
-
-	Remarks: Those values will be computed from "iMat" naterial
-			 (ex: for Diffuse or Texture),
-			 But also from "iEnt" entity
-			 (ex: for WORLD matrix),
-			 and the render context which is retrieved the 
-			 shader manager.
-			 (ex: for VIEW matrix or EYEPOS vector)
-
-			 Note that the Rasterizer's current TransformMatrix 
-			 will be set to the world matrix of "iEnt", or set to 
-			 identity if "iEnt" is NULL.
-			 ModelViewMatrix and TotalMatrix are also recomputed.
-	***********************************************************/
-	// virtual void	SetValuesOfUsedAutomatics(	CKShader&	iFx, 
-	// 											CKMaterial*	iMat, 
-	// 											CK3dEntity* iEnt ) = 0;
-	
-	
-	virtual CKBOOL	IsStereoRenderingLeftEye() = 0;
-
-	enum CK_STEREO_MODE {
-		CK_STEREO_DEFAULT , 
-		CK_STEREO_LEFT , 
-		CK_STEREO_RIGHT , 
-	};
-	
-	virtual void	SetStereoRenderMode(CK_STEREO_MODE iMode) = 0;
-	
-	/*********************************************************
-	Summary: Returns if a batch of objects using a same shader
-	is being rendered.
-	***********************************************************/
-	// virtual CKBOOL	IsRenderingShaderBatch() = 0;
-	
-	/*********************************************************
-	Summary: Returns, in bytes, the video memory occupation of the rasterizer surfaces.
-	NbTextures will contain the number of textures in Video memory (including the Sprites sub textures)
-	NbSprites  will contain the number of sprites in Video memory
-	TextureSize will contain the Video memory used by textures and sprites (including Render Targets Z buffers)
-	SpriteSize will contain the Video memory used by Sprites
-	Remarks: This method does not take vertex buffers or index buffers into account.
-	This value does not take other surfaces (Front buffer, Back buffer,Z Buffer) into account.
-	The render Target Zbuffers are shared between the render targets.
-	These render target Zbuffers exists only for the DX9,DX8,DX7 rasterizers
-	***********************************************************/
-	virtual float	GetSurfacesVideoMemoryOccupation(int* NbTextures,int* NbSprites,float* TextureSize,float* SpriteSize) = 0;
-	
-	/*********************************************************
-	Summary: Wait for any pending rendering command (in GPU) to finish.
-	Remarks: This method can be called to ensure that all the pending GPU commands (primitive being drawn)
-	are finished before returning.
-	This can be helpful to synchronize multiple computers or to ensure the rendering of an object is finished at a given point but this prevent 
-	GPU parallelism for maximum performance.
-	***********************************************************/
-	virtual BOOL	FlushPendingGPUCommands() = 0;
-	
-	
-	// CKShaderManager*	m_ShaderManager;
 };
 
 #endif 

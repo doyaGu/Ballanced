@@ -333,6 +333,8 @@ inline const VxVector CrossProduct (const VxVector& Vect1, const VxVector& Vect2
 }
 
 /*************************************************
+Name: Reflect
+
 Summary: Returns the reflection of vector against a plane.
 
 Input Arguments:

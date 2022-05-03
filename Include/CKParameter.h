@@ -10,7 +10,6 @@
 
 #include "CKObject.h"
 
-
 /**************************************************************************
 {filename:CKParameter}
 Name: CKParameter
@@ -138,7 +137,6 @@ friend void CK_ParameterCopier_Memcpy(CKParameter* Dst,CKParameter* Src);
 friend void CK_ParameterCopier_SaveLoad(CKParameter* Dst,CKParameter* Src);
 friend void CK_ParameterCopier_SetValue(CKParameter* Dst,CKParameter* Src);
 friend void CK_ParameterCopier_Dword(CKParameter* Dst,CKParameter* Src);
-friend void CK_ParameterCopier_BufferCompatibleWithDWORD(CKParameter* Dst,CKParameter* Src);
 
 friend void CKObjectArrayRemapfunc		(CKParameter *param,CKDependenciesContext&);
 friend void CKObjectRemapFunc			(CKParameter *param,CKDependenciesContext&);

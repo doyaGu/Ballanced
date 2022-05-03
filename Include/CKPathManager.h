@@ -132,25 +132,6 @@ public:
 
 	// Virtools tempory storage folder...
 	XString GetVirtoolsTemporaryFolder();
-
-//--- Big Files
-
-	// // Register a BigFile : Absolute path
-	// CKERROR		AddBigFile(const char* iFileName);
-	// // Gets a registered BigFile by index
-	// const char*	GetBigFile(int iIndex);
-	// // Gets the count of registered BigFiles
-	// int			GetBigFileCount();
-	// // remove a BigFile by index
-	// CKERROR		RemoveBigFile(int iIndex);
-
-	// // Is the given path reference a file in a BigFile
-	// CKBOOL		IsBigFilePath(const char* iPath);
-	// // Is the given path reference a file in a BigFile
-	// XBOOL		OpenSubFile(const char* iPath,VxSubFile* oSubFile);
-	
-	
-	static CKPathManager* Cast(CKBaseManager* iM) { return (CKPathManager*)iM; }
 	
 protected :
 
@@ -167,11 +148,6 @@ protected :
 	CKPATHCATEGORYVECTOR	m_Categories;
 	XString					m_TemporaryFolder;	
 	CKBOOL					m_TemporaryFolderExist;
-
-	// // Array of big files
-	// XArray<VxBigFile*>		m_BigFiles;
-	// // Cache index of the last big file accessed
-	// int						m_LastBigFile;
 
 };
 
