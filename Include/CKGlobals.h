@@ -7,7 +7,6 @@
 /*	Copyright (c) Virtools 2000, All Rights Reserved.					 */	
 /*************************************************************************/
 #ifndef _CKGLOBALS_H
-
 #define _CKGLOBALS_H "$Id:$"
 
 #include "CKDefines.h"
@@ -22,7 +21,6 @@ typedef XHashTable<CKObjectDeclaration*,CKGUID>::Iterator XObjDeclHashTableIt;
 CKERROR CKStartUp();
 CKERROR CKShutdown();
 
-
 CKContext* GetCKContext(int pos);
 
 CKObject* CKGetObject(CKContext* iCtx,CK_ID iID);
@@ -30,8 +28,8 @@ CKObject* CKGetObject(CKContext* iCtx,CK_ID iID);
 CKERROR CKCreateContext(CKContext** iContext,WIN_HANDLE iWin, int iRenderEngine, DWORD Flags);
 CKERROR CKCloseContext(CKContext*);
 
-CKSTRING		CKGetStartPath();
-CKSTRING		CKGetPluginsPath();
+CKSTRING CKGetStartPath();
+CKSTRING CKGetPluginsPath();
 
 void CKDestroyObject(CKObject *o,DWORD Flags=0,CKDependencies* dep = NULL);
 
@@ -78,8 +76,8 @@ See Also:Main Steps of Building Block Creation
 // Class Hierarchy Management
 
 int				CKGetClassCount();
-CKClassDesc*		CKGetClassDesc(CK_CLASSID cid);		
-CKSTRING			CKClassIDToString(CK_CLASSID cid);
+CKClassDesc*	CKGetClassDesc(CK_CLASSID cid);		
+CKSTRING		CKClassIDToString(CK_CLASSID cid);
 CK_CLASSID		CKStringToClassID(CKSTRING classname);
 
 CKBOOL		CKIsChildClassOf(CK_CLASSID child,CK_CLASSID parent);
@@ -92,14 +90,14 @@ CK_CLASSID	CKGetCommonParent(CK_CLASSID cid1,CK_CLASSID cid2);
 // Array Creation Functions	
 				
 CKObjectArray*  CreateCKObjectArray();
-void			   DeleteCKObjectArray(CKObjectArray * obj);
+void			DeleteCKObjectArray(CKObjectArray * obj);
 
 //-----------------------------------------------
 // StateChunk Creation Functions
 					
 CKStateChunk*	CreateCKStateChunk(CK_CLASSID id,CKFile* file=NULL);
 CKStateChunk*	CreateCKStateChunk(CKStateChunk* chunk);
-void				DeleteCKStateChunk(CKStateChunk* chunk);
+void			DeleteCKStateChunk(CKStateChunk* chunk);
 
 CKStateChunk*	CKSaveObjectState(CKObject* obj,CKDWORD Flags = CK_STATESAVE_ALL);
 CKERROR			CKReadObjectState(CKObject* obj,CKStateChunk* chunk);
@@ -131,7 +129,7 @@ char* CKUnPackData(int DestSize,char* SrcBuffer,int SrcSize);
 
 CKSTRING CKStrdup(CKSTRING string);
 CKSTRING CKStrndup(CKSTRING iString, int iLength);
-void		CKStrdelete(CKSTRING str);
+void	 CKStrdelete(CKSTRING str);
 CKSTRING CKStrupr(CKSTRING string);
 CKSTRING CKStrlwr(CKSTRING string);
 
@@ -148,7 +146,7 @@ CKBitmapProperties* CKCopyBitmapProperties(CKBitmapProperties* bp);
 void CKCopyDefaultClassDependencies(CKDependencies& d,CK_DEPENDENCIES_OPMODE mode);
 CKDependencies* CKGetDefaultClassDependencies(CK_DEPENDENCIES_OPMODE mode);
 
-void		CKDeletePointer(void* ptr);
+void CKDeletePointer(void* ptr);
 
 //-------------------------------------------------------------------
 #ifdef DOCJETDUMMY // Docjet secret macro
@@ -194,13 +192,10 @@ void CKClassRegisterAssociatedParameter(CK_CLASSID Cid,CKGUID pguid);
 void CKClassRegisterDefaultDependencies(CK_CLASSID Cid,CKDWORD depend_Mask,int mode);	
 void CKClassRegisterDefaultOptions(CK_CLASSID Cid,CKDWORD options_Mask);					
 CK_CLASSID CKClassGetNewIdentifier();													
-void		  CKClassRegister(CK_CLASSID Cid,CK_CLASSID Parent_Cid,
-								CKCLASSREGISTERFCT registerfct,CKCLASSCREATIONFCT creafct,CKCLASSRELEASEFCT relfct,
-								CKCLASSNAMEFCT		NameFct,CKCLASSDEPENDENCIESFCT	DependsFct,
-								CKCLASSDEPENDENCIESCOUNTFCT	DependsCountFct);						
-
-
-
+void CKClassRegister(CK_CLASSID Cid,CK_CLASSID Parent_Cid,
+					CKCLASSREGISTERFCT registerfct,CKCLASSCREATIONFCT creafct,CKCLASSRELEASEFCT relfct,
+					CKCLASSNAMEFCT		NameFct,CKCLASSDEPENDENCIESFCT	DependsFct,
+					CKCLASSDEPENDENCIESCOUNTFCT	DependsCountFct);						
 
 #endif // Docjet secret macro
 #endif
