@@ -28,7 +28,7 @@ public:
     virtual void SetMadeWithSpritePosition(int x, int y);
     virtual void SetFrameRateSpriteText(CKSTRING text);
     virtual void SetMadeWithSpriteText(CKSTRING text);
-    virtual bool MoveFrameRateSpriteToLeftTop();
+    virtual void AdjustFrameRateSpritePosition();
     virtual void SetStartTime(int time);
     virtual void SetField0x25C(bool val);
     virtual void SetCleared(bool clear);
@@ -36,9 +36,9 @@ public:
     virtual int GetField0x25C() const;
     virtual bool IsCleared() const;
     virtual void SetDriverIndex(int idx);
-    virtual bool SetScreenMode(int idx);
+    virtual bool ApplyScreenMode(int idx);
     virtual void SetFullscreen(bool fullscreen);
-    virtual void SetColorBPP(int bpp);
+    virtual void SetBPP(int bpp);
     virtual void SetField0x30(int val);
     virtual void SetProgPath(const char *path);
     virtual void SetField0x254(int val);
@@ -56,7 +56,7 @@ public:
     virtual void GetResolution(int &width, int &height);
     virtual int GetWidth() const;
     virtual int GetHeight() const;
-    virtual int GetColorBPP() const;
+    virtual int GetBPP() const;
     virtual int GetField0x30() const;
     virtual char *GetProgPath() const;
     virtual int GetField0x254() const;
@@ -67,7 +67,7 @@ public:
     virtual void Play();
     virtual void ShowWindow();
     virtual CKERROR Reset();
-    virtual CKERROR Render(CK_RENDER_FLAGS flags);
+    virtual CKERROR Render(CK_RENDER_FLAGS flags = CK_RENDER_USECURRENTSETTINGS);
     virtual void HideFrameRateSprite();
     virtual void ShowFrameRateSprite();
     virtual void HideMadeWithSprite();
@@ -110,8 +110,8 @@ public:
     CKERROR CNeMoContext::LoadFile(
         char *filename,
         CKObjectArray *liste,
-        CK_LOAD_FLAGS flags,
-        CKGUID *readerGuid);
+        CK_LOAD_FLAGS loadFlags = CK_LOAD_DEFAULT,
+        CKGUID *readerGuid = (CKGUID *)0);
     CKLevel *GetCurrentLevel();
     CK_ID *GetObjectsListByClassID(CK_CLASSID cid);
     CKObject *GetObject(CK_ID objID);
@@ -125,10 +125,11 @@ public:
         CKBeObject *dest,
         CKBeObject *sender = NULL);
     bool IsPlaying() const;
-    bool SwitchScreenMode(int driver, int screenMode);
+    bool ChangeScreenMode(int driver, int screenMode);
     bool SendMessageWindowCloseToAll();
     void AddMessageWindowClose();
     CKContext *GetCKContext();
+    void Refresh();
 
     static CNeMoContext *GetInstance()
     {
@@ -154,7 +155,7 @@ private:
     CKSpriteText *m_FrameRateSprite;
     CKSpriteText *m_MadeWithSprite;
     CWinContext *m_WinContext;
-    int m_ColorBPP;
+    int m_Bpp;
     int field_30;
     CFixedString m_RenderEnginePath;
     int m_Width;

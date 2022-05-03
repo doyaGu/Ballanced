@@ -12,16 +12,6 @@
 
 namespace
 {
-    const char *virtoolsVersionStrings[] =
-        {
-            "Dev \n (Evaluation version)",
-            "Creation \n (Evaluation version)",
-            "Dev \n (Not For Resale)",
-            "Creation \n (Not For Resale)",
-            "Dev \n (Education version)",
-            "Creation \n (Education version)",
-    };
-
     class CGameDataArray
     {
     public:
@@ -106,7 +96,12 @@ void CGameException::ShowMessageBox() const
     }
 }
 
-CGame::CGame() : m_NeMoContext(NULL), m_GameInfo(NULL) {}
+CGame::CGame() : m_NeMoContext(NULL), m_GameInfo(NULL)
+{
+    memset(&m_CKFileInfo, 0, sizeof(CKFileInfo));
+    memset(m_ProgPath, 0, sizeof(m_ProgPath));
+    memset(m_FileName, 0, sizeof(m_FileName));
+}
 
 CGame::~CGame()
 {
@@ -182,41 +177,44 @@ void CGame::Load()
     }
 
     memset(&m_CKFileInfo, 0, sizeof(CKFileInfo));
-    if (!m_NeMoContext->GetFileInfo(cmoPath, &m_CKFileInfo))
+    if (m_NeMoContext->GetFileInfo(cmoPath, &m_CKFileInfo) == CK_OK)
     {
-        char buffer[128];
-        strcpy(buffer, "Made with Virtools ");
-        memset(&buffer[20], 0, 108);
+        char text[128] = "Made with Virtools ";
         switch (m_CKFileInfo.ProductVersion)
         {
-        case 2:
-        case 8:
-            memcpy(&buffer[strlen(buffer)], virtoolsVersionStrings[0], strlen(virtoolsVersionStrings[0]));
+        case CK_VIRTOOLS_DEV:
+        case CK_VIRTOOLS_CREATION:
             break;
-        case 3:
-        case 9:
-            memcpy(&buffer[strlen(buffer)], virtoolsVersionStrings[1], strlen(virtoolsVersionStrings[1]));
+        case CK_VIRTOOLS_DEV_NFR:
+            strcat(text, "Dev \n (Not For Resale)");
             break;
-        case 4:
-            memcpy(&buffer[strlen(buffer)], virtoolsVersionStrings[2], strlen(virtoolsVersionStrings[2]));
+        case CK_VIRTOOLS_CREA_NFR:
+            strcat(text, "Creation \n (Not For Resale)");
             break;
-        case 5:
-            memcpy(&buffer[strlen(buffer)], virtoolsVersionStrings[3], strlen(virtoolsVersionStrings[3]));
+        case CK_VIRTOOLS_DEV_EDU:
+            strcat(text, "Dev \n (Education version)");
             break;
-        case 6:
-            memcpy(&buffer[strlen(buffer)], virtoolsVersionStrings[4], strlen(virtoolsVersionStrings[4]));
+        case CK_VIRTOOLS_CREA_EDU:
+            strcat(text, "Creation \n (Education version)");
             break;
-        case 7:
-            memcpy(&buffer[strlen(buffer)], virtoolsVersionStrings[5], strlen(virtoolsVersionStrings[5]));
+        case CK_VIRTOOLS_DEV_TB:
+        case CK_VIRTOOLS_DEV_EVAL:
+            strcat(text, "Dev \n (Evaluation version)");
+            break;
+        case CK_VIRTOOLS_CREA_TB:
+        case CK_VIRTOOLS_CREA_EVAL:
+            strcat(text, "Creation \n (Evaluation version)");
+            break;
+        default:
+            m_NeMoContext->SetStartTime(0);
             break;
         }
 
-        m_NeMoContext->SetStartTime(0);
         if (m_NeMoContext->GetStartTime() > 0)
         {
             try
             {
-                m_NeMoContext->SetMadeWithSpriteText(buffer);
+                m_NeMoContext->SetMadeWithSpriteText(text);
                 m_NeMoContext->ShowMadeWithSprite();
             }
             catch (...)
@@ -229,7 +227,7 @@ void CGame::Load()
 
     try
     {
-        m_NeMoContext->MoveFrameRateSpriteToLeftTop();
+        m_NeMoContext->AdjustFrameRateSpritePosition();
         m_NeMoContext->ShowFrameRateSprite();
     }
     catch (...)
@@ -285,7 +283,7 @@ void CGame::Load()
         throw CGameException(-1);
     }
 
-    if (m_NeMoContext->LoadFile(cmoPath, array, CK_LOAD_DEFAULT, NULL) != CK_OK)
+    if (m_NeMoContext->LoadFile(cmoPath, array) != CK_OK)
     {
         TT_ERROR("Game.cpp", "Load", "CKLoad");
         throw CGameException(4);
@@ -319,11 +317,11 @@ void CGame::Load()
             }
         }
 
-        m_NeMoContext->GetRenderContext()->Clear(CK_RENDER_USECURRENTSETTINGS, 0);
-        m_NeMoContext->GetRenderContext()->SetClearBackground(TRUE);
-        m_NeMoContext->GetRenderContext()->BackToFront(CK_RENDER_USECURRENTSETTINGS);
-        m_NeMoContext->GetRenderContext()->SetClearBackground(TRUE);
-        m_NeMoContext->GetRenderContext()->Clear(CK_RENDER_USECURRENTSETTINGS, 0);
+        m_NeMoContext->GetRenderContext()->Clear();
+        m_NeMoContext->GetRenderContext()->SetClearBackground();
+        m_NeMoContext->GetRenderContext()->BackToFront();
+        m_NeMoContext->GetRenderContext()->SetClearBackground();
+        m_NeMoContext->GetRenderContext()->Clear();
 
         int curveCount = m_NeMoContext->GetObjectsCountByClassID(CKCID_CURVE);
         CK_ID *curve_ids = m_NeMoContext->GetObjectsListByClassID(CKCID_CURVE);

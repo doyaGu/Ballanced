@@ -53,7 +53,6 @@ private:
     int m_Width;
     bool m_IsWndClassRegistered;
     bool m_Fullscreen;
-    short field_1A2;
     int m_MainWndX;
     int m_MainWndY;
 };

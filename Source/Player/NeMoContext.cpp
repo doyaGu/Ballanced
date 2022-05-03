@@ -13,22 +13,33 @@
 CNeMoContext *CNeMoContext::instance = NULL;
 
 CNeMoContext::CNeMoContext()
-    : m_RenderContext(NULL),
+    : m_MsgWindowClose(0),
       m_CKContext(NULL),
+      m_RenderManager(NULL),
+      m_TimeManager(NULL),
+      m_PluginManager(NULL),
+      m_MessageManager(NULL),
+      m_RenderContext(NULL),
       m_FrameRateSprite(NULL),
       m_MadeWithSprite(NULL),
+      m_WinContext(NULL),
+      m_Bpp(DEFAULT_BPP),
+      field_30(0),
       m_RenderEnginePath("CK2_3D"),
-      field_25C(0),
-      m_IsCleared(false),
+      m_Width(DEFAULT_WIDTH),
+      m_Height(DEFAULT_HEIGHT),
+      m_Fullscreen(false),
+      m_DisplayChanged(false),
       m_DriverIndex(0),
-      m_StartTime(1),
       m_ScreenModeIndex(-1),
       field_4C(82.0f),
-      m_PluginManager(NULL),
-      m_DisplayChanged(0)
+      m_StartTime(1),
+      field_254(0),
+      m_MsgClick(0),
+      field_25C(false),
+      m_IsCleared(false)
 {
-    m_ProgPath[0] = '\0';
-    SetResolution(DEFAULT_WIDTH, DEFAULT_HEIGHT);
+    strcpy(m_ProgPath, "");
 }
 
 float CNeMoContext::GetField0x4C() const
@@ -43,12 +54,12 @@ void CNeMoContext::SetField0x4C(float val)
 
 void CNeMoContext::SetFrameRateSpritePosition(int x, int y)
 {
-    m_FrameRateSprite->SetPosition(Vx2DVector(x, y), FALSE, FALSE, NULL);
+    m_FrameRateSprite->SetPosition(Vx2DVector(x, y));
 }
 
 void CNeMoContext::SetMadeWithSpritePosition(int x, int y)
 {
-    m_MadeWithSprite->SetPosition(Vx2DVector(x, y), FALSE, FALSE, NULL);
+    m_MadeWithSprite->SetPosition(Vx2DVector(x, y));
 }
 
 void CNeMoContext::SetFrameRateSpriteText(CKSTRING text)
@@ -61,10 +72,9 @@ void CNeMoContext::SetMadeWithSpriteText(CKSTRING text)
     m_MadeWithSprite->SetText(text);
 }
 
-bool CNeMoContext::MoveFrameRateSpriteToLeftTop()
+void CNeMoContext::AdjustFrameRateSpritePosition()
 {
-    m_MadeWithSprite->SetPosition(Vx2DVector((float)(m_Width * 0.5 - 60.0), (float)(m_Height * 0.5 - 15.0)), FALSE, FALSE, NULL);
-    return true;
+    SetFrameRateSpritePosition(m_Width * 0.5 - 60.0, m_Height * 0.5 - 15.0);
 }
 
 void CNeMoContext::SetStartTime(int time)
@@ -102,22 +112,20 @@ void CNeMoContext::SetDriverIndex(int idx)
     m_DriverIndex = idx;
 }
 
-bool CNeMoContext::SetScreenMode(int idx)
+bool CNeMoContext::ApplyScreenMode(int idx)
 {
-    VxDriverDesc *drDesc;
-    VxDisplayMode *displayMode;
-
     m_ScreenModeIndex = idx;
-    drDesc = m_RenderManager->GetRenderDriverDescription(m_DriverIndex);
-    if (drDesc)
+    VxDriverDesc *drDesc = m_RenderManager->GetRenderDriverDescription(m_DriverIndex);
+    if (!drDesc)
     {
-        displayMode = &drDesc->DisplayModes[m_ScreenModeIndex];
-        m_Width = displayMode->Width;
-        m_Height = displayMode->Height;
-        m_ColorBPP = displayMode->Bpp;
-        return true;
+        return false;
     }
-    return false;
+
+    VxDisplayMode *displayMode = &drDesc->DisplayModes[m_ScreenModeIndex];
+    m_Width = displayMode->Width;
+    m_Height = displayMode->Height;
+    m_Bpp = displayMode->Bpp;
+    return true;
 }
 
 void CNeMoContext::SetFullscreen(bool fullscreen)
@@ -125,9 +133,9 @@ void CNeMoContext::SetFullscreen(bool fullscreen)
     m_Fullscreen = fullscreen;
 }
 
-void CNeMoContext::SetColorBPP(int bpp)
+void CNeMoContext::SetBPP(int bpp)
 {
-    m_ColorBPP = bpp;
+    m_Bpp = bpp;
 }
 
 void CNeMoContext::SetField0x30(int val)
@@ -222,9 +230,9 @@ int CNeMoContext::GetHeight() const
     return m_Height;
 }
 
-int CNeMoContext::GetColorBPP() const
+int CNeMoContext::GetBPP() const
 {
-    return m_ColorBPP;
+    return m_Bpp;
 }
 
 int CNeMoContext::GetField0x30() const
@@ -234,7 +242,7 @@ int CNeMoContext::GetField0x30() const
 
 char *CNeMoContext::GetProgPath() const
 {
-    if (m_ProgPath[0] == '\0')
+    if (strcmp(m_ProgPath, "") == 0)
     {
         TT_ERROR("NemoContext.cpp", "CNemoContext::GetProgPath()", "empty prog path");
         throw CNeMoContextException(3);
@@ -293,7 +301,7 @@ CKERROR CNeMoContext::Reset()
     return m_CKContext->Reset();
 }
 
-CKERROR CNeMoContext::Render(CK_RENDER_FLAGS flags = CK_RENDER_USECURRENTSETTINGS)
+CKERROR CNeMoContext::Render(CK_RENDER_FLAGS flags)
 {
     return m_RenderContext->Render(flags);
 }
@@ -305,7 +313,7 @@ void CNeMoContext::HideFrameRateSprite()
 
 void CNeMoContext::ShowFrameRateSprite()
 {
-    m_FrameRateSprite->Show(CKSHOW);
+    m_FrameRateSprite->Show();
 }
 
 void CNeMoContext::HideMadeWithSprite()
@@ -315,7 +323,7 @@ void CNeMoContext::HideMadeWithSprite()
 
 void CNeMoContext::ShowMadeWithSprite()
 {
-    m_MadeWithSprite->Show(CKSHOW);
+    m_MadeWithSprite->Show();
 }
 
 void CNeMoContext::Cleanup()
@@ -327,50 +335,54 @@ void CNeMoContext::Cleanup()
 
 void CNeMoContext::Shutdown()
 {
-    if (m_RenderContext)
+    if (!m_RenderContext)
     {
-        Cleanup();
-        m_RenderManager->DestroyRenderContext(m_RenderContext);
-        m_RenderContext = NULL;
-        if (m_CKContext)
-        {
-            CKCloseContext(m_CKContext);
-        }
-        m_CKContext = NULL;
-        CKShutdown();
+        return;
     }
+
+    Cleanup();
+
+    m_RenderManager->DestroyRenderContext(m_RenderContext);
+    m_RenderContext = NULL;
+
+    if (m_CKContext)
+    {
+        CKCloseContext(m_CKContext);
+    }
+    m_CKContext = NULL;
+
+    CKShutdown();
 }
 
 void CNeMoContext::GoFullscreen()
 {
-    VxDriverDesc *drDesc;
-    VxDisplayMode *displayMode;
-
-    if (m_RenderContext)
+    if (!m_RenderContext)
     {
-        if (m_ScreenModeIndex >= 0)
+        return;
+    }
+
+    if (m_ScreenModeIndex >= 0)
+    {
+        VxDriverDesc *drDesc = m_RenderManager->GetRenderDriverDescription(m_DriverIndex);
+        if (drDesc)
         {
-            drDesc = m_RenderManager->GetRenderDriverDescription(m_DriverIndex);
-            if (drDesc)
-            {
-                displayMode = &drDesc->DisplayModes[m_ScreenModeIndex];
-                m_RenderContext->GoFullScreen(displayMode->Width,
-                                              displayMode->Height,
-                                              displayMode->Bpp,
-                                              m_DriverIndex,
-                                              0);
-                ::SetFocus(m_WinContext->GetMainWindow());
-            }
-        }
-        else
-        {
-            m_RenderContext->GoFullScreen(m_Width,
-                                          m_Height,
-                                          m_ColorBPP,
+            VxDisplayMode *displayMode = &drDesc->DisplayModes[m_ScreenModeIndex];
+            m_RenderContext->GoFullScreen(displayMode->Width,
+                                          displayMode->Height,
+                                          displayMode->Bpp,
                                           m_DriverIndex,
                                           0);
             ::SetFocus(m_WinContext->GetMainWindow());
         }
+    }
+    else
+    {
+        m_RenderContext->GoFullScreen(m_Width,
+                                      m_Height,
+                                      m_Bpp,
+                                      m_DriverIndex,
+                                      0);
+        ::SetFocus(m_WinContext->GetMainWindow());
     }
 }
 
@@ -398,7 +410,7 @@ void CNeMoContext::Process()
             if (timeBeforeRender <= 0)
             {
                 m_TimeManager->ResetChronos(TRUE, FALSE);
-                m_RenderContext->Render(CK_RENDER_USECURRENTSETTINGS);
+                m_RenderContext->Render();
             }
         }
     }
@@ -441,38 +453,35 @@ void CNeMoContext::Update(int state)
 
 void CNeMoContext::SwitchFullscreen()
 {
-    VxDriverDesc *drDesc;
-    VxDisplayMode *displayMode;
-
-    if (m_RenderContext)
+    if (!m_RenderContext)
     {
-        if (IsRenderFullScreen())
+        return;
+    }
+
+    if (IsRenderFullScreen())
+    {
+        RestoreWindow();
+    }
+    else if (m_ScreenModeIndex >= 0)
+    {
+        VxDriverDesc *drDesc = m_RenderManager->GetRenderDriverDescription(m_DriverIndex);
+        if (drDesc)
         {
-            RestoreWindow();
-        }
-        else if (m_ScreenModeIndex >= 0)
-        {
-            drDesc = m_RenderManager->GetRenderDriverDescription(m_DriverIndex);
-            if (drDesc)
-            {
-                displayMode = &drDesc->DisplayModes[m_ScreenModeIndex];
-                m_RenderContext->GoFullScreen(displayMode->Width,
-                                              displayMode->Height,
-                                              displayMode->Bpp,
-                                              m_DriverIndex,
-                                              0);
-                ::ShowWindow(m_WinContext->GetMainWindow(), SW_SHOWMINNOACTIVE);
-            }
-        }
-        else
-        {
-            m_RenderContext->GoFullScreen(m_Width,
-                                          m_Height,
-                                          m_ColorBPP,
-                                          m_DriverIndex,
-                                          0);
+            VxDisplayMode *displayMode = &drDesc->DisplayModes[m_ScreenModeIndex];
+            m_RenderContext->GoFullScreen(displayMode->Width,
+                                          displayMode->Height,
+                                          displayMode->Bpp,
+                                          m_DriverIndex);
             ::ShowWindow(m_WinContext->GetMainWindow(), SW_SHOWMINNOACTIVE);
         }
+    }
+    else
+    {
+        m_RenderContext->GoFullScreen(m_Width,
+                                      m_Height,
+                                      m_Bpp,
+                                      m_DriverIndex);
+        ::ShowWindow(m_WinContext->GetMainWindow(), SW_SHOWMINNOACTIVE);
     }
 }
 
@@ -543,27 +552,21 @@ void CNeMoContext::CreateInterfaceSprite()
 {
     try
     {
-        m_FrameRateSprite = (CKSpriteText *)m_CKContext->CreateObject(CKCID_SPRITETEXT,
-                                                                      "FrameRateSprite",
-                                                                      CK_OBJECTCREATION_NONAMECHECK,
-                                                                      NULL);
-        m_FrameRateSprite->Create(60, 20, 32, 0);
+        m_FrameRateSprite = (CKSpriteText *)m_CKContext->CreateObject(CKCID_SPRITETEXT, "FrameRateSprite");
+        m_FrameRateSprite->Create(60, 20);
         m_FrameRateSprite->SetTransparent(FALSE);
-        m_FrameRateSprite->SetFont("Arial", 8, 400, FALSE, FALSE);
+        m_FrameRateSprite->SetFont("Arial", 8);
         m_FrameRateSprite->SetBackgroundColor(0);
-        m_FrameRateSprite->SetTextColor(0xFFFFFF);
-        m_FrameRateSprite->SetPosition(Vx2DVector(350.0f, 225.0f), FALSE, FALSE, NULL);
+        m_FrameRateSprite->SetTextColor(0x00FFFFFF);
+        m_FrameRateSprite->SetPosition(Vx2DVector(350.0f, 225.0f));
         m_FrameRateSprite->Show(CKHIDE);
 
-        m_MadeWithSprite = (CKSpriteText *)m_CKContext->CreateObject(CKCID_SPRITETEXT,
-                                                                     "MadeWithSprite",
-                                                                     CK_OBJECTCREATION_NONAMECHECK,
-                                                                     NULL);
-        m_MadeWithSprite->Create(m_Width, m_Height, 32, 0);
+        m_MadeWithSprite = (CKSpriteText *)m_CKContext->CreateObject(CKCID_SPRITETEXT, "MadeWithSprite");
+        m_MadeWithSprite->Create(m_Width, m_Height);
         m_MadeWithSprite->SetTransparent(FALSE);
-        m_MadeWithSprite->SetFont("Arial", 14, 400, FALSE, FALSE);
-        m_MadeWithSprite->SetBackgroundColor(0xFFFFFF);
-        m_MadeWithSprite->SetTextColor(0xFFFF00);
+        m_MadeWithSprite->SetFont("Arial", 14);
+        m_MadeWithSprite->SetBackgroundColor(0x00FFFFFF);
+        m_MadeWithSprite->SetTextColor(0x00FFFF00);
         m_MadeWithSprite->SetZOrder(2000000);
         m_MadeWithSprite->Show(CKHIDE);
 
@@ -574,7 +577,7 @@ void CNeMoContext::CreateInterfaceSprite()
 
         m_RenderContext->AddObject(m_MadeWithSprite);
         m_RenderContext->AddObject(m_FrameRateSprite);
-        m_FrameRateSprite->SetPosition(Vx2DVector(0.0f, 0.0f), FALSE, FALSE, NULL);
+        m_FrameRateSprite->SetPosition(Vx2DVector(0.0f, 0.0f));
         HideMadeWithSprite();
     }
     catch (...)
@@ -586,8 +589,6 @@ void CNeMoContext::CreateInterfaceSprite()
 
 bool CNeMoContext::CreateRenderContext()
 {
-    m_RenderContext = NULL;
-
     try
     {
         CKRenderManager *renderManager = m_CKContext->GetRenderManager();
@@ -599,7 +600,7 @@ bool CNeMoContext::CreateRenderContext()
         }
 
         Play();
-        if (IsFullscreen() && m_RenderContext->GoFullScreen(m_Width, m_Height, m_ColorBPP, m_DriverIndex, 0))
+        if (IsFullscreen() && m_RenderContext->GoFullScreen(m_Width, m_Height, m_Bpp, m_DriverIndex, 0))
         {
             if (!RestoreWindow())
             {
@@ -619,25 +620,25 @@ bool CNeMoContext::CreateRenderContext()
         }
         ::SetFocus(m_WinContext->GetMainWindow());
 
-        m_RenderContext->Clear(CK_RENDER_USECURRENTSETTINGS, 0);
-        m_RenderContext->Clear(CK_RENDER_BACKGROUNDSPRITES, 0);
-        m_RenderContext->Clear(CK_RENDER_FOREGROUNDSPRITES, 0);
-        m_RenderContext->Clear(CK_RENDER_USECAMERARATIO, 0);
-        m_RenderContext->Clear(CK_RENDER_CLEARZ, 0);
-        m_RenderContext->Clear(CK_RENDER_CLEARBACK, 0);
-        m_RenderContext->Clear(CK_RENDER_DOBACKTOFRONT, 0);
-        m_RenderContext->Clear(CK_RENDER_DEFAULTSETTINGS, 0);
-        m_RenderContext->Clear(CK_RENDER_CLEARVIEWPORT, 0);
-        m_RenderContext->Clear(CK_RENDER_FOREGROUNDSPRITES, 0);
-        m_RenderContext->Clear(CK_RENDER_USECAMERARATIO, 0);
-        m_RenderContext->Clear(CK_RENDER_WAITVBL, 0);
-        m_RenderContext->Clear(CK_RENDER_PLAYERCONTEXT, 0);
-        m_RenderContext->Clear(CK_RENDER_USECURRENTSETTINGS, 0);
+        m_RenderContext->Clear();
+        m_RenderContext->Clear(CK_RENDER_BACKGROUNDSPRITES);
+        m_RenderContext->Clear(CK_RENDER_FOREGROUNDSPRITES);
+        m_RenderContext->Clear(CK_RENDER_USECAMERARATIO);
+        m_RenderContext->Clear(CK_RENDER_CLEARZ);
+        m_RenderContext->Clear(CK_RENDER_CLEARBACK);
+        m_RenderContext->Clear(CK_RENDER_DOBACKTOFRONT);
+        m_RenderContext->Clear(CK_RENDER_DEFAULTSETTINGS);
+        m_RenderContext->Clear(CK_RENDER_CLEARVIEWPORT);
+        m_RenderContext->Clear(CK_RENDER_FOREGROUNDSPRITES);
+        m_RenderContext->Clear(CK_RENDER_USECAMERARATIO);
+        m_RenderContext->Clear(CK_RENDER_WAITVBL);
+        m_RenderContext->Clear(CK_RENDER_PLAYERCONTEXT);
+        m_RenderContext->Clear();
 
-        m_RenderContext->SetClearBackground(TRUE);
-        m_RenderContext->BackToFront(CK_RENDER_USECURRENTSETTINGS);
-        m_RenderContext->SetClearBackground(TRUE);
-        m_RenderContext->Clear(CK_RENDER_USECURRENTSETTINGS, 0);
+        m_RenderContext->SetClearBackground();
+        m_RenderContext->BackToFront();
+        m_RenderContext->SetClearBackground();
+        m_RenderContext->Clear();
 
         ::SetCursor(::LoadCursorA(NULL, (LPCSTR)IDC_ARROW));
         return true;
@@ -660,16 +661,22 @@ int CNeMoContext::GetRenderEnginePluginIdx()
     const int pluginCount = m_PluginManager->GetPluginCount(CKPLUGIN_RENDERENGINE_DLL);
     for (int i = 0; i < pluginCount; ++i)
     {
-        CKPluginEntry* plugin = m_PluginManager->GetPluginInfo(CKPLUGIN_RENDERENGINE_DLL, i);
-        if (!plugin)
+        CKPluginEntry *entry = m_PluginManager->GetPluginInfo(CKPLUGIN_RENDERENGINE_DLL, i);
+        if (!entry)
         {
-            return -1;
+            break;
         }
 
-        char* dllname = m_PluginManager->GetPluginDllInfo(plugin->m_PluginDllIndex)->m_DllFileName.Str();
+        CKPluginDll *dll = m_PluginManager->GetPluginDllInfo(entry->m_PluginDllIndex);
+        if (!dll)
+        {
+            break;
+        }
+
+        char *dllname = dll->m_DllFileName.Str();
         if (!dllname)
         {
-            return -1;
+            break;
         }
 
         _splitpath(dllname, NULL, NULL, filename, NULL);
@@ -683,9 +690,7 @@ int CNeMoContext::GetRenderEnginePluginIdx()
 
 bool CNeMoContext::FindScreenMode()
 {
-    VxDriverDesc *drDesc;
-
-    drDesc = m_RenderManager->GetRenderDriverDescription(m_DriverIndex);
+    VxDriverDesc *drDesc = m_RenderManager->GetRenderDriverDescription(m_DriverIndex);
     if (!drDesc)
     {
         if (m_CKContext)
@@ -700,16 +705,13 @@ bool CNeMoContext::FindScreenMode()
 
     VxDisplayMode *dm = drDesc->DisplayModes;
     const int dmCount = drDesc->DisplayModeCount;
-    if (dmCount > 0)
+    for (int i = 0; i < dmCount; ++i)
     {
-        for (int i = 0; i < dmCount; ++i)
+        if (dm[i].Width == m_Width &&
+            dm[i].Height == m_Height &&
+            dm[i].Bpp == m_Bpp)
         {
-            if (dm[i].Width == m_Width &&
-                dm[i].Height == m_Height &&
-                dm[i].Bpp == m_ColorBPP)
-            {
-                m_ScreenModeIndex = i;
-            }
+            m_ScreenModeIndex = i;
         }
     }
 
@@ -718,7 +720,7 @@ bool CNeMoContext::FindScreenMode()
 
 bool CNeMoContext::ReInit()
 {
-    if (!FindScreenMode() || !m_RenderContext || !CreateRenderContext())
+    if (!FindScreenMode() || !GetRenderContext() || !CreateRenderContext())
     {
         return false;
     }
@@ -738,7 +740,7 @@ void CNeMoContext::SetScreen(CWinContext *wincontext,
 {
     m_WinContext = wincontext;
     m_Fullscreen = fullscreen;
-    m_ColorBPP = bpp;
+    m_Bpp = bpp;
     m_Width = width;
     m_Height = height;
     m_ScreenModeIndex = driver;
@@ -752,7 +754,7 @@ void CNeMoContext::SetWindow(CWinContext *wincontext,
 {
     m_WinContext = wincontext;
     m_Fullscreen = fullscreen;
-    m_ColorBPP = bpp;
+    m_Bpp = bpp;
     m_Width = width;
     m_Height = height;
 }
@@ -779,12 +781,12 @@ bool CNeMoContext::IsReseted() const
 
 void CNeMoContext::DestroyMadeWithSprite()
 {
-    m_CKContext->DestroyObject(GetMadeWithSprite()->m_ID, 0, NULL);
+    m_CKContext->DestroyObject(GetMadeWithSprite()->GetID());
 }
 
 void CNeMoContext::DestroyFrameRateSprite()
 {
-    m_CKContext->DestroyObject(GetFrameRateSprite()->m_ID, 0, NULL);
+    m_CKContext->DestroyObject(GetFrameRateSprite()->GetID());
 }
 
 CKERROR CNeMoContext::GetFileInfo(CKSTRING filename, CKFileInfo *fileinfo)
@@ -810,10 +812,10 @@ void CNeMoContext::AddDataPath(const char *path)
 CKERROR CNeMoContext::LoadFile(
     char *filename,
     CKObjectArray *liste,
-    CK_LOAD_FLAGS flags,
+    CK_LOAD_FLAGS loadFlags,
     CKGUID *readerGuid)
 {
-    return m_CKContext->Load(filename, liste, CK_LOAD_DEFAULT, NULL);
+    return m_CKContext->Load(filename, liste, loadFlags, readerGuid);
 }
 
 CKLevel *CNeMoContext::GetCurrentLevel()
@@ -848,23 +850,19 @@ CKMessageType CNeMoContext::AddMessageType(CKSTRING msg)
 
 bool CNeMoContext::ParsePlugins(CKSTRING dir)
 {
-    try
-    {
-        m_PluginManager = CKGetPluginManager();
-        m_PluginManager->ParsePlugins(dir);
-        return true;
-    }
-    catch (...)
+    m_PluginManager = CKGetPluginManager();
+    if (!m_PluginManager)
     {
         return false;
     }
+    return m_PluginManager->ParsePlugins(dir) != 0;
 }
 
 CTTInterfaceManager *CNeMoContext::GetInterfaceManager()
 {
     if (m_CKContext)
     {
-        return (CTTInterfaceManager *)m_CKContext->GetManagerByGuid(CKGUID(0x30833801, 0x6DEE620D));
+        return (CTTInterfaceManager *)m_CKContext->GetManagerByGuid(TT_INTERFACE_MANAGER_GUID);
     }
     return NULL;
 }
@@ -882,44 +880,46 @@ bool CNeMoContext::IsPlaying() const
     return m_CKContext->IsPlaying() == TRUE;
 }
 
-bool CNeMoContext::SwitchScreenMode(int driver, int screenMode)
+bool CNeMoContext::ChangeScreenMode(int driver, int screenMode)
 {
-    bool isRenderFullscreenBefore = IsRenderFullScreen();
+    if (!m_RenderContext)
+    {
+        return false;
+    }
+
+    bool fullscreenBefore = IsRenderFullScreen();
     int screenModeBefore = GetScreenModeIndex();
     int driverBefore = m_DriverIndex;
 
     m_DisplayChanged = true;
     m_DriverIndex = driver;
 
-    if (SetScreenMode(screenMode))
-    {
-        GetRenderContext()->StopFullScreen();
-        ::Sleep(10);
-        if (isRenderFullscreenBefore && !GetRenderContext()->IsFullScreen())
-        {
-            GoFullscreen();
-        }
-        ::Sleep(10);
-        ::SetFocus(m_WinContext->GetMainWindow());
-        m_DisplayChanged = false;
-        return true;
-    }
-    else
+    if (!ApplyScreenMode(screenMode))
     {
         m_DriverIndex = driverBefore;
-        SetScreenMode(screenModeBefore);
-        if (IsRenderFullScreen())
-        {
-            GoFullscreen();
-        }
+        m_ScreenModeIndex = screenModeBefore;
         m_DisplayChanged = false;
         return false;
     }
+
+    m_RenderContext->StopFullScreen();
+    ::Sleep(10);
+
+    m_WinContext->SetResolution(m_Width, m_Height);
+    if (fullscreenBefore && !m_RenderContext->IsFullScreen())
+    {
+        GoFullscreen();
+    }
+    ::Sleep(10);
+    ::SetFocus(m_WinContext->GetMainWindow());
+
+    m_DisplayChanged = false;
+    return true;
 }
 
 bool CNeMoContext::SendMessageWindowCloseToAll()
 {
-    return m_MessageManager->SendMessageBroadcast(m_MsgWindowClose, CKCID_BEOBJECT, NULL) != NULL;
+    return m_MessageManager->SendMessageBroadcast(m_MsgWindowClose, CKCID_BEOBJECT) != NULL;
 }
 
 void CNeMoContext::AddMessageWindowClose()
@@ -930,4 +930,14 @@ void CNeMoContext::AddMessageWindowClose()
 CKContext *CNeMoContext::GetCKContext()
 {
     return m_CKContext;
+}
+
+void CNeMoContext::Refresh()
+{
+    if (m_RenderContext)
+    {
+        m_RenderContext->Clear();
+        m_RenderContext->BackToFront();
+        m_RenderContext->Clear();
+    }
 }

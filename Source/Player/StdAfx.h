@@ -20,5 +20,6 @@
 
 #define DEFAULT_WIDTH 640
 #define DEFAULT_HEIGHT 480
+#define DEFAULT_BPP 16
 
 #endif // PLAYER_STDAFX_H
