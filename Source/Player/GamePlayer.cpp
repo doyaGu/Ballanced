@@ -196,25 +196,26 @@ static bool CheckPrerequisite()
     {
         TT_LOG("Checking available memory ... ");
 
-        MEMORYSTATUS stat;
-        ::GlobalMemoryStatus(&stat);
+        MEMORYSTATUSEX statex;
+        statex.dwLength = sizeof(statex);
+        ::GlobalMemoryStatusEx(&statex);
 
-        sprintf(buffer, "memory usage: %ld percent\n", stat.dwMemoryLoad);
+        sprintf(buffer, "memory usage: %ld percent\n", statex.dwMemoryLoad);
         TT_LOG(buffer);
-        sprintf(buffer, "%ld total bytes of physical memory.\n", stat.dwTotalPhys);
+        sprintf(buffer, "%llu total %sbytes of physical memory.\n", statex.ullTotalPhys / (1024 * 1024), "M");
         TT_LOG(buffer);
-        sprintf(buffer, "%ld free %sbytes of physical memory.\n", stat.dwAvailPhys >> 20, "M");
+        sprintf(buffer, "%llu free %sbytes of physical memory.\n", statex.ullAvailPhys / (1024 * 1024), "M");
         TT_LOG(buffer);
-        sprintf(buffer, "%ld total %sbytes of paging file.\n", stat.dwTotalPageFile >> 20, "M");
+        sprintf(buffer, "%llu total %sbytes of paging file.\n", statex.ullTotalPageFile / (1024 * 1024), "M");
         TT_LOG(buffer);
-        sprintf(buffer, "%ld free %sbytes of paging file.\n", stat.dwAvailPageFile >> 20, "M");
+        sprintf(buffer, "%llu free %sbytes of paging file.\n", statex.ullAvailPageFile / (1024 * 1024), "M");
         TT_LOG(buffer);
-        sprintf(buffer, "%ld total %sbytes of virtual memory.\n", stat.dwTotalVirtual >> 20, "M");
+        sprintf(buffer, "%llu total %sbytes of virtual memory.\n", statex.ullTotalVirtual / (1024 * 1024), "M");
         TT_LOG(buffer);
-        sprintf(buffer, "%ld free %sbytes of virtual memory.\n", stat.dwAvailVirtual >> 20, "M");
+        sprintf(buffer, "%llu free %sbytes of virtual memory.\n", statex.ullAvailVirtual / (1024 * 1024), "M");
         TT_LOG(buffer);
 
-        if (stat.dwAvailVirtual < g_ResMap.dwMinMem)
+        if (statex.ullAvailVirtual < g_ResMap.dwMinMem)
         {
             TT_LOG("Memory check failed (below 64MB)!");
             ::MessageBoxA(NULL, g_ResMap.needMEM64MB, "Error", MB_ICONERROR);
