@@ -2,7 +2,11 @@
 
 ## Introduction
 
-This is the WIP reversed source code for Ballance. The final purpose of the project is to recreate the game from scratch, based on the decompilation of the original. The finished part has been tested and works on Windows XP and newer versions of Windows. Only compilable code will be found in this repository.
+This is the WIP reversed source code for Ballance. The final purpose of the project is to recreate the game from scratch, based on the decompilation of the original.
+
+The finished part has been tested and works on Windows XP and newer versions of Windows.
+
+Only compilable code will be found in the `main` branch.
 
 The current progress is shown as follows.
 
