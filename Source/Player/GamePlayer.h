@@ -74,7 +74,7 @@ private:
     void LoadEngineDLL();
     void LoadStdDLL();
     
-    void RegisterGameInfoToInterfaceManager();
+    bool RegisterGameInfoToInterfaceManager();
 
     int m_State;
     HANDLE m_hMutex;

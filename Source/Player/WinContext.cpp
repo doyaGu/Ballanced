@@ -1,18 +1,31 @@
 #include "StdAfx.h"
 
-#include "ErrorProtocol.h"
 #include "WinContext.h"
+
+#include <string.h>
+
+#include "ErrorProtocol.h"
 
 char RenderWindowName[8];
 
-CWinContext::CWinContext() : m_MainWindow(NULL),
-                             m_RenderWindow(NULL),
-                             m_Width(DEFAULT_WIDTH),
-                             m_Height(DEFAULT_HEIGHT),
-                             m_MainWndX(0),
-                             m_MainWndY(0),
-                             m_IsWndClassRegistered(false),
-                             m_Fullscreen(true) {}
+CWinContext::CWinContext()
+    : m_MainWindow(NULL),
+      m_RenderWindow(NULL),
+      m_hInstance(NULL),
+      m_hAccelTable(NULL),
+      m_Width(DEFAULT_WIDTH),
+      m_Height(DEFAULT_HEIGHT),
+      m_IsWndClassRegistered(false),
+      m_Fullscreen(true),
+      m_MainWndX(0),
+      m_MainWndY(0)
+{
+    memset(&m_RenderWndClass, 0, sizeof(WNDCLASSA));
+    memset(&m_MainWndClass, 0, sizeof(WNDCLASSEXA));
+    memset(m_MainWndName, 0, sizeof(m_MainWndName));
+    memset(m_MainWndClassName, 0, sizeof(m_MainWndClassName));
+    memset(m_RenderWndClassName, 0, sizeof(m_RenderWndClassName));
+}
 
 void CWinContext::Init(HINSTANCE hInstance, LPFNWNDPROC lpfnWndProc, bool fullscreen)
 {
@@ -62,7 +75,6 @@ void CWinContext::RegisterWindowClasses(LPFNWNDPROC lpfnWndProc, int width, int 
     m_MainWndClass.lpszClassName = m_MainWndClassName;
     m_MainWndClass.hIconSm = ::LoadIconA(m_hInstance, (LPCSTR)IDI_PLAYER);
 
-    memset(&m_RenderWndClass, 0, sizeof(WNDCLASSA));
     m_RenderWndClass.lpfnWndProc = lpfnWndProc;
     m_RenderWndClass.style = CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS;
     m_RenderWndClass.hInstance = m_hInstance;
@@ -112,7 +124,7 @@ void CWinContext::CreateWindows()
             WS_EX_LEFT,
             m_MainWndClassName,
             m_MainWndName,
-            WS_OVERLAPPEDWINDOW & ~(WS_MAXIMIZEBOX|WS_MINIMIZEBOX|WS_SYSMENU),
+            WS_OVERLAPPEDWINDOW & ~(WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SYSMENU),
             m_MainWndX,
             m_MainWndY,
             mainWidth,
@@ -191,15 +203,18 @@ void CWinContext::SetResolution(int width, int height)
     m_Width = width;
     m_Height = height;
 
-    if (CWinContext::GetMainWindow())
+    int mainWidth = m_Width + 2 * (::GetSystemMetrics(SM_CXFRAME));
+    int mainHeight = m_Height + ::GetSystemMetrics(SM_CYCAPTION) + 2 * (::GetSystemMetrics(SM_CYFRAME));
+
+    if (m_MainWindow)
     {
-        if (!::SetWindowPos(CWinContext::GetMainWindow(), HWND_TOP, 0, 0, m_Width - 4, m_Height + 4, SWP_NOMOVE))
+        if (!::SetWindowPos(m_MainWindow, NULL, 0, 0, mainWidth, mainHeight, SWP_NOMOVE))
         {
             TT_ERROR_BOX("WinContext.cpp", "CWinContext::SetResolution(...)", "wrong parameters");
             throw CWinContextException();
         }
 
-        if (!::SetWindowPos(CWinContext::GetRenderWindow(), HWND_TOP, 0, 0, m_Width + 4, m_Height + 4, SWP_NOMOVE))
+        if (!::SetWindowPos(m_RenderWindow, NULL, 0, 0, m_Width, m_Height, SWP_NOMOVE))
         {
             TT_ERROR_BOX("WinContext.cpp", "CWinContext::SetResolution(...)", "wrong parameters");
             throw CWinContextException();

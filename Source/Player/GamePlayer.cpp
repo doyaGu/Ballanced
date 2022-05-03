@@ -5,6 +5,7 @@
 #include <io.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "dsetup.h"
 
@@ -346,17 +347,17 @@ static BOOL CALLBACK DialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
             curIdx = ::SendDlgItemMessageA(hWnd, IDC_LB_DRIVER, LB_GETCURSEL, 0, 0);
             if (curIdx >= 0)
             {
-                fError = CNeMoContext::GetInstance()->SetScreenMode(SendDlgItemMessageA(hWnd, IDC_LB_DRIVER, LB_GETITEMDATA, curIdx, 0));
+                fError = CNeMoContext::GetInstance()->ApplyScreenMode(SendDlgItemMessageA(hWnd, IDC_LB_DRIVER, LB_GETITEMDATA, curIdx, 0));
             }
 
-            CTTInterfaceManager *interfaceManager = CNeMoContext::GetInstance()->GetInterfaceManager();
-            if (!interfaceManager)
+            CTTInterfaceManager *im = CNeMoContext::GetInstance()->GetInterfaceManager();
+            if (!im)
             {
                 TT_ERROR("GamePlayer.cpp", "WndProc()", "No InterfaceManager");
                 return TRUE;
             }
-            interfaceManager->SetDriverIndex(CNeMoContext::GetInstance()->GetDriverIndex());
-            interfaceManager->SetScreenModeIndex(CNeMoContext::GetInstance()->GetScreenModeIndex());
+            im->SetDriverIndex(CNeMoContext::GetInstance()->GetDriverIndex());
+            im->SetScreenModeIndex(CNeMoContext::GetInstance()->GetScreenModeIndex());
 
             if (fError)
             {
@@ -384,6 +385,12 @@ CGamePlayer::CGamePlayer(CGameInfo *gameInfo, int n, bool defaultSetting, HANDLE
       m_Game(),
       m_IsRookie(rookie)
 {
+    memset(m_RenderPath, 0, sizeof(m_RenderPath));
+    memset(m_PluginPath, 0, sizeof(m_PluginPath));
+    memset(m_ManagerPath, 0, sizeof(m_ManagerPath));
+    memset(m_BehaviorPath, 0, sizeof(m_BehaviorPath));
+    memset(m_Path, 0, sizeof(m_Path));
+
     Construct();
 
     for (int i = 0; i < n; i++)
@@ -476,9 +483,9 @@ void CGamePlayer::OnSized()
     {
         RECT rect;
         ::GetClientRect(m_WinContext.GetMainWindow(), &rect);
-        ::SetWindowPos(m_WinContext.GetRenderWindow(), HWND_TOP, 0, 0, rect.right, rect.bottom, SWP_NOMOVE | SWP_NOZORDER);
+        ::SetWindowPos(m_WinContext.GetRenderWindow(), NULL, 0, 0, rect.right, rect.bottom, SWP_NOMOVE | SWP_NOZORDER);
         renderContext->Resize();
-        m_NeMoContext.MoveFrameRateSpriteToLeftTop();
+        m_NeMoContext.AdjustFrameRateSpritePosition();
     }
 }
 
@@ -489,10 +496,10 @@ void CGamePlayer::OnClose()
 
 void CGamePlayer::OnPaint()
 {
-    if (m_NeMoContext.GetRenderContext() && !m_NeMoContext.GetRenderContext()->IsFullScreen())
+    CKRenderContext *renderContext = m_NeMoContext.GetRenderContext();
+    if (renderContext && !renderContext->IsFullScreen())
     {
-        // In windowed mode call render when WM_PAINT
-        m_NeMoContext.GetRenderContext()->Render(CK_RENDER_USECURRENTSETTINGS);
+        renderContext->Render();
     }
 }
 
@@ -559,7 +566,7 @@ int CGamePlayer::OnSysKeyDown(UINT uKey)
 
     case VK_F4:
         // ALT + F4 -> Quit the application
-        PostQuitMessage(0);
+        Done();
         return 1;
     }
     return 0;
@@ -570,8 +577,8 @@ LRESULT CGamePlayer::OnActivateApp(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
     static bool isPlaying;
     static bool activated, displayChanged;
 
-    CTTInterfaceManager *interfaceManager = m_NeMoContext.GetInterfaceManager();
-    if (!interfaceManager || !m_NeMoContext.GetInterfaceManager()->IsTaskSwitchEnabled())
+    CTTInterfaceManager *im = m_NeMoContext.GetInterfaceManager();
+    if (!im || !m_NeMoContext.GetInterfaceManager()->IsTaskSwitchEnabled())
     {
         return ::DefWindowProcA(hWnd, uMsg, wParam, lParam);
     }
@@ -630,30 +637,29 @@ LRESULT CGamePlayer::OnActivateApp(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 
 LRESULT CGamePlayer::OnScreenModeChanged(WPARAM wParam, LPARAM lParam)
 {
-    LRESULT res = 0;
-
     int screenMode = m_NeMoContext.GetScreenModeIndex();
     int driver = m_NeMoContext.GetDriverIndex();
 
-    if (m_NeMoContext.SwitchScreenMode(lParam, wParam))
+    if (m_NeMoContext.ChangeScreenMode(lParam, wParam))
     {
-        res = 1;
+        return 1;
     }
 
-    CTTInterfaceManager *interfaceManager = m_NeMoContext.GetInterfaceManager();
-    if (!interfaceManager)
+    CTTInterfaceManager *im = m_NeMoContext.GetInterfaceManager();
+    if (!im)
     {
         TT_ERROR("GamePlayer.cpp", "WndProc()", "No InterfaceManager");
         return 1;
     }
 
-    interfaceManager->SetDriverIndex(driver);
-    interfaceManager->SetScreenModeIndex(screenMode);
-    RegSetBPPAndDriver(m_NeMoContext.GetColorBPP(), m_NeMoContext.GetDriverIndex());
-    RegSetResolution(m_NeMoContext.GetWidth(), m_NeMoContext.GetHeight());
-    ::SetFocus(m_WinContext.GetMainWindow());
+    im->SetDriverIndex(driver);
+    im->SetScreenModeIndex(screenMode);
 
-    return res;
+    RegSetBPPAndDriver(m_NeMoContext.GetBPP(), m_NeMoContext.GetDriverIndex());
+    RegSetResolution(m_NeMoContext.GetWidth(), m_NeMoContext.GetHeight());
+
+    ::SetFocus(m_WinContext.GetMainWindow());
+    return 0;
 }
 
 void CGamePlayer::OnCommand(UINT id, UINT code)
@@ -726,7 +732,13 @@ LRESULT CGamePlayer::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     switch (uMsg)
     {
     case WM_DESTROY:
+        Done();
+        break;
+
     case WM_SIZE:
+        OnSized();
+        break;
+
     case WM_QUIT:
         break;
 
@@ -746,12 +758,15 @@ LRESULT CGamePlayer::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         break;
 
     case WM_GETMINMAXINFO:
-        if (lParam != NULL)
+    {
+        LPMINMAXINFO lpmmi = (LPMINMAXINFO)lParam;
+        if (lpmmi)
         {
-            ((MINMAXINFO *)lParam)->ptMaxPosition.x = 400;
-            ((MINMAXINFO *)lParam)->ptMaxPosition.y = 200;
+            lpmmi->ptMinTrackSize.x = 400;
+            lpmmi->ptMinTrackSize.y = 200;
         }
-        break;
+    }
+    break;
 
     case WM_KEYDOWN:
         OnKeyDown(wParam);
@@ -803,7 +818,6 @@ LRESULT CGamePlayer::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             ::SetFocus(m_WinContext.GetMainWindow());
             m_NeMoContext.Play();
             ::SetFocus(m_WinContext.GetMainWindow());
-            // ::SystemParametersInfoA(SPI_SCREENSAVERRUNNING, 0, NULL, 0);
         }
         break;
 
@@ -825,7 +839,7 @@ LRESULT CGamePlayer::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 void CGamePlayer::Init(HINSTANCE hInstance, LPFNWNDPROC lpfnWndProc)
 {
     bool settingChanged = false;
-	bool engineReinitialized = false;
+    bool engineReinitialized = false;
 
     m_State = eInitial;
 
@@ -845,7 +859,7 @@ void CGamePlayer::Init(HINSTANCE hInstance, LPFNWNDPROC lpfnWndProc)
             if (m_DefaultSetting)
             {
                 m_NeMoContext.SetDriverIndex(0);
-                m_NeMoContext.SetColorBPP(16);
+                m_NeMoContext.SetBPP(DEFAULT_BPP);
                 m_NeMoContext.SetResolution(DEFAULT_WIDTH, DEFAULT_HEIGHT);
                 engineReinitialized = ReInitEngine();
                 settingChanged = true;
@@ -867,21 +881,18 @@ void CGamePlayer::Init(HINSTANCE hInstance, LPFNWNDPROC lpfnWndProc)
 
             if (settingChanged)
             {
-                RegSetBPPAndDriver(m_NeMoContext.GetColorBPP(), m_NeMoContext.GetScreenModeIndex());
+                RegSetBPPAndDriver(m_NeMoContext.GetBPP(), m_NeMoContext.GetScreenModeIndex());
                 RegSetResolution(m_NeMoContext.GetWidth(), m_NeMoContext.GetHeight());
             }
         }
 
         m_WinContext.ShowWindows();
         m_WinContext.UpdateWindows();
-        
-        m_NeMoContext.GetRenderContext()->Clear(CK_RENDER_USECURRENTSETTINGS, 0);
-        m_NeMoContext.GetRenderContext()->BackToFront(CK_RENDER_USECURRENTSETTINGS);
-        m_NeMoContext.GetRenderContext()->Clear(CK_RENDER_USECURRENTSETTINGS, 0);
+
+        m_NeMoContext.Refresh();
 
         ::SendMessageA(m_WinContext.GetMainWindow(), TT_MSG_EXIT_TO_TITLE, NULL, NULL);
         ::SetFocus(m_WinContext.GetMainWindow());
-        // ::SystemParametersInfoA(SPI_SCREENSAVERRUNNING, 0, 0, 0);
 
         m_State = eInitialized;
     }
@@ -940,12 +951,15 @@ void CGamePlayer::Done()
         {
             m_NeMoContext.Cleanup();
             m_NeMoContext.RestoreWindow();
-            m_NeMoContext.GetRenderContext()->Clear(CK_RENDER_USECURRENTSETTINGS, 0);
-            m_NeMoContext.GetRenderContext()->SetClearBackground(TRUE);
-            m_NeMoContext.GetRenderContext()->BackToFront(CK_RENDER_USECURRENTSETTINGS);
-            m_NeMoContext.GetRenderContext()->SetClearBackground(TRUE);
-            m_NeMoContext.GetRenderContext()->Clear(CK_RENDER_USECURRENTSETTINGS, 0);
+
+            m_NeMoContext.GetRenderContext()->Clear();
+            m_NeMoContext.GetRenderContext()->SetClearBackground();
+            m_NeMoContext.GetRenderContext()->BackToFront();
+            m_NeMoContext.GetRenderContext()->SetClearBackground();
+            m_NeMoContext.GetRenderContext()->Clear();
+
             m_NeMoContext.Shutdown();
+
             CGameInfo *gameInfo = m_Game.GetGameInfo();
             if (gameInfo && gameInfo->fileName)
             {
@@ -958,7 +972,7 @@ void CGamePlayer::Done()
             m_Stack.ClearAll();
         }
         m_Cleared = true;
-        exit(1);
+        exit(EXIT_FAILURE);
     }
     catch (const CGameStackException &)
     {
@@ -974,9 +988,7 @@ bool CGamePlayer::LoadCMO(const char *filename)
 {
     try
     {
-        m_NeMoContext.GetRenderContext()->Clear(CK_RENDER_USECURRENTSETTINGS, 0);
-        m_NeMoContext.GetRenderContext()->BackToFront(CK_RENDER_USECURRENTSETTINGS);
-        m_NeMoContext.GetRenderContext()->Clear(CK_RENDER_USECURRENTSETTINGS, 0);
+        m_NeMoContext.Refresh();
 
         CGameInfo *gameInfoNow = m_Game.GetGameInfo();
         CGameInfo *gameInfo = m_Stack.GetGameInfo(filename);
@@ -1014,13 +1026,15 @@ bool CGamePlayer::LoadCMO(const char *filename)
             m_Stack.Push(gameInfoNow);
         }
 
-        RegisterGameInfoToInterfaceManager();
+        if (!RegisterGameInfoToInterfaceManager())
+        {
+            return false;
+        }
 
         m_Game.Load();
         ::SetCursor(::LoadCursorA(NULL, (LPCSTR)IDC_ARROW));
         m_Game.Play();
         ::SetFocus(m_WinContext.GetMainWindow());
-        // ::SystemParametersInfoA(SPI_SCREENSAVERRUNNING, 0, NULL, 0);
 
         return true;
     }
@@ -1060,13 +1074,13 @@ void CGamePlayer::Construct()
         TT_LOG_OPEN(filename, rootPath, false);
         fillResourceMap(&g_ResMap);
 
-        if (IsNoSettingsInRegistry()) // if missing key in Settings Registry
+        if (IsNoSettingsInRegistry())
         {
             // Default settings
-            m_NeMoContext.SetScreen(&m_WinContext, false, 0, 16, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+            m_NeMoContext.SetScreen(&m_WinContext, false, 0, DEFAULT_BPP, DEFAULT_WIDTH, DEFAULT_HEIGHT);
             m_WinContext.SetResolution(DEFAULT_WIDTH, DEFAULT_HEIGHT);
-            RegSetBPP(16);
-            RegSetBPPAndDriver(16, 0);
+            RegSetBPP(DEFAULT_BPP);
+            RegSetBPPAndDriver(DEFAULT_BPP, 0);
             RegSetFullscreen(false);
             RegSetResolution(DEFAULT_WIDTH, DEFAULT_HEIGHT);
         }
@@ -1149,20 +1163,20 @@ bool CGamePlayer::InitEngine()
             return false;
         }
 
-        CTTInterfaceManager *interfaceManager = m_NeMoContext.GetInterfaceManager();
-        if (!interfaceManager)
+        CTTInterfaceManager *im = m_NeMoContext.GetInterfaceManager();
+        if (!im)
         {
             TT_ERROR("GamePlayer.cpp", "CGamePlayer::InitEngine()", "No InterfaceManager");
             return false;
         }
 
-        interfaceManager->SetDriverIndex(m_NeMoContext.GetDriverIndex());
-        interfaceManager->SetScreenModeIndex(m_NeMoContext.GetScreenModeIndex());
+        im->SetDriverIndex(m_NeMoContext.GetDriverIndex());
+        im->SetScreenModeIndex(m_NeMoContext.GetScreenModeIndex());
 
         m_WinContext.ShowWindows();
         m_WinContext.UpdateWindows();
 
-        interfaceManager->SetRookie(m_IsRookie);
+        im->SetRookie(m_IsRookie);
     }
     catch (const CGamePlayerException &)
     {
@@ -1278,7 +1292,14 @@ void CGamePlayer::LoadStdDLL()
     }
 }
 
-inline void CGamePlayer::RegisterGameInfoToInterfaceManager()
+bool CGamePlayer::RegisterGameInfoToInterfaceManager()
 {
-    m_NeMoContext.GetInterfaceManager()->SetGameInfo(m_Game.GetGameInfo());
+    CTTInterfaceManager *im = m_NeMoContext.GetInterfaceManager();
+    if (!im)
+    {
+        return false;
+    }
+
+    im->SetGameInfo(m_Game.GetGameInfo());
+    return true;
 }

@@ -36,4 +36,4 @@ LRESULT CPlayerRegistry::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
     return m_Player->WndProc(hWnd, uMsg, wParam, lParam);
 }
 
-CPlayerRegistry::CPlayerRegistry() : m_Initialized(false) {}
+CPlayerRegistry::CPlayerRegistry() : m_Player(NULL), m_Initialized(false) {}

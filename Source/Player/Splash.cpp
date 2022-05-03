@@ -84,13 +84,21 @@ LRESULT CALLBACK CSplash::SplashWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPA
     default:
         break;
     }
-    
+
     return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
 
-CSplash::CSplash() {}
+CSplash::CSplash() : m_Data(NULL), m_hWnd(NULL), m_hInstance(NULL) {}
 
 CSplash::CSplash(HINSTANCE hInstance) : m_hInstance(hInstance) {}
+
+CSplash::~CSplash() 
+{
+    if (m_Data)
+    {
+        delete[] m_Data;
+    }
+}
 
 void CSplash::Show()
 {
@@ -176,7 +184,7 @@ bool CSplash::LoadBMP(LPCSTR lpFileName)
 
     if (m_Data)
     {
-        free(m_Data);
+        delete[] m_Data;
     }
 
     hFile = ::CreateFileA(lpFileName,
@@ -200,11 +208,11 @@ bool CSplash::LoadBMP(LPCSTR lpFileName)
     }
 
     dwBytesToRead = *(DWORD *)&buffer[2] - 14;
-    m_Data = (BYTE *)malloc(dwBytesToRead);
+    m_Data = new BYTE[dwBytesToRead];
     if (!::ReadFile(hFile, m_Data, dwBytesToRead, &dwBytesRead, NULL) || dwBytesRead != dwBytesToRead)
     {
         ::CloseHandle(hFile);
-        free(m_Data);
+        delete[] m_Data;
         return false;
     }
 
