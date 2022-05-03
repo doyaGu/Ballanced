@@ -634,7 +634,7 @@ template <class T, class TCmpFunc, bool TMulti>
 typename XBTree<T,TCmpFunc,TMulti>::Node*	XBTree<T,TCmpFunc,TMulti>::m_Nil = 0;
 
 template <class T, class TCmpFunc, bool TMulti>
-int	XBTree<T,TCmpFunc,TMulti>::m_NilRefCount = 0;
+int XBTree<T,TCmpFunc,TMulti>::m_NilRefCount = 0;
 
 /************************************************
 Summary: Not Yet Documented

@@ -8,7 +8,6 @@
 #ifndef VXMATH_H
 #define VXMATH_H
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>	
@@ -89,7 +88,6 @@ struct VxImageDescEx;
 #include "VxFrustum.h"
 #include "VxColor.h"
 #include "VxAllocator.h"
-#include "VxCone.h"
 
 // Containers
 #include "XArray.h"
@@ -128,19 +126,11 @@ VX_EXPORT void VxProjectBoxZExtents(const VxMatrix& World_ProjectionMat,const Vx
 //------- Structure copying
 VX_EXPORT BOOL VxFillStructure(int Count,void* Dst,DWORD Stride,DWORD SizeSrc,void* Src); 
 VX_EXPORT BOOL VxCopyStructure(int Count,void* Dst,DWORD OutStride,DWORD SizeSrc,void* Src,DWORD InStride);
-VX_EXPORT BOOL VxFillStructure(int Count,const VxStridedData& Dst,DWORD SizeSrc,void* Src);
-VX_EXPORT BOOL VxCopyStructure(int Count,const VxStridedData& Dst,DWORD SizeSrc,const VxStridedData& Src);
-
-
 VX_EXPORT BOOL VxIndexedCopy(const VxStridedData& Dst,const VxStridedData& Src,DWORD SizeSrc,int* Indices,int IndexCount);
-VX_EXPORT BOOL VxIndexedCopy(const VxStridedData& Dst,const VxStridedData& Src,DWORD SizeSrc,WORD* Indices,int IndexCount);
 
 //---- Graphic Utilities
 VX_EXPORT 	void VxDoBlit(const VxImageDescEx& src_desc,const VxImageDescEx& dst_desc);
 VX_EXPORT 	void VxDoBlitUpsideDown(const VxImageDescEx& src_desc,const VxImageDescEx& dst_desc);
-
-VX_EXPORT 	void VxDoBlitDeInterleaved(const VxImageDescEx& src_desc,const VxImageDescEx& dst_desc, const BOOL iField1First);
-VX_EXPORT 	void VxDoBlitDeInterleavedUpsideDown(const VxImageDescEx& src_desc,const VxImageDescEx& dst_desc, const BOOL iField1First);
 
 VX_EXPORT 	void VxDoAlphaBlit(const VxImageDescEx& dst_desc,BYTE AlphaValue);
 VX_EXPORT 	void VxDoAlphaBlit(const VxImageDescEx& dst_desc,BYTE* AlphaValues);
@@ -187,16 +177,11 @@ VX_EXPORT void VxConvertPathToSystemPath(XString& path);
 /*************************************************
 {filename:VxTimeProfiler}
 Name: VxTimeProfiler
-Summary: Class for timing purposes
+Summary: Class for profiling purposes
 
 Remarks: 
 	This class provides methods to accurately compute
-	the time elapsed. On PC platform it uses the Windows QueryPerformanceCounter
-	function to be compatible with processor with the Intel SpeedStep feature.
-
-	The VxRDTSCProfiler class is best suited when profiling small chunk of code
-	has it has smaller overhead than VxTimeProfiler. 
-	
+	the time elapsed.
 Example:
       // To profile several items :
 
@@ -206,7 +191,7 @@ Example:
 	  MyProfiler.Reset();
 	  ...
 	  float delta_time2=MyProfiler.Current();
-See also: VxRDTSCProfiler
+See also: 
 *************************************************/
 class VX_EXPORT  VxTimeProfiler {
 public:
@@ -216,7 +201,6 @@ public:
 	Summary: Starts profiling
 	*************************************************/
 	VxTimeProfiler() { Reset(); }
-	VxTimeProfiler(BOOL iReset) { if (iReset) Reset(); }
 
 	/*************************************************
 	Summary: Restarts the timer
@@ -243,73 +227,6 @@ protected:
 };
 
 
-/*************************************************
-{filename:VxRDTSCProfiler}
-Name: VxRDTSCProfiler
-Summary: Class for profiling purposes
-
-Remarks: 
-	This class provides methods to accurately compute
-	the time elapsed. Its implementation is the same 
-	from VxTimeProfiler except on PC platform where it uses the RDTSC
-	instruction to profile precisely the number of cycles. 
-
-	On Intel processor with the Speedstep technology, the 
-	processor frequency can change over time so the result 
-	of the profiler may not be reliable. 
-Example:
-      // To profile several items :
-
-      VxRDTSCProfiler MyProfiler;
-      ...
-	  float delta_time = MyProfiler.Current();
-	  int   cycle_count = MyProfiler.CurrentCycleCount();
-
-	  MyProfiler.Reset();
-	  ...
-	  float delta_time2=MyProfiler.Current();
-See also: VxTimeProfiler
-*************************************************/
-	#define VXRDTSCPROFILER
-	class VX_EXPORT  VxRDTSCProfiler {
-	public:
-		/*************************************************
-		Name: VxTimeProfiler
-		Summary: Starts profiling
-		*************************************************/
-		VxRDTSCProfiler() { Reset(); }
-		VxRDTSCProfiler(BOOL iReset) { if (iReset) Reset(); }
-
-		/*************************************************
-		Summary: Restarts the timer
-		*************************************************/
-		void Reset();
-	
-		/*************************************************
-		Summary: Returns the current time elapsed (in milliseconds)
-		*************************************************/
-		float Current();
-
-		/*************************************************
-		Summary: Returns the number of cycles elapsed...
-		*************************************************/
-		int   CurrentCycleCount();
-
-		/*************************************************
-		Summary: Returns the current time elapsed (in milliseconds)
-		*************************************************/
-		float Split()
-		{
-			float c = Current();
-			Reset();
-			return c;
-		}
-
-	protected:
-		DWORD Times[4];
-	};
-
-
 /****************************************************************
 Name: VxImageDescEx
 
@@ -321,7 +238,7 @@ Colormap, Image pointer and is ready for future enhancements.
 
 
 ****************************************************************/
-struct VxImageDescEx {
+typedef struct VxImageDescEx {
 	int		Size;				// Size of the structure
 	DWORD	Flags;				// Reserved for special formats (such as compressed ) 0 otherwise
 
@@ -346,10 +263,8 @@ struct VxImageDescEx {
 		
 	};
 	DWORD	AlphaMask;			// Mask for Alpha component
-	union{
-		short	BytesPerColorEntry;	// ColorMap Stride
-		short	Depth;				// Depth for Volume Texture
-	};
+
+	short	BytesPerColorEntry;	// ColorMap Stride
 	short	ColorMapEntries;	// If other than 0 image is palletized
 
 	BYTE*	ColorMap;			// Palette colors
@@ -394,12 +309,7 @@ public:
 				BytesPerColorEntry!=desc.BytesPerColorEntry || ColorMapEntries!=desc.ColorMapEntries);
 	}
 
-};
+} VxImageDescEx;
 
-/************************************************
-Summary: Returns the current platform.
-
-************************************************/
-VX_EXPORT VX_PLATFORMINFO VxGetPlatform();
 
 #endif

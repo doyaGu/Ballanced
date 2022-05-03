@@ -2,11 +2,10 @@
 /*	File : XObjectArray.h												 */
 /*	Author :  Aymeric BARD												 */	
 /*																		 */	
-/*	Virtools SDK 															 */	 
-/*	Copyright (c) Virtools 2000, All Rights Reserved.						 */	
+/*	Virtools SDK 														 */	 
+/*	Copyright (c) Virtools 2000, All Rights Reserved.					 */	
 /*************************************************************************/
 #ifndef _XOBJECTARRAY_H
-
 #define _XOBJECTARRAY_H
 
 #include "XArray.h"

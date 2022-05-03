@@ -75,21 +75,6 @@ typedef struct {  int x,y; } CKPOINT;
 
 
 class VxMatrix;
-struct VxStridedData;
-
-/************************************************
-Summary: Structure for storage of strided data.
-
-
-************************************************/
-typedef struct VxStridedDataBase {
-	union {
-		void*			Ptr;
-		unsigned char*	CPtr;
-	};
-	unsigned int	Stride;
-	operator const VxStridedData& () const { return *(const VxStridedData*)this; }
-} VxStridedDataBase;
 
 
 /************************************************
@@ -97,9 +82,10 @@ Summary: Structure for storage of strided data.
 
 
 ************************************************/
-typedef struct VxStridedData : public VxStridedDataBase  {
-	VxStridedData() { Ptr = 0; Stride = 0; }
-	VxStridedData(void* iPtr,unsigned int iStride) { Ptr = iPtr; Stride = iStride; }
+typedef struct VxStridedData {
+	void* DataPtr;
+	unsigned int DataStride;
+	VxStridedData(void* Ptr=NULL,unsigned int Stride=0) { DataPtr=Ptr; DataStride=Stride; }
 } VxStridedData;
 
 
@@ -132,12 +118,11 @@ typedef enum ProcessorsType
 		PROC_PPC_G3			=13,	// Power  PC G3
 		PROC_PPC_G4			=14,	// Power  PC G4
 		PROC_PSX2			=15,	// MIPS PSX2
-		PROC_XBOX2			=16		// XBOX2 CPU
 } ProcessorsType;
 
 
 #define NB_STDPIXEL_FORMATS 19
-#define MAX_PIXEL_FORMATS	38
+#define MAX_PIXEL_FORMATS	28
 
 /*****************************************************************
 Name: VX_OSINFO
@@ -162,26 +147,7 @@ typedef enum VX_OSINFO {
 	VXOS_WINCE2,
 	VXOS_WINCE3,
 	VXOS_PSX2,
-	VXOS_XBOX2,
 } VX_OSINFO; 
-
-/*****************************************************************
-{filename:VX_PLATFORMINFO}
-Name: VX_PLATFORMINFO
-
-Summary: Platform enumeration. 
-See Also: VxGetPlatform
-******************************************************************/
-typedef enum VX_PLATFORMINFO {
-	VXPLATFORM_UNKNOWN = -1,
-	VXPLATFORM_WINDOWS = 0,
-	VXPLATFORM_MAC = 1,
-	VXPLATFORM_XBOX = 2,
-	VXPLATFORM_WINCE = 3,
-	VXPLATFORM_LINUX = 4,
-	VXPLATFORM_PSX2 = 5,
-	VXPLATFORM_XBOX2 = 6
-} VX_PLATFORMINFO; 
 
 
 /*****************************************************************
@@ -220,23 +186,10 @@ typedef enum VX_PIXELFORMAT {
 	_32_V16U16	  = 25,			// 32-bit Bump Map format format (16 bits per color)	
 	_16_L6V5U5	  = 26,			// 16-bit Bump Map format format with luminance
 	_32_X8L8V8U8  = 27,			// 32-bit Bump Map format format with luminance
-
-// Floating Textures
-
-	_16_R16F		  = 28,     // 1*16 bits floating point
-	_32_GR16F		  = 29,		// 2*16 bits floating point
-	_64_ABGR16F		  = 30,		// 4*16 bits floating point	
-
-	_32_R32F		  = 31,     // 1*32 bits floating point IEEE
-	_64_GR32F		  = 32,		// 2*32 bits floating point IEEE
-	_128_ABGR32F	  = 33,		// 4*32 bits floating point	IEEE
-
-// Clut Formats
-	_8_ABGR8888_CLUT  = 34,		// 8 bits indexed CLUT (ABGR)
-	_8_ARGB8888_CLUT  = 35,		// 8 bits indexed CLUT (ARGB)
-	_4_ABGR8888_CLUT  = 36,		// 4 bits indexed CLUT (ABGR)
-	_4_ARGB8888_CLUT  = 37,		// 4 bits indexed CLUT (ARGB)
-
+	_8_ABGR8888_CLUT  = 28,		// 8 bits indexed CLUT (ABGR)
+	_8_ARGB8888_CLUT  = 29,		// 8 bits indexed CLUT (ARGB)
+	_4_ABGR8888_CLUT  = 30,		// 4 bits indexed CLUT (ABGR)
+	_4_ARGB8888_CLUT  = 31		// 4 bits indexed CLUT (ARGB)
 } VX_PIXELFORMAT;
 
 /*****************************************************************
@@ -305,10 +258,8 @@ typedef enum ProcessorsFeatures
 	PROC_MMX		= 0x00800000,	// MMX instructions available
 	PROC_FXSR		= 0x01000000,	// Fast state save/restore
 	PROC_SIMD		= 0x02000000,	// SIMD instructions available
-	PROC_WNI		= 0x04000000,	// Willamette new instructions available
-	PROC_SS			= 0x08000000,	// Self snoop
-	PROC_HTT		= 0x10000000,	// Hyper Threading Technology
-	PROC_TM			= 0x20000000,	// Thermal Moitoring
+	PROC_WNI		= 0x04000000	// Willamette new instructions available
+		
 } ProcessorsFeatures;
 
 #endif

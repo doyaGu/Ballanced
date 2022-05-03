@@ -484,9 +484,21 @@ public:
 
 	
 			
-	See also: VxRect::IsOutside, VxRect::Clear
+	See also: VxRect::IsEmpty, VxRect::IsOutside, VxRect::Clear
 	*************************************************/
 	BOOL	IsNull() const {return (left==0 && right==0 && bottom==0 && top==0);}
+	
+	/*************************************************
+	Summary: Tests if a rectangle is Empty (width==0 or height==0)
+	
+	Return Value:
+		TRUE if the rectangle is Empty, FALSE otherwise.
+
+	
+			
+	See also: VxRect::IsNull, VxRect::IsOutside, VxRect::Clear
+	*************************************************/
+	BOOL	IsEmpty() const {return ((left==right) || (bottom==top));}
 
 	/*************************************************
 	Summary: Clips a rectangle over a clipping rectangle.

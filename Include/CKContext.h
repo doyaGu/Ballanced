@@ -1,3 +1,10 @@
+/*************************************************************************/
+/*	File : CKContext.h				 				 					 */
+/*	Author :  Romain Sididris											 */	
+/*																		 */	
+/*	Virtools SDK 															 */	 
+/*	Copyright (c) Virtools 2000, All Rights Reserved.					 */	
+/*************************************************************************/
 #ifndef CKCONTEXT_H
 #define CKCONTEXT_H "$Id:$"
 
@@ -13,8 +20,6 @@
 #ifdef DOCJETDUMMY // DOCJET secret macro
 #else
 
-struct CKStreamWriter;
-
 typedef XClassArray<CKClassDesc> XClassInfoArray;		
 typedef XArray<CKBaseManager*> XManagerArray;			
 
@@ -28,7 +33,6 @@ typedef XObjDeclHashTable::Iterator					XObjDeclHashTableIt;
 typedef XObjDeclHashTable::Pair						XObjDeclHashTablePair;	
 
 #endif // Docjet secret macro
-
 
 
 /***************************************************************************
@@ -59,7 +63,6 @@ public:
 	CKObject*	GetObject	(CK_ID ObjID);
 	int			GetObjectCount();
 	int			GetObjectSize(CKObject *obj);
-	CKBOOL		IsObjectSafe(CKObject *obj);
 	CKERROR		DestroyObject(CKObject *obj,DWORD Flags=0,CKDependencies* depoptions=NULL);
 	CKERROR		DestroyObject(CK_ID id,DWORD Flags=0,CKDependencies* depoptions=NULL);
 	CKERROR		DestroyObjects(CK_ID* obj_ids,int Count,CKDWORD Flags=0,CKDependencies* depoptions=NULL);
@@ -84,7 +87,6 @@ public:
 	CKBOOL	IsPlaying();
 	CKBOOL	IsInBreak();
 	CKBOOL	IsReseted();
-	CKDWORD	GetFocusLostBehavior();
 // Runtime mode 
 	CKERROR	Process();
 
@@ -110,6 +112,7 @@ public:
 	CKParameterLocal*	CreateCKParameterLocal		(CKSTRING Name,CKGUID guid,CKBOOL Dynamic = FALSE);	
 	CKParameterLocal*	CreateCKParameterLocal		(CKSTRING Name,CKSTRING TypeName,CKBOOL Dynamic = FALSE);	
 	CKParameterOperation* CreateCKParameterOperation	(CKSTRING Name,CKGUID opguid,CKGUID ResGuid,CKGUID p1Guid,CKGUID p2Guid);
+	// CKParameterVariable* CreateCKParameterVariable(CKSTRING Name,CKBOOL Dynamic);
 
 	CKFile* CreateCKFile();
 	CKERROR DeleteCKFile(CKFile *);
@@ -133,7 +136,7 @@ public:
 	CKERROR	ShowSetup(CK_ID);
 	CK_ID	ChooseObject(void * dialogParentWnd); 
 	CKERROR	Select(const XObjectArray&o,BOOL clearSelection=TRUE);
-	CKDWORD	SendInterfaceMessage(CKDWORD reason,CKDWORD param1,CKDWORD param2,CKDWORD param3=0);
+	CKDWORD	SendInterfaceMessage(CKDWORD reason,CKDWORD param1,CKDWORD param2);
 
 	CKERROR	UICopyObjects(const XObjectArray& iObjects, CKBOOL iClearClipboard = TRUE);
 	CKERROR	UIPasteObjects(const XObjectArray& oObjects);
@@ -191,7 +194,7 @@ public:
 	CK_TEXTURE_SAVEOPTIONS	GetGlobalImagesSaveOptions();
 	void						SetGlobalImagesSaveOptions(CK_TEXTURE_SAVEOPTIONS Options);
 
-	CKBitmapProperties*		GetGlobalImagesSaveFormat(); 	
+	CKBitmapProperties*		GetGlobalImagesSaveFormat(); 
 	void						SetGlobalImagesSaveFormat(CKBitmapProperties* Format);  
 
 	CK_SOUND_SAVEOPTIONS		GetGlobalSoundsSaveOptions();
@@ -221,7 +224,6 @@ public:
 	CKBOOL IsInLoad();
 	CKBOOL IsInSave();
 	CKBOOL IsRunTime();
-	
 
 //----------------------------------------------------
 //	Render Engine Implementation Specific
@@ -229,12 +231,12 @@ public:
 
 	void ExecuteManagersOnPreRender(CKRenderContext* dev); 
 	void ExecuteManagersOnPostRender(CKRenderContext* dev); 
-	// void ExecuteManagersOnPreSpriteRender(CKRenderContext* dev); 
 	void ExecuteManagersOnPostSpriteRender(CKRenderContext* dev); 
-	// void ExecuteManagersOnPostFullScreen(BOOL Going2FullScreen,CKRenderContext* dev);
-	// void ExecuteManagersOnPreFullScreen(BOOL Going2FullScreen,CKRenderContext* dev);
-	// void ExecuteManagersOnPreBackToFront(CKRenderContext* dev);
-	// void ExecuteManagersOnPostBackToFront(CKRenderContext* dev);
+	void ExecuteManagersOnPostFullScreen(BOOL Going2FullScreen,CKRenderContext* dev);
+	void ExecuteManagersOnPreFullScreen(BOOL Going2FullScreen,CKRenderContext* dev);
+	void ExecuteManagersOnPreBackToFront(CKRenderContext* dev);
+	void ExecuteManagersOnPostBackToFront(CKRenderContext* dev);
+	
 	void AddProfileTime(CK_PROFILE_CATEGORY cat,float time); 
 
 //------- Runtime Debug Mode
@@ -249,15 +251,11 @@ public:
 	int	 GetPVInformation(); 
 	CKBOOL	 IsInDynamicCreationMode(); 
 
-	// void	SetStreamWriter(CKStreamWriter* iWriter);
-	// CKBOOL DumpObjectManagerMemoryUse(CKSTRING DumpFilename,CKBOOL DumpAllObjects);
-
 // Internal functions 
 #ifdef DOCJETDUMMY // DOCJET secret macro
 #else
 	//---------------- Allocator
 	VxAllocator*			m_Allocator;
-	int			m_TimeStamp;	// A unique "time" that is incremented every frame 
 
 
 #endif // Docjet secret macro

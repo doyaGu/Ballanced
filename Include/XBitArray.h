@@ -55,23 +55,15 @@ public:
 	XBitArray& operator = (const XBitArray& a)
 	{
 		if (this != &a) {
-			if (m_Size != a.m_Size) {
-				if (m_Size > 32)
-					Free();
-				
-				m_Size = a.m_Size;
-				if (m_Size > 32) { // we allocate only if > 32
-					m_Data = Allocate(m_Size>>5);
-					memcpy(m_Data,a.m_Data,m_Size>>3);
-				} else {
-					m_Flags = a.m_Flags;
-				}
+			if (m_Size > 32)
+				Free();
+			
+			m_Size = a.m_Size;
+			if (m_Size > 32) { // we allocate only if > 32
+				m_Data = Allocate(m_Size>>5);
+				memcpy(m_Data,a.m_Data,m_Size>>3);
 			} else {
-				if (m_Size>32)
-					memcpy(m_Data,a.m_Data,m_Size>>3);
-				else 
-					m_Flags = a.m_Flags;
-
+				m_Flags = a.m_Flags;
 			}
 		}
 		return *this;

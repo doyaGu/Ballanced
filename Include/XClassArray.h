@@ -312,7 +312,7 @@ public:
 	************************************************/
 	T& operator [](int i)  const
 	{
-		XASSERT(i>=0 && i<Size());		
+		XASSERT(i>=0 && i<Size());
 		return *(m_Begin+i);
 	}
 

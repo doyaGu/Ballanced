@@ -46,8 +46,6 @@ typedef unsigned long CK_ID;
 
 typedef char* CKSTRING;			
 typedef char CKCHAR;			
-typedef unsigned short* CKUSTRING;	
-typedef unsigned short CKUCHAR;		
 typedef int CKBOOL;				
 typedef unsigned char CKBYTE;	
 typedef unsigned long CKDWORD; 	
@@ -322,15 +320,9 @@ Remarks:
 + Comparison operators are defined so CKGUIDS can be compared with 
 ==,!= ,<,> operators.
 
-+ To create a non registered CKGUID at runtime you can use the CKContext::GetSecureGUID
-Runtime allocated CKGUID should only be used for local referencing and not static referencing
-+ New statically allocated CKGUID can be generated using the CKGuidGen application (located in the Dev/Sdk/Utils directory).
-  
 See also: Pre-Registred Parameter Types,ParameterOperation Types
 *******************************************************************************/
 
-// GG : Slightly modified the guid definition to make it compile on CodeWarrior
-// (issue with anonymous unions).
 
 struct CKGUID {
 	union
@@ -465,16 +457,6 @@ typedef enum VX_EFFECTTEXGEN
 	VXEFFECT_TGREFLECT			= 2UL,	// Use vertex position and normal to compute a reflection vector used as tex coords
 	VXEFFECT_TGCHROME			= 3UL,	// Use vertex normal as tex coords
 	VXEFFECT_TGPLANAR			= 4UL,	// Use vertex position as tex coords
-	VXEFFECT_TGPROJECT			= 5UL,	// Compute a perspective projection using a camera as referential  (available only on video cards that support it). The device must expose the CKRST_TEXTURECAPS_PROJECTED flags in its TextureCaps.
-	
-	VXEFFECT_TGUV0				= 6UL,	// Use the vertex texture coordinates 0.
-	VXEFFECT_TGUV1				= 7UL,	// Use the vertex texture coordinates 1.
-	VXEFFECT_TGUV2				= 8UL,	// Use the vertex texture coordinates 2.
-	VXEFFECT_TGUV3				= 9UL,	// Use the vertex texture coordinates 3.
-	VXEFFECT_TGUV4				= 10UL,	// Use the vertex texture coordinates 4.
-	VXEFFECT_TGUV5				= 11UL,	// Use the vertex texture coordinates 5.
-	VXEFFECT_TGUV6				= 12UL,	// Use the vertex texture coordinates 6.
-	VXEFFECT_TGUV7				= 13UL,	// Use the vertex texture coordinates 7.
 
 	VXEFFECT_TGCUBEMAP_REFLECT	= 31UL,	// Cube Map : Use vertex position and normal to compute a reflection vector used as tex coords
 	VXEFFECT_TGCUBEMAP_SKYMAP	= 32UL,	// Cube Map : Use vertex position as tex coords
@@ -595,7 +577,6 @@ typedef enum CK_UICALLBACK_REASON {
 	CKUIM_VSLBREAKNOTIFY	=		15, // First param is a VSLEditor order, second is data.
 	CKUIM_DUPLICATEOBJECTS	=		16, // First param is a CKfile being load with duplicate objects.
 	CKUIM_OPENVSLSCRIPTEDITOR=		17,	// Request to open VSL Script Editor, or focus it
-	CKUIM_SENDNOTIFICATION	=		18,	// Send a notification through Virtools Dev CUIK interface, use Param1 & Param2 for parameters, and Param3 for notification message
 } CK_UICALLBACK_REASON;
 
 

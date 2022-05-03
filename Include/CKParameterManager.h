@@ -14,7 +14,6 @@
 #include "CKParameterLocal.h"
 #include "CKContext.h"
 
-
 /********************************************************
  Kept for compatibility issues : On macintosh the 
  const CKGUID& must be used to conform to Codewarrior, On PC
@@ -81,7 +80,7 @@ or it can be use to access the sub-members of a parameter of the type CKPGUID_MY
 
 {html:<table width="90%" border="1" align="center" bordercolorlight="#FFFFFF" bordercolordark="#FFFFFF" bgcolor="#FFFFFF" bordercolor="#FFFFFF"><tr bgcolor="#E6E6E6" bordercolor="#000000"><td>}
 
-		CKStructHelper MyStruct(param);
+		CKStructParameter MyStruct(param);
 
 		//--- Access sub-members
 		float		  Priority;
@@ -98,7 +97,7 @@ See Also: RegisterNewStructure,
 ************************************************************/
 class CKStructHelper {
 public:
-	CKStructHelper(CKParameter* Param, CKBOOL Update = TRUE);
+	CKStructHelper(CKParameter* Param);
 	CKStructHelper(CKContext* ctx,CKGUID PGuid,CK_ID* Data = NULL);
 	CKStructHelper(CKContext* ctx,CKParameterType PType,CK_ID* Data = NULL);
 
@@ -119,10 +118,7 @@ This method does not perform any check concerning the validty of the given index
 the user responsability to ensure it is below GetMemberCount
 See also:GetMemberGUID,GetMemberName,GetMemberCount
 *****************************************************************************/
-CKParameter* operator[] (int i)
-{
-	return (CKParameter*)m_Context->GetObject(m_SubIDS[i]);
-}
+CKParameter* operator[] (int i){return (CKParameter*)m_Context->GetObject(m_SubIDS[i]);}
 
 protected:
 	CKContext*				m_Context;
@@ -190,8 +186,6 @@ CKParameterTypeDesc* GetParameterTypeDescription(int type);
 CKParameterTypeDesc* GetParameterTypeDescription(CKGUIDCONSTREF guid);
  int	GetParameterSize(CKParameterType type);
 int GetParameterTypesCount();
-
-CKERROR ChangeParametersGuid(CKGUIDCONSTREF iOldGuid,CKGUIDCONSTREF iNewGuid);
 
 //-----------------------------------------------------------------------
 // Parameter Types <=> Parameter Type Name <=> GUID conversion functions
@@ -286,15 +280,6 @@ CKBOOL CheckParamTypeValidity(CKParameterType type);
 	void				UpdateParameterEnum();
 
 	CKBOOL				m_ParameterTypeEnumUpToDate;
-	
-
-//---Called to save manager data. return NULL if nothing to save...
-	virtual CKStateChunk* SaveData(CKFile* SavedFile);
-
-
-//---Called to load manager data.
-	virtual CKERROR LoadData(CKStateChunk *chunk,CKFile* LoadedFile);
-	
 protected :
 	XArray<CKParameterTypeDesc*> m_RegistredTypes;
 
@@ -326,7 +311,7 @@ private:
 	CKBOOL RemoveAllParameterTypes();
 	CKBOOL RemoveAllOperations();
 
-	int m_ReplaceDuplicateUserFlagEnum;
+
 };
 
 

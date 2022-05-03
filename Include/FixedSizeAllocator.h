@@ -27,7 +27,7 @@ public:
 		DEFAULT_CHUNK_SIZE = 4096
 	};
 
-	VX_EXPORT XFixedSizeAllocator(const int iBlockSize,const int iPageSize = DEFAULT_CHUNK_SIZE);
+	VX_EXPORT XFixedSizeAllocator(const int iBlockSize);
 	VX_EXPORT ~XFixedSizeAllocator();
 	
 	// return the number of allocated chunks
@@ -135,7 +135,7 @@ private:
 	Chunk*			FindChunk(void* iP);
 
 	// members
-	size_t			m_PageSize;
+
 	// Block size
 	size_t			m_BlockSize;
 	// Blocks Count (per Chunk)

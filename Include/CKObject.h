@@ -12,7 +12,6 @@
 #include "CKDefines2.h"
 #include "CKContext.h"
 
-
 class CKFile;
 class CKDependenciesContext;
 

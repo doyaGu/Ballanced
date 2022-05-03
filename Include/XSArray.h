@@ -449,7 +449,7 @@ protected:
 	
 	T* Allocate(int size)
 	{
-		if(size) return (T*)VxNew(sizeof(T) * size);
+		if(size) return (T*) new T[size];
 		else return 0;
 	}
 

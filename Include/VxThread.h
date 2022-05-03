@@ -14,7 +14,7 @@
 
 #define VXTERROR_EXITCODE		52	// An error while you try to get the exit code of a tread.
 
-#define VXT_OK					53	
+#define VXT_OK					53	// No error. 
 
 
 /*************************************************
@@ -30,19 +30,6 @@ typedef enum VXTHREAD_STATE
 	VXTS_STARTED				= 0x00000004L,		// The thread has been started.
 	VXTS_JOINABLE				= 0x00000008L		// The thread is joinable (it means you can call VxThread::Join). Under Windows thread are always joinable.
 } VXTHREAD_STATE;
-
-/*************************************************
-Summary: VxThread FLAGS
-
-Remark: Win32 specific
-See also: VxThread, VxThread::Join.
-*************************************************/
-typedef enum VXTHREADWIN32_FLAGS
-{
-	VXTF_USECOINITIALIZEEX		= 0x00000001,		// The ThreadFunc will call CoInitializeEx and CoUninitialize.
-	VXTF_USECOINITIALIZE		= 0x00000002,		// The ThreadFunc will call CoInitialize and CoUninitialize. (default)
-	VXTF_NOCOINITIALIZE			= 0x00000004,		// The ThreadFunc will call neither CoInitialize, nor CoInitializeEx, nor CoUninitialize.
-} VXTHREADWIN32_FLAGS;
 
 
 /*************************************************
@@ -239,13 +226,7 @@ private:
 #if defined(_LINUX) || defined(macintosh)
     static VxMutex			m_MutexForHash;
 #endif
-
-#ifdef WIN32
-	public:
     
-		DWORD		m_Win32Flags;
-	private:
-#endif
 };
 
 

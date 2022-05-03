@@ -13,7 +13,7 @@ between threads.
 
 See also: VxThread,VxMutexLock
 *************************************************/
-class VxMutex 
+class VxMutex
 {
 
 public:

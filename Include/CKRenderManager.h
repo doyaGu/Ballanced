@@ -140,7 +140,6 @@ Summary: Removes all the textures and sprites from video memory.
 Remarks:
 	+ To be drawn, textures and sprites need to be present in video memory.
 	+ This method force all textures to be removed from video memory.
-	+ The CK2_3D/DisableTextureFlushing variable disables the effects of this function.
 See Also:SetDesiredTexturesVideoFormat
 *************************************************/
 virtual	void	FlushTextures() = 0;

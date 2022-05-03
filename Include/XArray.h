@@ -31,7 +31,6 @@ template <class T>
 class XArray
 {
 public:
-	typedef XArray<T> Array;
 	// Types
 	typedef T*	Iterator;
 	typedef T	Type;
@@ -59,8 +58,7 @@ public:
 	}
 
 	// copy Ctor
-	//template<int A>
-	XArray(const Array& a)
+	XArray(const XArray<T>& a)
 	{
 		// the resize
 		int size = a.Size();
@@ -91,8 +89,7 @@ public:
 		The content of the array is enterely overwritten
 	by the given array.
 	************************************************/
-	//template<int A>
-	Array& operator = (const Array& a)
+	XArray<T>& operator = (const XArray<T>& a)
 	{
 		if(this != &a) {
 			if (Allocated() >= a.Size()) { // No need to allocate
@@ -120,8 +117,7 @@ public:
 	Remarks:
 		The content of the array is conserved.
 	************************************************/
-	//template<int A>
-	Array& operator += (const Array& a)
+	XArray<T>& operator += (const XArray<T>& a)
 	{
 		int size = a.Size();
 		if (size) {
@@ -162,8 +158,7 @@ public:
 	Remarks:
 		The content of the array is conserved.
 	************************************************/
-	//template<int A>
-	Array& operator -= (const Array& a)
+	XArray<T>& operator -= (const XArray<T>& a)
 	{
 		int size = a.Size();
 		if (size) {
@@ -255,14 +250,10 @@ public:
 	Input Arguments: 
 		size: New size of the array.
 	Remarks:
-		After Resize(n) (n>0), you can address elements from [0]
-	to [n-1]. 
-		No constructors are called (use an XClassArray if it is 
-	desired).
-		If the size is greater than the reserved size,
-	the array is reallocated at the exact needed size.
-	If not, there is no reallocation at all. Resize(0) 
-	is faster than Clear() if you know you will probably
+	After Resize(n) (n>0), you can address elements from [0] to [n-1]. 
+	No constructors are called (use an XClassArray if it is  desired).
+	If the size is greater than the reserved size, the array is reallocated at the exact needed size.
+	If not, there is no reallocation at all. Resize(0) is faster than Clear() if you know you will probably
 	push some more elements after.
 	See Also:Reserve
 	************************************************/
@@ -665,7 +656,7 @@ public:
 	Input Arguments: 
 		o: second array to swap.
 	************************************************/
-	void Swap(Array& a)
+	void Swap(XArray<T>& a)
 	{
 		XSwap(m_Begin,a.m_Begin);
 		XSwap(m_End,a.m_End);
@@ -897,10 +888,8 @@ protected:
 
 	// Allocation {secret}
 	T* Allocate(int size)
-	{		
-		if(size) {
-				return (T*)new T[size];
-		}
+	{
+		if(size) return (T*)new T[size];
 		else return 0;
 	}
 

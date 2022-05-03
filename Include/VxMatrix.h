@@ -23,7 +23,6 @@ VX_EXPORT	void			Vx3DRotateVectorMany	(VxVector *ResultVector,const VxMatrix& Ma
 VX_EXPORT	void			Vx3DMultiplyMatrix		(VxMatrix& ResultMat,const VxMatrix& MatA,const VxMatrix& MatB);
 VX_EXPORT	void			Vx3DMultiplyMatrix4		(VxMatrix& ResultMat,const VxMatrix& MatA,const VxMatrix& MatB);
 VX_EXPORT	void			Vx3DInverseMatrix		(VxMatrix& InverseMat,const VxMatrix& Mat);
-VX_EXPORT	void			Vx3DInverseMatrix44		(VxMatrix& InverseMat,const VxMatrix& Mat);
 VX_EXPORT	float			Vx3DMatrixDeterminant	(const  VxMatrix& Mat);
 VX_EXPORT	void			Vx3DMatrixFromRotation	(VxMatrix& ResultMat,const VxVector& Vector, float Angle);
 VX_EXPORT	void			Vx3DMatrixFromRotationAndOrigin(VxMatrix& ResultMat,const VxVector& Vector,const VxVector& Origin, float Angle);
@@ -207,13 +206,10 @@ Sets Mat to
 		L	=	Left
 		T	=	Top
 		B	=	Bottom
-
 				[ 2/(R-L)		0			0			0]
-				[ 0				2/(T-B)		0			0]
-		  MAT =	[ -(L+R)/(R-L)	(T+B)/(T-B)	F/F-N		0]
-				[ 0				0	 	  -F.N/F-N		1]
-
-
+				[ 0				-2/(T-B)	0			0]
+		  MAT =	[ 0				0			1/F-N		0]
+				[ -(L+R)/(R-L)	(T+B)/(T-B)	-N/F-N		1]
 
 
 
@@ -306,10 +302,10 @@ inline void VxMatrix::OrthographicRect(float Left,float Right,float Top,float Bo
 	float iy=1.0f/(Top-Bottom);
 	float iz=1.0f/(Far_plane-Near_plane);
 	m_Data[0][0]=2.0f*ix;
-	m_Data[1][1]=2.0f*iy;
+	m_Data[1][1]=-2.0f*iy;
 	m_Data[2][2]=iz;
 	m_Data[3][0]=-(Left+Right)*ix;
-	m_Data[3][1]=-(Top+Bottom)*iy;
+	m_Data[3][1]=(Top+Bottom)*iy;
 	m_Data[3][2]=-Near_plane*iz;
 	m_Data[3][3]=1.0f;
 }

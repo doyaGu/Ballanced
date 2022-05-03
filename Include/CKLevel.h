@@ -10,7 +10,6 @@
 
 #include "CKBeObject.h"
 
-
 /*************************************************
 {filename:CKLevel}
 Summary: Main composition management

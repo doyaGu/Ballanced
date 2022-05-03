@@ -47,6 +47,9 @@ must be extended and rehashed.
 template <class T,class K,class H = XHashFun<K>, class Eq = XEqual<K>/*, float L = 0.75f*/>
 class XHashTable
 {
+	// friendship
+	friend class Iterator;
+
 	// Types
 	
 	
@@ -95,22 +98,22 @@ public:
 		/************************************************
 		Summary: Default constructor of the iterator.
 		************************************************/
-		Iterator():m_It(0) {}
+		Iterator():m_Node(0),m_Table(0){}
 
 		/************************************************
 		Summary: Copy constructor of the iterator.
 		************************************************/
-		Iterator(const Iterator& n):m_It(n.m_It) {}
+		Iterator(const Iterator& n):m_Node(n.m_Node),m_Table(n.m_Table){}
 		
 		/************************************************
 		Summary: Operator Equal of the iterator.
 		************************************************/
-		int operator==(const Iterator& it) const { return m_It == it.m_It; }
+		int operator==(const Iterator& it) const { return m_Node == it.m_Node; }
 
 		/************************************************
 		Summary: Operator Not Equal of the iterator.
 		************************************************/
-		int operator!=(const Iterator& it) const { return m_It != it.m_It; }
+		int operator!=(const Iterator& it) const { return m_Node != it.m_Node; }
 		
 		/************************************************
 		Summary: Returns a constant reference on the data 
@@ -121,7 +124,7 @@ public:
 		modify its value. Use the other * operator for this 
 		purpose.
 		************************************************/
-		const T& operator*() const { return m_It->data; }
+		const T& operator*() const { return (*m_Node).data; }
 
 		/************************************************
 		Summary: Returns a reference on the data pointed	
@@ -131,38 +134,40 @@ public:
 			The returned reference is not constant, so you
 		can modify its value. 
 		************************************************/
-		T& operator*() { return m_It->data; }
+		T& operator*() { return (*m_Node).data; }
 
 		/************************************************
 		Summary: Returns a pointer on a T object.
 		************************************************/
-//		operator const T*() const { return &m_It->data; }
+		operator const T*() const { return &(m_Node->data); }
 		
 		/************************************************
 		Summary: Returns a pointer on a T object.
 		************************************************/
-//		operator T*() { return &m_It->data; }
+		operator T*() { return &(m_Node->data); }
 
 		/************************************************
 		Summary: Returns a const reference on the key of
 		the pointed entry.
 		************************************************/
-		const K& GetKey() const {return m_It->key;}
-		K& GetKey() {return m_It->key;}
+		const K& GetKey() const {return m_Node->key;}
+		K& GetKey() {return m_Node->key;}
 
 		/************************************************
 		Summary: Jumps to next entry in the hashtable.
 		************************************************/
 		Iterator& operator++() { // Prefixe
-			++m_It;
-			return *this;
-		}
-
-		/************************************************
-		Summary: Jumps to next entry in the hashtable.
-		************************************************/
-		Iterator& operator--() { // Prefixe
-			--m_It;
+			pEntry old = m_Node;
+			// next element of the linked list
+			m_Node = m_Node->next;
+			
+			if (!m_Node) {
+				// end of linked list, we have to find next filled bucket
+				// OPTIM : maybe keep the index current : save a %
+				int index = m_Table->Index(old->key);
+				while (!m_Node && ++index < m_Table->m_Table.Size())
+					m_Node = m_Table->m_Table[index];
+			}
 			return *this;
 		}
 
@@ -175,19 +180,12 @@ public:
 			return tmp;
 		}
 
-		/************************************************
-		Summary: Jumps to next entry in the hashtable.
-		************************************************/
-		Iterator operator--(int) { 
-			Iterator tmp = *this;
-			--*this;
-			return tmp;
-		}
-
 		
-		Iterator(Entry* iT):m_It(iT) {}
+		Iterator(pEntry n,pTable t):m_Node(n),m_Table(t){}
 		
-		Entry*	m_It;
+		pEntry		m_Node;
+		
+		pTable		m_Table;
 	};
 	friend class Iterator;
 
@@ -225,22 +223,22 @@ public:
 		/************************************************
 		Summary: Default constructor of the iterator.
 		************************************************/
-		ConstIterator():m_It(0) {}
+		ConstIterator():m_Node(0),m_Table(0){}
 
 		/************************************************
 		Summary: Copy constructor of the iterator.
 		************************************************/
-		ConstIterator(const ConstIterator& n):m_It(n.m_It){}
+		ConstIterator(const ConstIterator& n):m_Node(n.m_Node),m_Table(n.m_Table){}
 		
 		/************************************************
 		Summary: Operator Equal of the iterator.
 		************************************************/
-		int operator==(const ConstIterator& it) const { return m_It == it.m_It; }
+		int operator==(const ConstIterator& it) const { return m_Node == it.m_Node; }
 
 		/************************************************
 		Summary: Operator Not Equal of the iterator.
 		************************************************/
-		int operator!=(const ConstIterator& it) const { return m_It != it.m_It; }
+		int operator!=(const ConstIterator& it) const { return m_Node != it.m_Node; }
 		
 		/************************************************
 		Summary: Returns a constant reference on the data 
@@ -251,24 +249,34 @@ public:
 		modify its value. Use the other * operator for this 
 		purpose.
 		************************************************/
-		const T& operator*() const { return m_It->data; }
+		const T& operator*() const { return (*m_Node).data; }
 
 		/************************************************
 		Summary: Returns a pointer on a T object.
 		************************************************/
-//		operator const T*() const { return &(m_It->data); }
+		operator const T*() const { return &(m_Node->data); }
 		
 		/************************************************
 		Summary: Returns a const reference on the key of
 		the pointed entry.
 		************************************************/
-		const K& GetKey() const {return m_It->key;}
+		const K& GetKey() const {return m_Node->key;}
 
 		/************************************************
 		Summary: Jumps to next entry in the hashtable.
 		************************************************/
 		ConstIterator& operator++() { // Prefixe
-			++m_It;
+			pEntry old = m_Node;
+			// next element of the linked list
+			m_Node = m_Node->next;
+			
+			if (!m_Node) {
+				// end of linked list, we have to find next filled bucket
+				// OPTIM : maybe keep the index current : save a %
+				int index = m_Table->Index(old->key);
+				while (!m_Node && ++index < m_Table->m_Table.Size())
+					m_Node = m_Table->m_Table[index];
+			}
 			return *this;
 		}
 
@@ -282,9 +290,12 @@ public:
 		}
 
 		
-		ConstIterator(Entry* iT):m_It(iT) {}
+		ConstIterator(pEntry n,pConstTable t):m_Node(n),m_Table(t)
+		{}
 		
-		Entry* m_It;
+		pEntry		m_Node;
+		
+		pConstTable	m_Table;
 	};
 	friend class ConstIterator;
 
@@ -442,7 +453,7 @@ public:
 
 		// we look for existing key
 		pEntry e = XFind(index,key);
-		if (e == m_Pool.End()) {
+		if (!e) {
 			if (m_Pool.Size() == m_Pool.Allocated()) { // Need Rehash
 				Rehash(m_Table.Size()*2);
 				return Insert(key,o,override);
@@ -466,7 +477,7 @@ public:
 		for(pEntry e=m_Table[index];e != 0;e = e->next) {
 			if (equalFunc(e->key,key)) {
 				e->data = o;
-				return Iterator(e);
+				return Iterator(e,this);
 			}
 		}
 		
@@ -474,12 +485,13 @@ public:
 			Rehash(m_Table.Size()*2);
 			return Insert(key,o);
 		} else { // No
-			return Iterator(XInsert(index,key,o));
+			return Iterator(XInsert(index,key,o),this);
 		}
 	}
 
 	
-	Pair TestInsert(const K& key,const T& o)
+	Pair
+	TestInsert(const K& key,const T& o)
 	{
 		int index = Index(key);
 		Eq equalFunc;
@@ -487,7 +499,7 @@ public:
 		// we look for existing key
 		for(pEntry e=m_Table[index];e != 0;e = e->next) {
 			if (equalFunc(e->key,key)) {
-				return Pair(Iterator(e),0);
+				return Pair(Iterator(e,this),0);
 			}
 		}
 		
@@ -496,7 +508,7 @@ public:
 			Rehash(m_Table.Size()*2);
 			return TestInsert(key,o);
 		} else { // No
-			return Pair(Iterator(XInsert(index,key,o)),1);
+			return Pair(Iterator(XInsert(index,key,o),this),1);
 		}
 	}
 
@@ -509,7 +521,7 @@ public:
 		// we look for existing key
 		for(pEntry e=m_Table[index];e != 0;e = e->next) {
 			if (equalFunc(e->key,key)) {
-				return Iterator(e);
+				return Iterator(e,this);
 			}
 		}
 		
@@ -518,7 +530,7 @@ public:
 			Rehash(m_Table.Size()*2);
 			return InsertUnique(key,o);
 		} else { // No
-			return Iterator(XInsert(index,key,o));
+			return Iterator(XInsert(index,key,o),this);
 		}
 	}
 
@@ -565,17 +577,13 @@ public:
 
 	Iterator Remove(const Iterator& it)
 	{
-		int index = Index(it.m_It->key);
-		if(index >= m_Table.Size()) 
-			return Iterator(m_Pool.End());
-
-		if (!m_Pool.Size())
-			return End();
+		int index = Index(it.m_Node->key);
+		if(index >= m_Table.Size()) return Iterator(0,this);
 
 		// we look for existing key
 		pEntry old = NULL;
 		for (pEntry e=m_Table[index];e != 0;e = e->next) {
-			if (e == (it.m_It)) {
+			if (e == it.m_Node) {
 				// This is the element to remove
 				if (old) {
 					old->next = e->next;
@@ -597,8 +605,14 @@ public:
 			}
 			old = e;
 		}
+		// There is an element in the same column, we return it
+		if(!old)  { // No element in the same bucket, we parse for the next
+			while (!old && ++index < m_Table.Size()) 
+				old = m_Table[index];
 
-		return it;
+		}
+
+		return Iterator(old,this);
 	}
 
 	/************************************************
@@ -619,7 +633,7 @@ public:
 
 		// we look for existing key
 		pEntry e = XFind(index,key);
-		if (e == m_Pool.End()) {
+		if (!e) {
 			if (m_Pool.Size() == m_Pool.Allocated()) { // Need Rehash
 				Rehash(m_Table.Size()*2);
 				return operator [] (key);
@@ -643,7 +657,7 @@ public:
 	************************************************/
 	Iterator Find(const K& key)
 	{
-		return Iterator(XFindIndex(key));
+		return Iterator(XFindIndex(key),this);
 	}
 
 	/************************************************
@@ -658,7 +672,7 @@ public:
 	************************************************/
 	ConstIterator Find(const K& key) const
 	{
-		return ConstIterator(XFindIndex(key));
+		return ConstIterator(XFindIndex(key),this);
 	}
 
 	/************************************************
@@ -674,10 +688,8 @@ public:
 	T *FindPtr(const K& key) const
 	{
 		pEntry e = XFindIndex(key);
-		if (e != m_Pool.End())	
-			return &e->data;
-		else	
-			return 0;
+		if (e)	return &e->data;
+		else	return 0;
 	}
 
 	/************************************************
@@ -694,7 +706,7 @@ public:
 	XBOOL LookUp(const K& key,T& value) const
 	{
 		pEntry e = XFindIndex(key);
-		if (e != m_Pool.End()) {
+		if (e) {
 			value = e->data;
 			return TRUE;
 		} else 
@@ -713,7 +725,7 @@ public:
 	************************************************/
 	XBOOL IsHere(const K& key) const
 	{
-		return (XFindIndex(key) != m_Pool.End());
+		return (XBOOL)XFindIndex(key);
 	}
 
 	/************************************************
@@ -733,12 +745,21 @@ public:
 	************************************************/
 	Iterator Begin()
 	{
-		return Iterator(m_Pool.Begin());
+		for(pEntry* it = m_Table.Begin();it != m_Table.End();it++) {
+			if (*it) 
+				return Iterator(*it,this);
+		}
+		return End();
+
 	}
 
 	ConstIterator Begin() const
 	{
-		return ConstIterator(m_Pool.Begin());
+		for(pEntry* it = m_Table.Begin();it != m_Table.End();it++) {
+			if (*it) 
+				return ConstIterator(*it,this);
+		}
+		return End();
 	}
 
 	/************************************************
@@ -746,12 +767,12 @@ public:
 	************************************************/
 	Iterator End()
 	{
-		return Iterator(m_Pool.End());
+		return Iterator(0,this);
 	}
 
 	ConstIterator End() const
 	{
-		return ConstIterator(m_Pool.End());
+		return ConstIterator(0,this);
 	}
 
 	/************************************************
@@ -764,18 +785,6 @@ public:
 	{
 		H hashfun;
 		return XIndex(hashfun(key),m_Table.Size());
-	}
-
-	/************************************************
-	Summary: Returns the index of the given key.
-
-	Input Arguments: 
-		key: key of the element to find the index.
-	************************************************/
-	Iterator GetIteratorByIndex(int index) const
-	{
-		XASSERT(index < m_Pool.Size());
-		return Iterator(m_Pool.Begin()+index);
 	}
 
 	/************************************************
@@ -817,11 +826,6 @@ public:
 		int tableSize = Near2Power((int)(iCount/L));
 		m_Table.Resize(tableSize);
 		m_Table.Fill(0);
-	}
-	
-	Iterator GetByIndex(const int iIndex) 
-	{
-		return(m_Pool.Begin() + iIndex);
 	}
 	
 
@@ -909,7 +913,7 @@ private:
 				return e;
 			}
 		}
-		return m_Pool.End();
+		return NULL;
 	}
 
 	pEntry XInsert(int index,const K& key,const T& o)

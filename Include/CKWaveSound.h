@@ -14,10 +14,12 @@ class CKSoundReader;
 
 /**************************************************************************
 {filename:CKWaveSound}
+Name: CKWaveSound
+
 Summary: Wave sound.
 
 Remarks:
-+ CKWaveSound provides methods for playing a wave sound file (Wav,etc..)
++ CKWaveSound provides methods for playing a wave sound file (MP3,Wav,etc..)
 
 + The sound can be played using 3D , stero , frequency control , 
 panning and volume control.
@@ -34,7 +36,7 @@ public :
 	
 	//-----------------------------------------------------
 	// Sound Duplication for Instance Playing
-	CKSOUNDHANDLE PlayMinion(CKBOOL Background=TRUE,CK3dEntity* Ent=NULL,VxVector* Position=NULL,VxVector* Direction=NULL,float MinDelay = 0.0f,float gain=1.0f);
+	CKSOUNDHANDLE PlayMinion(CKBOOL Background=TRUE,CK3dEntity* Ent=NULL,VxVector* Position=NULL,VxVector* Direction=NULL,float MinDelay = 0.0f);
 
 	//---------------------------------------------------------
 	// Associated filename

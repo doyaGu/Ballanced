@@ -10,7 +10,6 @@
 
 #include "CKObject.h"
 
-
 /*****************************************************************************
 Summary: External object declaration
 

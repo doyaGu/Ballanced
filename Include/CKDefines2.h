@@ -61,7 +61,6 @@ typedef enum CK_STATESAVEFLAGS_3DENTITY
 		 CK_STATESAVE_3DENTITYPLACE		= 0x00080000,	// Save Place in which the Entity is referenced
 		 CK_STATESAVE_3DENTITYNDATA		= 0x00100000,	// Reserved for future use 
 		 CK_STATESAVE_3DENTITYSKINDATA	= 0x00200000,	// Save Skin data 
-		 CK_STATESAVE_3DENTITYSKINDATA2 = 0x00220000,	// Save Skin data 
 		 CK_STATESAVE_3DENTITYONLY		= 0x003FF000,	// Save only 3dEntity specific datas
 		 CK_STATESAVE_3DENTITYALL		= 0x003FFFFF	// Save All datas for sub-classes
 } CK_STATESAVEFLAGS_3DENTITY;
@@ -131,20 +130,6 @@ typedef enum CK_STATESAVEFLAGS_3DOBJECT
 		 CK_STATESAVE_3DOBJECTRONLY			= 0x00C00000,	// Save only 3dObject specific datas
 		 CK_STATESAVE_3DOBJECTALL			= 0x03FFFFFF	// Save All datas for sub-classes			
 } CK_STATESAVEFLAGS_3DOBJECT;
-
-//--------------------------------------------------
-// Object 3D								
-typedef enum CK_STATESAVEFLAGS_3DPOINTCLOUD 
-{
-		 CK_STATESAVE_POINTCLOUD_DATA		= 0x00400000,		
-		 CK_STATESAVE_POINTCLOUD_POINTS		= 0x00800000,		
-		 CK_STATESAVE_POINTCLOUD_TREE		= 0x01000000,		
-		 CK_STATESAVE_POINTCLOUD_ATTRIBUTES	= 0x02000000,		
-		 CK_STATESAVE_POINTCLOUD_GROUPS		= 0x04000000,		
-		 CK_STATESAVE_POINTCLOUD_SELECTIONS	= 0x08000000,		
-		 CK_STATESAVE_POINTCLOUD_ONLY		= 0x0FC00000,	
-		 CK_STATESAVE_POINTCLOUD_ALL		= 0x0FFFFFFF	// Save All datas for sub-classes			
-} CK_STATESAVEFLAGS_3DPOINTCLOUD;
 
 //--------------------------------------------------
 // BodyPart							
@@ -359,7 +344,7 @@ typedef enum CK_STATESAVEFLAGS_MESH
 		 CK_STATESAVE_MESHLINES			= 0x00040000,	// Save line data
 		 CK_STATESAVE_MESHWEIGHTS		= 0x00080000,	// Save Vertex Weight info
 		 CK_STATESAVE_MESHMATERIALS		= 0x00100000,	// Reserved for future use 
-		 CK_STATESAVE_MESHCHANNELS_EXT	= 0x00200000,	// Extended Channels (float1-4)
+		 CK_STATESAVE_MESHRESERVED1		= 0x00200000,	// Reserved for future use 
 		 CK_STATESAVE_MESHRESERVED2		= 0x00400000,	// Reserved for future use 
 		 CK_STATESAVE_PROGRESSIVEMESH	= 0x00800000,	// Save All datas for sub-classes	
 		 CK_STATESAVE_MESHONLY			= 0x00FFF000,	// Save All datas for sub-classes	
@@ -390,7 +375,7 @@ typedef enum CK_STATESAVEFLAGS_MATERIAL
 		 CK_STATESAVE_MATDATA3			= 0x00004000,	// Effect Alone
 		 CK_STATESAVE_MATDATA4			= 0x00008000,	// none
 		 CK_STATESAVE_MATDATA5			= 0x00010000,	// Effect + parameter 
-		 CK_STATESAVE_MATDATA6			= 0x00020000,	// MaterialShader (.fx)
+		 CK_STATESAVE_MATRESERVED5		= 0x00020000,	// Reserved for future use 
 		 CK_STATESAVE_MATRESERVED6		= 0x00040000,	// Reserved for future use 
 		 CK_STATESAVE_MATRESERVED7		= 0x00080000,	// Reserved for future use		
 		 CK_STATESAVE_MATERIALONLY		= 0x000FF000,	// Save All datas for sub-classes	
@@ -754,5 +739,6 @@ typedef enum CK_STATESAVEFLAGS_SCENEOBJECTDESC {
 		 CK_STATESAVE_SCENEOBJECTDESCALL	= 0x000000FF	// Save All datas for sub-classes	
 
 } CK_STATESAVEFLAGS_SCENEOBJECTDESC;
+
 
 #endif
