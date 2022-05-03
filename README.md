@@ -40,6 +40,7 @@ When using Visual Studio 6.0, you need [Windows Server 2003 SP1 SDK](http://www.
 There are serval changes and improvements implemented to the original game.
 
 - Fixed incomplete displaying in windowed mode
+- Fixed memory checking problem
 - In-game resizing in windowed mode support
 - ...
 
