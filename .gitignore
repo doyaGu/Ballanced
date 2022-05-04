@@ -17,6 +17,10 @@
 *.cmo
 *.tdb
 *.csv
+/help
+/Dsetup.dll
+/Startup.exe
+/UNWISE.EXE
 
 # User-specific files
 *.rsuser
@@ -363,3 +367,4 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
+
