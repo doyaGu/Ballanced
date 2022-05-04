@@ -89,7 +89,7 @@ int ReadRegistry(const CKBehaviorContext &behcontext)
 
     if (saveArrayMode)
     {
-		CKDataArray *array = (CKDataArray *)beh->GetInputParameterObject(2);
+	CKDataArray *array = (CKDataArray *)beh->GetInputParameterObject(2);
         int cols = array->GetColumnCount();
         int rows = array->GetRowCount();
         strcat(regSection, "\\");
@@ -103,15 +103,15 @@ int ReadRegistry(const CKBehaviorContext &behcontext)
         {
             for (int c = 0; c < cols; ++c)
             {
+		strcpy(regSection, buffer);
+	        char num[32];
+	        _itoa(c, num, 10);
+	        strcat(regSection, num);
+	        strcat(regSection, "\\");
+
                 CK_ARRAYTYPE type = array->GetColumnType(c);
                 for (int i = 0; i < rows; ++i)
                 {
-                    strcpy(regSection, buffer);
-                    char num[32];
-                    _itoa(c, num, 10);
-                    strcat(regSection, num);
-                    strcat(regSection, "\\");
-
                     switch (type)
                     {
                     case CKARRAYTYPE_INT:
