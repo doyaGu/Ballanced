@@ -23,33 +23,19 @@ CNeMoContext::CNeMoContext()
       m_FrameRateSprite(NULL),
       m_MadeWithSprite(NULL),
       m_WinContext(NULL),
-      m_Bpp(DEFAULT_BPP),
-      field_30(0),
       m_RenderEnginePath("CK2_3D"),
       m_Width(DEFAULT_WIDTH),
       m_Height(DEFAULT_HEIGHT),
+      m_Bpp(DEFAULT_BPP),
       m_Fullscreen(false),
       m_DisplayChanged(false),
       m_DriverIndex(0),
       m_ScreenModeIndex(-1),
-      field_4C(82.0f),
       m_StartTime(1),
-      field_254(0),
       m_MsgClick(0),
-      field_25C(false),
       m_IsCleared(false)
 {
     strcpy(m_ProgPath, "");
-}
-
-float CNeMoContext::GetField0x4C() const
-{
-    return field_4C;
-}
-
-void CNeMoContext::SetField0x4C(float val)
-{
-    field_4C = val;
 }
 
 void CNeMoContext::SetFrameRateSpritePosition(int x, int y)
@@ -82,11 +68,6 @@ void CNeMoContext::SetStartTime(int time)
     m_StartTime = time;
 }
 
-void CNeMoContext::SetField0x25C(bool val)
-{
-    field_25C = val;
-}
-
 void CNeMoContext::SetCleared(bool clear)
 {
     m_IsCleared = clear;
@@ -95,11 +76,6 @@ void CNeMoContext::SetCleared(bool clear)
 int CNeMoContext::GetStartTime() const
 {
     return m_StartTime;
-}
-
-int CNeMoContext::GetField0x25C() const
-{
-    return field_25C;
 }
 
 bool CNeMoContext::IsCleared() const
@@ -138,11 +114,6 @@ void CNeMoContext::SetBPP(int bpp)
     m_Bpp = bpp;
 }
 
-void CNeMoContext::SetField0x30(int val)
-{
-    field_30 = val;
-}
-
 void CNeMoContext::SetProgPath(const char *path)
 {
     if (!path)
@@ -151,11 +122,6 @@ void CNeMoContext::SetProgPath(const char *path)
         throw CNeMoContextException(3);
     }
     strcpy(m_ProgPath, path);
-}
-
-void CNeMoContext::SetField0x254(int val)
-{
-    field_254 = val;
 }
 
 void CNeMoContext::SetMsgClick(int msg)
@@ -235,11 +201,6 @@ int CNeMoContext::GetBPP() const
     return m_Bpp;
 }
 
-int CNeMoContext::GetField0x30() const
-{
-    return field_30;
-}
-
 char *CNeMoContext::GetProgPath() const
 {
     if (strcmp(m_ProgPath, "") == 0)
@@ -248,11 +209,6 @@ char *CNeMoContext::GetProgPath() const
         throw CNeMoContextException(3);
     }
     return (char *)m_ProgPath;
-}
-
-int CNeMoContext::GetField0x254() const
-{
-    return field_254;
 }
 
 int CNeMoContext::GetMsgClick() const

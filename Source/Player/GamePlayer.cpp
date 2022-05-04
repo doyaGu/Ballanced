@@ -377,7 +377,6 @@ CGamePlayer::CGamePlayer(CGameInfo *gameInfo, int n, bool defaultSetting, HANDLE
       m_hMutex(hMutex),
       m_DefaultSetting(defaultSetting),
       m_Cleared(false),
-      field_E(false),
       m_DataManager(),
       m_NeMoContext(),
       m_WinContext(),
@@ -701,7 +700,7 @@ bool CGamePlayer::Step()
 
         if (!bRet)
         {
-            if (m_NeMoContext.IsPlaying() && !field_E)
+            if (m_NeMoContext.IsPlaying())
             {
                 m_NeMoContext.Process();
             }

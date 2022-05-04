@@ -22,26 +22,20 @@ public:
     CNeMoContext();
     virtual ~CNeMoContext() {}
 
-    virtual float GetField0x4C() const;
-    virtual void SetField0x4C(float val);
     virtual void SetFrameRateSpritePosition(int x, int y);
     virtual void SetMadeWithSpritePosition(int x, int y);
     virtual void SetFrameRateSpriteText(CKSTRING text);
     virtual void SetMadeWithSpriteText(CKSTRING text);
     virtual void AdjustFrameRateSpritePosition();
     virtual void SetStartTime(int time);
-    virtual void SetField0x25C(bool val);
     virtual void SetCleared(bool clear);
     virtual int GetStartTime() const;
-    virtual int GetField0x25C() const;
     virtual bool IsCleared() const;
     virtual void SetDriverIndex(int idx);
     virtual bool ApplyScreenMode(int idx);
     virtual void SetFullscreen(bool fullscreen);
     virtual void SetBPP(int bpp);
-    virtual void SetField0x30(int val);
     virtual void SetProgPath(const char *path);
-    virtual void SetField0x254(int val);
     virtual void SetMsgClick(int msg);
     virtual void SetRenderContext(CKRenderContext *renderContext);
     virtual void SetFrameRateSprite(CKSpriteText *sprite);
@@ -57,9 +51,7 @@ public:
     virtual int GetWidth() const;
     virtual int GetHeight() const;
     virtual int GetBPP() const;
-    virtual int GetField0x30() const;
     virtual char *GetProgPath() const;
-    virtual int GetField0x254() const;
     virtual int GetMsgClick() const;
     virtual bool IsRenderFullScreen() const;
     virtual void DoStartUp();
@@ -156,21 +148,17 @@ private:
     CKSpriteText *m_FrameRateSprite;
     CKSpriteText *m_MadeWithSprite;
     CWinContext *m_WinContext;
-    int m_Bpp;
-    int field_30;
     CFixedString m_RenderEnginePath;
     int m_Width;
     int m_Height;
+    int m_Bpp;
     bool m_Fullscreen;
     bool m_DisplayChanged;
     int m_DriverIndex;
     int m_ScreenModeIndex;
-    float field_4C;
     DWORD m_StartTime;
     char m_ProgPath[512];
-    int field_254;
     int m_MsgClick;
-    bool field_25C;
     bool m_IsCleared;
 
     static CNeMoContext *instance;
