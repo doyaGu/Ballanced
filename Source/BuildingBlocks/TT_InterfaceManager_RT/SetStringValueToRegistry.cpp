@@ -55,9 +55,9 @@ int SetStringValueToRegistry(const CKBehaviorContext &behcontext)
     CKBehavior *beh = behcontext.Behavior;
     CKContext *context = behcontext.Context;
 
-    char str[256];
-    char regKey[512];
-    char valueName[128];
+    char str[256] = {0};
+    char regKey[512] = {0};
+    char valueName[128] = {0};
     beh->GetInputParameterValue(0, str);
     beh->GetInputParameterValue(1, regKey);
     beh->GetInputParameterValue(2, valueName);
@@ -70,34 +70,21 @@ int SetStringValueToRegistry(const CKBehaviorContext &behcontext)
         return CKBR_OK;
     }
 
-    CGameInfo *gameInfo = man->GetGameInfo();
-    if (!gameInfo)
+    char *ini = man->GetIniName();
+    if (!ini)
     {
         context->OutputToConsoleExBeep("TT_SetStringValueToRegistry: System was not sent by the TT player");
         beh->ActivateOutput(1);
         return CKBR_OK;
     }
 
-    char buffer[512];
-    sprintf(buffer, "%s%s", gameInfo->regSubkey, regKey);
-
-    HKEY hkResult;
-    DWORD dwDisposition;
-    if (::RegCreateKeyExA(gameInfo->hkRoot, buffer, 0, 0, 0, KEY_ALL_ACCESS, 0, &hkResult, &dwDisposition) != ERROR_SUCCESS)
+    if (!::WritePrivateProfileStringA(regKey, valueName, str, ini))
     {
-        ::RegCloseKey(hkResult);
+        context->OutputToConsoleExBeep("TT_SetStringValueToRegistry: Failed to write %s to %s.", regKey, ini);
         beh->ActivateOutput(1);
         return CKBR_OK;
     }
 
-    if (::RegSetValueExA(hkResult, valueName, 0, REG_SZ, (LPBYTE)str, sizeof(str)) != ERROR_SUCCESS)
-    {
-        ::RegCloseKey(hkResult);
-        beh->ActivateOutput(1);
-        return CKBR_OK;
-    }
-
-    ::RegCloseKey(hkResult);
     beh->ActivateOutput(0);
     return CKBR_OK;
 }

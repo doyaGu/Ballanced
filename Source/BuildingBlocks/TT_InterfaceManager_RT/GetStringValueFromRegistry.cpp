@@ -56,12 +56,12 @@ int GetStringValueFromRegistry(const CKBehaviorContext &behcontext)
     CKBehavior *beh = behcontext.Behavior;
     CKContext *context = behcontext.Context;
 
-    char str[256];
-    char regKey[512];
-    char valueName[128];
+    char str[256] = {0};
+    char regKey[512] = {0};
+    char valueName[128] = {0};
     beh->GetInputParameterValue(0, regKey);
     beh->GetInputParameterValue(1, valueName);
-    
+
     CTTInterfaceManager *man = CTTInterfaceManager::GetManager(context);
     if (!man)
     {
@@ -71,8 +71,8 @@ int GetStringValueFromRegistry(const CKBehaviorContext &behcontext)
         return CKBR_OK;
     }
 
-    CGameInfo *gameInfo = man->GetGameInfo();
-    if (!gameInfo)
+    char *ini = man->GetIniName();
+    if (!ini)
     {
         context->OutputToConsoleExBeep("TT_GetStringValueFromRegistry: System was not sent by the TT player");
         beh->SetOutputParameterValue(0, " ");
@@ -80,31 +80,15 @@ int GetStringValueFromRegistry(const CKBehaviorContext &behcontext)
         return CKBR_OK;
     }
 
-    char buffer[512];
-    sprintf(buffer, "%s%s", gameInfo->regSubkey, regKey);
-
-    HKEY hkResult;
-    DWORD dwDisposition;
-    if (::RegCreateKeyExA(gameInfo->hkRoot, buffer, 0, 0, 0, KEY_ALL_ACCESS, 0, &hkResult, &dwDisposition) != ERROR_SUCCESS)
+    int size = ::GetPrivateProfileStringA(regKey, valueName, "", str, 256, ini);
+    if (strcmp(str, "") == 0)
     {
-        ::RegCloseKey(hkResult);
         beh->SetOutputParameterValue(0, " ");
         beh->ActivateOutput(1);
         return CKBR_OK;
     }
 
-    DWORD dwType = REG_SZ;
-    DWORD cbData = sizeof(str);
-    if (::RegQueryValueExA(hkResult, valueName, NULL, &dwType, (LPBYTE)str, &cbData) != ERROR_SUCCESS)
-    {
-        ::RegCloseKey(hkResult);
-        beh->SetOutputParameterValue(0, " ");
-        beh->ActivateOutput(1);
-        return CKBR_OK;
-    }
-
-    ::RegCloseKey(hkResult);
-    beh->SetOutputParameterValue(0, str, cbData);
+    beh->SetOutputParameterValue(0, str, size + 1);
     beh->ActivateOutput(0);
     return CKBR_OK;
 }

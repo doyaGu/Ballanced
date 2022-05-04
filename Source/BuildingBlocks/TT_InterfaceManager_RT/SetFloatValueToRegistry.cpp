@@ -56,8 +56,8 @@ int SetFloatValueToRegistry(const CKBehaviorContext &behcontext)
     CKContext *context = behcontext.Context;
 
     float value;
-    char regKey[512];
-    char valueName[128];
+    char regKey[512] = {0};
+    char valueName[128] = {0};
     beh->GetInputParameterValue(0, &value);
     beh->GetInputParameterValue(1, regKey);
     beh->GetInputParameterValue(2, valueName);
@@ -70,36 +70,23 @@ int SetFloatValueToRegistry(const CKBehaviorContext &behcontext)
         return CKBR_OK;
     }
 
-    CGameInfo *gameInfo = man->GetGameInfo();
-    if (!gameInfo)
+    char *ini = man->GetIniName();
+    if (!ini)
     {
         context->OutputToConsoleExBeep("TT_SetFloatValueToRegistry: System was not sent by the TT player");
         beh->ActivateOutput(1);
         return CKBR_OK;
     }
 
-    char buffer[512];
-    sprintf(buffer, "%s%s", gameInfo->regSubkey, regKey);
-
-    HKEY hkResult;
-    DWORD dwDisposition;
-    if (::RegCreateKeyExA(gameInfo->hkRoot, buffer, 0, 0, 0, KEY_ALL_ACCESS, 0, &hkResult, &dwDisposition) != ERROR_SUCCESS)
+    static char buffer[64];
+    sprintf(buffer, "%f", value);
+    if (!::WritePrivateProfileStringA(regKey, valueName, buffer, ini))
     {
-        ::RegCloseKey(hkResult);
-        context->OutputToConsoleExBeep("TT_SetFloatValueToRegistry: Failed to create %s %s", gameInfo->hkRoot, buffer);
+        context->OutputToConsoleExBeep("TT_SetFloatValueToRegistry: Failed to write %s to %s.", regKey, ini);
         beh->ActivateOutput(1);
         return CKBR_OK;
     }
 
-    if (::RegSetValueExA(hkResult, valueName, 0, REG_DWORD, (LPBYTE)&value, sizeof(value)) != ERROR_SUCCESS)
-    {
-        ::RegCloseKey(hkResult);
-        context->OutputToConsoleExBeep("TT_SetFloatValueToRegistry: Failed to set %s %f", valueName, value);
-        beh->ActivateOutput(1);
-        return CKBR_OK;
-    }
-
-    ::RegCloseKey(hkResult);
     beh->ActivateOutput(0);
     return CKBR_OK;
 }
