@@ -619,7 +619,7 @@ LRESULT CGamePlayer::OnActivateApp(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
                 }
 
                 m_NeMoContext.RestoreWindow();
-                ::ShowWindow(m_WinContext.GetMainWindow(), SW_MINIMIZE);
+                m_NeMoContext.MinimizeWindow();
 
                 activated = false;
                 return ::DefWindowProcA(hWnd, WM_ACTIVATEAPP, 0, lParam);
@@ -1061,13 +1061,13 @@ void CGamePlayer::Construct()
 
     try
     {
-        char fullPath[260];
+        char fullPath[MAX_PATH];
         char drive[4];
-        char dir[260];
-        char filename[260];
+        char dir[MAX_PATH];
+        char filename[MAX_PATH];
         char rootPath[512];
 
-        ::GetModuleFileNameA(NULL, fullPath, 260);
+        ::GetModuleFileNameA(NULL, fullPath, MAX_PATH);
         _splitpath(fullPath, drive, dir, filename, NULL);
         sprintf(rootPath, "%s%s%s", drive, dir, m_Path);
         TT_ERROR_OPEN(filename, rootPath, true);
@@ -1113,8 +1113,8 @@ bool CGamePlayer::InitEngine()
 {
     char drive[4];
     char fullpath[512];
-    char buffer[260];
-    char dir[256];
+    char buffer[MAX_PATH];
+    char dir[MAX_PATH];
 
     CSplash *splash = new CSplash(m_WinContext.GetAppInstance());
     splash->Show();
@@ -1131,7 +1131,7 @@ bool CGamePlayer::InitEngine()
 
     try
     {
-        ::GetModuleFileNameA(NULL, buffer, 260);
+        ::GetModuleFileNameA(NULL, buffer, MAX_PATH);
         _splitpath(buffer, drive, dir, NULL, NULL);
         sprintf(fullpath, "%s%s%s", drive, dir, m_Path);
         if (fullpath)

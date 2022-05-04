@@ -17,8 +17,8 @@ CWinContext::CWinContext()
       m_Height(DEFAULT_HEIGHT),
       m_IsWndClassRegistered(false),
       m_Fullscreen(true),
-      m_MainWndX(0),
-      m_MainWndY(0)
+      m_MainWndStyle(0),
+      m_RenderWndStyle(0)
 {
     memset(&m_RenderWndClass, 0, sizeof(WNDCLASSA));
     memset(&m_MainWndClass, 0, sizeof(WNDCLASSEXA));
@@ -96,55 +96,42 @@ void CWinContext::RegisterWindowClasses(LPFNWNDPROC lpfnWndProc, int width, int 
 
 void CWinContext::CreateWindows()
 {
-    int mainWidth = m_Width + 2 * (::GetSystemMetrics(SM_CXFRAME));
-    int mainHeight = m_Height + ::GetSystemMetrics(SM_CYCAPTION) + 2 * (::GetSystemMetrics(SM_CYFRAME));
+    m_MainWndStyle = (m_Fullscreen) ? WS_POPUP
+        : WS_OVERLAPPEDWINDOW & ~(WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SYSMENU);
 
-    m_MainWndX = (::GetSystemMetrics(SM_CXSCREEN) - mainWidth) / 2;
-    m_MainWndY = (::GetSystemMetrics(SM_CYSCREEN) - mainHeight) / 2;
+    RECT rect = {0, 0, m_Width, m_Height};
+    AdjustWindowRect(&rect, m_MainWndStyle, FALSE);
 
-    if (m_Fullscreen)
-    {
-        m_MainWindow = ::CreateWindowExA(
-            WS_EX_LEFT,
-            m_MainWndClassName,
-            m_MainWndName,
-            WS_POPUP,
-            m_MainWndX,
-            m_MainWndY,
-            mainWidth,
-            mainHeight,
-            NULL,
-            NULL,
-            m_hInstance,
-            NULL);
-    }
-    else
-    {
-        m_MainWindow = ::CreateWindowExA(
-            WS_EX_LEFT,
-            m_MainWndClassName,
-            m_MainWndName,
-            WS_OVERLAPPEDWINDOW & ~(WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SYSMENU),
-            m_MainWndX,
-            m_MainWndY,
-            mainWidth,
-            mainHeight,
-            NULL,
-            NULL,
-            m_hInstance,
-            NULL);
-    }
+    int width = rect.right - rect.left;
+    int height = rect.bottom - rect.top;
 
+    int x = (::GetSystemMetrics(SM_CXSCREEN) - width) / 2;
+    int y = (::GetSystemMetrics(SM_CYSCREEN) - height) / 2;
+
+    m_MainWindow = ::CreateWindowExA(
+        WS_EX_LEFT,
+        m_MainWndClassName,
+        m_MainWndName,
+        m_MainWndStyle,
+        x,
+        y,
+        width,
+        height,
+        NULL,
+        NULL,
+        m_hInstance,
+        NULL);
     if (!m_MainWindow)
     {
         throw std::exception("MainWindow Create FAILED");
     }
 
+    m_RenderWndStyle = WS_CHILD | WS_VISIBLE;
     m_RenderWindow = ::CreateWindowExA(
         WS_EX_TOPMOST,
         m_RenderWndClassName,
         RenderWindowName,
-        WS_CHILD | WS_VISIBLE,
+        m_RenderWndStyle,
         0,
         0,
         m_Width,
@@ -203,18 +190,17 @@ void CWinContext::SetResolution(int width, int height)
     m_Width = width;
     m_Height = height;
 
-    int mainWidth = m_Width + 2 * (::GetSystemMetrics(SM_CXFRAME));
-    int mainHeight = m_Height + ::GetSystemMetrics(SM_CYCAPTION) + 2 * (::GetSystemMetrics(SM_CYFRAME));
-
     if (m_MainWindow)
     {
-        if (!::SetWindowPos(m_MainWindow, NULL, 0, 0, mainWidth, mainHeight, SWP_NOMOVE))
+        RECT rect = {0, 0, width, height};
+        AdjustWindowRect(&rect, m_MainWndStyle, FALSE);
+        if (!::SetWindowPos(m_MainWindow, HWND_TOP, 0, 0, rect.right - rect.left, rect.bottom - rect.top, SWP_NOMOVE))
         {
             TT_ERROR_BOX("WinContext.cpp", "CWinContext::SetResolution(...)", "wrong parameters");
             throw CWinContextException();
         }
 
-        if (!::SetWindowPos(m_RenderWindow, NULL, 0, 0, m_Width, m_Height, SWP_NOMOVE))
+        if (!::SetWindowPos(m_RenderWindow, HWND_TOP, 0, 0, width, height, SWP_NOMOVE))
         {
             TT_ERROR_BOX("WinContext.cpp", "CWinContext::SetResolution(...)", "wrong parameters");
             throw CWinContextException();
