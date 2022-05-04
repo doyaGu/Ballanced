@@ -17,9 +17,9 @@ CKERROR CreateReadRegistryProto(CKBehaviorPrototype **);
 int ReadRegistry(const CKBehaviorContext &behcontext);
 CKERROR ReadRegistryCallBack(const CKBehaviorContext &behcontext);
 
-int ReadIntegerToRegistry(const char *subKey, CKBehavior *beh, CKContext *context, const char *valueName);
-float ReadFloatToRegistry(const char *subKey, CKBehavior *beh, CKContext *context, const char *valueName);
-char *ReadStringToRegistry(const char *subKey, CKBehavior *beh, CKContext *context, const char *valueName);
+int ReadIntegerFromRegistry(const char *subKey, CKBehavior *beh, CKContext *context, const char *valueName);
+float ReadFloatFromRegistry(const char *subKey, CKBehavior *beh, CKContext *context, const char *valueName);
+char *ReadStringFromRegistry(const char *subKey, CKBehavior *beh, CKContext *context, const char *valueName);
 
 CKObjectDeclaration *FillBehaviorReadRegistryDecl()
 {
@@ -118,7 +118,7 @@ int ReadRegistry(const CKBehaviorContext &behcontext)
                     {
                         _itoa(i, num, 10);
                         strcpy(regEntry, num);
-                        int val = ReadIntegerToRegistry(regSection, beh, context, regEntry);
+                        int val = ReadIntegerFromRegistry(regSection, beh, context, regEntry);
                         array->SetElementValue(i, c, &val);
                     }
                     break;
@@ -127,7 +127,7 @@ int ReadRegistry(const CKBehaviorContext &behcontext)
                     {
                         _itoa(i, num, 10);
                         strcpy(regEntry, num);
-                        float val = ReadFloatToRegistry(regSection, beh, context, regEntry);
+                        float val = ReadFloatFromRegistry(regSection, beh, context, regEntry);
                         array->SetElementValue(i, c, &val);
                     }
                     break;
@@ -137,13 +137,13 @@ int ReadRegistry(const CKBehaviorContext &behcontext)
                         CKParameter *parameter = *(CKParameter **)array->GetElement(i, c);
                         if (parameter->GetGUID() != CKPGUID_BOOL)
                         {
-                            context->OutputToConsoleExBeep("TT_ReadRegistry: ArrayCollumnType invalid(use string/bool/int/float)");
+                            context->OutputToConsoleExBeep("TT_ReadRegistry: ArrayColumnType invalid(use string/bool/int/float)");
                             beh->ActivateOutput(1);
                             return CKBR_OK;
                         }
                         _itoa(i, num, 10);
                         strcpy(regEntry, num);
-                        int val = ReadIntegerToRegistry(regSection, beh, context, regEntry);
+                        int val = ReadIntegerFromRegistry(regSection, beh, context, regEntry);
                         array->SetElementValue(i, c, &val);
                     }
                     break;
@@ -151,7 +151,7 @@ int ReadRegistry(const CKBehaviorContext &behcontext)
                     {
                         _itoa(i, num, 10);
                         strcpy(regEntry, num);
-                        char *str = ReadStringToRegistry(regSection, beh, context, regEntry);
+                        char *str = ReadStringFromRegistry(regSection, beh, context, regEntry);
                         array->SetElementValue(i, c, str);
                     }
                     default:
@@ -166,17 +166,17 @@ int ReadRegistry(const CKBehaviorContext &behcontext)
         CKGUID guid = beh->GetOutputParameter(0)->GetGUID();
         if (guid == CKPGUID_INT || guid == CKPGUID_BOOL)
         {
-            int val = ReadIntegerToRegistry(regSection, beh, context, regEntry);
+            int val = ReadIntegerFromRegistry(regSection, beh, context, regEntry);
             beh->SetOutputParameterValue(0, &val);
         }
         else if (guid == CKPGUID_FLOAT)
         {
-            float val = ReadFloatToRegistry(regSection, beh, context, regEntry);
+            float val = ReadFloatFromRegistry(regSection, beh, context, regEntry);
             beh->SetOutputParameterValue(0, &val);
         }
         else if (guid == CKPGUID_STRING)
         {
-            char *str = ReadStringToRegistry(regSection, beh, context, regEntry);
+            char *str = ReadStringFromRegistry(regSection, beh, context, regEntry);
             beh->SetOutputParameterValue(0, str, 256);
         }
     }
@@ -218,7 +218,7 @@ CKERROR ReadRegistryCallBack(const CKBehaviorContext &behcontext)
             beh->CreateOutputParameter(buffer, CKPGUID_INT);
             int zero = 0;
             data->SetValue(&zero, sizeof(zero));
-            context->OutputToConsoleExBeep("TT_ReadRegistry: ArrayCollumnType invalid(use string/bool/int/float)");
+            context->OutputToConsoleExBeep("TT_ReadRegistry: ArrayColumnType invalid(use string/bool/int/float)");
         }
     }
     default:
@@ -245,7 +245,7 @@ CKERROR ReadRegistryCallBack(const CKBehaviorContext &behcontext)
     return CKBR_OK;
 }
 
-int ReadIntegerToRegistry(const char *subKey, CKBehavior *beh, CKContext *context, const char *valueName)
+int ReadIntegerFromRegistry(const char *subKey, CKBehavior *beh, CKContext *context, const char *valueName)
 {
     HKEY hkResult;
     DWORD dwDisposition;
@@ -272,7 +272,7 @@ int ReadIntegerToRegistry(const char *subKey, CKBehavior *beh, CKContext *contex
     return value;
 }
 
-float ReadFloatToRegistry(const char *subKey, CKBehavior *beh, CKContext *context, const char *valueName)
+float ReadFloatFromRegistry(const char *subKey, CKBehavior *beh, CKContext *context, const char *valueName)
 {
     HKEY hkResult;
     DWORD dwDisposition;
@@ -299,7 +299,7 @@ float ReadFloatToRegistry(const char *subKey, CKBehavior *beh, CKContext *contex
     return value;
 }
 
-char *ReadStringToRegistry(const char *subKey, CKBehavior *beh, CKContext *context, const char *valueName)
+char *ReadStringFromRegistry(const char *subKey, CKBehavior *beh, CKContext *context, const char *valueName)
 {
     HKEY hkResult;
     DWORD dwDisposition;
