@@ -45,14 +45,14 @@ There are serval changes and improvements implemented to the original game.
 
 - Fixed incomplete displaying in windowed mode
 - Fixed memory checking problem
-- In-game resizing in windowed mode support
+- Support in-game resizing in windowed mode 
+- Replace registry operation with using initialization file
 - ...
 
 ## To-Do
 
 The following works will be done in the future.
 
-- Replace registry operation with using initialization file
 - Remove dependency on `Dsetup`
 - Improve Exception Handling in **Player**
 - Add MinGW port
