@@ -53,8 +53,8 @@ private:
     int m_Width;
     bool m_IsWndClassRegistered;
     bool m_Fullscreen;
-    int m_MainWndX;
-    int m_MainWndY;
+    DWORD m_MainWndStyle;
+    DWORD m_RenderWndStyle;
 };
 
 #endif /* PLAYER_WINCONTEXT_H */

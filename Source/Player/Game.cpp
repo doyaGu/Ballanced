@@ -115,8 +115,8 @@ CGame::~CGame()
 
 void CGame::Load()
 {
-    char cmoPath[256];
-    char dir[260];
+    char cmoPath[MAX_PATH];
+    char dir[MAX_PATH];
 
     if (!m_GameInfo)
     {

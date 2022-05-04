@@ -285,14 +285,13 @@ void CNeMoContext::Play()
     m_CKContext->Play();
 }
 
-void CNeMoContext::ShowWindow()
+void CNeMoContext::MinimizeWindow()
 {
     if (m_RenderContext &&
         IsRenderFullScreen() &&
         !m_RenderContext->IsFullScreen())
-    {
-        m_WinContext->GetMainWindow();
-        ShowWindow();
+    { 
+        m_WinContext->MinimizeWindow();
     }
 }
 
@@ -593,7 +592,7 @@ bool CNeMoContext::CreateRenderContext()
     {
         CKRenderManager *renderManager = m_CKContext->GetRenderManager();
         CKRECT rect = {0, 0, m_Width, m_Height};
-        m_RenderContext = renderManager->CreateRenderContext(m_WinContext->GetMainWindow(), m_DriverIndex, &rect, FALSE, -1, -1, -1, 0);
+        m_RenderContext = renderManager->CreateRenderContext(m_WinContext->GetRenderWindow(), m_DriverIndex, &rect, FALSE, -1, -1, -1, 0);
         if (!m_RenderContext)
         {
             return false;
@@ -608,8 +607,8 @@ bool CNeMoContext::CreateRenderContext()
                 throw CNeMoContextException(2);
             }
 
-            ::SetWindowPos(m_WinContext->GetMainWindow(), (HWND)-1, 0, 0, m_Width, m_Height, 0);
-            ::SetWindowPos(m_WinContext->GetRenderWindow(), (HWND)-1, 0, 0, m_Width, m_Height, 0);
+            ::SetWindowPos(m_WinContext->GetMainWindow(), HWND_TOPMOST, 0, 0, m_Width, m_Height, 0);
+            ::SetWindowPos(m_WinContext->GetRenderWindow(), HWND_TOPMOST, 0, 0, m_Width, m_Height, 0);
             return false;
         }
 
@@ -699,7 +698,7 @@ bool CNeMoContext::FindScreenMode()
         }
         m_CKContext = NULL;
 
-        TT_ERROR("NemoContext.cpp", "FindScreenMode()", "VxDriverDesc ist NULL, critical");
+        TT_ERROR("NemoContext.cpp", "FindScreenMode()", "VxDriverDesc is NULL, critical");
         throw CNeMoContextException(5);
     }
 
@@ -906,6 +905,9 @@ bool CNeMoContext::ChangeScreenMode(int driver, int screenMode)
     ::Sleep(10);
 
     m_WinContext->SetResolution(m_Width, m_Height);
+    m_RenderContext->Resize();
+    AdjustFrameRateSpritePosition();
+
     if (fullscreenBefore && !m_RenderContext->IsFullScreen())
     {
         GoFullscreen();
@@ -940,4 +942,19 @@ void CNeMoContext::Refresh()
         m_RenderContext->BackToFront();
         m_RenderContext->Clear();
     }
+}
+
+void CNeMoContext::ResizeWindow()
+{
+    RECT rect;
+    ::GetClientRect(m_WinContext->GetMainWindow(), &rect);
+    ::SetWindowPos(m_WinContext->GetRenderWindow(),
+        NULL,
+        0,
+        0,
+        rect.right - rect.left,
+        rect.bottom - rect.top,
+        SWP_NOMOVE | SWP_NOZORDER);
+    m_RenderContext->Resize();
+    AdjustFrameRateSpritePosition();
 }

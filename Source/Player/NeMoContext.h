@@ -65,7 +65,7 @@ public:
     virtual void DoStartUp();
     virtual void Pause();
     virtual void Play();
-    virtual void ShowWindow();
+    virtual void MinimizeWindow();
     virtual CKERROR Reset();
     virtual CKERROR Render(CK_RENDER_FLAGS flags = CK_RENDER_USECURRENTSETTINGS);
     virtual void HideFrameRateSprite();
@@ -130,6 +130,7 @@ public:
     void AddMessageWindowClose();
     CKContext *GetCKContext();
     void Refresh();
+    void ResizeWindow();
 
     static CNeMoContext *GetInstance()
     {
