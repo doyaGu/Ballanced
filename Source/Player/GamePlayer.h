@@ -80,7 +80,6 @@ private:
     HANDLE m_hMutex;
     bool m_DefaultSetting;
     bool m_Cleared;
-    bool field_E;
     char m_RenderPath[512];
     char m_PluginPath[512];
     char m_ManagerPath[512];
