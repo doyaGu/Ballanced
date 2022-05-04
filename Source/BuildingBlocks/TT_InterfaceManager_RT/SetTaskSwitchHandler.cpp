@@ -57,6 +57,7 @@ int SetTaskSwitchHandler(const CKBehaviorContext &behcontext)
 	if (!man || !man->GetGameInfo())
 	{
 		TT_ERROR("SetTaskSwitchHandler.cpp", "int SetTaskSwitchHandler(...)", " gameInfo == NULL, exit CMO");
+		return CKBR_OK;
 	}
 
 	BOOL enable = TRUE;
