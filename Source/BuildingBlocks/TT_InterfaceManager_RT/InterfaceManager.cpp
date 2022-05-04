@@ -16,7 +16,7 @@ CTTInterfaceManager::CTTInterfaceManager(CKContext *context)
 {
     context->RegisterNewManager(this);
     memset(m_CmoName, 0, sizeof(m_CmoName));
-    memset(field_238, 0, sizeof(field_238));
+    memset(m_IniName, 0, sizeof(m_IniName));
 }
 
 CTTInterfaceManager::~CTTInterfaceManager() {}

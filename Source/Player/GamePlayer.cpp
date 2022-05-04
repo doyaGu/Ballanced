@@ -18,135 +18,91 @@
 
 extern RESOURCEMAP g_ResMap;
 
-static inline bool IsNoSettingsInRegistry()
+static inline bool IsNoSettingsInIni()
 {
-    return (g_ResMap.noKey & 2) == 2;
+    return (g_ResMap.fKey & 2) == 2;
 }
 
-static bool RegSetBPP(int bpp)
+static bool IniSetBPP(int bpp)
 {
-    HKEY hkResult;
-    DWORD dwDisposition;
-
-    DWORD dwType = REG_DWORD;
-    DWORD cbData = sizeof(DWORD);
-
-    if (::RegCreateKeyExA(g_ResMap.hkRoot, g_ResMap.settings, 0, 0, 0, KEY_ALL_ACCESS, 0, &hkResult, &dwDisposition) != ERROR_SUCCESS ||
-        (bpp != 32 && bpp != 16))
+    if (bpp != 32 && bpp != 16)
     {
-        ::RegCloseKey(hkResult);
         return false;
     }
 
-    if (::RegQueryValueExA(hkResult, g_ResMap.videoDriver, 0, &dwType, (LPBYTE)&g_ResMap.dwVideoDriverSetting, &cbData) != ERROR_SUCCESS)
-        g_ResMap.dwVideoDriverSetting = 0;
+    DWORD dwVideoDriver = ::GetPrivateProfileIntA("Settings", g_ResMap.videoDriver, -1, g_ResMap.pathSetting);
+    if (dwVideoDriver == -1)
+    {
+        return false;
+    }
 
     if (bpp == 16)
     {
-        g_ResMap.dwVideoDriverSetting &= 0xFFFE;
+        dwVideoDriver &= 0xFFFE;
     }
-    else if ((g_ResMap.dwVideoDriverSetting & 1) != 1)
+    else if ((dwVideoDriver & 1) != 1)
     {
-        g_ResMap.dwVideoDriverSetting |= 1;
+        dwVideoDriver |= 1;
     }
 
-    if (::RegSetValueExA(hkResult, g_ResMap.videoDriver, 0, REG_DWORD, (LPBYTE)&g_ResMap.dwVideoDriverSetting, 4) != ERROR_SUCCESS)
-    {
-        ::RegCloseKey(hkResult);
-        return true;
-    }
+    g_ResMap.dwVideoDriverSetting = dwVideoDriver;
 
-    return false;
+    char buffer[64];
+    sprintf(buffer, "%d", g_ResMap.dwVideoDriverSetting);
+    return ::WritePrivateProfileStringA("Settings", g_ResMap.videoDriver, buffer, g_ResMap.pathSetting);
 }
 
-static bool RegSetBPPAndDriver(int bpp, int driver)
+static bool IniSetBPPAndDriver(int bpp, int driver)
 {
-    HKEY hkResult;
-    DWORD dwDisposition;
-
-    if (::RegCreateKeyExA(g_ResMap.hkRoot, g_ResMap.settings, 0, 0, 0, KEY_ALL_ACCESS, 0, &hkResult, &dwDisposition) != ERROR_SUCCESS)
-    {
-        ::RegCloseKey(hkResult);
-        return false;
-    }
-
     if (bpp == 32)
         g_ResMap.dwVideoDriverSetting = (driver << 16) | 1;
     else if (bpp == 16)
         g_ResMap.dwVideoDriverSetting = (driver << 16) | 0;
 
-    if (::RegSetValueExA(hkResult, g_ResMap.videoDriver, 0, REG_DWORD, (LPBYTE)&g_ResMap.dwVideoDriverSetting, 4) != ERROR_SUCCESS)
-    {
-        ::RegCloseKey(hkResult);
-        return true;
-    }
-
-    return false;
+    char buffer[64];
+    sprintf(buffer, "%d", g_ResMap.dwVideoDriverSetting);
+    return ::WritePrivateProfileStringA("Settings", g_ResMap.videoDriver, buffer, g_ResMap.pathSetting);
 }
 
-static bool RegSetFullscreen(bool fullscreen)
+static bool IniSetFullscreen(bool fullscreen)
 {
-    HKEY hkResult;
-    DWORD dwDisposition;
-    DWORD dwFullscreen = (DWORD)fullscreen;
-
-    if (::RegCreateKeyExA(g_ResMap.hkRoot, g_ResMap.settings, 0, 0, 0, KEY_ALL_ACCESS, 0, &hkResult, &dwDisposition) != ERROR_SUCCESS ||
-        ::RegSetValueExA(hkResult, g_ResMap.fullScreen, 0, REG_DWORD, (LPBYTE)&dwFullscreen, 4) != ERROR_SUCCESS)
-    {
-        ::RegCloseKey(hkResult);
-        return false;
-    }
-
     g_ResMap.fullScreenSetting = fullscreen;
-    ::RegCloseKey(hkResult);
-    return true;
+
+    char buffer[64];
+    sprintf(buffer, "%d", g_ResMap.fullScreenSetting);
+    return ::WritePrivateProfileStringA("Settings", g_ResMap.fullScreen, buffer, g_ResMap.pathSetting);
 }
 
-static bool RegSetResolution(int width, int height)
+static bool IniSetResolution(int width, int height)
 {
-    HKEY hkResult;
-    DWORD dwDisposition;
-
     g_ResMap.dwVideoModeSetting = (width << 16) | height;
-    if (::RegCreateKeyExA(g_ResMap.hkRoot, g_ResMap.settings, 0, 0, 0, KEY_ALL_ACCESS, 0, &hkResult, &dwDisposition) != ERROR_SUCCESS ||
-        ::RegSetValueExA(hkResult, g_ResMap.videoMode, 0, REG_DWORD, (LPBYTE)&g_ResMap.dwVideoModeSetting, 4) != ERROR_SUCCESS)
-    {
-        ::RegCloseKey(hkResult);
-        return false;
-    }
 
-    ::RegCloseKey(hkResult);
-    return true;
+    char buffer[64];
+    sprintf(buffer, "%d", g_ResMap.dwVideoModeSetting);
+    return ::WritePrivateProfileStringA("Settings", g_ResMap.videoMode, buffer, g_ResMap.pathSetting);
 }
 
-static bool RegGetBPPAndDriver(int *bpp, int *driver)
+static bool IniGetBPPAndDriver(int *bpp, int *driver)
 {
-    HKEY hkResult;
-    DWORD dwDisposition;
-
-    DWORD dwType = REG_DWORD;
-    DWORD cbData = sizeof(DWORD);
-
-    if (::RegCreateKeyExA(g_ResMap.hkRoot, g_ResMap.settings, 0, 0, 0, KEY_ALL_ACCESS, 0, &hkResult, &dwDisposition) != ERROR_SUCCESS ||
-        ::RegQueryValueExA(hkResult, g_ResMap.videoDriver, 0, &dwType, (LPBYTE)&g_ResMap.dwVideoDriverSetting, &cbData))
+    DWORD dwVideoDriver = ::GetPrivateProfileIntA("Settings", g_ResMap.videoDriver, -1, g_ResMap.pathSetting);
+    if (dwVideoDriver == -1)
     {
-        ::RegCloseKey(hkResult);
         return false;
     }
 
-    *bpp = (g_ResMap.dwVideoDriverSetting & 1) != 0 ? 32 : 16;
-    *driver = g_ResMap.dwVideoDriverSetting >> 16;
+    *bpp = (dwVideoDriver & 1) != 0 ? 32 : 16;
+    *driver = dwVideoDriver >> 16;
+    g_ResMap.dwVideoDriverSetting = dwVideoDriver;
 
-    ::RegCloseKey(hkResult);
     return true;
 }
 
-static int RegGetWidth()
+static int IniGetWidth()
 {
     return HIWORD(g_ResMap.dwVideoModeSetting);
 }
 
-static int RegGetHeight()
+static int IniGetHeight()
 {
     return LOWORD(g_ResMap.dwVideoModeSetting);
 }
@@ -641,24 +597,26 @@ LRESULT CGamePlayer::OnScreenModeChanged(WPARAM wParam, LPARAM lParam)
 
     if (m_NeMoContext.ChangeScreenMode(lParam, wParam))
     {
-        return 1;
+        screenMode = m_NeMoContext.GetScreenModeIndex();
+        driver = m_NeMoContext.GetDriverIndex();
     }
 
     CTTInterfaceManager *im = m_NeMoContext.GetInterfaceManager();
     if (!im)
     {
         TT_ERROR("GamePlayer.cpp", "WndProc()", "No InterfaceManager");
-        return 1;
+    }
+    else
+    {
+        im->SetDriverIndex(driver);
+        im->SetScreenModeIndex(screenMode);
     }
 
-    im->SetDriverIndex(driver);
-    im->SetScreenModeIndex(screenMode);
-
-    RegSetBPPAndDriver(m_NeMoContext.GetBPP(), m_NeMoContext.GetDriverIndex());
-    RegSetResolution(m_NeMoContext.GetWidth(), m_NeMoContext.GetHeight());
+    IniSetBPPAndDriver(m_NeMoContext.GetBPP(), m_NeMoContext.GetDriverIndex());
+    IniSetResolution(m_NeMoContext.GetWidth(), m_NeMoContext.GetHeight());
 
     ::SetFocus(m_WinContext.GetMainWindow());
-    return 0;
+    return 1;
 }
 
 void CGamePlayer::OnCommand(UINT id, UINT code)
@@ -880,8 +838,8 @@ void CGamePlayer::Init(HINSTANCE hInstance, LPFNWNDPROC lpfnWndProc)
 
             if (settingChanged)
             {
-                RegSetBPPAndDriver(m_NeMoContext.GetBPP(), m_NeMoContext.GetScreenModeIndex());
-                RegSetResolution(m_NeMoContext.GetWidth(), m_NeMoContext.GetHeight());
+                IniSetBPPAndDriver(m_NeMoContext.GetBPP(), m_NeMoContext.GetScreenModeIndex());
+                IniSetResolution(m_NeMoContext.GetWidth(), m_NeMoContext.GetHeight());
             }
         }
 
@@ -1073,22 +1031,22 @@ void CGamePlayer::Construct()
         TT_LOG_OPEN(filename, rootPath, false);
         fillResourceMap(&g_ResMap);
 
-        if (IsNoSettingsInRegistry())
+        if (IsNoSettingsInIni())
         {
             // Default settings
             m_NeMoContext.SetScreen(&m_WinContext, false, 0, DEFAULT_BPP, DEFAULT_WIDTH, DEFAULT_HEIGHT);
             m_WinContext.SetResolution(DEFAULT_WIDTH, DEFAULT_HEIGHT);
-            RegSetBPP(DEFAULT_BPP);
-            RegSetBPPAndDriver(DEFAULT_BPP, 0);
-            RegSetFullscreen(false);
-            RegSetResolution(DEFAULT_WIDTH, DEFAULT_HEIGHT);
+            IniSetBPP(DEFAULT_BPP);
+            IniSetBPPAndDriver(DEFAULT_BPP, 0);
+            IniSetFullscreen(false);
+            IniSetResolution(DEFAULT_WIDTH, DEFAULT_HEIGHT);
         }
         else
         {
             int bpp, driver;
-            RegGetBPPAndDriver(&bpp, &driver);
-            int width = RegGetWidth();
-            int height = RegGetHeight();
+            IniGetBPPAndDriver(&bpp, &driver);
+            int width = IniGetWidth();
+            int height = IniGetHeight();
             m_NeMoContext.SetScreen(&m_WinContext, g_ResMap.fullScreenSetting == TRUE, driver, bpp, width, height);
             m_WinContext.SetResolution(width, height);
         }
@@ -1171,6 +1129,15 @@ bool CGamePlayer::InitEngine()
 
         im->SetDriverIndex(m_NeMoContext.GetDriverIndex());
         im->SetScreenModeIndex(m_NeMoContext.GetScreenModeIndex());
+
+        if (strlen(g_ResMap.pathSetting) > 128)
+        {
+            im->SetIniName("Ballance.ini");
+        }
+        else
+        {
+            im->SetIniName(g_ResMap.pathSetting);
+        }
 
         m_WinContext.ShowWindows();
         m_WinContext.UpdateWindows();

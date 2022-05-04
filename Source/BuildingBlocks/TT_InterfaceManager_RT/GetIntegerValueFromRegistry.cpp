@@ -57,8 +57,8 @@ int GetIntegerValueFromRegistry(const CKBehaviorContext &behcontext)
     CKContext *context = behcontext.Context;
 
     int value = 0;
-    char regKey[512];
-    char valueName[128];
+    char regKey[512] = {0};
+    char valueName[128] = {0};
     beh->GetInputParameterValue(0, regKey);
     beh->GetInputParameterValue(1, valueName);
 
@@ -71,8 +71,8 @@ int GetIntegerValueFromRegistry(const CKBehaviorContext &behcontext)
         return CKBR_OK;
     }
 
-    CGameInfo *gameInfo = man->GetGameInfo();
-    if (!gameInfo)
+    char *ini = man->GetIniName();
+    if (!ini)
     {
         context->OutputToConsoleExBeep("TT_GetIntegerValueFromRegistry: System was not sent by the TT player");
         beh->SetOutputParameterValue(0, &value);
@@ -80,33 +80,9 @@ int GetIntegerValueFromRegistry(const CKBehaviorContext &behcontext)
         return CKBR_OK;
     }
 
-    char buffer[512];
-    sprintf(buffer, "%s%s", gameInfo->regSubkey, regKey);
+    value = ::GetPrivateProfileIntA(regKey, valueName, 0, ini);
 
-    HKEY hkResult;
-    DWORD dwDisposition;
-    if (::RegCreateKeyExA(gameInfo->hkRoot, buffer, 0, 0, 0, KEY_ALL_ACCESS, 0, &hkResult, &dwDisposition) != ERROR_SUCCESS)
-    {
-        value = 1;
-        ::RegCloseKey(hkResult);
-        beh->SetOutputParameterValue(0, &value);
-        beh->ActivateOutput(1);
-        return CKBR_OK;
-    }
-
-    DWORD dwType = REG_DWORD;
-    DWORD cbData = sizeof(value);
-    if (::RegQueryValueExA(hkResult, valueName, NULL, &dwType, (LPBYTE)&value, &cbData) != ERROR_SUCCESS)
-    {
-        value = 2;
-        ::RegCloseKey(hkResult);
-        beh->SetOutputParameterValue(0, &value);
-        beh->ActivateOutput(1);
-        return CKBR_OK;
-    }
-
-    ::RegCloseKey(hkResult);
-    beh->SetOutputParameterValue(0, &value, cbData);
+    beh->SetOutputParameterValue(0, &value, sizeof(int));
     beh->ActivateOutput(0);
     return CKBR_OK;
 }

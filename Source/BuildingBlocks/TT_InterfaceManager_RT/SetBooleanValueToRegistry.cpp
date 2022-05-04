@@ -56,12 +56,12 @@ int SetBooleanValueToRegistry(const CKBehaviorContext &behcontext)
     CKContext *context = behcontext.Context;
 
     BOOL value;
-    char regKey[512];
-    char valueName[128];
+    char regKey[512] = {0};
+    char valueName[128] = {0};
     beh->GetInputParameterValue(0, &value);
     beh->GetInputParameterValue(1, regKey);
     beh->GetInputParameterValue(2, valueName);
-    
+
     CTTInterfaceManager *man = CTTInterfaceManager::GetManager(context);
     if (!man)
     {
@@ -70,36 +70,23 @@ int SetBooleanValueToRegistry(const CKBehaviorContext &behcontext)
         return CKBR_OK;
     }
 
-    CGameInfo *gameInfo = man->GetGameInfo();
-    if (!gameInfo)
+    char *ini = man->GetIniName();
+    if (!ini)
     {
         context->OutputToConsoleExBeep("TT_SetBooleanValueToRegistry: System was not sent by the TT player");
         beh->ActivateOutput(1);
         return CKBR_OK;
     }
 
-    char buffer[512];
-    sprintf(buffer, "%s%s", gameInfo->regSubkey, regKey);
-
-    HKEY hkResult;
-    DWORD dwDisposition;
-    if (::RegCreateKeyExA(gameInfo->hkRoot, buffer, 0, 0, 0, KEY_ALL_ACCESS, 0, &hkResult, &dwDisposition) != ERROR_SUCCESS)
+    static char buffer[4];
+    _itoa(value, buffer, 10);
+    if (!::WritePrivateProfileStringA(regKey, valueName, buffer, ini))
     {
-        ::RegCloseKey(hkResult);
-        context->OutputToConsoleExBeep("TT_SetBooleanValueToRegistry: Failed to create %s %s", gameInfo->hkRoot, buffer);
+        context->OutputToConsoleExBeep("TT_SetBooleanValueToRegistry: Failed to write %s to %s.", regKey, ini);
         beh->ActivateOutput(1);
         return CKBR_OK;
     }
 
-    if (::RegSetValueExA(hkResult, valueName, 0, REG_DWORD, (LPBYTE)&value, sizeof(value)) != ERROR_SUCCESS)
-    {
-        ::RegCloseKey(hkResult);
-        context->OutputToConsoleExBeep("TT_SetBooleanValueToRegistry: Failed to set %s %d", valueName, (value) ? "TRUE" : "FALSE");
-        beh->ActivateOutput(1);
-        return CKBR_OK;
-    }
-
-    ::RegCloseKey(hkResult);
     beh->ActivateOutput(0);
     return CKBR_OK;
 }

@@ -89,7 +89,17 @@ public:
 
 	void SetCmoName(const char *name)
 	{
-		strcpy(m_CmoName, name);
+		strncpy(m_CmoName, name, sizeof(m_CmoName));
+	}
+
+	char *GetIniName()
+	{
+		return &m_IniName[0];
+	}
+
+	void SetIniName(const char *name)
+	{
+		strncpy(m_IniName, name, sizeof(m_IniName));
 	}
 
 	bool IsWindowActivated() const
@@ -119,7 +129,7 @@ protected:
 	bool m_Rookie;
 	CGameInfo *m_GameInfo;
 	char m_CmoName[512];
-	char field_238[128];
+	char m_IniName[128];
 	bool m_WindowActivated;
 	CNemoArrayList m_ArrayList;
 };

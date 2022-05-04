@@ -65,12 +65,12 @@ typedef struct tagRESOURCEMAP
     char launcherSetting[50];
     char copyLauncherSetting[50];
     char serverGamePathSetting[512];
-	DWORD dwVideoModeSetting;
-	DWORD dwVideoDriverSetting;
+    DWORD dwVideoModeSetting;
+    DWORD dwVideoDriverSetting;
     BYTE fullScreenSetting;
     char progNameSetting[50];
     char pathSetting[257];
-    DWORD noKey;
+    DWORD fKey;
     HINSTANCE hResDll;
 } RESOURCEMAP;
 
