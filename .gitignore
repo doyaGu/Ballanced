@@ -22,9 +22,6 @@
 /Startup.exe
 /UNWISE.EXE
 
-# Compile artifacts
-/Lib
-
 # User-specific files
 *.rsuser
 *.suo
