@@ -1,0 +1,13 @@
+;*****************************************************************************
+; File : VirtoolsLoader.def : Declares the module parameters for the DLL.	 *
+; The only functions that need to be export are CKGetPluginInfo which		 * 													 	
+; return information about this plugin and CKGetReader that returns			 * 
+; an instance of the CKNemoLoader class										 *	
+;   Virtools SDK 															 *	 
+;	Copyright (c) Virtools 2000, All Rights Reserved.						 *	
+;*****************************************************************************
+EXPORTS
+    ; Explicit exports can go here
+	CKGetPluginInfoCount
+	CKGetPluginInfo
+	CKGetReader
