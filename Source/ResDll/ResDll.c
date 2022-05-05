@@ -94,6 +94,7 @@ void loadSettings()
 		WritePrivateProfileStringA("Settings", "Language", "1", g_ResMap.pathSetting);
 
 		g_ResMap.fKey |= 3;
+		return;
 	}
 
 	GetPrivateProfileStringA("Install", g_ResMap.launcher, "", g_ResMap.launcherSetting, 50, g_ResMap.pathSetting);
