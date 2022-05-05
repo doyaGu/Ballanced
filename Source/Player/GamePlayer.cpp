@@ -909,11 +909,14 @@ void CGamePlayer::Done()
             m_NeMoContext.Cleanup();
             m_NeMoContext.RestoreWindow();
 
-            m_NeMoContext.GetRenderContext()->Clear();
-            m_NeMoContext.GetRenderContext()->SetClearBackground();
-            m_NeMoContext.GetRenderContext()->BackToFront();
-            m_NeMoContext.GetRenderContext()->SetClearBackground();
-            m_NeMoContext.GetRenderContext()->Clear();
+            if (m_NeMoContext.GetRenderContext())
+            {
+                m_NeMoContext.GetRenderContext()->Clear();
+                m_NeMoContext.GetRenderContext()->SetClearBackground();
+                m_NeMoContext.GetRenderContext()->BackToFront();
+                m_NeMoContext.GetRenderContext()->SetClearBackground();
+                m_NeMoContext.GetRenderContext()->Clear();
+            }
 
             m_NeMoContext.Shutdown();
 
