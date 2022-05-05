@@ -35,6 +35,7 @@ public:
     virtual bool ApplyScreenMode(int idx);
     virtual void SetFullscreen(bool fullscreen);
     virtual void SetBPP(int bpp);
+    virtual void SetRefreshRate(int fps);
     virtual void SetProgPath(const char *path);
     virtual void SetMsgClick(int msg);
     virtual void SetRenderContext(CKRenderContext *renderContext);
@@ -51,6 +52,7 @@ public:
     virtual int GetWidth() const;
     virtual int GetHeight() const;
     virtual int GetBPP() const;
+    virtual int GetRefreshRate() const;
     virtual char *GetProgPath() const;
     virtual int GetMsgClick() const;
     virtual bool IsRenderFullScreen() const;
@@ -152,6 +154,7 @@ private:
     int m_Width;
     int m_Height;
     int m_Bpp;
+    int m_RefreshRate;
     bool m_Fullscreen;
     bool m_DisplayChanged;
     int m_DriverIndex;

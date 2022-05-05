@@ -27,6 +27,7 @@ CNeMoContext::CNeMoContext()
       m_Width(DEFAULT_WIDTH),
       m_Height(DEFAULT_HEIGHT),
       m_Bpp(DEFAULT_BPP),
+      m_RefreshRate(0),
       m_Fullscreen(false),
       m_DisplayChanged(false),
       m_DriverIndex(0),
@@ -114,6 +115,11 @@ void CNeMoContext::SetBPP(int bpp)
     m_Bpp = bpp;
 }
 
+void CNeMoContext::SetRefreshRate(int fps)
+{
+    m_RefreshRate = fps;
+}
+
 void CNeMoContext::SetProgPath(const char *path)
 {
     if (!path)
@@ -199,6 +205,11 @@ int CNeMoContext::GetHeight() const
 int CNeMoContext::GetBPP() const
 {
     return m_Bpp;
+}
+
+int CNeMoContext::GetRefreshRate() const
+{
+    return m_RefreshRate;
 }
 
 char *CNeMoContext::GetProgPath() const
@@ -326,7 +337,7 @@ void CNeMoContext::GoFullscreen()
                                           displayMode->Height,
                                           displayMode->Bpp,
                                           m_DriverIndex,
-                                          0);
+                                          m_RefreshRate);
             ::SetFocus(m_WinContext->GetMainWindow());
         }
     }
@@ -336,7 +347,7 @@ void CNeMoContext::GoFullscreen()
                                       m_Height,
                                       m_Bpp,
                                       m_DriverIndex,
-                                      0);
+                                      m_RefreshRate);
         ::SetFocus(m_WinContext->GetMainWindow());
     }
 }
@@ -426,7 +437,8 @@ void CNeMoContext::SwitchFullscreen()
             m_RenderContext->GoFullScreen(displayMode->Width,
                                           displayMode->Height,
                                           displayMode->Bpp,
-                                          m_DriverIndex);
+                                          m_DriverIndex,
+                                          m_RefreshRate);
             ::ShowWindow(m_WinContext->GetMainWindow(), SW_SHOWMINNOACTIVE);
         }
     }
@@ -435,7 +447,8 @@ void CNeMoContext::SwitchFullscreen()
         m_RenderContext->GoFullScreen(m_Width,
                                       m_Height,
                                       m_Bpp,
-                                      m_DriverIndex);
+                                      m_DriverIndex,
+                                      m_RefreshRate);
         ::ShowWindow(m_WinContext->GetMainWindow(), SW_SHOWMINNOACTIVE);
     }
 }
@@ -548,14 +561,14 @@ bool CNeMoContext::CreateRenderContext()
     {
         CKRenderManager *renderManager = m_CKContext->GetRenderManager();
         CKRECT rect = {0, 0, m_Width, m_Height};
-        m_RenderContext = renderManager->CreateRenderContext(m_WinContext->GetRenderWindow(), m_DriverIndex, &rect, FALSE, -1, -1, -1, 0);
+        m_RenderContext = renderManager->CreateRenderContext(m_WinContext->GetRenderWindow(), m_DriverIndex, &rect, m_Fullscreen, m_Bpp, -1, -1, m_RefreshRate);
         if (!m_RenderContext)
         {
             return false;
         }
 
         Play();
-        if (IsFullscreen() && m_RenderContext->GoFullScreen(m_Width, m_Height, m_Bpp, m_DriverIndex, 0))
+        if (m_Fullscreen && m_RenderContext->GoFullScreen(m_Width, m_Height, m_Bpp, m_DriverIndex, m_RefreshRate))
         {
             if (!RestoreWindow())
             {
@@ -569,7 +582,7 @@ bool CNeMoContext::CreateRenderContext()
         }
 
         Pause();
-        if (!IsFullscreen())
+        if (!m_Fullscreen)
         {
             RestoreWindow();
         }
@@ -667,6 +680,7 @@ bool CNeMoContext::FindScreenMode()
             dm[i].Bpp == m_Bpp)
         {
             m_ScreenModeIndex = i;
+            break;
         }
     }
 
