@@ -20,6 +20,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TT_InterfaceManager_RT", "S
 		{612C0D55-05C7-469B-AE2D-7CC7AA8B89BC} = {612C0D55-05C7-469B-AE2D-7CC7AA8B89BC}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VirtoolsLoader", "Source\Plugins\VirtoolsLoader\VirtoolsLoader.vcxproj", "{1E00F4C1-AA41-4E10-A609-3E6B2C252B5B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BuildingBlocks", "BuildingBlocks", "{1B18237B-AA9D-49A4-9D68-7155D6D890A3}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Plugins", "Plugins", "{2FBBD9F3-A14C-4613-A2CD-C0831D60CB72}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -46,9 +52,18 @@ Global
 		{D1F5B337-5FD7-437A-B06A-D3AAFAECD172}.Debug|x86.Build.0 = Debug|Win32
 		{D1F5B337-5FD7-437A-B06A-D3AAFAECD172}.Release|x86.ActiveCfg = Release|Win32
 		{D1F5B337-5FD7-437A-B06A-D3AAFAECD172}.Release|x86.Build.0 = Release|Win32
+		{1E00F4C1-AA41-4E10-A609-3E6B2C252B5B}.Debug|x86.ActiveCfg = Debug|Win32
+		{1E00F4C1-AA41-4E10-A609-3E6B2C252B5B}.Debug|x86.Build.0 = Debug|Win32
+		{1E00F4C1-AA41-4E10-A609-3E6B2C252B5B}.Release|x86.ActiveCfg = Release|Win32
+		{1E00F4C1-AA41-4E10-A609-3E6B2C252B5B}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{31E83156-A162-4C64-BF52-AC251D8F3EF7} = {1B18237B-AA9D-49A4-9D68-7155D6D890A3}
+		{D1F5B337-5FD7-437A-B06A-D3AAFAECD172} = {1B18237B-AA9D-49A4-9D68-7155D6D890A3}
+		{1E00F4C1-AA41-4E10-A609-3E6B2C252B5B} = {2FBBD9F3-A14C-4613-A2CD-C0831D60CB72}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {5C864A73-1505-48B8-AC3C-9A021E2A6201}
