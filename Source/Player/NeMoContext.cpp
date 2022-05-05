@@ -23,7 +23,6 @@ CNeMoContext::CNeMoContext()
       m_FrameRateSprite(NULL),
       m_MadeWithSprite(NULL),
       m_WinContext(NULL),
-      m_RenderEnginePath("CK2_3D"),
       m_Width(DEFAULT_WIDTH),
       m_Height(DEFAULT_HEIGHT),
       m_Bpp(DEFAULT_BPP),
@@ -36,7 +35,13 @@ CNeMoContext::CNeMoContext()
       m_MsgClick(0),
       m_IsCleared(false)
 {
+    m_RenderEnginePath = CKStrdup("CK2_3D");
     strcpy(m_ProgPath, "");
+}
+
+CNeMoContext::~CNeMoContext()
+{
+    delete[] m_RenderEnginePath;
 }
 
 void CNeMoContext::SetFrameRateSpritePosition(int x, int y)
@@ -620,7 +625,7 @@ bool CNeMoContext::CreateRenderContext()
 
 int CNeMoContext::GetRenderEnginePluginIdx()
 {
-    if (m_RenderEnginePath.Length() == 0)
+    if (!m_RenderEnginePath)
     {
         return -1;
     }
@@ -648,7 +653,7 @@ int CNeMoContext::GetRenderEnginePluginIdx()
         }
 
         _splitpath(dllname, NULL, NULL, filename, NULL);
-        if (!_strnicmp(m_RenderEnginePath.Str(), filename, strlen(filename)))
+        if (!_strnicmp(m_RenderEnginePath, filename, strlen(filename)))
         {
             return i;
         }
