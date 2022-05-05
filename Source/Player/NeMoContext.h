@@ -3,8 +3,6 @@
 
 #include <exception>
 
-#include "FixedString.h"
-
 class CWinContext;
 class CTTInterfaceManager;
 
@@ -20,7 +18,7 @@ class CNeMoContext
 {
 public:
     CNeMoContext();
-    virtual ~CNeMoContext() {}
+    virtual ~CNeMoContext();
 
     virtual void SetFrameRateSpritePosition(int x, int y);
     virtual void SetMadeWithSpritePosition(int x, int y);
@@ -150,7 +148,7 @@ private:
     CKSpriteText *m_FrameRateSprite;
     CKSpriteText *m_MadeWithSprite;
     CWinContext *m_WinContext;
-    CFixedString m_RenderEnginePath;
+    CKSTRING m_RenderEnginePath;
     int m_Width;
     int m_Height;
     int m_Bpp;
