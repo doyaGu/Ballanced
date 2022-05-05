@@ -30,8 +30,8 @@ Remarks:
 This function takes 4 floats R,G,B,A (in the range 0..1) and converts them into
 a color stored in DWORD in 32 bit ARGB format.
 *****************************************************/  
-VX_EXPORT CKDWORD RGBAFTOCOLOR(float r,float g,float b,float a);
-VX_EXPORT CKDWORD RGBAFTOCOLOR(const VxColor* col);
+VX_EXPORT unsigned long RGBAFTOCOLOR(float r,float g,float b,float a);
+VX_EXPORT unsigned long RGBAFTOCOLOR(const VxColor* col);
 
 /***************************************************
 Summary: Converts 4 floats to a DWORD BGRA color  
@@ -40,7 +40,7 @@ Remarks:
 This function takes 4 floats R,G,B,A (in the range 0..1) and converts them into
 a color stored in DWORD in 32 bit BGRA format.
 *****************************************************/  
-VX_EXPORT CKDWORD BGRAFTOCOLOR(const VxColor* col);
+VX_EXPORT unsigned long BGRAFTOCOLOR(const VxColor* col);
 
 /***************************************************
 Summary: Convers 4 integers to a DWORD ARGB color  
@@ -141,7 +141,7 @@ public:
 	VxColor(const float _r, const float _g, const float _b,const float _a);
 	VxColor(const float _r, const float _g, const float _b);
 	VxColor(const float _r);
-	VxColor(const CKDWORD col);
+	VxColor(const unsigned long col);
 	VxColor(const int _r, const int _g, const int _b,const int _a);
 	VxColor(const int _r, const int _g, const int _b);
 
@@ -160,11 +160,11 @@ public:
 	void Set(const float _r, const float _g, const float _b,const float _a);
 	void Set(const float _r, const float _g, const float _b);
 	void Set(const float _r);
-	void Set(const CKDWORD col);
+	void Set(const unsigned long col);
 	void Set(const int _r, const int _g, const int _b,const int _a);
 	void Set(const int _r, const int _g, const int _b);
-	CKDWORD GetRGBA() const;
-	CKDWORD GetRGB() const;
+	unsigned long GetRGBA() const;
+	unsigned long GetRGB() const;
 	float GetSquareDistance(const VxColor& color) const;
 
 	VxColor& operator += (const VxColor& v);
@@ -185,7 +185,7 @@ public:
 	friend int operator == (const VxColor& col1, const VxColor& col2);
 	friend int operator != (const VxColor& col1, const VxColor& col2);
 
-	static CKDWORD Convert(float _r, float _g, float _b,float _a = 1.0f)
+	static unsigned long Convert(float _r, float _g, float _b,float _a = 1.0f)
 	{
 		XThreshold(_r,0.0f,1.0f);
 		XThreshold(_g,0.0f,1.0f);
@@ -193,7 +193,7 @@ public:
 		XThreshold(_a,0.0f,1.0f);
 		return RGBAFTOCOLOR(_r,_g,_b,_a);
 	}
-	static CKDWORD Convert(int _r, int _g, int _b,int _a = 255)
+	static unsigned long Convert(int _r, int _g, int _b,int _a = 255)
 	{
 		XThreshold(_r,0,255);
 		XThreshold(_g,0,255);
@@ -234,7 +234,7 @@ inline VxColor::VxColor(const float _r)
    r = _r; g = _r; b = _r; a= 1.0f;
 }
 
-inline VxColor::VxColor(const CKDWORD colz)
+inline VxColor::VxColor(const unsigned long colz)
 {
 	r=(float)(ColorGetRed(colz))*0.003921568627f; // 1/255
 	g=(float)(ColorGetGreen(colz))*0.003921568627f;
@@ -281,7 +281,7 @@ inline void VxColor::Set(const float _r)
    r = _r; g = _r; b = _r; a= 1.0f;
 }
 
-inline void VxColor::Set(const CKDWORD colz)
+inline void VxColor::Set(const unsigned long colz)
 {
 	r=(float)(ColorGetRed(colz))/255.0f;
 	g=(float)(ColorGetGreen(colz))/255.0f;
@@ -361,13 +361,13 @@ inline int operator != (const VxColor& col1, const VxColor& col2)
 }
 
 // Returns the color in a DWORD in the 32 bit format ARGB 
-inline CKDWORD VxColor::GetRGBA() const
+inline unsigned long VxColor::GetRGBA() const
 {
 	return RGBAFTOCOLOR(this);
 }
 
 // Returns the color in a DWORD in the 32 bit format ARGB and sets alpha to 255
-inline CKDWORD VxColor::GetRGB() const
+inline unsigned long VxColor::GetRGB() const
 {
 	return RGBAFTOCOLOR(this)|A_MASK;
 }
