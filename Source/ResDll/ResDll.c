@@ -88,8 +88,12 @@ void loadSettings()
 
 	if (_access(g_ResMap.pathSetting, 0) == -1)
 	{
-		MessageBoxA(NULL, "Ballance.ini is not found.", "Error", MB_OK);
-		return;
+		WritePrivateProfileStringA("Settings", g_ResMap.videoDriver, "0", g_ResMap.pathSetting);
+		WritePrivateProfileStringA("Settings", g_ResMap.videoMode, "41943520", g_ResMap.pathSetting);
+		WritePrivateProfileStringA("Settings", g_ResMap.fullScreen, "0", g_ResMap.pathSetting);
+		WritePrivateProfileStringA("Settings", "Language", "1", g_ResMap.pathSetting);
+
+		g_ResMap.fKey |= 3;
 	}
 
 	GetPrivateProfileStringA("Install", g_ResMap.launcher, "", g_ResMap.launcherSetting, 50, g_ResMap.pathSetting);
