@@ -20,6 +20,7 @@ The current progress is shown as follows.
 | BuildingBlocks/TT_InterfaceManager_RT.dll | Completed         |
 | BuildingBlocks/TT_ParticleSystems_RT.dll  | Startup           |
 | BuildingBlocks/TT_Toolbox_RT.dll          | Startup           |
+| Plugins/VirtoolsLoaderR.dll               | Completed         |
 
 **Note: The repository is at the early stage. There is still a lot of work that needs to be done. Please be aware that the codebase can drastically change at any time.**
 
@@ -53,6 +54,8 @@ There are serval changes and improvements implemented to the original game.
 
 The following works will be done in the future.
 
+- Support 32 bit color mode
+- Support larger resolution
 - Remove dependency on `Dsetup`
 - Improve Exception Handling in **Player**
 - Add MinGW port
