@@ -176,14 +176,14 @@ void CKStoreDeclaration(XObjectDeclarationArray* reg,CKObjectDeclaration *a);
 #define CKCLASSREGISTER(cls1,Parent_Class)\
 {\
 	if (cls1::m_ClassID<=0)  cls1::m_ClassID=CKClassGetNewIdentifier();\
-	CKClassRegister(cls1::m_ClassID,Parent_Class::m_ClassID,cls1::Register,(CKCLASSCREATIONFCT)cls1::CreateInstance,(CKCLASSRELEASEFCT)cls1::ReleaseInstance,cls1::GetClassName,cls1::GetDependencies,cls1::GetDependenciesCount);\
+	CKClassRegister(cls1::m_ClassID,Parent_Class::m_ClassID,cls1::Register,(CKCLASSCREATIONFCT)cls1::CreateInstance,cls1::GetClassName,cls1::GetDependencies,cls1::GetDependenciesCount);\
 }\
 
 
 #define CKCLASSREGISTERCID(cls1,Parent_Class)\
 {\
 	if (cls1::m_ClassID<=0)  cls1::m_ClassID=CKClassGetNewIdentifier();\
-	CKClassRegister(cls1::m_ClassID,Parent_Class,cls1::Register,(CKCLASSCREATIONFCT)cls1::CreateInstance,(CKCLASSRELEASEFCT)cls1::ReleaseInstance,cls1::GetClassName,cls1::GetDependencies,cls1::GetDependenciesCount);\
+	CKClassRegister(cls1::m_ClassID,Parent_Class,cls1::Register,(CKCLASSCREATIONFCT)cls1::CreateInstance,cls1::GetClassName,cls1::GetDependencies,cls1::GetDependenciesCount);\
 }\
 
 
@@ -193,9 +193,9 @@ void CKClassRegisterDefaultDependencies(CK_CLASSID Cid,CKDWORD depend_Mask,int m
 void CKClassRegisterDefaultOptions(CK_CLASSID Cid,CKDWORD options_Mask);					
 CK_CLASSID CKClassGetNewIdentifier();													
 void CKClassRegister(CK_CLASSID Cid,CK_CLASSID Parent_Cid,
-					CKCLASSREGISTERFCT registerfct,CKCLASSCREATIONFCT creafct,CKCLASSRELEASEFCT relfct,
+					CKCLASSREGISTERFCT registerfct,CKCLASSCREATIONFCT creafct,
 					CKCLASSNAMEFCT		NameFct,CKCLASSDEPENDENCIESFCT	DependsFct,
-					CKCLASSDEPENDENCIESCOUNTFCT	DependsCountFct);						
+					CKCLASSDEPENDENCIESCOUNTFCT	DependsCountFct);
 
 #endif // Docjet secret macro
 #endif

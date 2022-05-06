@@ -142,11 +142,7 @@ class CKMessageManager;
 class CKParameterManager;
 class CKAttributeManager;
 class CKPathManager;
-// class CKVariableManager;
 class CKSceneObjectDesc;
-
-
-
 
 
 /*******************************************************************************
@@ -189,23 +185,23 @@ last frame processing.
 See also: CKContext::EnableProfiling,CKContext::GetProfileStats,CKContext::UserProfileStart,CKContext::UserProfileEnd
 *******************************************************************************/
 typedef struct CKStats {
-						float TotalFrameTime;				// Time elapsed since last frame
-						float EstimatedInterfaceTime;		// Estimated time for windows and interface (TotalFrameTime - (ProcessTime+RenderTime))
-						float ProcessTime;					// Time during last call to CKProcess
-						float RenderTime;					// Time for rendering last scene
-						float ParametricOperations;			// Time taken by parametric operations last frame
-						float TotalBehaviorExecution;		// Total behavior Execution time 
-						float AnimationManagement;			// During Behavior Execution time : Time taken in character animations processing
-						float IKManagement;					// During Behavior Execution time : Time taken in IK solving
-						float BehaviorCodeExecution;		// During Behavior Execution time : Time taken in by code execution of behaviors
+	float TotalFrameTime;				// Time elapsed since last frame
+	float EstimatedInterfaceTime;		// Estimated time for windows and interface (TotalFrameTime - (ProcessTime+RenderTime))
+	float ProcessTime;					// Time during last call to CKProcess
+	float RenderTime;					// Time for rendering last scene
+	float ParametricOperations;			// Time taken by parametric operations last frame
+	float TotalBehaviorExecution;		// Total behavior Execution time 
+	float AnimationManagement;			// During Behavior Execution time : Time taken in character animations processing
+	float IKManagement;					// During Behavior Execution time : Time taken in IK solving
+	float BehaviorCodeExecution;		// During Behavior Execution time : Time taken in by code execution of behaviors
 
-						int	  ActiveObjectsExecuted;		// Number of Objects executed last frame 
-						int	  BehaviorsExecuted;			// TotalBehaviorExecuted last frame
-						int	  BuildingBlockExecuted;		// TotalBuildingBlock last frame
-						int	  BehaviorLinksParsed;			// Total number of BehaviorLinks Parsed
-						int   BehaviorDelayedLinks;			// Total number of BehaviorLinks that have been stored as active in N frame
+	int	  ActiveObjectsExecuted;		// Number of Objects executed last frame 
+	int	  BehaviorsExecuted;			// TotalBehaviorExecuted last frame
+	int	  BuildingBlockExecuted;		// TotalBuildingBlock last frame
+	int	  BehaviorLinksParsed;			// Total number of BehaviorLinks Parsed
+	int   BehaviorDelayedLinks;			// Total number of BehaviorLinks that have been stored as active in N frame
 
-						float UserProfiles[MAX_USER_PROFILE];
+	float UserProfiles[MAX_USER_PROFILE];
 } CKStats;
 // Warning : Do not insert new values between existing ones CK_PROFILE_CATEGORY direcly refers to this struct by indexes
 
@@ -276,14 +272,14 @@ See Also: CKRenderContext::GetStats
 *****************************************************/
 typedef struct VxStats
 {
-	int NbTrianglesDrawn;		// Number of triangle primitives sent to rasterizer during one frame.
-	int NbPointsDrawn;			// Number of points primitives sent to rasterizer during one frame.
-	int NbLinesDrawn;			// Number of lines primitives sent to rasterizer during one frame.
-	int NbVerticesProcessed;	// Number of vertices transformed during one frame
-	int NbObjectDrawn;			// Number of objects drawn during one frame
-	float SmoothedFps;			// Frame Per Second average.
-	int RenderStateCacheHit;	// Number of render state changes that hit the cache  (redondant state)
-	int RenderStateCacheMiss;	// Number of render state changes that missed the cache 
+	int NbTrianglesDrawn;				// Number of triangle primitives sent to rasterizer during one frame.
+	int NbPointsDrawn;					// Number of points primitives sent to rasterizer during one frame.
+	int NbLinesDrawn;					// Number of lines primitives sent to rasterizer during one frame.
+	int NbVerticesProcessed;			// Number of vertices transformed during one frame
+	int NbObjectDrawn;					// Number of objects drawn during one frame
+	float SmoothedFps;					// Frame Per Second average.
+	int RenderStateCacheHit;			// Number of render state changes that hit the cache  (redondant state)
+	int RenderStateCacheMiss;			// Number of render state changes that missed the cache 
 	float DevicePreCallbacks;			// Time taken by render context pre render callbacks
 	float SceneTraversalTime;			// Time taken to iterate the hierarchy and perform culling
 	float TransparentObjectsSortTime;	// Time taken to sort transparent 3d objects

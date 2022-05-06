@@ -280,6 +280,8 @@ public:
 	XClassArray<XIntArray>		m_IndexByClassId;		// List of index in the m_FileObjects table sorted by ClassID  {secret}
 	XClassArray<XString>		m_IncludedFiles;		// List of files that should be inserted in the CMO file.  {secret}
 	CKFileInfo					m_FileInfo;				// Headers summary  {secret}
+	CKBOOL						m_SceneSaved;
+	XBitArray					m_AlreadySavedMask;			// BitArray of IDs already saved  {secret}
 	CKDWORD						m_Flags;				// Flags used to save file {secret}
 	CKSTRING					m_FileName;				// Current file name  {secret}
 	CKContext*					m_Context;				// CKContext on which file is loaded/Saved  {secret}
@@ -294,17 +296,12 @@ public:
 														// can only work for recent files ( > 2.0)
 	BYTE*						m_CurrentChunkBufferPtr;
 #endif					
-
+	DWORD 						m_Unknown;
 	CKBOOL						m_ReadFileDataDone;
-	CKBOOL						m_SceneSaved;
-//-----------
-	XIntArray					m_DuplicateNameFounds;	// A List of file object index for which a existing object with the same name has been
-														// found, this list is build if the load option contains CK_LOAD_AUTOMATICMODE or CK_LOAD_DODIALOG
-
-//----- 	
-	XBitArray					m_AlreadySavedMask;			// BitArray of IDs already saved  {secret}
 	XBitArray					m_AlreadyReferencedMask;	// BitArray of IDs already referenced  {secret}
 	XObjectPointerArray			m_ReferencedObjects;
+	XIntArray					m_DuplicateNameFounds;	// A List of file object index for which a existing object with the same name has been
+														// found, this list is build if the load option contains CK_LOAD_AUTOMATICMODE or CK_LOAD_DODIALOG	
 	VxTimeProfiler				m_Chrono;
 
 #endif // Docjet secret macro

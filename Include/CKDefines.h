@@ -365,7 +365,6 @@ typedef CK_LOADMODE	(*CK_LOADRENAMECALLBACK)(CK_CLASSID Cid,CKSTRING OldName,CKS
 //----------------------------------------------------------//
 typedef void (*CKCLASSREGISTERFCT)();		
 typedef CKObject* (*CKCLASSCREATIONFCT)(CKContext* context);	
-typedef void (*CKCLASSRELEASEFCT)(CKContext* context, CKObject* object);	
 typedef CKSTRING (*CKCLASSNAMEFCT)();							
 typedef CKSTRING (*CKCLASSDEPENDENCIESFCT)(int,int);			
 typedef int		 (*CKCLASSDEPENDENCIESCOUNTFCT)(int);			
@@ -382,7 +381,6 @@ struct CKClassDesc
 	CK_CLASSID			Parent;				// Class Identifier of parent class
 	CKCLASSREGISTERFCT	RegisterFct;		// Pointer to Class Specific Registration function
 	CKCLASSCREATIONFCT	CreationFct;		// Pointer to Class instance creation function
-	CKCLASSRELEASEFCT	ReleaseFct;		// Pointer to Class instance release function
 	CKCLASSNAMEFCT		NameFct;			// Pointer to Class name function
 	CKCLASSDEPENDENCIESFCT		DependsFct;		// Pointer to Class dependencies function (Copy,delete,replace...)
 	CKCLASSDEPENDENCIESCOUNTFCT	DependsCountFct;// Pointer to Class dependencies Count function (Copy,delete,replace...)
@@ -410,7 +408,6 @@ struct CKClassDesc
 		Parent			=	0;
 		RegisterFct		=	NULL;
 		CreationFct		=	NULL;
-		ReleaseFct		=	NULL;
 		NameFct			=	NULL;
 		DependsFct		=	NULL;
 		DependsCountFct	=	NULL;

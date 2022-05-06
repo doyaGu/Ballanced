@@ -248,6 +248,25 @@ Remarks:
 See also: CKRenderContext::Pick, IsPickable
 ************************************************/
 virtual CKBOOL	IsPickable() const CK_PURE;
+/************************************************
+Summary: Sets visibility flag for additionnal material channels.
+Arguments:
+	RenderChannels: TRUE if visible, FALSE if not.
+Remarks:
+	+ If the flag is set to FALSE, additionnal material channels (lightmap,etc..) are not rendered.
+	+ This method sets or removes the VX_MOVEABLE_RENDERCHANNELS moveable flag.
+
+See also: AreRenderChannelsVisible
+************************************************/
+virtual	void	SetRenderChannels(CKBOOL RenderChannels=TRUE) CK_PURE;
+/************************************************
+Summary: Returns the state of material channels visibility flag
+Return Value: TRUE if channels are visible, FALSE if not.
+Remarks:
+
+See also: SetRenderChannels
+************************************************/	
+virtual	CKBOOL	AreRenderChannelsVisible() const CK_PURE;
 
 /************************************************
 Summary: Checks if the moveable and its associated mesh are in view frustrum.
