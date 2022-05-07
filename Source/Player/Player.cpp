@@ -16,7 +16,7 @@ RESOURCEMAP g_ResMap;
 
 // extern bool AntiPiracyCheck();
 
-static inline void InitGameInfo(CGameInfo &gameInfo)
+static void InitGameInfo(CGameInfo &gameInfo)
 {
     strcpy(gameInfo.path, ".");
     gameInfo.type = 0;
@@ -40,20 +40,15 @@ int APIENTRY WinMain(HINSTANCE hInstance,
     CGamePlayer player(&gameInfo, 1, true, hMutex, false);
 
     char buffer[512];
-    HKEY hkSettings;
-    DWORD dwLangId = -1;
     ::LoadStringA(g_ResMap.hResDll, 2, buffer, 512);
-    if (::RegOpenKeyExA(HKEY_LOCAL_MACHINE, buffer, 0, KEY_QUERY_VALUE, &hkSettings) != ERROR_SUCCESS)
+
+    DWORD dwLangId = ::GetPrivateProfileIntA("Settings", "Language", -1, g_ResMap.pathSetting);
+    if (dwLangId == -1)
     {
         if (::LoadStringA(g_ResMap.hResDll, 24, buffer, 512))
+        {
             dwLangId = atoi(buffer);
-    }
-    
-    DWORD dwRegValSize = sizeof(DWORD);
-    DWORD dwRegValType = REG_DWORD;
-    if (::RegQueryValueExA(hkSettings, "Language", 0, (LPDWORD)&dwRegValType, (LPBYTE)&dwLangId, (LPDWORD)&dwRegValSize) == ERROR_SUCCESS)
-    {
-        ::RegCloseKey(hkSettings);
+        }
     }
 
     DWORD dwDXVersion;
