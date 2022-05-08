@@ -1041,7 +1041,7 @@ bool CGamePlayer::LoadStdDLL()
         TT_ERROR("GamePlayer.cpp", "CGamePlayer::LoadStdDLL()", "plugin parse error");
         return false;
     }
-    
+
     return true;
 }
 

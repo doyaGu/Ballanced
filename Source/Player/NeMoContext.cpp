@@ -256,7 +256,7 @@ void CNeMoContext::MinimizeWindow()
     if (m_RenderContext &&
         IsRenderFullScreen() &&
         !m_RenderContext->IsFullScreen())
-    { 
+    {
         m_WinContext->MinimizeWindow();
     }
 }
@@ -500,7 +500,7 @@ void CNeMoContext::CreateInterfaceSprite()
 {
     if (m_RenderContext)
     {
-        m_FrameRateSprite = (CKSpriteText*)m_CKContext->CreateObject(CKCID_SPRITETEXT, "FrameRateSprite");
+        m_FrameRateSprite = (CKSpriteText *)m_CKContext->CreateObject(CKCID_SPRITETEXT, "FrameRateSprite");
         m_FrameRateSprite->Create(60, 20);
         m_FrameRateSprite->SetTransparent(FALSE);
         m_FrameRateSprite->SetFont("Arial", 8);
@@ -509,7 +509,7 @@ void CNeMoContext::CreateInterfaceSprite()
         m_FrameRateSprite->SetPosition(Vx2DVector(350.0f, 225.0f));
         m_FrameRateSprite->Show(CKHIDE);
 
-        m_MadeWithSprite = (CKSpriteText*)m_CKContext->CreateObject(CKCID_SPRITETEXT, "MadeWithSprite");
+        m_MadeWithSprite = (CKSpriteText *)m_CKContext->CreateObject(CKCID_SPRITETEXT, "MadeWithSprite");
         m_MadeWithSprite->Create(m_Width, m_Height);
         m_MadeWithSprite->SetTransparent(FALSE);
         m_MadeWithSprite->SetFont("Arial", 14);
@@ -883,12 +883,12 @@ void CNeMoContext::ResizeWindow()
     RECT rect;
     ::GetClientRect(m_WinContext->GetMainWindow(), &rect);
     ::SetWindowPos(m_WinContext->GetRenderWindow(),
-        NULL,
-        0,
-        0,
-        rect.right - rect.left,
-        rect.bottom - rect.top,
-        SWP_NOMOVE | SWP_NOZORDER);
+                   NULL,
+                   0,
+                   0,
+                   rect.right - rect.left,
+                   rect.bottom - rect.top,
+                   SWP_NOMOVE | SWP_NOZORDER);
     m_RenderContext->Resize();
     AdjustFrameRateSpritePosition();
 }
