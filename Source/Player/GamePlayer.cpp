@@ -7,8 +7,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "dsetup.h"
-
 #include "ErrorProtocol.h"
 #include "LogProtocol.h"
 #include "ResDll.h"
@@ -180,34 +178,6 @@ static bool CheckPrerequisite()
         }
 
         TT_LOG("Memory check successful!");
-    }
-
-    {
-        DWORD dwDXVersion;
-        DWORD dwDXMinorVersion;
-        if (!DirectXSetupGetVersion(&dwDXVersion, &dwDXMinorVersion))
-        {
-            TT_LOG("Could not detect the DirectX-version!");
-            ::MessageBoxA(NULL, g_ResMap.unknownDirectXVersion, "Error", MB_ICONERROR);
-            return false;
-        }
-
-        sprintf(buffer, "DirectX version is %d.%d.%d.%d ... ",
-                HIWORD(dwDXVersion),
-                LOWORD(dwDXVersion),
-                HIWORD(dwDXMinorVersion),
-                LOWORD(dwDXMinorVersion));
-        TT_LOG(buffer);
-
-        if (HIWORD(dwDXVersion) != 4 ||
-            LOWORD(dwDXVersion) <= HIWORD(g_ResMap.dwDXVersion) &&
-                (dwDXVersion != (0x40000 | HIWORD(g_ResMap.dwDXVersion)) ||
-                 HIWORD(dwDXMinorVersion) < LOWORD(g_ResMap.dwDXVersion)))
-        {
-            TT_LOG("DirectX check failed !");
-            ::MessageBoxA(NULL, g_ResMap.needDirectX, "Error", MB_ICONERROR);
-            return false;
-        }
     }
 
     return true;
