@@ -48,6 +48,8 @@ There are serval changes and improvements implemented to the original game.
 - Fixed memory checking problem
 - Support in-game resizing in windowed mode 
 - Replace registry operation with using initialization file
+- No dependency on `Dsetup`
+- Disabled Exception Handling in **Player**
 - ...
 
 ## To-Do
@@ -56,8 +58,6 @@ The following works will be done in the future.
 
 - Support 32 bit color mode
 - Support larger resolution
-- Remove dependency on `Dsetup`
-- Improve Exception Handling in **Player**
 - Add MinGW port
 - Add debugging functions
 - Add modding support
