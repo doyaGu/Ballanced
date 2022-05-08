@@ -92,25 +92,12 @@ int ListScreenModes(const CKBehaviorContext &behcontext)
 	{
 		VxDisplayMode *dm = drDesc->DisplayModes;
 
-		int i, j, k;
-		for (i = 0, j = 0; i < drDesc->DisplayModeCount; ++i)
+		int i = 0, j = 0, k = 0;
+		while (i < drDesc->DisplayModeCount)
 		{
+
 			if (dm[i].Bpp > 8)
 			{
-				if (i > 0)
-				{
-					for (k = 0;
-						 dm[i].Width != dm[j].Width ||
-						 dm[i].Height != dm[j].Height ||
-						 dm[i].Bpp != dm[j].Bpp;
-						 ++j, ++k)
-					{
-						if (i < k)
-						{
-							break;
-						}
-					}
-				}
 				screenModes->InsertRow();
 				screenModes->SetElementValue(j, 0, &i, sizeof(int));
 				screenModes->SetElementValue(j, 1, &dm[i].Width, sizeof(int));
@@ -118,10 +105,13 @@ int ListScreenModes(const CKBehaviorContext &behcontext)
 				screenModes->SetElementValue(j, 3, &dm[i].Bpp, sizeof(int));
 				++j;
 			}
+
+			for (k = i + 1; dm[k].Width == dm[i].Width && dm[k].Height == dm[i].Height && dm[k].Bpp == dm[i].Bpp; ++k);
+			i = k;
 		}
 	}
 
-	CTTInterfaceManager *man = CTTInterfaceManager::GetManager(context);
+	CTTInterfaceManager* man = CTTInterfaceManager::GetManager(context);
 	if (!man)
 	{
 		TT_ERROR("ListScreenModes.cpp", "int ListScreenModes(...)", " im == NULL");
