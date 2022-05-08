@@ -149,7 +149,7 @@ CKBeObject*		GetTarget();
 CKERROR			UseTarget(CKBOOL Use=TRUE);
 CKBOOL			IsUsingTarget();
 CKParameterIn*	GetTargetParameter();
-void				SetAsTargetable(CKBOOL target=TRUE);
+void			SetAsTargetable(CKBOOL target=TRUE);
 CKParameterIn*	ReplaceTargetParameter(CKParameterIn* targetParam);
 CKParameterIn*	RemoveTargetParameter();
 
@@ -210,7 +210,6 @@ int				GetOutputPosition(CKBehaviorIO *pbio);
 	int				AddOutput(CKSTRING name);
 CKBehaviorIO*	ReplaceOutput(int pos,CKBehaviorIO *io);
  CKBehaviorIO*	CreateOutput(CKSTRING name); 
-void			InsertOutput(int pos,CKBehaviorIO *io); 
 
 
 //----------------------------------------------------------------
@@ -225,15 +224,12 @@ int				GetInputPosition(CKBehaviorIO *pbio);
 	int				AddInput(CKSTRING name);
 CKBehaviorIO*	ReplaceInput(int pos,CKBehaviorIO *io);
 CKBehaviorIO*	CreateInput(CKSTRING name); 
-void			InsertInput(int pos,CKBehaviorIO *io); 
 
 //----------------------------------------------------------------
 // inputs Parameters
 	CKERROR			ExportInputParameter(CKParameterIn *p);
 	CKParameterIn*	CreateInputParameter(CKSTRING name,CKParameterType type);
 	CKParameterIn*	CreateInputParameter(CKSTRING name,CKGUID guid);
-	CKParameterIn*	InsertInputParameter(int pos,CKSTRING name,CKParameterType type);
-	void			InsertInputParameter(int pos,CKParameterIn *in);
 	void			AddInputParameter(CKParameterIn *in);
 	int				GetInputParameterPosition(CKParameterIn *);
 	CKParameterIn*	GetInputParameter(int pos);
@@ -252,8 +248,6 @@ void			InsertInput(int pos,CKBehaviorIO *io);
 	CKERROR			ExportOutputParameter(CKParameterOut *p);
 	CKParameterOut*	CreateOutputParameter(CKSTRING name,CKParameterType type);
 	CKParameterOut* CreateOutputParameter(CKSTRING name,CKGUID guid);
-	CKParameterOut* InsertOutputParameter(int pos,CKSTRING name,CKParameterType type);
-	void			InsertOutputParameter(int pos,CKParameterOut* p);
 	CKParameterOut* GetOutputParameter(int pos);
 	int				GetOutputParameterPosition(CKParameterOut*);
 	CKParameterOut* ReplaceOutputParameter(int pos,CKParameterOut *p);		
@@ -287,8 +281,6 @@ void			InsertInput(int pos,CKBehaviorIO *io);
 	CKObject* 			GetLocalParameterObject(int pos);
  CKERROR				SetLocalParameterObject(int pos,CKObject *obj);
 	CKBOOL				IsLocalParameterSetting(int pos);
-	CKParameterLocal*	InsertLocalParameter(int pos,CKSTRING name,CKParameterType type);
-	void				InsertLocalParameter(int pos,CKParameterLocal* p);
 
 //----------------------------------------------------------------
 // Run Time Graph : Activation
