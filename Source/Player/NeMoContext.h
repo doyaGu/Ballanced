@@ -1,18 +1,8 @@
 #ifndef PLAYER_NEMOCONTEXT_H
 #define PLAYER_NEMOCONTEXT_H
 
-#include <exception>
-
 class CWinContext;
 class CTTInterfaceManager;
-
-class CNeMoContextException : public std::exception
-{
-public:
-    CNeMoContextException() : std::exception(), error(0) {}
-    CNeMoContextException(int err) : std::exception(), error(err) {}
-    int error;
-};
 
 class CNeMoContext
 {
@@ -54,7 +44,7 @@ public:
     virtual char *GetProgPath() const;
     virtual int GetMsgClick() const;
     virtual bool IsRenderFullScreen() const;
-    virtual void DoStartUp();
+    virtual bool DoStartUp();
     virtual void Pause();
     virtual void Play();
     virtual void MinimizeWindow();

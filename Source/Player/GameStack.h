@@ -5,8 +5,6 @@
 
 class CGameInfo;
 
-class CGameStackException : public std::exception {};
-
 class CGameStack
 {
 public:

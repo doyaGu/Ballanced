@@ -1,22 +1,12 @@
 #ifndef PLAYER_GAMEPLAYER_H
 #define PLAYER_GAMEPLAYER_H
 
-#include <exception>
-
 #include "Game.h"
 #include "NeMoContext.h"
 #include "WinContext.h"
 #include "GameStack.h"
 
 class CPlayerRegistry;
-
-class CGamePlayerException : public std::exception
-{
-public:
-    CGamePlayerException() : std::exception(), error(0) {}
-    CGamePlayerException(int err) : std::exception(), error(err) {}
-    int error;
-};
 
 class CGamePlayer
 {
@@ -71,8 +61,8 @@ private:
     void Construct();
     bool InitEngine();
     bool ReInitEngine();
-    void LoadEngineDLL();
-    void LoadStdDLL();
+    bool LoadEngineDLL();
+    bool LoadStdDLL();
     
     bool RegisterGameInfoToInterfaceManager();
 

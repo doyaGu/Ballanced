@@ -127,12 +127,10 @@ void CNeMoContext::SetRefreshRate(int fps)
 
 void CNeMoContext::SetProgPath(const char *path)
 {
-    if (!path)
+    if (path)
     {
-        TT_ERROR("NemoContext.cpp", "SetProgPath()", "empty paramter pa_progpath");
-        throw CNeMoContextException(3);
+        strcpy(m_ProgPath, path);
     }
-    strcpy(m_ProgPath, path);
 }
 
 void CNeMoContext::SetMsgClick(int msg)
@@ -219,11 +217,6 @@ int CNeMoContext::GetRefreshRate() const
 
 char *CNeMoContext::GetProgPath() const
 {
-    if (strcmp(m_ProgPath, "") == 0)
-    {
-        TT_ERROR("NemoContext.cpp", "CNemoContext::GetProgPath()", "empty prog path");
-        throw CNeMoContextException(3);
-    }
     return (char *)m_ProgPath;
 }
 
@@ -237,14 +230,15 @@ bool CNeMoContext::IsRenderFullScreen() const
     return m_RenderContext->IsFullScreen() == TRUE;
 }
 
-void CNeMoContext::DoStartUp()
+bool CNeMoContext::DoStartUp()
 {
-    if (CKStartUp())
+    if (CKStartUp() != CK_OK)
     {
         TT_ERROR("NemoContext.cpp", "DoStartUp()", "Virtools Engine is not available - Abort!");
-        throw CNeMoContextException(6);
+        return false;
     }
     m_PluginManager = CKGetPluginManager();
+    return true;
 }
 
 void CNeMoContext::Pause()
@@ -361,34 +355,26 @@ void CNeMoContext::Process()
 {
     float timeBeforeRender, timeBeforeProcess;
 
-    try
+    if (IsPlaying())
     {
-        if (IsPlaying())
+        if (IsCleared() && 0 < m_StartTime && m_StartTime < ::GetTickCount())
         {
-            if (IsCleared() && 0 < m_StartTime && m_StartTime < ::GetTickCount())
-            {
-                HideMadeWithSprite();
-                m_StartTime = 0;
-            }
-            timeBeforeRender = 0.0f;
-            timeBeforeProcess = 0.0f;
-            m_TimeManager->GetTimeToWaitForLimits(timeBeforeRender, timeBeforeProcess);
-            if (timeBeforeProcess <= 0)
-            {
-                m_TimeManager->ResetChronos(FALSE, TRUE);
-                m_CKContext->Process();
-            }
-            if (timeBeforeRender <= 0)
-            {
-                m_TimeManager->ResetChronos(TRUE, FALSE);
-                m_RenderContext->Render();
-            }
+            HideMadeWithSprite();
+            m_StartTime = 0;
         }
-    }
-    catch (...)
-    {
-        TT_ERROR("NemoContext.cpp", "Process()", "Unknown exception");
-        throw CNeMoContextException();
+        timeBeforeRender = 0.0f;
+        timeBeforeProcess = 0.0f;
+        m_TimeManager->GetTimeToWaitForLimits(timeBeforeRender, timeBeforeProcess);
+        if (timeBeforeProcess <= 0)
+        {
+            m_TimeManager->ResetChronos(FALSE, TRUE);
+            m_CKContext->Process();
+        }
+        if (timeBeforeRender <= 0)
+        {
+            m_TimeManager->ResetChronos(TRUE, FALSE);
+            m_RenderContext->Render();
+        }
     }
 }
 
@@ -471,61 +457,50 @@ bool CNeMoContext::RestoreWindow()
 bool CNeMoContext::Init()
 {
     int renderEnginePluginIdx = GetRenderEnginePluginIdx();
-    try
+    if (renderEnginePluginIdx == -1)
     {
-        if (renderEnginePluginIdx == -1)
+        TT_ERROR("NemoContext.cpp", "Init()", "Found no render-engine! (Driver? Critical!!!)");
+        return false;
+    }
+
+    CKERROR res = CKCreateContext(&m_CKContext, m_WinContext->GetMainWindow(), renderEnginePluginIdx, NULL);
+    if (res != CK_OK)
+    {
+        if (res == CKERR_NODLLFOUND)
         {
-            TT_ERROR("NemoContext.cpp", "Init()", "Found no render-engine! (Driver? Critical!!!)");
-            throw CNeMoContextException(1);
-        }
-
-        CKERROR res = CKCreateContext(&m_CKContext, m_WinContext->GetMainWindow(), renderEnginePluginIdx, NULL);
-        if (res != CK_OK)
-        {
-            if (res == CKERR_NODLLFOUND)
-            {
-                TT_ERROR("NemoContext.cpp", "Init()", "Dll not found");
-                throw CNeMoContextException(1);
-            }
-
-            TT_ERROR("NemoContext.cpp", "Init()", "Create Context - render engine not loadable");
-            throw CNeMoContextException(1);
-        }
-
-        m_CKContext->SetVirtoolsVersion(CK_VIRTOOLS_DEV, 0x2000043);
-        m_MessageManager = m_CKContext->GetMessageManager();
-        m_TimeManager = m_CKContext->GetTimeManager();
-        m_RenderManager = m_CKContext->GetRenderManager();
-
-        AddMessageWindowClose();
-
-        if (!FindScreenMode() || !CreateRenderContext())
-        {
+            TT_ERROR("NemoContext.cpp", "Init()", "Dll not found");
             return false;
         }
 
-        m_WinContext->UpdateWindows();
-        m_WinContext->ShowWindows();
-
-        CreateInterfaceSprite();
-
-        return true;
+        TT_ERROR("NemoContext.cpp", "Init()", "Create Context - render engine not loadable");
+        return false;
     }
-    catch (const CNeMoContextException &nmce)
+
+    m_CKContext->SetVirtoolsVersion(CK_VIRTOOLS_DEV, 0x2000043);
+    m_MessageManager = m_CKContext->GetMessageManager();
+    m_TimeManager = m_CKContext->GetTimeManager();
+    m_RenderManager = m_CKContext->GetRenderManager();
+
+    AddMessageWindowClose();
+
+    if (!FindScreenMode() || !CreateRenderContext())
     {
-        if (nmce.error == 5)
-        {
-            TT_ERROR("NemoContext.cpp", "Init()", "Problems with the render driver description");
-        }
-        throw CNeMoContextException(1);
+        return false;
     }
+
+    m_WinContext->UpdateWindows();
+    m_WinContext->ShowWindows();
+
+    CreateInterfaceSprite();
+
+    return true;
 }
 
 void CNeMoContext::CreateInterfaceSprite()
 {
-    try
+    if (m_RenderContext)
     {
-        m_FrameRateSprite = (CKSpriteText *)m_CKContext->CreateObject(CKCID_SPRITETEXT, "FrameRateSprite");
+        m_FrameRateSprite = (CKSpriteText*)m_CKContext->CreateObject(CKCID_SPRITETEXT, "FrameRateSprite");
         m_FrameRateSprite->Create(60, 20);
         m_FrameRateSprite->SetTransparent(FALSE);
         m_FrameRateSprite->SetFont("Arial", 8);
@@ -534,7 +509,7 @@ void CNeMoContext::CreateInterfaceSprite()
         m_FrameRateSprite->SetPosition(Vx2DVector(350.0f, 225.0f));
         m_FrameRateSprite->Show(CKHIDE);
 
-        m_MadeWithSprite = (CKSpriteText *)m_CKContext->CreateObject(CKCID_SPRITETEXT, "MadeWithSprite");
+        m_MadeWithSprite = (CKSpriteText*)m_CKContext->CreateObject(CKCID_SPRITETEXT, "MadeWithSprite");
         m_MadeWithSprite->Create(m_Width, m_Height);
         m_MadeWithSprite->SetTransparent(FALSE);
         m_MadeWithSprite->SetFont("Arial", 14);
@@ -543,84 +518,68 @@ void CNeMoContext::CreateInterfaceSprite()
         m_MadeWithSprite->SetZOrder(2000000);
         m_MadeWithSprite->Show(CKHIDE);
 
-        if (!m_RenderContext)
-        {
-            throw CNeMoContextException(2);
-        }
-
         m_RenderContext->AddObject(m_MadeWithSprite);
         m_RenderContext->AddObject(m_FrameRateSprite);
         m_FrameRateSprite->SetPosition(Vx2DVector(0.0f, 0.0f));
         HideMadeWithSprite();
     }
-    catch (...)
-    {
-        TT_ERROR("NemoContext.cpp", "CreateInterfaceSprite()", "Create Sprite Exception");
-        throw CNeMoContextException(4);
-    }
 }
 
 bool CNeMoContext::CreateRenderContext()
 {
-    try
+    CKRenderManager *renderManager = m_CKContext->GetRenderManager();
+    CKRECT rect = {0, 0, m_Width, m_Height};
+    m_RenderContext = renderManager->CreateRenderContext(m_WinContext->GetRenderWindow(), m_DriverIndex, &rect, m_Fullscreen, m_Bpp, -1, -1, m_RefreshRate);
+    if (!m_RenderContext)
     {
-        CKRenderManager *renderManager = m_CKContext->GetRenderManager();
-        CKRECT rect = {0, 0, m_Width, m_Height};
-        m_RenderContext = renderManager->CreateRenderContext(m_WinContext->GetRenderWindow(), m_DriverIndex, &rect, m_Fullscreen, m_Bpp, -1, -1, m_RefreshRate);
-        if (!m_RenderContext)
+        return false;
+    }
+
+    Play();
+
+    if (m_Fullscreen && m_RenderContext->GoFullScreen(m_Width, m_Height, m_Bpp, m_DriverIndex, m_RefreshRate))
+    {
+        if (!RestoreWindow())
         {
+            TT_ERROR("NemoContext.cpp", "CreateRenderContext()", "WindowMode cannot be changed");
             return false;
         }
 
-        Play();
-        if (m_Fullscreen && m_RenderContext->GoFullScreen(m_Width, m_Height, m_Bpp, m_DriverIndex, m_RefreshRate))
-        {
-            if (!RestoreWindow())
-            {
-                TT_ERROR("NemoContext.cpp", "CreateRenderContext()", "WindowMode cannot be changed");
-                throw CNeMoContextException(2);
-            }
-
-            ::SetWindowPos(m_WinContext->GetMainWindow(), HWND_TOPMOST, 0, 0, m_Width, m_Height, 0);
-            ::SetWindowPos(m_WinContext->GetRenderWindow(), HWND_TOPMOST, 0, 0, m_Width, m_Height, 0);
-            return false;
-        }
-
-        Pause();
-        if (!m_Fullscreen)
-        {
-            RestoreWindow();
-        }
-        ::SetFocus(m_WinContext->GetMainWindow());
-
-        m_RenderContext->Clear();
-        m_RenderContext->Clear(CK_RENDER_BACKGROUNDSPRITES);
-        m_RenderContext->Clear(CK_RENDER_FOREGROUNDSPRITES);
-        m_RenderContext->Clear(CK_RENDER_USECAMERARATIO);
-        m_RenderContext->Clear(CK_RENDER_CLEARZ);
-        m_RenderContext->Clear(CK_RENDER_CLEARBACK);
-        m_RenderContext->Clear(CK_RENDER_DOBACKTOFRONT);
-        m_RenderContext->Clear(CK_RENDER_DEFAULTSETTINGS);
-        m_RenderContext->Clear(CK_RENDER_CLEARVIEWPORT);
-        m_RenderContext->Clear(CK_RENDER_FOREGROUNDSPRITES);
-        m_RenderContext->Clear(CK_RENDER_USECAMERARATIO);
-        m_RenderContext->Clear(CK_RENDER_WAITVBL);
-        m_RenderContext->Clear(CK_RENDER_PLAYERCONTEXT);
-        m_RenderContext->Clear();
-
-        m_RenderContext->SetClearBackground();
-        m_RenderContext->BackToFront();
-        m_RenderContext->SetClearBackground();
-        m_RenderContext->Clear();
-
-        ::SetCursor(::LoadCursorA(NULL, (LPCSTR)IDC_ARROW));
-        return true;
+        ::SetWindowPos(m_WinContext->GetMainWindow(), HWND_TOPMOST, 0, 0, m_Width, m_Height, 0);
+        ::SetWindowPos(m_WinContext->GetRenderWindow(), HWND_TOPMOST, 0, 0, m_Width, m_Height, 0);
+        return false;
     }
-    catch (...)
+
+    Pause();
+
+    if (!m_Fullscreen)
     {
-        TT_ERROR("NemoContext.cpp", "CreateRenderContext()", "critical");
-        throw CNeMoContextException(2);
+        RestoreWindow();
     }
+    ::SetFocus(m_WinContext->GetMainWindow());
+
+    m_RenderContext->Clear();
+    m_RenderContext->Clear(CK_RENDER_BACKGROUNDSPRITES);
+    m_RenderContext->Clear(CK_RENDER_FOREGROUNDSPRITES);
+    m_RenderContext->Clear(CK_RENDER_USECAMERARATIO);
+    m_RenderContext->Clear(CK_RENDER_CLEARZ);
+    m_RenderContext->Clear(CK_RENDER_CLEARBACK);
+    m_RenderContext->Clear(CK_RENDER_DOBACKTOFRONT);
+    m_RenderContext->Clear(CK_RENDER_DEFAULTSETTINGS);
+    m_RenderContext->Clear(CK_RENDER_CLEARVIEWPORT);
+    m_RenderContext->Clear(CK_RENDER_FOREGROUNDSPRITES);
+    m_RenderContext->Clear(CK_RENDER_USECAMERARATIO);
+    m_RenderContext->Clear(CK_RENDER_WAITVBL);
+    m_RenderContext->Clear(CK_RENDER_PLAYERCONTEXT);
+    m_RenderContext->Clear();
+
+    m_RenderContext->SetClearBackground();
+    m_RenderContext->BackToFront();
+    m_RenderContext->SetClearBackground();
+    m_RenderContext->Clear();
+
+    ::SetCursor(::LoadCursorA(NULL, (LPCSTR)IDC_ARROW));
+    return true;
 }
 
 int CNeMoContext::GetRenderEnginePluginIdx()
@@ -673,7 +632,7 @@ bool CNeMoContext::FindScreenMode()
         m_CKContext = NULL;
 
         TT_ERROR("NemoContext.cpp", "FindScreenMode()", "VxDriverDesc is NULL, critical");
-        throw CNeMoContextException(5);
+        return false;
     }
 
     VxDisplayMode *dm = drDesc->DisplayModes;

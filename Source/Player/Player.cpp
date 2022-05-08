@@ -84,32 +84,21 @@ int APIENTRY WinMain(HINSTANCE hInstance,
         exit(-1);
     }
 
-    try
-    {
-        CPlayerRegistry::GetInstance().Init(&player, hInstance);
+    CPlayerRegistry::GetInstance().Init(&player, hInstance);
 
-        if (!player.IsInitialized())
-        {
-            ::LoadStringA(g_ResMap.hResDll, RES_STR_ID[dwLangId * 8 + 6], buffer, 512);
-            ::MessageBoxA(NULL, buffer, "Error", MB_OK);
-            TT_ERROR("Player.cpp", "WinMain()", "The application could not be initialized!!!");
-            player.Done();
-            exit(-1);
-        }
-
-        if (!player.LoadCMO("base.cmo"))
-        {
-            ::LoadStringA(g_ResMap.hResDll, RES_STR_ID[dwLangId * 8 + 7], buffer, 512);
-            ::MessageBoxA(NULL, buffer, "Error", MB_OK);
-            TT_ERROR("Player.cpp", "WinMain()", "SYSTEM HALTED");
-            player.Done();
-            exit(-1);
-        }
-    }
-    catch (const CPlayerRegistryException &)
+    if (!player.IsInitialized())
     {
         ::LoadStringA(g_ResMap.hResDll, RES_STR_ID[dwLangId * 8 + 6], buffer, 512);
-        ::MessageBoxA(NULL, buffer, "Error_2", MB_OK);
+        ::MessageBoxA(NULL, buffer, "Error", MB_OK);
+        TT_ERROR("Player.cpp", "WinMain()", "The application could not be initialized!!!");
+        player.Done();
+        exit(-1);
+    }
+
+    if (!player.LoadCMO("base.cmo"))
+    {
+        ::LoadStringA(g_ResMap.hResDll, RES_STR_ID[dwLangId * 8 + 7], buffer, 512);
+        ::MessageBoxA(NULL, buffer, "Error", MB_OK);
         TT_ERROR("Player.cpp", "WinMain()", "SYSTEM HALTED");
         player.Done();
         exit(-1);
