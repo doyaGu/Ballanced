@@ -523,14 +523,7 @@ LRESULT CGamePlayer::OnActivateApp(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
 
 LRESULT CGamePlayer::OnScreenModeChanged(WPARAM wParam, LPARAM lParam)
 {
-    int screenMode = m_NeMoContext.GetScreenModeIndex();
-    int driver = m_NeMoContext.GetDriverIndex();
-
-    if (m_NeMoContext.ChangeScreenMode(lParam, wParam))
-    {
-        screenMode = m_NeMoContext.GetScreenModeIndex();
-        driver = m_NeMoContext.GetDriverIndex();
-    }
+    m_NeMoContext.ChangeScreenMode(lParam, wParam);
 
     CTTInterfaceManager *im = m_NeMoContext.GetInterfaceManager();
     if (!im)
@@ -539,8 +532,8 @@ LRESULT CGamePlayer::OnScreenModeChanged(WPARAM wParam, LPARAM lParam)
     }
     else
     {
-        im->SetDriverIndex(driver);
-        im->SetScreenModeIndex(screenMode);
+        im->SetDriverIndex(m_NeMoContext.GetDriverIndex());
+        im->SetScreenModeIndex(m_NeMoContext.GetScreenModeIndex());
     }
 
     IniSetBPPAndDriver(m_NeMoContext.GetBPP(), m_NeMoContext.GetDriverIndex());
