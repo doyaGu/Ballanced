@@ -3,8 +3,6 @@
 
 #include "StdAfx.h"
 
-#include "dsetup.h"
-
 #include "GamePlayer.h"
 #include "ErrorProtocol.h"
 #include "LogProtocol.h"
@@ -49,23 +47,6 @@ int APIENTRY WinMain(HINSTANCE hInstance,
         {
             dwLangId = atoi(buffer);
         }
-    }
-
-    DWORD dwDXVersion;
-    DWORD dwDXMinorVersion;
-    if (!DirectXSetupGetVersion(&dwDXVersion, &dwDXMinorVersion))
-    {
-        ::LoadStringA(g_ResMap.hResDll, RES_STR_ID[dwLangId * 8 + 1], buffer, 512);
-        ::MessageBoxA(NULL, buffer, "Error", MB_ICONERROR);
-        exit(-1);
-    }
-
-    if ((HIWORD(dwDXVersion) != 4 || LOWORD(dwDXVersion) <= 8) &&
-        (dwDXVersion != 8 || HIWORD(dwDXMinorVersion) != 0))
-    {
-        ::LoadStringA(g_ResMap.hResDll, RES_STR_ID[dwLangId * 8], buffer, 512);
-        ::MessageBoxA(NULL, buffer, "Attention", MB_OK);
-        exit(-1);
     }
 
     //if (!AntiPiracyCheck())
