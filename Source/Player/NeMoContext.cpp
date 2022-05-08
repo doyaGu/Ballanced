@@ -483,8 +483,15 @@ bool CNeMoContext::Init()
 
     AddMessageWindowClose();
 
-    if (!FindScreenMode() || !CreateRenderContext())
+    if (!FindScreenMode())
     {
+        TT_ERROR("NemoContext.cpp", "Init()", "Found no capable screen mode");
+        return false;
+    }
+        
+    if (!CreateRenderContext())
+    {
+        TT_ERROR("NemoContext.cpp", "Init()", "Create Render Context Failed");
         return false;
     }
 
@@ -820,9 +827,9 @@ bool CNeMoContext::ChangeScreenMode(int driver, int screenMode)
         return false;
     }
 
-    bool fullscreenBefore = IsRenderFullScreen();
-    int screenModeBefore = GetScreenModeIndex();
     int driverBefore = m_DriverIndex;
+    int screenModeBefore = m_ScreenModeIndex;
+    bool fullscreenBefore = IsRenderFullScreen();
 
     m_DisplayChanged = true;
     m_DriverIndex = driver;
