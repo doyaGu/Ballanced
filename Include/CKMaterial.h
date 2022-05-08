@@ -145,6 +145,17 @@ See also: SetTexture,SetTextureBlendMode
 *************************************************/
 virtual	CKTexture*		GetTexture(int TexIndex = 0) = 0;
 
+/*************************************************
+Summary: Sets the texture to the material
+
+Arguments: 
+	  TexIndex: Index of the texture to set (0..3)
+	  Tex: A Pointer to the texture to use.
+Remarks:
+	For devices that support 	
+See also: GetTexture,SetTextureBlendMode
+*************************************************/
+virtual	void			SetTexture(int TexIndex,CKTexture * Tex) = 0;
 
 /*************************************************
 Summary: Sets the texture to the material
@@ -581,19 +592,6 @@ See also: VxEffectDescription,GetEffectParameter,CKRenderManager::GetEffectDescr
 virtual 	void SetEffect(VX_EFFECT Effect) = 0;
 
 virtual 	VX_EFFECT GetEffect() = 0;
-
-/*************************************************
-Summary: Sets the texture to the material
-
-Arguments: 
-	  TexIndex: Index of the texture to set (0..3)
-	  Tex: A Pointer to the texture to use.
-Remarks:
-	For devices that support 	
-See also: GetTexture,SetTextureBlendMode
-*************************************************/
-virtual	void			SetTexture(int TexIndex,CKTexture * Tex) = 0;
-
 
 /*************************************************
 Summary: Gets the effect parameter
