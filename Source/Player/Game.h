@@ -1,20 +1,9 @@
 #ifndef PLAYER_GAME_H
 #define PLAYER_GAME_H
 
-#include <exception>
-
 #include "GameInfo.h"
 
 class CNeMoContext;
-
-class CGameException : public std::exception
-{
-public:
-    CGameException() : std::exception(), error(0) {}
-    CGameException(int err) : std::exception(), error(err) {}
-    virtual void ShowMessageBox() const;
-    int error;
-};
 
 class CGame
 {
@@ -22,7 +11,7 @@ public:
     CGame();
     virtual ~CGame();
 
-    void Load();
+    bool Load();
     void Play();
 
     CGameInfo *NewGameInfo();

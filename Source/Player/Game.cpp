@@ -62,40 +62,6 @@ namespace
     CGameDataArray &gameData = CGameDataArray::GetInstance();
 }
 
-void CGameException::ShowMessageBox() const
-{
-    switch (error)
-    {
-    case 1:
-        ::MessageBoxA(NULL, "Error", "Error occurred in the engine (ClearAll). Abort!", MB_OK);
-        break;
-    case 5:
-        ::MessageBoxA(NULL, "Error", "Error occurred in the engine (Render). Abort!", MB_OK);
-        break;
-    case 2:
-        ::MessageBoxA(NULL, "Error", "Textsprites could not be created", MB_OK);
-        break;
-    case -1:
-        ::MessageBoxA(NULL, "Error", "Error occurred in the engine (Memory out). Abort!", MB_OK);
-        break;
-    case 4:
-        ::MessageBoxA(NULL, "Error", "Level (or game) could not be loaded (No open file) => Possibly not available. Start again!", MB_OK);
-        break;
-    case 3:
-        ::MessageBoxA(NULL, "Error", "Level (or game) could not be loaded (No gameInfo) => Possibly not available. Start again!", MB_OK);
-        break;
-    case 6:
-        ::MessageBoxA(NULL, "Error", "Sounds directory does not exist.", MB_OK);
-        break;
-    case 7:
-        ::MessageBoxA(NULL, "Error", "Texture directory does not exist.", MB_OK);
-        break;
-    default:
-        ::MessageBoxA(NULL, "Error", "Unhandled exception occurred during loading process. Abort!", MB_OK);
-        break;
-    }
-}
-
 CGame::CGame() : m_NeMoContext(NULL), m_GameInfo(NULL)
 {
     memset(&m_CKFileInfo, 0, sizeof(CKFileInfo));
@@ -113,7 +79,7 @@ CGame::~CGame()
     SetNeMoContext(NULL);
 }
 
-void CGame::Load()
+bool CGame::Load()
 {
     char cmoPath[MAX_PATH];
     char dir[MAX_PATH];
@@ -121,7 +87,7 @@ void CGame::Load()
     if (!m_GameInfo)
     {
         TT_ERROR("Game.cpp", "Load", "gameInfo is NULL: CMO is not loaded");
-        throw CGameException(3);
+        return false;
     }
 
     if (m_NeMoContext->GetMadeWithSprite())
@@ -133,48 +99,20 @@ void CGame::Load()
         m_NeMoContext->DestroyFrameRateSprite();
     }
 
-    try
-    {
-        strcpy(m_FileName, m_GameInfo->fileName);
-        sprintf(m_ProgPath, "%s%s\\", m_NeMoContext->GetProgPath(), m_GameInfo->path);
-        sprintf(cmoPath, "%s%s", m_ProgPath, m_GameInfo->fileName);
-        FILE *fcmo = fopen(cmoPath, "r");
-        if (!fcmo)
-        {
-            TT_ERROR("Game.cpp", "Load", "fopen/fclose threw exception");
-            throw CGameException(4);
-        }
-        fclose(fcmo);
-    }
-    catch (...)
-    {
-        TT_ERROR("Game.cpp", "Load", "fopen/fclose threw exception");
-        throw CGameException(4);
-    }
 
-    try
+    strcpy(m_FileName, m_GameInfo->fileName);
+    sprintf(m_ProgPath, "%s%s\\", m_NeMoContext->GetProgPath(), m_GameInfo->path);
+    sprintf(cmoPath, "%s%s", m_ProgPath, m_GameInfo->fileName);
+    FILE *fp = fopen(cmoPath, "r");
+    if (!fp)
     {
-        m_NeMoContext->CreateInterfaceSprite();
-        m_NeMoContext->SetStartTime(::GetTickCount() + 3000);
+        TT_ERROR("Game.cpp", "Load", "Failed to open the cmo file");
+        return false;
     }
-    catch (const CNeMoContextException &nmce)
-    {
-        if (nmce.error == 2)
-        {
-            TT_ERROR("Game.cpp", "Load", "Exception at sprite display due to missing RenderContext");
-            throw CGameException(5);
-        }
-        else
-        {
-            TT_ERROR("Game.cpp", "Load", "Exception on sprite display / No abort");
-            return;
-        }
-    }
-    catch (...)
-    {
-        TT_ERROR("Game.cpp", "Load", "Exception at sprite display due to missing RenderContext");
-        return;
-    }
+    fclose(fp);
+
+    m_NeMoContext->CreateInterfaceSprite();
+    m_NeMoContext->SetStartTime(::GetTickCount() + 3000);
 
     memset(&m_CKFileInfo, 0, sizeof(CKFileInfo));
     if (m_NeMoContext->GetFileInfo(cmoPath, &m_CKFileInfo) == CK_OK)
@@ -212,151 +150,106 @@ void CGame::Load()
 
         if (m_NeMoContext->GetStartTime() > 0)
         {
-            try
-            {
-                m_NeMoContext->SetMadeWithSpriteText(text);
-                m_NeMoContext->ShowMadeWithSprite();
-            }
-            catch (...)
-            {
-                TT_ERROR("Game.cpp", "Load", "Exception with TextSprites / no abort");
-                return;
-            }
+            m_NeMoContext->SetMadeWithSpriteText(text);
+            m_NeMoContext->ShowMadeWithSprite();
         }
     }
 
-    try
-    {
-        m_NeMoContext->AdjustFrameRateSpritePosition();
-        m_NeMoContext->ShowFrameRateSprite();
-    }
-    catch (...)
-    {
-        TT_ERROR("Game.cpp", "Load", "Exception with TextSprites / no abort");
-        return;
-    }
+    m_NeMoContext->AdjustFrameRateSpritePosition();
+    m_NeMoContext->ShowFrameRateSprite();
 
-    try
-    {
-        m_NeMoContext->Render(CK_RENDER_BACKGROUNDSPRITES);
-    }
-    catch (...)
+    if (m_NeMoContext->Render(CK_RENDER_BACKGROUNDSPRITES) != CK_OK)
     {
         TT_ERROR("Game.cpp", "Load", "Exception on Render() before CKLoad()");
-        throw CGameException(5);
+        return false;
     }
 
-    try
+    sprintf(dir, "%s%s\\", m_NeMoContext->GetProgPath(), "Sounds");
+    if (_access(dir, 0) == -1)
     {
-        sprintf(dir, "%s%s\\", m_NeMoContext->GetProgPath(), "Sounds");
-        if (_access(dir, 0) == -1)
-        {
-            TT_ERROR("Game.cpp", "Load", "No Sounds directory");
-            throw CGameException(6);
-        }
-        m_NeMoContext->AddSoundPath(dir);
-
-        sprintf(dir, "%s%s\\", m_NeMoContext->GetProgPath(), "Textures");
-        if (_access(dir, 0) == -1)
-        {
-            TT_ERROR("Game.cpp", "Load", "No Textures directory");
-            throw CGameException(7);
-        }
-        m_NeMoContext->AddBitmapPath(dir);
-
-        sprintf(dir, "%s%s\\", m_NeMoContext->GetProgPath(), m_GameInfo->path);
-        m_NeMoContext->AddDataPath(dir);
+        TT_ERROR("Game.cpp", "Load", "No Sounds directory");
+        return false;
     }
-    catch (...)
-    {
-        throw CGameException();
-    }
+    m_NeMoContext->AddSoundPath(dir);
 
-    CKObjectArray *array = NULL;
-    try
+    sprintf(dir, "%s%s\\", m_NeMoContext->GetProgPath(), "Textures");
+    if (_access(dir, 0) == -1)
     {
-        array = CreateCKObjectArray();
+        TT_ERROR("Game.cpp", "Load", "No Textures directory");
+        return false;
     }
-    catch (...)
+    m_NeMoContext->AddBitmapPath(dir);
+
+    sprintf(dir, "%s%s\\", m_NeMoContext->GetProgPath(), m_GameInfo->path);
+    m_NeMoContext->AddDataPath(dir);
+
+    CKObjectArray *array = CreateCKObjectArray();
+    if (!array)
     {
-        TT_ERROR("Game.cpp", "Load", "Exception on CreateCKObjectArray()");
-        throw CGameException(-1);
+        TT_ERROR("Game.cpp", "Load", "CreateCKObjectArray() Failed");
+        return false;
     }
 
     if (m_NeMoContext->LoadFile(cmoPath, array) != CK_OK)
     {
-        TT_ERROR("Game.cpp", "Load", "CKLoad");
-        throw CGameException(4);
+        TT_ERROR("Game.cpp", "Load", "LoadFile() Failed");
+        return false;
     }
 
-    try
+    CKLevel *level = m_NeMoContext->GetCurrentLevel();
+    if (!level)
     {
-        CKLevel *level = m_NeMoContext->GetCurrentLevel();
-        if (!level)
-        {
-            throw CGameException();
-        }
-
-        int i;
-        int sceneCount = level->GetSceneCount();
-        for (i = 0; i < sceneCount; ++i)
-        {
-            level->GetScene(i)->SetBackgroundColor(0);
-        }
-
-        level->AddRenderContext(m_NeMoContext->GetRenderContext(), TRUE);
-        array->Clear();
-
-        CK_ID *cameras = m_NeMoContext->GetObjectsListByClassID(CKCID_CAMERA);
-        if (cameras || (cameras = m_NeMoContext->GetObjectsListByClassID(CKCID_TARGETCAMERA)))
-        {
-            CKCamera *camera = (CKCamera *)m_NeMoContext->GetObject(cameras[0]);
-            if (camera)
-            {
-                m_NeMoContext->GetRenderContext()->AttachViewpointToCamera(camera);
-            }
-        }
-
-        m_NeMoContext->GetRenderContext()->Clear();
-        m_NeMoContext->GetRenderContext()->SetClearBackground();
-        m_NeMoContext->GetRenderContext()->BackToFront();
-        m_NeMoContext->GetRenderContext()->SetClearBackground();
-        m_NeMoContext->GetRenderContext()->Clear();
-
-        int curveCount = m_NeMoContext->GetObjectsCountByClassID(CKCID_CURVE);
-        CK_ID *curve_ids = m_NeMoContext->GetObjectsListByClassID(CKCID_CURVE);
-        for (i = 0; i < curveCount; ++i)
-        {
-            CKMesh *mesh = ((CKCurve *)m_NeMoContext->GetObject(curve_ids[i]))->GetCurrentMesh();
-            if (mesh)
-            {
-                mesh->Show(CKHIDE);
-            }
-        }
-
-        // we launch the default scene
-        level->LaunchScene(NULL);
-
-        for (i = 0; i < sceneCount; ++i)
-        {
-            level->GetScene(i)->SetBackgroundColor(0);
-        }
+        TT_ERROR("Game.cpp", "Load", "GetCurrentLevel() Failed");
+        return false;
     }
-    catch (...)
+
+    int i;
+    int sceneCount = level->GetSceneCount();
+    for (i = 0; i < sceneCount; ++i)
     {
-        TT_ERROR("Game.cpp", "Load", "Embed charged CMO");
-        throw CGameException(4);
+        level->GetScene(i)->SetBackgroundColor(0);
     }
 
-    try
+    CKRenderContext* renderContext = m_NeMoContext->GetRenderContext();
+    level->AddRenderContext(renderContext, TRUE);
+    array->Clear();
+
+    CK_ID *cameras = m_NeMoContext->GetObjectsListByClassID(CKCID_CAMERA);
+    if (cameras || (cameras = m_NeMoContext->GetObjectsListByClassID(CKCID_TARGETCAMERA)))
     {
-        DeleteCKObjectArray(array);
+        CKCamera *camera = (CKCamera *)m_NeMoContext->GetObject(cameras[0]);
+        if (camera)
+        {
+            renderContext->AttachViewpointToCamera(camera);
+        }
     }
-    catch (...)
+
+    renderContext->Clear();
+    renderContext->SetClearBackground();
+    renderContext->BackToFront();
+    renderContext->SetClearBackground();
+    renderContext->Clear();
+
+    int curveCount = m_NeMoContext->GetObjectsCountByClassID(CKCID_CURVE);
+    CK_ID *curve_ids = m_NeMoContext->GetObjectsListByClassID(CKCID_CURVE);
+    for (i = 0; i < curveCount; ++i)
     {
-        TT_ERROR("Game.cpp", "Load", "Delete, Render");
-        throw CGameException();
+        CKMesh *mesh = ((CKCurve *)m_NeMoContext->GetObject(curve_ids[i]))->GetCurrentMesh();
+        if (mesh)
+        {
+            mesh->Show(CKHIDE);
+        }
     }
+
+    // launch the default scene
+    level->LaunchScene(NULL);
+
+    for (i = 0; i < sceneCount; ++i)
+    {
+        level->GetScene(i)->SetBackgroundColor(0);
+    }
+  
+    DeleteCKObjectArray(array);
 
     // ReRegister OnClick Message in case it changed
     m_NeMoContext->AddMessageType("OnClick");
@@ -364,6 +257,8 @@ void CGame::Load()
 
     m_NeMoContext->HideMadeWithSprite();
     m_NeMoContext->HideFrameRateSprite();
+
+    return true;
 }
 
 void CGame::Play()

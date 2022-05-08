@@ -27,30 +27,21 @@ CWinContext::CWinContext()
     memset(m_RenderWndClassName, 0, sizeof(m_RenderWndClassName));
 }
 
-void CWinContext::Init(HINSTANCE hInstance, LPFNWNDPROC lpfnWndProc, bool fullscreen)
+bool CWinContext::Init(HINSTANCE hInstance, LPFNWNDPROC lpfnWndProc, bool fullscreen)
 {
     m_hInstance = hInstance;
     m_Fullscreen = fullscreen;
 
-    try
+    LoadWindowNames();
+    RegisterWindowClasses(lpfnWndProc, m_Width, m_Height);
+    if (m_IsWndClassRegistered && CreateWindows())
     {
-        LoadWindowNames();
-        RegisterWindowClasses(lpfnWndProc, m_Width, m_Height);
-        if (m_IsWndClassRegistered)
-        {
-            CreateWindows();
-            ShowWindows();
-            UpdateWindows();
-        }
+        ShowWindows();
+        UpdateWindows();
+        return true;
     }
-    catch (const CWinContextException &)
-    {
-        throw CWinContextException(3);
-    }
-    catch (...)
-    {
-        TT_ERROR("WinContext.cpp", "CWinContext::Init()", "Unhandled Exception");
-    }
+
+    return false;
 }
 
 void CWinContext::LoadWindowNames()
@@ -83,18 +74,17 @@ void CWinContext::RegisterWindowClasses(LPFNWNDPROC lpfnWndProc, int width, int 
     if (!::RegisterClassA(&m_RenderWndClass))
     {
         m_IsWndClassRegistered = false;
-        throw CWinContextException();
     }
 
     if (!::RegisterClassExA(&m_MainWndClass))
     {
-        throw CWinContextException();
+        m_IsWndClassRegistered = false;
     }
 
     m_IsWndClassRegistered = true;
 }
 
-void CWinContext::CreateWindows()
+bool CWinContext::CreateWindows()
 {
     m_MainWndStyle = (m_Fullscreen) ? WS_POPUP
         : WS_OVERLAPPEDWINDOW & ~(WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SYSMENU);
@@ -123,7 +113,8 @@ void CWinContext::CreateWindows()
         NULL);
     if (!m_MainWindow)
     {
-        throw std::exception("MainWindow Create FAILED");
+        TT_ERROR("WinContext.cpp", "CWinContext::CreateWindows()", "MainWindow Create FAILED");
+        return false;
     }
 
     m_RenderWndStyle = WS_CHILD | WS_VISIBLE;
@@ -142,10 +133,13 @@ void CWinContext::CreateWindows()
         NULL);
     if (!m_RenderWindow)
     {
-        throw std::exception("RenderWindow Create FAILED");
+        TT_ERROR("WinContext.cpp", "CWinContext::CreateWindows()", "RenderWindow Create FAILED");
+        return false;
     }
 
     m_hAccelTable = ::LoadAcceleratorsA(m_hInstance, (LPCSTR)IDR_ACCEL);
+
+    return true;
 }
 
 void CWinContext::UpdateWindows()
@@ -197,13 +191,11 @@ void CWinContext::SetResolution(int width, int height)
         if (!::SetWindowPos(m_MainWindow, HWND_TOP, 0, 0, rect.right - rect.left, rect.bottom - rect.top, SWP_NOMOVE))
         {
             TT_ERROR_BOX("WinContext.cpp", "CWinContext::SetResolution(...)", "wrong parameters");
-            throw CWinContextException();
         }
 
         if (!::SetWindowPos(m_RenderWindow, HWND_TOP, 0, 0, width, height, SWP_NOMOVE))
         {
             TT_ERROR_BOX("WinContext.cpp", "CWinContext::SetResolution(...)", "wrong parameters");
-            throw CWinContextException();
         }
     }
 }

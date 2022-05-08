@@ -365,8 +365,6 @@ void CGamePlayer::OnExitToSystem(WPARAM wParam, LPARAM lParam)
 
 bool CGamePlayer::OnLoadCMO(WPARAM wParam, LPARAM lParam)
 {
-    // char path[128];
-    // strcpy(path, (const char *)wParam);
     return LoadCMO((const char *)wParam);
 }
 
@@ -380,55 +378,18 @@ void CGamePlayer::OnExceptionCMO(WPARAM wParam, LPARAM lParam)
 
 void CGamePlayer::OnReturn(WPARAM wParam, LPARAM lParam)
 {
-    try
+    if (!RegisterGameInfoToInterfaceManager())
     {
-        RegisterGameInfoToInterfaceManager();
-        m_Game.Load();
-        m_Game.Play();
-        m_WinContext.SetResolution(m_NeMoContext.GetWidth(), m_NeMoContext.GetHeight());
+        TT_ERROR("GamePlayer.cpp", "CGamePlayer::OnReturn()", "Unable to register gameInfo");
     }
-    catch (const CGamePlayerException &)
-    {
-        TT_ERROR("GamePlayer.cpp", "CGamePlayer::OnReturn()", "Non critical");
-        throw CGamePlayerException(10);
-    }
-    catch (const CNeMoContextException &nmce)
-    {
-        if (nmce.error == 2)
-        {
-            m_NeMoContext.RestoreWindow();
-            TT_ERROR("GamePlayer.cpp", "CGamePlayer::OnReturn()", "Non critical");
-        }
-    }
-    catch (const CGameException &ge)
-    {
-        if (ge.error == 1 || ge.error == 5 || ge.error == -1)
-        {
-            m_NeMoContext.RestoreWindow();
-            TT_ERROR("GamePlayer.cpp", "CGamePlayer::OnReturn()", "SYSTEM_HALT");
-            ::MessageBoxA(m_WinContext.GetMainWindow(), "Error occurred in the engine. Abort!", "Error", MB_OK);
-            ::PostQuitMessage(-1);
-        }
 
-        if (ge.error != 4 && ge.error != 3)
-        {
-            TT_ERROR_BOX("GamePlayer.cpp", "CGamePlayer::OnReturn()", "CGameException caught");
-            return;
-        }
-
-        CGameInfo *gameInfoStack = m_Stack.RemoveHead();
-        CGameInfo *gameInfo = m_Game.GetGameInfo();
-        if (gameInfo)
-        {
-            delete gameInfo;
-        }
-
-        m_Game.SetGameInfo(gameInfoStack);
-        if (gameInfoStack)
-        {
-            m_Game.Play();
-        }
+    if (!m_Game.Load())
+    {
+        Done();
     }
+    m_Game.Play();
+
+    m_WinContext.SetResolution(m_NeMoContext.GetWidth(), m_NeMoContext.GetHeight());
 }
 
 void CGamePlayer::OnSized()
@@ -629,15 +590,8 @@ CGamePlayer::~CGamePlayer()
 
 void CGamePlayer::Run()
 {
-    try
-    {
-        while (Step())
-            continue;
-    }
-    catch (...)
-    {
-        TT_ERROR("GamePlayer.cpp", "CGamePlayer::Run()", "Unhandled Exception - System-Halt");
-    }
+    while (Step())
+        continue;
 }
 
 bool CGamePlayer::Step()
@@ -645,43 +599,36 @@ bool CGamePlayer::Step()
     MSG msg;
     BOOL bRet;
 
-    try
+    if (m_NeMoContext.IsPlaying())
+    {
+        bRet = ::PeekMessageA(&msg, NULL, 0, 0, PM_REMOVE);
+    }
+    else
+    {
+        bRet = ::GetMessageA(&msg, NULL, 0, 0);
+    }
+
+    if (!bRet)
     {
         if (m_NeMoContext.IsPlaying())
         {
-            bRet = ::PeekMessageA(&msg, NULL, 0, 0, PM_REMOVE);
+            m_NeMoContext.Process();
         }
-        else
-        {
-            bRet = ::GetMessageA(&msg, NULL, 0, 0);
-        }
-
-        if (!bRet)
-        {
-            if (m_NeMoContext.IsPlaying())
-            {
-                m_NeMoContext.Process();
-            }
-            return true;
-        }
-
-        if (msg.message != WM_QUIT && msg.message != WM_DESTROY)
-        {
-            HACCEL hAccel = m_WinContext.GetAccelTable();
-            if (!::TranslateAcceleratorA(msg.hwnd, hAccel, &msg))
-            {
-                ::TranslateMessage(&msg);
-                ::DispatchMessageA(&msg);
-            }
-            return true;
-        }
+        return true;
     }
-    catch (...)
+
+    if (msg.message == WM_QUIT || msg.message == WM_DESTROY)
     {
-        TT_ERROR("GamePlayer.cpp", "Step()", "Unhandled Exception - System-Halt");
+        return false;
     }
 
-    return false;
+    HACCEL hAccel = m_WinContext.GetAccelTable();
+    if (!::TranslateAcceleratorA(msg.hwnd, hAccel, &msg))
+    {
+        ::TranslateMessage(&msg);
+        ::DispatchMessageA(&msg);
+    }
+    return true;
 }
 
 LRESULT CGamePlayer::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -795,87 +742,66 @@ LRESULT CGamePlayer::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 void CGamePlayer::Init(HINSTANCE hInstance, LPFNWNDPROC lpfnWndProc)
 {
-    bool settingChanged = false;
-    bool engineReinitialized = false;
-
     m_State = eInitial;
 
-    try
+    if (!CheckPrerequisite())
     {
-        if (!CheckPrerequisite())
+        return;
+    }
+
+    CNeMoContext::RegisterInstance(&m_NeMoContext);
+    m_Game.SetNeMoContext(&m_NeMoContext);
+
+    if (!m_WinContext.Init(hInstance, lpfnWndProc, m_NeMoContext.IsFullscreen()))
+    {
+        TT_ERROR("GamePlayer.cpp", "CGamePlayer::Init()", "WinContext Initilizaition Failed");
+        return;
+    }
+
+    if (!InitEngine())
+    {
+        bool settingChanged = false;
+        bool engineReinitialized = false;
+
+        if (m_DefaultSetting)
         {
-            return;
+            m_NeMoContext.SetDriverIndex(0);
+            m_NeMoContext.SetBPP(DEFAULT_BPP);
+            m_NeMoContext.SetResolution(DEFAULT_WIDTH, DEFAULT_HEIGHT);
+            engineReinitialized = ReInitEngine();
+            settingChanged = true;
         }
 
-        CNeMoContext::RegisterInstance(&m_NeMoContext);
-        m_Game.SetNeMoContext(&m_NeMoContext);
-        m_WinContext.Init(hInstance, lpfnWndProc, m_NeMoContext.IsFullscreen());
-
-        if (!InitEngine())
+        if (!m_DefaultSetting || !engineReinitialized)
         {
-            if (m_DefaultSetting)
+            if (::DialogBoxParamA(m_WinContext.GetAppInstance(), (LPCSTR)IDD_FULLSCREEN_SETUP, NULL, DialogProc, 0) != 1)
             {
-                m_NeMoContext.SetDriverIndex(0);
-                m_NeMoContext.SetBPP(DEFAULT_BPP);
-                m_NeMoContext.SetResolution(DEFAULT_WIDTH, DEFAULT_HEIGHT);
-                engineReinitialized = ReInitEngine();
-                settingChanged = true;
+                return;
             }
 
-            if (!m_DefaultSetting || !engineReinitialized)
+            if (!ReInitEngine())
             {
-
-                if (::DialogBoxParamA(m_WinContext.GetAppInstance(), (LPCSTR)IDD_FULLSCREEN_SETUP, NULL, DialogProc, 0) != 1)
-                {
-                    m_State = eInitial;
-                    return;
-                }
-                if (ReInitEngine())
-                {
-                    settingChanged = true;
-                }
+                return;
             }
-
-            if (settingChanged)
-            {
-                IniSetBPPAndDriver(m_NeMoContext.GetBPP(), m_NeMoContext.GetScreenModeIndex());
-                IniSetResolution(m_NeMoContext.GetWidth(), m_NeMoContext.GetHeight());
-            }
+            settingChanged = true;
         }
 
-        m_WinContext.ShowWindows();
-        m_WinContext.UpdateWindows();
-
-        m_NeMoContext.Refresh();
-
-        ::SendMessageA(m_WinContext.GetMainWindow(), TT_MSG_EXIT_TO_TITLE, NULL, NULL);
-        ::SetFocus(m_WinContext.GetMainWindow());
-
-        m_State = eInitialized;
-    }
-    catch (const CWinContextException &)
-    {
-        TT_ERROR("GamePlayer.cpp", "CGamePlayer::Init()", "WinContext threw Exception - Aborting");
-    }
-    catch (const CGamePlayerException &gpe)
-    {
-        switch (gpe.error)
+        if (settingChanged)
         {
-        case 4:
-            TT_ERROR("GamePlayer.cpp", "CGamePlayer::Init()", "No manager dll is found");
-            break;
-        case 9:
-            TT_ERROR("GamePlayer.cpp", "CGamePlayer::Init()", "SYSTEM HALTED");
-            break;
-        default:
-            throw CGamePlayerException(11);
-            break;
+            IniSetBPPAndDriver(m_NeMoContext.GetBPP(), m_NeMoContext.GetScreenModeIndex());
+            IniSetResolution(m_NeMoContext.GetWidth(), m_NeMoContext.GetHeight());
         }
     }
-    catch (...)
-    {
-        TT_ERROR("GamePlayer.cpp", "CGamePlayer::Init()", "Unhandled Exception - Abort");
-    }
+
+    m_WinContext.ShowWindows();
+    m_WinContext.UpdateWindows();
+
+    m_NeMoContext.Refresh();
+
+    ::SendMessageA(m_WinContext.GetMainWindow(), TT_MSG_EXIT_TO_TITLE, NULL, NULL);
+    ::SetFocus(m_WinContext.GetMainWindow());
+
+    m_State = eInitialized;
 }
 
 void CGamePlayer::Play()
@@ -896,177 +822,135 @@ void CGamePlayer::Reset()
 
 void CGamePlayer::Done()
 {
-    try
+    if (m_hMutex)
     {
-        if (m_hMutex)
+        ::ReleaseMutex(m_hMutex);
+        m_hMutex = NULL;
+    }
+
+    if (!m_Cleared)
+    {
+        m_NeMoContext.Cleanup();
+        if (m_NeMoContext.RestoreWindow())
         {
-            ::ReleaseMutex(m_hMutex);
-            m_hMutex = NULL;
+            m_NeMoContext.GetRenderContext()->Clear();
+            m_NeMoContext.GetRenderContext()->SetClearBackground();
+            m_NeMoContext.GetRenderContext()->BackToFront();
+            m_NeMoContext.GetRenderContext()->SetClearBackground();
+            m_NeMoContext.GetRenderContext()->Clear();
         }
 
-        if (!m_Cleared)
+        m_NeMoContext.Shutdown();
+
+        CGameInfo *gameInfo = m_Game.GetGameInfo();
+        if (gameInfo && gameInfo->fileName)
         {
-            m_NeMoContext.Cleanup();
-            m_NeMoContext.RestoreWindow();
-
-            if (m_NeMoContext.GetRenderContext())
+            if (!m_Stack.GetGameInfo(gameInfo->fileName))
             {
-                m_NeMoContext.GetRenderContext()->Clear();
-                m_NeMoContext.GetRenderContext()->SetClearBackground();
-                m_NeMoContext.GetRenderContext()->BackToFront();
-                m_NeMoContext.GetRenderContext()->SetClearBackground();
-                m_NeMoContext.GetRenderContext()->Clear();
+                delete gameInfo;
             }
-
-            m_NeMoContext.Shutdown();
-
-            CGameInfo *gameInfo = m_Game.GetGameInfo();
-            if (gameInfo && gameInfo->fileName)
-            {
-                if (!m_Stack.GetGameInfo(gameInfo->fileName))
-                {
-                    delete gameInfo;
-                }
-                m_Game.SetGameInfo(NULL);
-            }
-            m_Stack.ClearAll();
+            m_Game.SetGameInfo(NULL);
         }
-        m_Cleared = true;
-        exit(EXIT_FAILURE);
+        m_Stack.ClearAll();
     }
-    catch (const CGameStackException &)
-    {
-        TT_ERROR("GamePlayer.cpp", "Done()", "Non critical");
-    }
-    catch (...)
-    {
-        TT_ERROR("GamePlayer.cpp", "Done()", "Unhandled Exception");
-    }
+
+    m_Cleared = true;
+    exit(EXIT_SUCCESS);
 }
 
 bool CGamePlayer::LoadCMO(const char *filename)
 {
-    try
-    {
-        m_NeMoContext.Refresh();
+    m_NeMoContext.Refresh();
 
-        CGameInfo *gameInfoNow = m_Game.GetGameInfo();
-        CGameInfo *gameInfo = m_Stack.GetGameInfo(filename);
-        if (gameInfo)
+    CGameInfo *gameInfoNow = m_Game.GetGameInfo();
+    CGameInfo *gameInfo = m_Stack.GetGameInfo(filename);
+    if (gameInfo)
+    {
+        m_Game.SetGameInfo(gameInfo);
+    }
+    else
+    {
+        gameInfo = m_Game.NewGameInfo();
+        m_DataManager.Load(gameInfo, filename);
+        if (gameInfoNow)
         {
-            m_Game.SetGameInfo(gameInfo);
-        }
-        else
-        {
-            gameInfo = m_Game.NewGameInfo();
-            m_DataManager.Load(gameInfo, filename);
-            if (gameInfoNow)
+            if (gameInfoNow->type == 1)
             {
-                if (gameInfoNow->type == 1)
-                {
-                    gameInfo->next = gameInfoNow;
-                }
-                else if (gameInfoNow->type == 2)
-                {
-                    gameInfo->next = gameInfoNow->next;
-                }
-                else
-                {
-                    gameInfo->next = NULL;
-                }
+                gameInfo->next = gameInfoNow;
+            }
+            else if (gameInfoNow->type == 2)
+            {
+                gameInfo->next = gameInfoNow->next;
             }
             else
             {
                 gameInfo->next = NULL;
             }
         }
-
-        if (gameInfoNow && !m_Stack.GetGameInfo(gameInfoNow->fileName))
+        else
         {
-            m_Stack.Push(gameInfoNow);
+            gameInfo->next = NULL;
         }
-
-        if (!RegisterGameInfoToInterfaceManager())
-        {
-            return false;
-        }
-
-        m_Game.Load();
-        ::SetCursor(::LoadCursorA(NULL, (LPCSTR)IDC_ARROW));
-        m_Game.Play();
-        ::SetFocus(m_WinContext.GetMainWindow());
-
-        return true;
     }
 
-    catch (const CGamePlayerException &)
+    if (gameInfoNow && !m_Stack.GetGameInfo(gameInfoNow->fileName))
     {
-        TT_ERROR("GamePlayer.cpp", "LoadCMO()", "Non critical");
-    }
-    catch (const CNeMoContextException &)
-    {
-        TT_ERROR("GamePlayer.cpp", "LoadCMO()", "Missing RenderContext - critical - Abort");
-    }
-    catch (const CGameException &)
-    {
-        TT_ERROR("GamePlayer.cpp", "LoadCMO()", "CGameException. Abort!");
+        m_Stack.Push(gameInfoNow);
     }
 
-    return false;
+    if (!RegisterGameInfoToInterfaceManager())
+    {
+        return false;
+    }
+
+    if (!m_Game.Load())
+    {
+        return false;
+    }
+    ::SetCursor(::LoadCursorA(NULL, (LPCSTR)IDC_ARROW));
+    m_Game.Play();
+    ::SetFocus(m_WinContext.GetMainWindow());
+
+    return true;
 }
 
 void CGamePlayer::Construct()
 {
     strcpy(m_Path, "..\\");
 
-    try
-    {
-        char fullPath[MAX_PATH];
-        char drive[4];
-        char dir[MAX_PATH];
-        char filename[MAX_PATH];
-        char rootPath[512];
+    char fullPath[MAX_PATH];
+    char drive[4];
+    char dir[MAX_PATH];
+    char filename[MAX_PATH];
+    char rootPath[512];
 
-        ::GetModuleFileNameA(NULL, fullPath, MAX_PATH);
-        _splitpath(fullPath, drive, dir, filename, NULL);
-        sprintf(rootPath, "%s%s%s", drive, dir, m_Path);
-        TT_ERROR_OPEN(filename, rootPath, true);
-        TT_LOG_OPEN(filename, rootPath, false);
-        fillResourceMap(&g_ResMap);
+    ::GetModuleFileNameA(NULL, fullPath, MAX_PATH);
+    _splitpath(fullPath, drive, dir, filename, NULL);
+    sprintf(rootPath, "%s%s%s", drive, dir, m_Path);
+    TT_ERROR_OPEN(filename, rootPath, true);
+    TT_LOG_OPEN(filename, rootPath, false);
+    fillResourceMap(&g_ResMap);
 
-        if (IsNoSettingsInIni())
-        {
-            // Default settings
-            m_NeMoContext.SetScreen(&m_WinContext, false, 0, DEFAULT_BPP, DEFAULT_WIDTH, DEFAULT_HEIGHT);
-            m_WinContext.SetResolution(DEFAULT_WIDTH, DEFAULT_HEIGHT);
-            IniSetBPP(DEFAULT_BPP);
-            IniSetBPPAndDriver(DEFAULT_BPP, 0);
-            IniSetFullscreen(false);
-            IniSetResolution(DEFAULT_WIDTH, DEFAULT_HEIGHT);
-        }
-        else
-        {
-            int bpp, driver;
-            IniGetBPPAndDriver(&bpp, &driver);
-            int width = IniGetWidth();
-            int height = IniGetHeight();
-            m_NeMoContext.SetScreen(&m_WinContext, g_ResMap.fullScreenSetting == TRUE, driver, bpp, width, height);
-            m_WinContext.SetResolution(width, height);
-        }
-        m_State = eInitialized;
-    }
-    catch (const CNeMoContextException &)
+    if (IsNoSettingsInIni())
     {
-        TT_ERROR("GamePlayer.cpp", "CGamePlayer::Construct()", "NemoContext threw Exception - Aborting");
+        // Default settings
+        m_NeMoContext.SetScreen(&m_WinContext, false, 0, DEFAULT_BPP, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+        m_WinContext.SetResolution(DEFAULT_WIDTH, DEFAULT_HEIGHT);
+        IniSetBPP(DEFAULT_BPP);
+        IniSetBPPAndDriver(DEFAULT_BPP, 0);
+        IniSetFullscreen(false);
+        IniSetResolution(DEFAULT_WIDTH, DEFAULT_HEIGHT);
     }
-    catch (const CWinContextException &)
+    else
     {
-        TT_ERROR("GamePlayer.cpp", "CGamePlayer::Construct()", "WinContext threw Exception - Aborting");
+        int bpp, driver;
+        IniGetBPPAndDriver(&bpp, &driver);
+        int width = IniGetWidth();
+        int height = IniGetHeight();
+        m_NeMoContext.SetScreen(&m_WinContext, g_ResMap.fullScreenSetting == TRUE, driver, bpp, width, height);
+        m_WinContext.SetResolution(width, height);
     }
-    catch (...)
-    {
-        TT_ERROR("GamePlayer.cpp", "CGamePlayer::Construct()", "Unhandled Exception");
-    }
+    m_State = eInitialized;
 }
 
 bool CGamePlayer::InitEngine()
@@ -1080,49 +964,38 @@ bool CGamePlayer::InitEngine()
     splash->Show();
     delete splash;
 
-    try
-    {
-        m_NeMoContext.DoStartUp();
-    }
-    catch (const CNeMoContextException &)
+    if (!m_NeMoContext.DoStartUp())
     {
         return false;
     }
 
-    try
+    ::GetModuleFileNameA(NULL, buffer, MAX_PATH);
+    _splitpath(buffer, drive, dir, NULL, NULL);
+    sprintf(fullpath, "%s%s%s", drive, dir, m_Path);
+    if (!fullpath)
     {
-        ::GetModuleFileNameA(NULL, buffer, MAX_PATH);
-        _splitpath(buffer, drive, dir, NULL, NULL);
-        sprintf(fullpath, "%s%s%s", drive, dir, m_Path);
-        if (fullpath)
-        {
-            m_NeMoContext.SetProgPath(fullpath);
-        }
-    }
-    catch (const CNeMoContextException &)
-    {
-        TT_ERROR("GamePlayer.cpp", "CGamePlayer::InitEngine()", "SetProgPath");
+        TT_ERROR("GamePlayer.cpp", "CGamePlayer::InitEngine()", "Unable to set ProgPath");
         return false;
     }
+    m_NeMoContext.SetProgPath(fullpath);
 
     sprintf(m_PluginPath, "%s%s%s%s", drive, dir, m_Path, "Plugins");
     sprintf(m_RenderPath, "%s%s%s%s", drive, dir, m_Path, "RenderEngines");
     sprintf(m_ManagerPath, "%s%s%s%s", drive, dir, m_Path, "Managers");
     sprintf(m_BehaviorPath, "%s%s%s%s", drive, dir, m_Path, "BuildingBlocks");
 
-    m_State = eInitial;
-
-    try
+    if (!LoadEngineDLL() || !LoadStdDLL())
     {
-        LoadEngineDLL();
-        LoadStdDLL();
+        return false;
+    }
 
-        if (!m_NeMoContext.Init())
-        {
-            TT_ERROR("GamePlayer.cpp", "CGamePlayer::InitEngine()", "Init NemoContext");
-            return false;
-        }
+    if (!m_NeMoContext.Init())
+    {
+        TT_ERROR("GamePlayer.cpp", "CGamePlayer::InitEngine()", "Failed to init NemoContext");
+        return false;
+    }
 
+    {
         CTTInterfaceManager *im = m_NeMoContext.GetInterfaceManager();
         if (!im)
         {
@@ -1142,24 +1015,22 @@ bool CGamePlayer::InitEngine()
             im->SetIniName(g_ResMap.pathSetting);
         }
 
-        m_WinContext.ShowWindows();
-        m_WinContext.UpdateWindows();
-
         im->SetRookie(m_IsRookie);
     }
-    catch (const CGamePlayerException &)
+
+    m_WinContext.ShowWindows();
+    m_WinContext.UpdateWindows();
+
+    return true;
+}
+
+bool CGamePlayer::ReInitEngine()
+{
+    m_State = eInitial;
+
+    if (!m_NeMoContext.ReInit())
     {
-        TT_ERROR("GamePlayer.cpp", "CGamePlayer::InitEngine()", "GamePlayer Exception");
-        return false;
-    }
-    catch (const CNeMoContextException &)
-    {
-        TT_ERROR("GamePlayer.cpp", "CGamePlayer::InitEngine()", "NemoContext Exception");
-        return false;
-    }
-    catch (...)
-    {
-        TT_ERROR("GamePlayer.cpp", "CGamePlayer::InitEngine()", "Unhandled Exception");
+        TT_ERROR("GamePlayer.cpp", "CGamePlayer::ReInitEngine()", "ReInit NemoContext");
         return false;
     }
 
@@ -1167,98 +1038,41 @@ bool CGamePlayer::InitEngine()
     return true;
 }
 
-bool CGamePlayer::ReInitEngine()
+bool CGamePlayer::LoadEngineDLL()
 {
-    try
-    {
-        m_State = eInitial;
 
-        if (!m_NeMoContext.ReInit())
-        {
-            TT_ERROR("GamePlayer.cpp", "CGamePlayer::ReInitEngine()", "ReInit NemoContext");
-            return false;
-        }
-
-        m_WinContext.ShowWindows();
-        m_WinContext.UpdateWindows();
-
-        m_State = eInitialized;
-        return true;
-    }
-    catch (const CGamePlayerException &)
+    if (!m_NeMoContext.ParsePlugins(m_RenderPath) || _access(m_RenderPath, 0) == -1)
     {
-        TT_ERROR("GamePlayer.cpp", "CGamePlayer::ReInitEngine()", "CGamePlayerException");
-    }
-    catch (const CNeMoContextException &)
-    {
-        TT_ERROR("GamePlayer.cpp", "CGamePlayer::ReInitEngine()", "NeMoContextException");
-    }
-    catch (...)
-    {
-        TT_ERROR("GamePlayer.cpp", "CGamePlayer::ReInitEngine()", "Unhandled Exception");
+        return false;
     }
 
-    return false;
+    return true;
 }
 
-void CGamePlayer::LoadEngineDLL()
+bool CGamePlayer::LoadStdDLL()
 {
-    try
-    {
-        if (!m_NeMoContext.ParsePlugins(m_RenderPath) || _access(m_RenderPath, 0) == -1)
-        {
-            throw CGamePlayerException(1);
-        }
-    }
-    catch (...)
-    {
-        TT_ERROR("GamePlayer.cpp", "CGamePlayer::LoadEngineDLL()", "Render path not available");
-        throw;
-    }
-}
-
-void CGamePlayer::LoadStdDLL()
-{
-    if (!m_NeMoContext.ParsePlugins(m_ManagerPath))
+    if (_access(m_ManagerPath, 0) == -1 || !m_NeMoContext.ParsePlugins(m_ManagerPath))
     {
         m_NeMoContext.RestoreWindow();
         TT_ERROR("GamePlayer.cpp", "CGamePlayer::LoadStdDLL()", "manager parse error");
-        throw CGamePlayerException(3);
+        return false;
     }
 
-    if (!m_NeMoContext.ParsePlugins(m_BehaviorPath))
+    if (_access(m_BehaviorPath, 0) == -1 || !m_NeMoContext.ParsePlugins(m_BehaviorPath))
     {
         m_NeMoContext.RestoreWindow();
         TT_ERROR("GamePlayer.cpp", "CGamePlayer::LoadStdDLL()", "behavior parse error");
-        throw CGamePlayerException(12);
+        return false;
     }
 
-    m_NeMoContext.ParsePlugins(m_ManagerPath);
-
-    try
+    if (_access(m_PluginPath, 0) == -1 || !m_NeMoContext.ParsePlugins(m_PluginPath))
     {
-        if (!m_ManagerPath || _access(m_PluginPath, 0) == -1)
-        {
-            TT_ERROR("GamePlayer.cpp", "CGamePlayer::LoadStdDLL()", "empty or wrong plugin path");
-            throw CGamePlayerException(4);
-        }
-
-        if (!m_NeMoContext.ParsePlugins(m_PluginPath))
-        {
-            m_NeMoContext.RestoreWindow();
-            TT_ERROR("GamePlayer.cpp", "CGamePlayer::LoadStdDLL()", "plugin parse error");
-            throw CGamePlayerException(5);
-        }
+        m_NeMoContext.RestoreWindow();
+        TT_ERROR("GamePlayer.cpp", "CGamePlayer::LoadStdDLL()", "plugin parse error");
+        return false;
     }
-    catch (const CGamePlayerException &)
-    {
-        TT_ERROR("GamePlayer.cpp", "CGamePlayer::LoadStdDLL()", "SYSTEM HALTED");
-        ::PostQuitMessage(-1);
-    }
-    catch (...)
-    {
-        TT_ERROR("GamePlayer.cpp", "CGamePlayer::LoadStdDLL()", "Unhandled Exception");
-    }
+    
+    return true;
 }
 
 bool CGamePlayer::RegisterGameInfoToInterfaceManager()

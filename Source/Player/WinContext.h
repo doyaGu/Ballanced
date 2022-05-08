@@ -1,17 +1,7 @@
 #ifndef PLAYER_WINCONTEXT_H
 #define PLAYER_WINCONTEXT_H
 
-#include <exception>
-
 typedef LRESULT (CALLBACK *LPFNWNDPROC)(HWND, UINT, WPARAM, LPARAM);
-
-class CWinContextException : public std::exception
-{
-public:
-    CWinContextException() : std::exception(), error(0) {}
-    CWinContextException(int err) : std::exception(), error(err) {}
-    int error;
-};
 
 class CWinContext
 {
@@ -19,11 +9,11 @@ public:
     CWinContext();
     virtual ~CWinContext() {}
 
-    void Init(HINSTANCE hInstance, LPFNWNDPROC lpfnWndProc, bool fullscreen);
+    bool Init(HINSTANCE hInstance, LPFNWNDPROC lpfnWndProc, bool fullscreen);
 
     void LoadWindowNames();
     void RegisterWindowClasses(LPFNWNDPROC lpfnWndProc, int width, int height);
-    void CreateWindows();
+    bool CreateWindows();
     void UpdateWindows();
     void ShowWindows();
     void MinimizeWindow();

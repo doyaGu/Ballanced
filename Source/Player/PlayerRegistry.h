@@ -1,11 +1,7 @@
 #ifndef PLAYER_PLAYERREGISTRY_H
 #define PLAYER_PLAYERREGISTRY_H
 
-#include <exception>
-
 class CGamePlayer;
-
-class CPlayerRegistryException : public std::exception {};
 
 class CPlayerRegistry
 {
