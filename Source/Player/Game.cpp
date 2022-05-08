@@ -64,7 +64,6 @@ bool CGame::Load()
         m_NeMoContext->DestroyFrameRateSprite();
     }
 
-
     strcpy(m_FileName, m_GameInfo->fileName);
     sprintf(m_ProgPath, "%s%s\\", m_NeMoContext->GetProgPath(), m_GameInfo->path);
     sprintf(cmoPath, "%s%s", m_ProgPath, m_GameInfo->fileName);
@@ -175,7 +174,7 @@ bool CGame::Load()
         level->GetScene(i)->SetBackgroundColor(0);
     }
 
-    CKRenderContext* renderContext = m_NeMoContext->GetRenderContext();
+    CKRenderContext *renderContext = m_NeMoContext->GetRenderContext();
     level->AddRenderContext(renderContext, TRUE);
     array->Clear();
 
@@ -213,7 +212,7 @@ bool CGame::Load()
     {
         level->GetScene(i)->SetBackgroundColor(0);
     }
-  
+
     DeleteCKObjectArray(array);
 
     // ReRegister OnClick Message in case it changed

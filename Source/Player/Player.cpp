@@ -49,13 +49,13 @@ int APIENTRY WinMain(HINSTANCE hInstance,
         }
     }
 
-    //if (!AntiPiracyCheck())
+    // if (!AntiPiracyCheck())
     //{
-    //    ::LoadStringA(g_ResMap.hResDll, RES_STR_ID[dwLangId * 8 + 5], buffer, 512);
-    //    ::MessageBoxA(NULL, buffer, "Attention", MB_OK);
-    //    ::ReleaseMutex(hMutex);
-    //    exit(-1);
-    //}
+    //     ::LoadStringA(g_ResMap.hResDll, RES_STR_ID[dwLangId * 8 + 5], buffer, 512);
+    //     ::MessageBoxA(NULL, buffer, "Attention", MB_OK);
+    //     ::ReleaseMutex(hMutex);
+    //     exit(-1);
+    // }
 
     if (!player.IsInitialized())
     {
