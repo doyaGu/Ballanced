@@ -10,57 +10,22 @@
 #include "ErrorProtocol.h"
 #include "NeMoContext.h"
 
-namespace
-{
-    class CGameDataArray
-    {
-    public:
-        static CGameDataArray &GetInstance();
-
-        CGameData &operator[](size_t n)
-        {
-            return m_Data[n];
-        }
-
-        const CGameData &operator[](size_t n) const
-        {
-            return m_Data[n];
-        }
-
-    private:
-        CGameDataArray();
-        CGameDataArray(const CGameDataArray &);
-        CGameDataArray &operator=(const CGameDataArray &);
-
-        CGameData m_Data[100];
-    };
-
-    CGameDataArray &CGameDataArray::GetInstance()
-    {
-        static CGameDataArray array;
-        return array;
-    }
-
-    CGameDataArray::CGameDataArray()
-    {
-        m_Data[0] = CGameData("Clock.cmo", "Powerball", "Software\\Terratools\\Powerball\\Data");
-        m_Data[1] = CGameData("WM.cmo", "WM", "Software\\Terratools\\WorldMap");
-        m_Data[2] = CGameData("PBC.cmo", "Powerball", "Software\\Terratools\\Powerball\\Data");
-        m_Data[3] = CGameData("PB_L0.cmo", "Powerball", "Software\\Terratools\\Powerball\\Data");
-        m_Data[4] = CGameData("PB_L1.cmo", "Powerball", "Software\\Terratools\\Powerball\\Data");
-        m_Data[5] = CGameData("PB_L2.cmo", "Powerball", "Software\\Terratools\\Powerball\\Data");
-        m_Data[6] = CGameData("PB_L3.cmo", "Powerball", "Software\\Terratools\\Powerball\\Data");
-        m_Data[7] = CGameData("PB_L4.cmo", "Powerball", "Software\\Terratools\\Powerball\\Data");
-        m_Data[8] = CGameData("SP_INTRO.cmo", "Superpuck", "Software\\Terratools\\Superpuck\\Data");
-        m_Data[9] = CGameData("SPC.cmo", "Superpuck", "Software\\Terratools\\Superpuck\\Data");
-        m_Data[10] = CGameData("SP_L1.cmo", "Superpuck", "Software\\Terratools\\Superpuck\\Data");
-        m_Data[11] = CGameData("SP_L2.cmo", "Superpuck", "Software\\Terratools\\Superpuck\\Data");
-        m_Data[12] = CGameData("SP_L3.cmo", "Superpuck", "Software\\Terratools\\Superpuck\\Data");
-        m_Data[13] = CGameData("SP_L4.cmo", "Superpuck", "Software\\Terratools\\Superpuck\\Data");
-    }
-
-    CGameDataArray &gameData = CGameDataArray::GetInstance();
-}
+static CGameData g_GameData[100] = {
+    CGameData("Clock.cmo", "Powerball", "Software\\Terratools\\Powerball\\Data"),
+    CGameData("WM.cmo", "WM", "Software\\Terratools\\WorldMap"),
+    CGameData("PBC.cmo", "Powerball", "Software\\Terratools\\Powerball\\Data"),
+    CGameData("PB_L0.cmo", "Powerball", "Software\\Terratools\\Powerball\\Data"),
+    CGameData("PB_L1.cmo", "Powerball", "Software\\Terratools\\Powerball\\Data"),
+    CGameData("PB_L2.cmo", "Powerball", "Software\\Terratools\\Powerball\\Data"),
+    CGameData("PB_L3.cmo", "Powerball", "Software\\Terratools\\Powerball\\Data"),
+    CGameData("PB_L4.cmo", "Powerball", "Software\\Terratools\\Powerball\\Data"),
+    CGameData("SP_INTRO.cmo", "Superpuck", "Software\\Terratools\\Superpuck\\Data"),
+    CGameData("SPC.cmo", "Superpuck", "Software\\Terratools\\Superpuck\\Data"),
+    CGameData("SP_L1.cmo", "Superpuck", "Software\\Terratools\\Superpuck\\Data"),
+    CGameData("SP_L2.cmo", "Superpuck", "Software\\Terratools\\Superpuck\\Data"),
+    CGameData("SP_L3.cmo", "Superpuck", "Software\\Terratools\\Superpuck\\Data"),
+    CGameData("SP_L4.cmo", "Superpuck", "Software\\Terratools\\Superpuck\\Data"),
+};
 
 CGame::CGame() : m_NeMoContext(NULL), m_GameInfo(NULL)
 {
@@ -330,11 +295,11 @@ void CGameDataManager::Save(CGameInfo *gameInfo)
 {
     if (m_Count < 100)
     {
-        strcpy(gameData[m_Count].fileName, gameInfo->fileName);
-        strcpy(gameData[m_Count].path, gameInfo->path);
-        gameData[m_Count].hkRoot = gameInfo->hkRoot;
-        gameData[m_Count].type = gameInfo->type;
-        strcpy(gameData[m_Count].regSubkey, gameInfo->regSubkey);
+        strcpy(g_GameData[m_Count].fileName, gameInfo->fileName);
+        strcpy(g_GameData[m_Count].path, gameInfo->path);
+        g_GameData[m_Count].hkRoot = gameInfo->hkRoot;
+        g_GameData[m_Count].type = gameInfo->type;
+        strcpy(g_GameData[m_Count].regSubkey, gameInfo->regSubkey);
     }
     ++m_Count;
 }
@@ -345,7 +310,7 @@ void CGameDataManager::Load(CGameInfo *gameInfo, const char *filename)
 
     if (m_Count > 0)
     {
-        for (i = 0; strcmp(gameData[i].fileName, filename); ++i)
+        for (i = 0; strcmp(g_GameData[i].fileName, filename); ++i)
         {
             if (++i >= m_Count)
             {
@@ -353,10 +318,10 @@ void CGameDataManager::Load(CGameInfo *gameInfo, const char *filename)
             }
         }
 
-        strcpy(gameInfo->fileName, gameData[i].fileName);
-        strcpy(gameInfo->path, gameData[i].path);
-        gameInfo->hkRoot = gameData[i].hkRoot;
-        gameInfo->type = gameData[i].type;
-        strcpy(gameInfo->regSubkey, gameData[i].regSubkey);
+        strcpy(gameInfo->fileName, g_GameData[i].fileName);
+        strcpy(gameInfo->path, g_GameData[i].path);
+        gameInfo->hkRoot = g_GameData[i].hkRoot;
+        gameInfo->type = g_GameData[i].type;
+        strcpy(gameInfo->regSubkey, g_GameData[i].regSubkey);
     }
 }
