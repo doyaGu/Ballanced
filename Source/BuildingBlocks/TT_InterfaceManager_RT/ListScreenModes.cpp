@@ -95,7 +95,6 @@ int ListScreenModes(const CKBehaviorContext &behcontext)
 		int i = 0, j = 0, k = 0;
 		while (i < drDesc->DisplayModeCount)
 		{
-
 			if (dm[i].Bpp > 8)
 			{
 				screenModes->InsertRow();
@@ -106,12 +105,13 @@ int ListScreenModes(const CKBehaviorContext &behcontext)
 				++j;
 			}
 
-			for (k = i + 1; dm[k].Width == dm[i].Width && dm[k].Height == dm[i].Height && dm[k].Bpp == dm[i].Bpp; ++k);
+			for (k = i + 1; dm[k].Width == dm[i].Width && dm[k].Height == dm[i].Height && dm[k].Bpp == dm[i].Bpp; ++k)
+				continue;
 			i = k;
 		}
 	}
 
-	CTTInterfaceManager* man = CTTInterfaceManager::GetManager(context);
+	CTTInterfaceManager *man = CTTInterfaceManager::GetManager(context);
 	if (!man)
 	{
 		TT_ERROR("ListScreenModes.cpp", "int ListScreenModes(...)", " im == NULL");
