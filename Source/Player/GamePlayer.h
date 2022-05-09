@@ -34,7 +34,7 @@ public:
     virtual void OnMouseClick();
     virtual int OnKeyDown(UINT uKey);
     virtual int OnSysKeyDown(UINT uKey);
-    virtual LRESULT OnActivateApp(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+    virtual void OnActivateApp(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
     virtual LRESULT OnScreenModeChanged(WPARAM wParam, LPARAM lParam);
     virtual void OnCommand(UINT id, UINT code);
 
@@ -50,7 +50,8 @@ public:
     void Done();
     bool LoadCMO(const char *filename);
 
-    bool IsInitialized() const {
+    bool IsInitialized() const
+    {
         return m_State == eInitialized;
     }
 
@@ -63,7 +64,7 @@ private:
     bool ReInitEngine();
     bool LoadEngineDLL();
     bool LoadStdDLL();
-    
+
     bool RegisterGameInfoToInterfaceManager();
 
     int m_State;
@@ -81,6 +82,7 @@ private:
     CGameStack m_Stack;
     CGame m_Game;
     bool m_IsRookie;
+    bool m_TaskSwitchEnabled;
 };
 
 #endif /* PLAYER_GAMEPLAYER_H */

@@ -10,7 +10,7 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#define WIN32_LEAN_AND_MEAN		// Exclude rarely-used stuff from Windows headers
+#define WIN32_LEAN_AND_MEAN // Exclude rarely-used stuff from Windows headers
 
 #include <windows.h>
 
@@ -18,8 +18,6 @@
 
 #include "CKAll.h"
 
-#define DEFAULT_WIDTH 640
-#define DEFAULT_HEIGHT 480
-#define DEFAULT_BPP 16
+#include "config.h"
 
 #endif // PLAYER_STDAFX_H

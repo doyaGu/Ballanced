@@ -55,15 +55,6 @@ bool CGame::Load()
         return false;
     }
 
-    if (m_NeMoContext->GetMadeWithSprite())
-    {
-        m_NeMoContext->DestroyMadeWithSprite();
-    }
-    if (m_NeMoContext->GetFrameRateSprite())
-    {
-        m_NeMoContext->DestroyFrameRateSprite();
-    }
-
     strcpy(m_FileName, m_GameInfo->fileName);
     sprintf(m_ProgPath, "%s%s\\", m_NeMoContext->GetProgPath(), m_GameInfo->path);
     sprintf(cmoPath, "%s%s", m_ProgPath, m_GameInfo->fileName);
@@ -75,8 +66,11 @@ bool CGame::Load()
     }
     fclose(fp);
 
+    m_NeMoContext->Cleanup();
+
     m_NeMoContext->CreateInterfaceSprite();
-    m_NeMoContext->SetStartTime(::GetTickCount() + 3000);
+    m_NeMoContext->AdjustFrameRateSpritePosition();
+    m_NeMoContext->SetTimeToHideSprite(::GetTickCount() + 3000);
 
     memset(&m_CKFileInfo, 0, sizeof(CKFileInfo));
     if (m_NeMoContext->GetFileInfo(cmoPath, &m_CKFileInfo) == CK_OK)
@@ -108,19 +102,16 @@ bool CGame::Load()
             strcat(text, "Creation \n (Evaluation version)");
             break;
         default:
-            m_NeMoContext->SetStartTime(0);
+            m_NeMoContext->SetTimeToHideSprite(0);
             break;
         }
 
-        if (m_NeMoContext->GetStartTime() > 0)
+        if (m_NeMoContext->GetTimeToHideSprite() > 0)
         {
             m_NeMoContext->SetMadeWithSpriteText(text);
             m_NeMoContext->ShowMadeWithSprite();
         }
     }
-
-    m_NeMoContext->AdjustFrameRateSpritePosition();
-    m_NeMoContext->ShowFrameRateSprite();
 
     if (m_NeMoContext->Render(CK_RENDER_BACKGROUNDSPRITES) != CK_OK)
     {
@@ -154,6 +145,7 @@ bool CGame::Load()
         return false;
     }
 
+    // Loads the file and fills the array with loaded objects
     if (m_NeMoContext->LoadFile(cmoPath, array) != CK_OK)
     {
         TT_ERROR("Game.cpp", "Load", "LoadFile() Failed");
@@ -178,10 +170,11 @@ bool CGame::Load()
     level->AddRenderContext(renderContext, TRUE);
     array->Clear();
 
-    CK_ID *cameras = m_NeMoContext->GetObjectsListByClassID(CKCID_CAMERA);
-    if (cameras || (cameras = m_NeMoContext->GetObjectsListByClassID(CKCID_TARGETCAMERA)))
+    // Take the first camera we found and attach the viewpoint to it
+    CK_ID *cameraIds = m_NeMoContext->GetObjectsListByClassID(CKCID_CAMERA);
+    if (cameraIds || (cameraIds = m_NeMoContext->GetObjectsListByClassID(CKCID_TARGETCAMERA)))
     {
-        CKCamera *camera = (CKCamera *)m_NeMoContext->GetObject(cameras[0]);
+        CKCamera *camera = (CKCamera *)m_NeMoContext->GetObject(cameraIds[0]);
         if (camera)
         {
             renderContext->AttachViewpointToCamera(camera);
@@ -194,18 +187,19 @@ bool CGame::Load()
     renderContext->SetClearBackground();
     renderContext->Clear();
 
+    // Hide curves ?
     int curveCount = m_NeMoContext->GetObjectsCountByClassID(CKCID_CURVE);
-    CK_ID *curve_ids = m_NeMoContext->GetObjectsListByClassID(CKCID_CURVE);
+    CK_ID *curveIds = m_NeMoContext->GetObjectsListByClassID(CKCID_CURVE);
     for (i = 0; i < curveCount; ++i)
     {
-        CKMesh *mesh = ((CKCurve *)m_NeMoContext->GetObject(curve_ids[i]))->GetCurrentMesh();
+        CKMesh *mesh = ((CKCurve *)m_NeMoContext->GetObject(curveIds[i]))->GetCurrentMesh();
         if (mesh)
         {
             mesh->Show(CKHIDE);
         }
     }
 
-    // launch the default scene
+    // Sets the initial conditions for the level
     level->LaunchScene(NULL);
 
     for (i = 0; i < sceneCount; ++i)
