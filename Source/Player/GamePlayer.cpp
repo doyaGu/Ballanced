@@ -29,6 +29,7 @@ struct PlayerOptions
     int driver;
     bool fullscreen;
     bool taskSwitchEnabled;
+    bool pauseOnTaskSwitch;
 };
 
 static inline bool IsNoSettingsInIni()
@@ -125,7 +126,7 @@ static bool ParseCommandLine(PlayerOptions &options)
     }
 
     int ch;
-    while ((ch = getopt(argc, argv, "f::d::w::h::b::v::")) != -1)
+    while ((ch = getopt(argc, argv, "f::d::p::w::h::b::v::")) != -1)
     {
         switch (ch)
         {
@@ -136,6 +137,8 @@ static bool ParseCommandLine(PlayerOptions &options)
         case 'd':
             options.taskSwitchEnabled = false;
             break;
+        case 'p':
+            options.pauseOnTaskSwitch = true;
         case 'w':
             if (optarg)
             {
@@ -432,7 +435,8 @@ CGamePlayer::CGamePlayer(CGameInfo *gameInfo, int n, bool defaultSetting, HANDLE
       m_Stack(defaultSetting),
       m_Game(),
       m_IsRookie(rookie),
-      m_TaskSwitchEnabled(true)
+      m_TaskSwitchEnabled(true),
+      m_PauseOnTaskSwitch(false)
 {
     memset(m_RenderPath, 0, sizeof(m_RenderPath));
     memset(m_PluginPath, 0, sizeof(m_PluginPath));
@@ -602,7 +606,10 @@ void CGamePlayer::OnActivateApp(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
                 wasPlaying = m_NeMoContext.IsPlaying();
             }
 
-            m_NeMoContext.Pause();
+            if (m_PauseOnTaskSwitch)
+            {
+                m_NeMoContext.Pause();
+            }
 
             if (m_NeMoContext.GetRenderContext() && m_NeMoContext.IsRenderFullScreen())
             {

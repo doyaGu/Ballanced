@@ -83,6 +83,7 @@ private:
     CGame m_Game;
     bool m_IsRookie;
     bool m_TaskSwitchEnabled;
+    bool m_PauseOnTaskSwitch;
 };
 
 #endif /* PLAYER_GAMEPLAYER_H */
