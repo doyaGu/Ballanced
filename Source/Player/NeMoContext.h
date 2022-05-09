@@ -15,10 +15,12 @@ public:
     virtual void SetFrameRateSpriteText(CKSTRING text);
     virtual void SetMadeWithSpriteText(CKSTRING text);
     virtual void AdjustFrameRateSpritePosition();
-    virtual void SetStartTime(int time);
-    virtual void SetCleared(bool clear);
-    virtual int GetStartTime() const;
-    virtual bool IsCleared() const;
+    virtual void SetTimeToHideSprite(int time);
+    virtual void ShowFrameRate(bool show);
+    virtual void ShowMadeWith(bool show);
+    virtual int GetTimeToHideSprite() const;
+    virtual bool IsShowingFrameRate() const;
+    virtual bool IsShowingMadeWith() const;
     virtual void SetDriverIndex(int idx);
     virtual bool ApplyScreenMode(int idx);
     virtual void SetFullscreen(bool fullscreen);
@@ -57,8 +59,8 @@ public:
     virtual void Cleanup();
     virtual void Shutdown();
     virtual void GoFullscreen();
-    virtual void Process();
-    virtual void Update(int state);
+    virtual CKERROR Process();
+    virtual void Update();
     virtual void SwitchFullscreen();
     virtual bool RestoreWindow();
     virtual bool Init();
@@ -138,7 +140,7 @@ private:
     CKSpriteText *m_FrameRateSprite;
     CKSpriteText *m_MadeWithSprite;
     CWinContext *m_WinContext;
-    CKSTRING m_RenderEnginePath;
+    CKSTRING m_RenderEngine;
     int m_Width;
     int m_Height;
     int m_Bpp;
@@ -147,10 +149,11 @@ private:
     bool m_DisplayChanged;
     int m_DriverIndex;
     int m_ScreenModeIndex;
-    DWORD m_StartTime;
+    DWORD m_TimeToHideSprite;
     char m_ProgPath[512];
     int m_MsgClick;
-    bool m_IsCleared;
+    bool m_ShowFrameRate;
+    bool m_ShowMadeWith;
 
     static CNeMoContext *instance;
 };

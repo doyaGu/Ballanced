@@ -31,17 +31,18 @@ CNeMoContext::CNeMoContext()
       m_DisplayChanged(false),
       m_DriverIndex(0),
       m_ScreenModeIndex(-1),
-      m_StartTime(1),
+      m_TimeToHideSprite(1),
       m_MsgClick(0),
-      m_IsCleared(false)
+      m_ShowFrameRate(false),
+      m_ShowMadeWith(false)
 {
-    m_RenderEnginePath = CKStrdup("CK2_3D");
+    m_RenderEngine = CKStrdup("CK2_3D");
     strcpy(m_ProgPath, "");
 }
 
 CNeMoContext::~CNeMoContext()
 {
-    delete[] m_RenderEnginePath;
+    delete[] m_RenderEngine;
 }
 
 void CNeMoContext::SetFrameRateSpritePosition(int x, int y)
@@ -69,24 +70,34 @@ void CNeMoContext::AdjustFrameRateSpritePosition()
     SetFrameRateSpritePosition(m_Width * 0.5 - 60.0, m_Height * 0.5 - 15.0);
 }
 
-void CNeMoContext::SetStartTime(int time)
+void CNeMoContext::SetTimeToHideSprite(int time)
 {
-    m_StartTime = time;
+    m_TimeToHideSprite = time;
 }
 
-void CNeMoContext::SetCleared(bool clear)
+void CNeMoContext::ShowFrameRate(bool show)
 {
-    m_IsCleared = clear;
+    m_ShowFrameRate = show;
 }
 
-int CNeMoContext::GetStartTime() const
+void CNeMoContext::ShowMadeWith(bool show)
 {
-    return m_StartTime;
+    m_ShowMadeWith = show;
 }
 
-bool CNeMoContext::IsCleared() const
+int CNeMoContext::GetTimeToHideSprite() const
 {
-    return m_IsCleared;
+    return m_TimeToHideSprite;
+}
+
+bool CNeMoContext::IsShowingFrameRate() const
+{
+    return m_ShowFrameRate;
+}
+
+bool CNeMoContext::IsShowingMadeWith() const
+{
+    return m_ShowMadeWith;
 }
 
 void CNeMoContext::SetDriverIndex(int idx)
@@ -253,12 +264,7 @@ void CNeMoContext::Play()
 
 void CNeMoContext::MinimizeWindow()
 {
-    if (m_RenderContext &&
-        IsRenderFullScreen() &&
-        !m_RenderContext->IsFullScreen())
-    {
-        m_WinContext->MinimizeWindow();
-    }
+    m_WinContext->MinimizeWindow();
 }
 
 CKERROR CNeMoContext::Reset()
@@ -351,60 +357,57 @@ void CNeMoContext::GoFullscreen()
     }
 }
 
-void CNeMoContext::Process()
+CKERROR CNeMoContext::Process()
 {
-    float timeBeforeRender, timeBeforeProcess;
+    return m_CKContext->Process();
+}
+
+void CNeMoContext::Update()
+{
+    static int frame = 0;
+    static LARGE_INTEGER fps;
+    LARGE_INTEGER freq;
+    LARGE_INTEGER current;
 
     if (IsPlaying())
     {
-        if (IsCleared() && 0 < m_StartTime && m_StartTime < ::GetTickCount())
+        if (IsShowingMadeWith() && ::GetTickCount() > m_TimeToHideSprite)
         {
             HideMadeWithSprite();
-            m_StartTime = 0;
+            m_TimeToHideSprite = 0;
         }
-        timeBeforeRender = 0.0f;
-        timeBeforeProcess = 0.0f;
-        m_TimeManager->GetTimeToWaitForLimits(timeBeforeRender, timeBeforeProcess);
-        if (timeBeforeProcess <= 0)
+
+        float beforeRender = 0.0f;
+        float beforeProcess = 0.0f;
+        m_TimeManager->GetTimeToWaitForLimits(beforeRender, beforeProcess);
+        if (beforeProcess <= 0)
         {
             m_TimeManager->ResetChronos(FALSE, TRUE);
-            m_CKContext->Process();
+            Process();
         }
-        if (timeBeforeRender <= 0)
+        if (beforeRender <= 0)
         {
             m_TimeManager->ResetChronos(TRUE, FALSE);
-            m_RenderContext->Render();
-        }
-    }
-}
+            Render();
 
-void CNeMoContext::Update(int state)
-{
-    switch (state)
-    {
-    case 1:
-        if (IsCleared() && IsReseted())
-        {
-            m_StartTime = ::GetTickCount() + 3000;
-            ShowMadeWithSprite();
-        }
-        Play();
-        break;
-    case 2:
-        Pause();
-        break;
-    default:
-        if (!IsPlaying())
-        {
-            if (IsCleared() && IsReseted())
+            // Calculate FrameRate every 30 frames
+            if (frame == 30)
             {
-                m_StartTime = ::GetTickCount() + 3000;
-                HideMadeWithSprite();
+                frame = 0;
+                QueryPerformanceCounter(&current);
+                QueryPerformanceFrequency(&freq);
+                float rate = 30.0f * (float)freq.LowPart / (float)(current.LowPart - fps.LowPart);
+                if (m_ShowFrameRate)
+                {
+                    char str[32];
+                    sprintf(str, "%.1f fps", rate);
+                    m_FrameRateSprite->SetPosition(Vx2DVector(10.0f, 10.0f));
+                    m_FrameRateSprite->SetText(str);
+                }
+                fps = current;
             }
-            Play();
+            ++frame;
         }
-        Pause();
-        break;
     }
 }
 
@@ -488,7 +491,7 @@ bool CNeMoContext::Init()
         TT_ERROR("NemoContext.cpp", "Init()", "Found no capable screen mode");
         return false;
     }
-        
+
     if (!CreateRenderContext())
     {
         TT_ERROR("NemoContext.cpp", "Init()", "Create Render Context Failed");
@@ -528,7 +531,6 @@ void CNeMoContext::CreateInterfaceSprite()
         m_RenderContext->AddObject(m_MadeWithSprite);
         m_RenderContext->AddObject(m_FrameRateSprite);
         m_FrameRateSprite->SetPosition(Vx2DVector(0.0f, 0.0f));
-        HideMadeWithSprite();
     }
 }
 
@@ -536,7 +538,7 @@ bool CNeMoContext::CreateRenderContext()
 {
     CKRenderManager *renderManager = m_CKContext->GetRenderManager();
     CKRECT rect = {0, 0, m_Width, m_Height};
-    m_RenderContext = renderManager->CreateRenderContext(m_WinContext->GetRenderWindow(), m_DriverIndex, &rect, m_Fullscreen, m_Bpp, -1, -1, m_RefreshRate);
+    m_RenderContext = renderManager->CreateRenderContext(m_WinContext->GetRenderWindow(), m_DriverIndex, &rect, FALSE, m_Bpp, -1, -1, m_RefreshRate);
     if (!m_RenderContext)
     {
         return false;
@@ -591,7 +593,7 @@ bool CNeMoContext::CreateRenderContext()
 
 int CNeMoContext::GetRenderEnginePluginIdx()
 {
-    if (!m_RenderEnginePath)
+    if (!m_RenderEngine)
     {
         return -1;
     }
@@ -619,7 +621,7 @@ int CNeMoContext::GetRenderEnginePluginIdx()
         }
 
         _splitpath(dllname, NULL, NULL, filename, NULL);
-        if (!_strnicmp(m_RenderEnginePath, filename, strlen(filename)))
+        if (!_strnicmp(m_RenderEngine, filename, strlen(filename)))
         {
             return i;
         }
@@ -853,6 +855,7 @@ bool CNeMoContext::ChangeScreenMode(int driver, int screenMode)
     {
         GoFullscreen();
     }
+
     ::Sleep(10);
     ::SetFocus(m_WinContext->GetMainWindow());
 
@@ -880,7 +883,9 @@ void CNeMoContext::Refresh()
     if (m_RenderContext)
     {
         m_RenderContext->Clear();
+        m_RenderContext->SetClearBackground();
         m_RenderContext->BackToFront();
+        m_RenderContext->SetClearBackground();
         m_RenderContext->Clear();
     }
 }

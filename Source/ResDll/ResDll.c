@@ -81,6 +81,7 @@ void loadSettings()
 	char drive[4];
 	char dir[MAX_PATH];
 	char filename[MAX_PATH];
+	BOOL cmdline;
 
 	GetModuleFileNameA(NULL, fullPath, MAX_PATH);
 	_splitpath(fullPath, drive, dir, filename, NULL);
@@ -140,6 +141,12 @@ void loadSettings()
 	{
 		g_ResMap.fullScreenSetting = 0;
 		g_ResMap.fKey |= 2;
+	}
+
+	cmdline = GetPrivateProfileIntA("Settings", "CommandLine", 0, g_ResMap.pathSetting);
+	if (cmdline != 0)
+	{
+		g_ResMap.fKey |= 4;
 	}
 }
 

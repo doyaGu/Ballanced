@@ -95,6 +95,10 @@ SOURCE=.\GameInfo.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\getopt.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\LogProtocol.cpp
 # End Source File
 # End Group
@@ -108,6 +112,10 @@ SOURCE=.\ErrorProtocol.h
 # Begin Source File
 
 SOURCE=.\GameInfo.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\getopt.h
 # End Source File
 # Begin Source File
 

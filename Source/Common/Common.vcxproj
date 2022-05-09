@@ -90,11 +90,13 @@
   <ItemGroup>
     <ClCompile Include="ErrorProtocol.cpp" />
     <ClCompile Include="GameInfo.cpp" />
+    <ClCompile Include="getopt.c" />
     <ClCompile Include="LogProtocol.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ErrorProtocol.h" />
     <ClInclude Include="GameInfo.h" />
+    <ClInclude Include="getopt.h" />
     <ClInclude Include="LogProtocol.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
