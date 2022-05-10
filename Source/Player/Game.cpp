@@ -10,7 +10,9 @@
 #include "ErrorProtocol.h"
 #include "NeMoContext.h"
 
-static CGameData g_GameData[100] = {
+#define MAX_GAMEDATA 100
+
+static CGameData g_GameData[MAX_GAMEDATA] = {
     CGameData("Clock.cmo", "Powerball", "Software\\Terratools\\Powerball\\Data"),
     CGameData("WM.cmo", "WM", "Software\\Terratools\\WorldMap"),
     CGameData("PBC.cmo", "Powerball", "Software\\Terratools\\Powerball\\Data"),
@@ -46,8 +48,8 @@ CGame::~CGame()
 
 bool CGame::Load()
 {
-    char cmoPath[MAX_PATH];
-    char dir[MAX_PATH];
+    char cmoPath[MAX_PATH] = "";
+    char dir[MAX_PATH] = "";
 
     if (!m_GameInfo)
     {
@@ -161,8 +163,8 @@ bool CGame::Load()
     DeleteCKObjectArray(array);
 
     // ReRegister OnClick Message in case it changed
-    m_NeMoContext->AddMessageType("OnClick");
-    m_NeMoContext->AddMessageType("OnDblClick");
+    m_NeMoContext->AddClickMessage();
+    m_NeMoContext->AddDoubleClickMessage();
 
     return true;
 }

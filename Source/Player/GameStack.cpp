@@ -14,14 +14,14 @@ CGameStack::CGameStack(bool enable) : m_Enabled(enable), m_Node(new Node()), m_C
 
 CGameStack::~CGameStack()
 {
-    Node *pCur, *pDel;
-    for (pCur = m_Node->head; pCur != m_Node; --m_Count)
+    Node *node, *ptr;
+    for (node = m_Node->head; node != m_Node; --m_Count)
     {
-        pDel = pCur;
-        pCur = pCur->head;
-        pDel->next->head = pDel->next;
-        pDel->head->next = pDel->next;
-        delete pDel;
+        ptr = node;
+        node = node->head;
+        ptr->next->head = ptr->next;
+        ptr->head->next = ptr->next;
+        delete ptr;
     }
     delete m_Node;
     m_Node = NULL;
@@ -30,43 +30,40 @@ CGameStack::~CGameStack()
 
 void CGameStack::Push(CGameInfo *gameInfo)
 {
-    Node *pNode;
-    Node *pHead;
-    Node *pNodeAfterHead;
-    Node *pNew;
-    Node *pHeadForNew;
-    Node *pNextForNew;
-    CGameInfo **ppGameInfo = NULL;
+    Node *node;
+    Node *head;
+    Node *first;
+    Node *newNode;
+    Node *newHead;
+    Node *nweNext;
 
-    pNode = m_Node;
-    pHead = pNode->head;
-    pNodeAfterHead = pNode->head->next;
-    pNew = new Node();
-    pHeadForNew = pHead;
-    if (!pHead)
+    node = m_Node;
+    head = node->head;
+    first = node->head->next;
+    newNode = new Node();
+    newHead = head;
+    if (!head)
     {
-        pHeadForNew = pNew;
+        newHead = newNode;
     }
-    pNew->head = pHeadForNew;
-    pNextForNew = pNodeAfterHead;
-    if (!pNodeAfterHead)
+    newNode->head = newHead;
+    nweNext = first;
+    if (!first)
     {
-        pNextForNew = pNew;
+        nweNext = newNode;
     }
-    pNew->next = pNextForNew;
-    pHead->next = pNew;
-    pNew->next->head = pNew;
-    ppGameInfo = &pNew->gameInfo;
-    if (ppGameInfo)
-        *ppGameInfo = gameInfo;
+    newNode->next = nweNext;
+    head->next = newNode;
+    newNode->next->head = newNode;
+    newNode->gameInfo = gameInfo;
     ++m_Count;
 }
 
 CGameInfo *CGameStack::RemoveHead()
 {
-    Node *pNode;
-    Node *pHead;
-    Node *pCur;
+    Node *node;
+    Node *head;
+    Node *ptr;
     CGameInfo *gameInfo = NULL;
 
     if (m_Count == 0)
@@ -75,23 +72,23 @@ CGameInfo *CGameStack::RemoveHead()
         return NULL;
     }
 
-    pNode = m_Node;
-    pHead = pNode->head;
-    gameInfo = pNode->head->gameInfo;
-    while (pHead != pNode)
+    node = m_Node;
+    head = node->head;
+    gameInfo = node->head->gameInfo;
+    while (head != node)
     {
-        if (pHead->gameInfo == gameInfo)
+        if (head->gameInfo == gameInfo)
         {
-            pCur = pHead;
-            pHead = pHead->head;
-            pCur->next->head = pCur->head;
-            pCur->head->next = pCur->next;
-            delete pCur;
+            ptr = head;
+            head = head->head;
+            ptr->next->head = ptr->head;
+            ptr->head->next = ptr->next;
+            delete ptr;
             --m_Count;
         }
         else
         {
-            pHead = pHead->head;
+            head = head->head;
         }
     }
     return gameInfo;
@@ -110,20 +107,20 @@ void CGameStack::ClearAll()
 
 CGameInfo *CGameStack::GetGameInfo(const char *path)
 {
-    Node *pNode;
-    Node *pHead;
+    Node *node;
+    Node *head;
     CGameInfo *gameInfo;
 
-    pNode = m_Node;
-    pHead = pNode->head;
-    if (pNode->head == pNode)
+    node = m_Node;
+    head = node->head;
+    if (node->head == node)
     {
         return NULL;
     }
 
     while (true)
     {
-        gameInfo = pHead->gameInfo;
+        gameInfo = head->gameInfo;
         if (gameInfo)
         {
             if (!strcmp(gameInfo->fileName, path))
@@ -131,12 +128,12 @@ CGameInfo *CGameStack::GetGameInfo(const char *path)
                 break;
             }
         }
-        pHead = pHead->head;
-        if (pHead == pNode)
+        head = head->head;
+        if (head == node)
         {
             return NULL;
         }
     }
 
-    return pHead->gameInfo;
+    return head->gameInfo;
 }

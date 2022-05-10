@@ -92,7 +92,7 @@ CSplash::CSplash() : m_Data(NULL), m_hWnd(NULL), m_hInstance(NULL) {}
 
 CSplash::CSplash(HINSTANCE hInstance) : m_hInstance(hInstance) {}
 
-CSplash::~CSplash() 
+CSplash::~CSplash()
 {
     if (m_Data)
     {
@@ -102,10 +102,10 @@ CSplash::~CSplash()
 
 void CSplash::Show()
 {
-    char drive[20];
-    char filename[1024];
-    char buffer[1024];
-    char dir[1024];
+    char drive[20] = "";
+    char filename[1024] = "";
+    char buffer[1024] = "";
+    char dir[1024] = "";
     WNDCLASSA wndclass;
 
     m_Data = NULL;

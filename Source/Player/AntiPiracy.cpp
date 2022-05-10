@@ -9,11 +9,11 @@ extern RESOURCEMAP g_ResMap;
 
 static inline bool IsCDInserted(const char *path, const char *name)
 {
-    char achVolume[216];
+    char achVolume[216] = "";
     DWORD dwVolumeSN;
     DWORD dwMaxComponentLength;
     DWORD fFileSystem;
-    char achFileSystem[216];
+    char achFileSystem[216] = "";
 
 	return ::GetVolumeInformationA(
                path,
@@ -30,10 +30,10 @@ static inline bool IsCDInserted(const char *path, const char *name)
 
 bool AntiPiracyCheck()
 {
-    char achGameName[216];
+    char achGameName[216] = "";
     HKEY hkResult;
     DWORD dwType, cbData;
-    char achDrivePath[216];
+    char achDrivePath[216] = "";
     DWORD dwDrives;
     char drive;
 
