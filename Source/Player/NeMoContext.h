@@ -18,8 +18,6 @@ public:
     void SetProgPath(const char *path);
     void SetMsgClick(int msg);
     void SetRenderContext(CKRenderContext *renderContext);
-    void SetFrameRateSprite(CKSpriteText *sprite);
-    void SetMadeWithSprite(CKSpriteText *sprite);
     void SetWinContext(CWinContext *winContext);
     void SetResolution(int width, int height);
     void SetWidth(int width);
@@ -66,8 +64,6 @@ public:
                    int height);
 
     CKRenderContext *GetRenderContext() const;
-    CKSpriteText *GetFrameRateSprite() const;
-    CKSpriteText *GetMadeWithSprite() const;
     bool IsReseted() const;
     CKERROR GetFileInfo(CKSTRING filename, CKFileInfo *fileinfo);
     void AddSoundPath(const char *path);
