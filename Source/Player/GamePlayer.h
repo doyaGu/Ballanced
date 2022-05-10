@@ -21,27 +21,26 @@ public:
 
     CGamePlayer(CGameInfo *gameInfo, int n, bool defaultSetting, HANDLE hMutex, bool rookie);
 
-    virtual void OnExitToTitle(WPARAM wParam, LPARAM lParam);
-    virtual void OnExitToSystem(WPARAM wParam, LPARAM lParam);
-    virtual bool OnLoadCMO(WPARAM wParam, LPARAM lParam);
-    virtual void OnExceptionCMO(WPARAM wParam, LPARAM lParam);
-    virtual void OnReturn(WPARAM wParam, LPARAM lParam);
-    virtual void OnSized();
-    virtual void OnClose();
-    virtual void OnPaint();
-    virtual void OnSetCursor();
-    virtual void OnMouseDoubleClick();
-    virtual void OnMouseClick();
-    virtual int OnKeyDown(UINT uKey);
-    virtual int OnSysKeyDown(UINT uKey);
-    virtual void OnActivateApp(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-    virtual LRESULT OnScreenModeChanged(WPARAM wParam, LPARAM lParam);
-    virtual void OnCommand(UINT id, UINT code);
-
-    virtual ~CGamePlayer();
-    virtual void Run();
-    virtual bool Step();
-    virtual LRESULT WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+    void OnExitToTitle(WPARAM wParam, LPARAM lParam);
+    void OnExitToSystem(WPARAM wParam, LPARAM lParam);
+    bool OnLoadCMO(WPARAM wParam, LPARAM lParam);
+    void OnExceptionCMO(WPARAM wParam, LPARAM lParam);
+    void OnReturn(WPARAM wParam, LPARAM lParam);
+    void OnSized();
+    void OnClose();
+    void OnPaint();
+    void OnSetCursor();
+    void OnMouseDoubleClick();
+    void OnMouseClick();
+    int OnKeyDown(UINT uKey);
+    int OnSysKeyDown(UINT uKey);
+    void OnActivateApp(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+    LRESULT OnScreenModeChanged(WPARAM wParam, LPARAM lParam);
+    void OnCommand(UINT id, UINT code);
+    ~CGamePlayer();
+    void Run();
+    bool Step();
+    LRESULT WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
     void Init(HINSTANCE hInstance, LPFNWNDPROC lpfnWndProc);
     void Play();

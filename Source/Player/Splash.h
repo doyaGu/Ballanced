@@ -6,7 +6,7 @@ class CSplash
 public:
     CSplash();
     CSplash(HINSTANCE hInstance);
-    virtual ~CSplash();
+    ~CSplash();
 
     void Show();
     bool LoadBMP(LPCSTR lpFileName);

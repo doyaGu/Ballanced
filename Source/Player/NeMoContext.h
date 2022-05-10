@@ -8,78 +8,78 @@ class CNeMoContext
 {
 public:
     CNeMoContext();
-    virtual ~CNeMoContext();
+    ~CNeMoContext();
 
-    virtual void SetFrameRateSpritePosition(int x, int y);
-    virtual void SetMadeWithSpritePosition(int x, int y);
-    virtual void SetFrameRateSpriteText(CKSTRING text);
-    virtual void SetMadeWithSpriteText(CKSTRING text);
-    virtual void AdjustFrameRateSpritePosition();
-    virtual void SetTimeToHideSprite(int time);
-    virtual void ShowFrameRate(bool show);
-    virtual void ShowMadeWith(bool show);
-    virtual int GetTimeToHideSprite() const;
-    virtual bool IsShowingFrameRate() const;
-    virtual bool IsShowingMadeWith() const;
-    virtual void SetDriverIndex(int idx);
-    virtual bool ApplyScreenMode(int idx);
-    virtual void SetFullscreen(bool fullscreen);
-    virtual void SetBPP(int bpp);
-    virtual void SetRefreshRate(int fps);
-    virtual void SetProgPath(const char *path);
-    virtual void SetMsgClick(int msg);
-    virtual void SetRenderContext(CKRenderContext *renderContext);
-    virtual void SetFrameRateSprite(CKSpriteText *sprite);
-    virtual void SetMadeWithSprite(CKSpriteText *sprite);
-    virtual void SetWinContext(CWinContext *winContext);
-    virtual void SetResolution(int width, int height);
-    virtual void SetWidth(int width);
-    virtual void SetHeight(int height);
-    virtual int GetDriverIndex() const;
-    virtual int GetScreenModeIndex() const;
-    virtual bool IsFullscreen() const;
-    virtual void GetResolution(int &width, int &height);
-    virtual int GetWidth() const;
-    virtual int GetHeight() const;
-    virtual int GetBPP() const;
-    virtual int GetRefreshRate() const;
-    virtual char *GetProgPath() const;
-    virtual int GetMsgClick() const;
-    virtual bool IsRenderFullScreen() const;
-    virtual bool DoStartUp();
-    virtual void Pause();
-    virtual void Play();
-    virtual void MinimizeWindow();
-    virtual CKERROR Reset();
-    virtual CKERROR Render(CK_RENDER_FLAGS flags = CK_RENDER_USECURRENTSETTINGS);
-    virtual void HideFrameRateSprite();
-    virtual void ShowFrameRateSprite();
-    virtual void HideMadeWithSprite();
-    virtual void ShowMadeWithSprite();
-    virtual void Cleanup();
-    virtual void Shutdown();
-    virtual void GoFullscreen();
-    virtual CKERROR Process();
-    virtual void Update();
-    virtual void SwitchFullscreen();
-    virtual bool RestoreWindow();
-    virtual bool Init();
-    virtual void CreateInterfaceSprite();
-    virtual bool CreateRenderContext();
-    virtual int GetRenderEnginePluginIdx();
-    virtual bool FindScreenMode();
-    virtual bool ReInit();
-    virtual void SetScreen(CWinContext *wincontext,
-                           bool fullscreen,
-                           int driver,
-                           int bpp,
-                           int width,
-                           int height);
-    virtual void SetWindow(CWinContext *wincontext,
-                           bool fullscreen,
-                           int bpp,
-                           int width,
-                           int height);
+    void SetFrameRateSpritePosition(int x, int y);
+    void SetMadeWithSpritePosition(int x, int y);
+    void SetFrameRateSpriteText(CKSTRING text);
+    void SetMadeWithSpriteText(CKSTRING text);
+    void AdjustFrameRateSpritePosition();
+    void SetTimeToHideSprite(int time);
+    void ShowFrameRate(bool show);
+    void ShowMadeWith(bool show);
+    int GetTimeToHideSprite() const;
+    bool IsShowingFrameRate() const;
+    bool IsShowingMadeWith() const;
+    void SetDriverIndex(int idx);
+    bool ApplyScreenMode(int idx);
+    void SetFullscreen(bool fullscreen);
+    void SetBPP(int bpp);
+    void SetRefreshRate(int fps);
+    void SetProgPath(const char *path);
+    void SetMsgClick(int msg);
+    void SetRenderContext(CKRenderContext *renderContext);
+    void SetFrameRateSprite(CKSpriteText *sprite);
+    void SetMadeWithSprite(CKSpriteText *sprite);
+    void SetWinContext(CWinContext *winContext);
+    void SetResolution(int width, int height);
+    void SetWidth(int width);
+    void SetHeight(int height);
+    int GetDriverIndex() const;
+    int GetScreenModeIndex() const;
+    bool IsFullscreen() const;
+    void GetResolution(int &width, int &height);
+    int GetWidth() const;
+    int GetHeight() const;
+    int GetBPP() const;
+    int GetRefreshRate() const;
+    char *GetProgPath() const;
+    int GetMsgClick() const;
+    bool IsRenderFullScreen() const;
+    bool DoStartUp();
+    void Pause();
+    void Play();
+    void MinimizeWindow();
+    CKERROR Reset();
+    CKERROR Render(CK_RENDER_FLAGS flags = CK_RENDER_USECURRENTSETTINGS);
+    void HideFrameRateSprite();
+    void ShowFrameRateSprite();
+    void HideMadeWithSprite();
+    void ShowMadeWithSprite();
+    void Cleanup();
+    void Shutdown();
+    void GoFullscreen();
+    CKERROR Process();
+    void Update();
+    void SwitchFullscreen();
+    bool RestoreWindow();
+    bool Init();
+    void CreateInterfaceSprite();
+    bool CreateRenderContext();
+    int GetRenderEnginePluginIdx();
+    bool FindScreenMode();
+    bool ReInit();
+    void SetScreen(CWinContext *wincontext,
+                   bool fullscreen,
+                   int driver,
+                   int bpp,
+                   int width,
+                   int height);
+    void SetWindow(CWinContext *wincontext,
+                   bool fullscreen,
+                   int bpp,
+                   int width,
+                   int height);
 
     CKRenderContext *GetRenderContext() const;
     CKSpriteText *GetFrameRateSprite() const;
