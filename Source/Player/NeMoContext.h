@@ -1,6 +1,8 @@
 #ifndef PLAYER_NEMOCONTEXT_H
 #define PLAYER_NEMOCONTEXT_H
 
+#include <string.h>
+
 class CWinContext;
 class CTTInterfaceManager;
 
@@ -10,89 +12,218 @@ public:
     CNeMoContext();
     ~CNeMoContext();
 
-    void SetDriverIndex(int idx);
-    bool ApplyScreenMode(int idx);
-    void SetFullscreen(bool fullscreen);
-    void SetBPP(int bpp);
-    void SetRefreshRate(int fps);
-    void SetProgPath(const char *path);
-    void SetMsgClick(int msg);
-    void SetRenderContext(CKRenderContext *renderContext);
-    void SetWinContext(CWinContext *winContext);
-    void SetResolution(int width, int height);
-    void SetWidth(int width);
-    void SetHeight(int height);
-    int GetDriverIndex() const;
-    int GetScreenModeIndex() const;
-    bool IsFullscreen() const;
-    void GetResolution(int &width, int &height);
-    int GetWidth() const;
-    int GetHeight() const;
-    int GetBPP() const;
-    int GetRefreshRate() const;
-    char *GetProgPath() const;
-    int GetMsgClick() const;
-    bool IsRenderFullScreen() const;
-    bool DoStartUp();
-    void Pause();
-    void Play();
-    void MinimizeWindow();
-    CKERROR Reset();
-    CKERROR Render(CK_RENDER_FLAGS flags = CK_RENDER_USECURRENTSETTINGS);
-    void Cleanup();
-    void Shutdown();
-    void GoFullscreen();
-    CKERROR Process();
-    void Update();
-    void SwitchFullscreen();
-    bool RestoreWindow();
     bool Init();
-    bool CreateRenderContext();
-    int GetRenderEnginePluginIdx();
-    bool FindScreenMode();
     bool ReInit();
+
+    bool StartUp();
+    void Shutdown();
+
+    void Play();
+    void Pause();
+    void Reset();
+    void Cleanup();
+    bool IsPlaying() const;
+
+    void Update();
+    CKERROR Process();
+    CKERROR Render(CK_RENDER_FLAGS flags = CK_RENDER_USECURRENTSETTINGS);
+    void Refresh();
+
     void SetScreen(CWinContext *wincontext,
                    bool fullscreen,
                    int driver,
                    int bpp,
                    int width,
-                   int height);
+                   int height)
+    {
+        m_WinContext = wincontext;
+        m_Fullscreen = fullscreen;
+        m_Bpp = bpp;
+        m_Width = width;
+        m_Height = height;
+        m_ScreenModeIndex = driver;
+    }
+
     void SetWindow(CWinContext *wincontext,
                    bool fullscreen,
                    int bpp,
                    int width,
-                   int height);
+                   int height)
+    {
+        m_WinContext = wincontext;
+        m_Fullscreen = fullscreen;
+        m_Bpp = bpp;
+        m_Width = width;
+        m_Height = height;
+    }
 
-    CKRenderContext *GetRenderContext() const;
-    bool IsReseted() const;
-    CKERROR GetFileInfo(CKSTRING filename, CKFileInfo *fileinfo);
+    void SetResolution(int width, int height)
+    {
+        m_Width = width;
+        m_Height = height;
+    }
+
+    void GetResolution(int &width, int &height)
+    {
+        width = m_Width;
+        height = m_Height;
+    }
+
+    void SetWidth(int width)
+    {
+        m_Width = width;
+    }
+
+    int GetWidth() const
+    {
+        return m_Width;
+    }
+
+    void SetHeight(int height)
+    {
+        m_Height = height;
+    }
+
+    int GetHeight() const
+    {
+        return m_Height;
+    }
+
+    void SetBPP(int bpp)
+    {
+        m_Bpp = bpp;
+    }
+
+    int GetBPP() const
+    {
+        return m_Bpp;
+    }
+
+    void SetRefreshRate(int fps)
+    {
+        m_RefreshRate = fps;
+    }
+
+    int GetRefreshRate() const
+    {
+        return m_RefreshRate;
+    }
+
+    void SetDriverIndex(int idx)
+    {
+        m_DriverIndex = idx;
+    }
+    
+    int GetDriverIndex() const
+    {
+        return m_DriverIndex;
+    }
+
+    bool FindScreenMode();
+    bool ApplyScreenMode(int idx);
+    bool ChangeScreenMode(int driver, int screenMode);
+    int GetScreenMode() const
+    {
+        return m_ScreenModeIndex;
+    }
+
+    void GoFullscreen();
+    void SwitchFullscreen();
+    bool IsRenderFullscreen() const;
+    void SetFullscreen(bool fullscreen)
+    {
+        m_Fullscreen = fullscreen;
+    }
+    bool IsFullscreen() const
+    {
+        return m_Fullscreen;
+    }
+
+    void ResizeWindow();
+    bool RestoreWindow();
+    void MinimizeWindow();
+
+    void SetRenderContext(CKRenderContext *renderContext)
+    {
+        m_RenderContext = renderContext;
+    }
+
+    void SetWinContext(CWinContext *winContext)
+    {
+        m_WinContext = winContext;
+    }
+
+    CKContext *GetCKContext()
+    {
+        return m_CKContext;
+    }
+
+    CKRenderContext *GetRenderContext() const
+    {
+        return m_RenderContext;
+    }
+
+    CKRenderManager *GetRenderManager()
+    {
+        return m_RenderManager;
+    }
+
+    bool CreateRenderContext();
+    int GetRenderEnginePluginIdx();
+    bool ParsePlugins(CKSTRING dir);
+
     void AddSoundPath(const char *path);
     void AddBitmapPath(const char *path);
     void AddDataPath(const char *path);
-    CKERROR CNeMoContext::LoadFile(
+
+    void SetProgPath(const char *path)
+    {
+        if (path)
+        {
+            strcpy(m_ProgPath, path);
+        }
+    }
+
+    char *GetProgPath() const
+    {
+        return (char *)m_ProgPath;
+    }
+
+    CKERROR GetFileInfo(CKSTRING filename, CKFileInfo *fileinfo);
+    CKERROR LoadFile(
         char *filename,
         CKObjectArray *liste,
         CK_LOAD_FLAGS loadFlags = CK_LOAD_DEFAULT,
         CKGUID *readerGuid = (CKGUID *)0);
-    CKLevel *GetCurrentLevel();
-    CK_ID *GetObjectsListByClassID(CK_CLASSID cid);
+
     CKObject *GetObject(CK_ID objID);
-    CKRenderManager *GetRenderManager();
+    CK_ID *GetObjectsListByClassID(CK_CLASSID cid);
     int GetObjectsCountByClassID(CK_CLASSID cid);
+
     CKMessageType AddMessageType(CKSTRING msg);
-    bool ParsePlugins(CKSTRING dir);
-    CTTInterfaceManager *GetInterfaceManager();
     CKMessage *SendMessageSingle(
         int msg,
         CKBeObject *dest,
         CKBeObject *sender = NULL);
-    bool IsPlaying() const;
-    bool ChangeScreenMode(int driver, int screenMode);
-    bool BroadcastCloseMessage();
+
+    void AddClickMessage();
+    void AddDoubleClickMessage();
+    int GetClickMessage() const
+    {
+        return m_MsgClick;
+    }
+
+    int GetDoubleClickMessage() const
+    {
+        return m_MsgDoubleClick;
+    }
+
     void AddCloseMessage();
-    CKContext *GetCKContext();
-    void Refresh();
-    void ResizeWindow();
+    bool BroadcastCloseMessage();
+
+    CKLevel *GetCurrentLevel();
+
+    CTTInterfaceManager *GetInterfaceManager();
 
     static CNeMoContext *GetInstance()
     {
@@ -108,7 +239,6 @@ private:
     CNeMoContext(const CNeMoContext &);
     CNeMoContext &operator=(const CNeMoContext &);
 
-    CKMessageType m_MsgWindowClose;
     CKContext *m_CKContext;
     CKRenderManager *m_RenderManager;
     CKTimeManager *m_TimeManager;
@@ -126,7 +256,9 @@ private:
     int m_DriverIndex;
     int m_ScreenModeIndex;
     char m_ProgPath[512];
-    int m_MsgClick;
+    CKMessageType m_MsgClick;
+    CKMessageType m_MsgDoubleClick;
+    CKMessageType m_MsgWindowClose;
 
     static CNeMoContext *instance;
 };

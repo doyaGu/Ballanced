@@ -20,39 +20,43 @@ public:
     };
 
     CGamePlayer(CGameInfo *gameInfo, int n, bool defaultSetting, HANDLE hMutex, bool rookie);
-
-    void OnExitToTitle(WPARAM wParam, LPARAM lParam);
-    void OnExitToSystem(WPARAM wParam, LPARAM lParam);
-    bool OnLoadCMO(WPARAM wParam, LPARAM lParam);
-    void OnExceptionCMO(WPARAM wParam, LPARAM lParam);
-    void OnReturn(WPARAM wParam, LPARAM lParam);
-    void OnSized();
-    void OnClose();
-    void OnPaint();
-    void OnSetCursor();
-    void OnMouseDoubleClick();
-    void OnMouseClick();
-    int OnKeyDown(UINT uKey);
-    int OnSysKeyDown(UINT uKey);
-    void OnActivateApp(WPARAM wParam, LPARAM lParam);
-    LRESULT OnScreenModeChanged(WPARAM wParam, LPARAM lParam);
-    void OnCommand(UINT id, UINT code);
     ~CGamePlayer();
-    void Run();
-    bool Step();
-    LRESULT WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
     void Init(HINSTANCE hInstance, LPFNWNDPROC lpfnWndProc);
-    void Play();
-    void Pause();
-    void Reset();
+    void Run();
+    bool Step();
     void Done();
     bool LoadCMO(const char *filename);
-
     bool IsInitialized() const
     {
         return m_State == eInitialized;
     }
+
+    void Play();
+    void Pause();
+    void Reset();
+
+    void OnDestroy();
+    void OnSized();
+    void OnPaint();
+    void OnClose();
+    void OnActivateApp(WPARAM wParam, LPARAM lParam);
+    void OnSetCursor();
+    void OnGetMinMaxInfo(LPMINMAXINFO lpmmi);
+    int OnKeyDown(UINT uKey);
+    int OnSysKeyDown(UINT uKey);
+    void OnCommand(UINT id, UINT code);
+    void OnMouseClick(UINT uMsg);
+    void OnExceptionCMO(WPARAM wParam, LPARAM lParam);
+    void OnReturn(WPARAM wParam, LPARAM lParam);
+    bool OnLoadCMO(WPARAM wParam, LPARAM lParam);
+    void OnExitToSystem(WPARAM wParam, LPARAM lParam);
+    void OnExitToTitle(WPARAM wParam, LPARAM lParam);
+    void OnScreenModeChanged(WPARAM wParam, LPARAM lParam);
+    void OnGoFullscreen();
+    void OnStopFullscreen();
+
+    LRESULT WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 private:
     CGamePlayer(const CGamePlayer &);
