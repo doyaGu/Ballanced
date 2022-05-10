@@ -403,11 +403,6 @@ static BOOL CALLBACK DialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
             }
 
             CTTInterfaceManager *im = CNeMoContext::GetInstance()->GetInterfaceManager();
-            if (!im)
-            {
-                TT_ERROR("GamePlayer.cpp", "WndProc()", "No InterfaceManager");
-                return TRUE;
-            }
             im->SetDriverIndex(CNeMoContext::GetInstance()->GetDriverIndex());
             im->SetScreenModeIndex(CNeMoContext::GetInstance()->GetScreenMode());
 
@@ -474,7 +469,20 @@ void CGamePlayer::Init(HINSTANCE hInstance, LPFNWNDPROC lpfnWndProc)
         return;
     }
 
-    if (!InitEngine())
+    switch (InitEngine())
+    {
+    case CK_OK:
+        break;
+        
+    case CKERR_NODLLFOUND:
+        ::MessageBoxA(NULL, "Necessary dll is not found", "Error", MB_OK);
+        return;
+
+    case CKERR_NORENDERENGINE:
+        ::MessageBoxA(NULL, "No RenderEngine", "Error", MB_OK);
+        return;
+
+    case CKERR_INVALIDPARAMETER:
     {
         bool settingChanged = false;
         bool engineReinitialized = false;
@@ -507,6 +515,29 @@ void CGamePlayer::Init(HINSTANCE hInstance, LPFNWNDPROC lpfnWndProc)
             IniSetBPPAndDriver(m_NeMoContext.GetBPP(), m_NeMoContext.GetScreenMode());
             IniSetResolution(m_NeMoContext.GetWidth(), m_NeMoContext.GetHeight());
         }
+    }
+
+    default:
+        return;
+    }
+
+    {
+        CTTInterfaceManager* im = m_NeMoContext.GetInterfaceManager();
+
+        im->SetDriverIndex(m_NeMoContext.GetDriverIndex());
+        im->SetScreenModeIndex(m_NeMoContext.GetScreenMode());
+
+        if (strlen(g_ResMap.pathSetting) > 128)
+        {
+            im->SetIniName("Ballance.ini");
+        }
+        else
+        {
+            im->SetIniName(g_ResMap.pathSetting);
+        }
+
+        im->SetRookie(m_IsRookie);
+        im->SetTaskSwitchEnabled(m_TaskSwitchEnabled);
     }
 
     m_WinContext.ShowWindows();
@@ -621,11 +652,7 @@ bool CGamePlayer::LoadCMO(const char *filename)
         m_Stack.Push(gameInfoNow);
     }
 
-    if (!RegisterGameInfoToInterfaceManager())
-    {
-        return false;
-    }
-
+    RegisterGameInfo();
     if (!m_Game.Load())
     {
         return false;
@@ -809,11 +836,7 @@ void CGamePlayer::OnExceptionCMO(WPARAM wParam, LPARAM lParam)
 
 void CGamePlayer::OnReturn(WPARAM wParam, LPARAM lParam)
 {
-    if (!RegisterGameInfoToInterfaceManager())
-    {
-        TT_ERROR("GamePlayer.cpp", "CGamePlayer::OnReturn()", "Unable to register gameInfo");
-    }
-
+    RegisterGameInfo();
     if (!m_Game.Load())
     {
         Done();
@@ -842,15 +865,8 @@ void CGamePlayer::OnScreenModeChanged(WPARAM wParam, LPARAM lParam)
     m_NeMoContext.ChangeScreenMode(lParam, wParam);
 
     CTTInterfaceManager *im = m_NeMoContext.GetInterfaceManager();
-    if (!im)
-    {
-        TT_ERROR("GamePlayer.cpp", "WndProc()", "No InterfaceManager");
-    }
-    else
-    {
-        im->SetDriverIndex(m_NeMoContext.GetDriverIndex());
-        im->SetScreenModeIndex(m_NeMoContext.GetScreenMode());
-    }
+    im->SetDriverIndex(m_NeMoContext.GetDriverIndex());
+    im->SetScreenModeIndex(m_NeMoContext.GetScreenMode());
 
     IniSetBPPAndDriver(m_NeMoContext.GetBPP(), m_NeMoContext.GetDriverIndex());
     IniSetResolution(m_NeMoContext.GetWidth(), m_NeMoContext.GetHeight());
@@ -1014,7 +1030,7 @@ void CGamePlayer::Construct()
     m_State = eInitialized;
 }
 
-bool CGamePlayer::InitEngine()
+CKERROR CGamePlayer::InitEngine()
 {
     char drive[4] = "";
     char fullpath[512] = "";
@@ -1051,40 +1067,7 @@ bool CGamePlayer::InitEngine()
         return false;
     }
 
-    if (!m_NeMoContext.Init())
-    {
-        TT_ERROR("GamePlayer.cpp", "CGamePlayer::InitEngine()", "Failed to init NemoContext");
-        return false;
-    }
-
-    {
-        CTTInterfaceManager *im = m_NeMoContext.GetInterfaceManager();
-        if (!im)
-        {
-            TT_ERROR("GamePlayer.cpp", "CGamePlayer::InitEngine()", "No InterfaceManager");
-            return false;
-        }
-
-        im->SetDriverIndex(m_NeMoContext.GetDriverIndex());
-        im->SetScreenModeIndex(m_NeMoContext.GetScreenMode());
-
-        if (strlen(g_ResMap.pathSetting) > 128)
-        {
-            im->SetIniName("Ballance.ini");
-        }
-        else
-        {
-            im->SetIniName(g_ResMap.pathSetting);
-        }
-
-        im->SetRookie(m_IsRookie);
-        im->SetTaskSwitchEnabled(m_TaskSwitchEnabled);
-    }
-
-    m_WinContext.ShowWindows();
-    m_WinContext.UpdateWindows();
-
-    return true;
+    return m_NeMoContext.Init();
 }
 
 bool CGamePlayer::ReInitEngine()
@@ -1138,14 +1121,8 @@ bool CGamePlayer::LoadStdDLL()
     return true;
 }
 
-bool CGamePlayer::RegisterGameInfoToInterfaceManager()
+void CGamePlayer::RegisterGameInfo()
 {
     CTTInterfaceManager *im = m_NeMoContext.GetInterfaceManager();
-    if (!im)
-    {
-        return false;
-    }
-
     im->SetGameInfo(m_Game.GetGameInfo());
-    return true;
 }

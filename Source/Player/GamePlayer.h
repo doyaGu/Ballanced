@@ -59,12 +59,12 @@ private:
     CGamePlayer &operator=(const CGamePlayer &);
 
     void Construct();
-    bool InitEngine();
+    CKERROR InitEngine();
     bool ReInitEngine();
     bool LoadEngineDLL();
     bool LoadStdDLL();
 
-    bool RegisterGameInfoToInterfaceManager();
+    void RegisterGameInfo();
 
     int m_State;
     HANDLE m_hMutex;

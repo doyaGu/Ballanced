@@ -12,7 +12,7 @@ public:
     CNeMoContext();
     ~CNeMoContext();
 
-    bool Init();
+    CKERROR Init();
     bool ReInit();
 
     bool StartUp();
@@ -170,6 +170,11 @@ public:
         return m_RenderManager;
     }
 
+    CTTInterfaceManager *GetInterfaceManager()
+    {
+        return m_InterfaceManager;
+    }
+
     bool CreateRenderContext();
     int GetRenderEnginePluginIdx();
     bool ParsePlugins(CKSTRING dir);
@@ -201,6 +206,26 @@ public:
     CKObject *GetObject(CK_ID objID);
     CK_ID *GetObjectsListByClassID(CK_CLASSID cid);
     int GetObjectsCountByClassID(CK_CLASSID cid);
+    CKDataArray *GetArrayByName(CKSTRING name);
+    CKGroup *GetGroupByName(CKSTRING name);
+    CKMaterial *GetMaterialByName(CKSTRING name);
+    CKMesh *GetMeshByName(CKSTRING name);
+    CK2dEntity *Get2dEntityByName(CKSTRING name);
+    CK3dEntity *Get3dEntityByName(CKSTRING name);
+    CK3dObject *Get3dObjectByName(CKSTRING name);
+    CKCamera *GetCameraByName(CKSTRING name);
+    CKTargetCamera *GetTargetCameraByName(CKSTRING name);
+    CKLight *GetLightByName(CKSTRING name);
+    CKTargetLight *GetTargetLightByName(CKSTRING name);
+    CKSound *GetSoundByName(CKSTRING name);
+    CKTexture *GetTextureByName(CKSTRING name);
+    CKBehavior *GetScriptByName(CKSTRING name);
+
+    CKLevel *GetCurrentLevel();
+    CKScene *GetCurrentScene();
+
+    void SetIC(CKBeObject *obj, bool hierarchy);
+    void RestoreIC(CKBeObject *obj, bool hierarchy);
 
     CKMessageType AddMessageType(CKSTRING msg);
     CKMessage *SendMessageSingle(
@@ -209,12 +234,12 @@ public:
         CKBeObject *sender = NULL);
 
     void AddClickMessage();
-    void AddDoubleClickMessage();
     int GetClickMessage() const
     {
         return m_MsgClick;
     }
 
+    void AddDoubleClickMessage();
     int GetDoubleClickMessage() const
     {
         return m_MsgDoubleClick;
@@ -222,10 +247,6 @@ public:
 
     void AddCloseMessage();
     bool BroadcastCloseMessage();
-
-    CKLevel *GetCurrentLevel();
-
-    CTTInterfaceManager *GetInterfaceManager();
 
     static CNeMoContext *GetInstance()
     {
@@ -253,6 +274,7 @@ private:
     CKSoundManager *m_SoundManager;
     CKInputManager *m_InputManager;
     CKCollisionManager *m_CollisionManager;
+    CTTInterfaceManager *m_InterfaceManager;
     CKRenderContext *m_RenderContext;
     CKDebugContext *m_DebugContext;
     CWinContext *m_WinContext;
