@@ -18,11 +18,25 @@ public:
     void ShowWindows();
     void MinimizeWindow();
 
-    HINSTANCE GetAppInstance() const;
-    HACCEL GetAccelTable() const;
+    HINSTANCE GetAppInstance() const
+    {
+        return m_hInstance;
+    }
 
-    HWND GetMainWindow() const;
-    HWND GetRenderWindow() const;
+    HACCEL GetAccelTable() const
+    {
+        return m_hAccelTable;
+    }
+
+    HWND GetMainWindow() const
+    {
+        return m_MainWindow;
+    }
+
+    HWND GetRenderWindow() const
+    {
+        return m_RenderWindow;
+    }
 
     void SetResolution(int width, int height);
 

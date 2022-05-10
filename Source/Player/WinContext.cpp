@@ -158,26 +158,6 @@ void CWinContext::MinimizeWindow()
     ::ShowWindow(m_RenderWindow, SW_SHOWMINIMIZED);
 }
 
-HINSTANCE CWinContext::GetAppInstance() const
-{
-    return m_hInstance;
-}
-
-HACCEL CWinContext::GetAccelTable() const
-{
-    return m_hAccelTable;
-}
-
-HWND CWinContext::GetMainWindow() const
-{
-    return m_MainWindow;
-}
-
-HWND CWinContext::GetRenderWindow() const
-{
-    return m_RenderWindow;
-}
-
 void CWinContext::SetResolution(int width, int height)
 {
     m_Width = width;
