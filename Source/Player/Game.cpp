@@ -136,11 +136,7 @@ bool CGame::Load()
         }
     }
 
-    renderContext->Clear();
-    renderContext->SetClearBackground();
-    renderContext->BackToFront();
-    renderContext->SetClearBackground();
-    renderContext->Clear();
+    m_NeMoContext->Refresh();
 
     // Hide curves ?
     int curveCount = m_NeMoContext->GetObjectsCountByClassID(CKCID_CURVE);

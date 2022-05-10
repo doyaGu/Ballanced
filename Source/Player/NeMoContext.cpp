@@ -365,7 +365,7 @@ bool CNeMoContext::Init()
     m_TimeManager = m_CKContext->GetTimeManager();
     m_RenderManager = m_CKContext->GetRenderManager();
 
-    AddMessageWindowClose();
+    AddCloseMessage();
 
     if (!FindScreenMode())
     {
@@ -431,12 +431,8 @@ bool CNeMoContext::CreateRenderContext()
     m_RenderContext->Clear(CK_RENDER_USECAMERARATIO);
     m_RenderContext->Clear(CK_RENDER_WAITVBL);
     m_RenderContext->Clear(CK_RENDER_PLAYERCONTEXT);
-    m_RenderContext->Clear();
 
-    m_RenderContext->SetClearBackground();
-    m_RenderContext->BackToFront();
-    m_RenderContext->SetClearBackground();
-    m_RenderContext->Clear();
+    Refresh();
 
     ::SetCursor(::LoadCursorA(NULL, (LPCSTR)IDC_ARROW));
     return true;
@@ -687,12 +683,12 @@ bool CNeMoContext::ChangeScreenMode(int driver, int screenMode)
     return true;
 }
 
-bool CNeMoContext::SendMessageWindowCloseToAll()
+bool CNeMoContext::BroadcastCloseMessage()
 {
     return m_MessageManager->SendMessageBroadcast(m_MsgWindowClose, CKCID_BEOBJECT) != NULL;
 }
 
-void CNeMoContext::AddMessageWindowClose()
+void CNeMoContext::AddCloseMessage()
 {
     m_MsgWindowClose = m_MessageManager->AddMessageType("WM_CLOSE");
 }

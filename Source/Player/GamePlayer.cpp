@@ -584,7 +584,7 @@ int CGamePlayer::OnSysKeyDown(UINT uKey)
     return 0;
 }
 
-void CGamePlayer::OnActivateApp(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+void CGamePlayer::OnActivateApp(WPARAM wParam, LPARAM lParam)
 {
     static bool wasPlaying = false;
     static bool wasFullscreen = false;
@@ -734,11 +734,11 @@ LRESULT CGamePlayer::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         break;
 
     case WM_CLOSE:
-        m_NeMoContext.SendMessageWindowCloseToAll();
+        m_NeMoContext.BroadcastCloseMessage();
         return 0;
 
     case WM_ACTIVATEAPP:
-        OnActivateApp(hWnd, uMsg, wParam, lParam);
+        OnActivateApp(wParam, lParam);
         break;
 
     case WM_SETCURSOR:
