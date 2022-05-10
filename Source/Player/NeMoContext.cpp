@@ -20,8 +20,6 @@ CNeMoContext::CNeMoContext()
       m_PluginManager(NULL),
       m_MessageManager(NULL),
       m_RenderContext(NULL),
-      m_FrameRateSprite(NULL),
-      m_MadeWithSprite(NULL),
       m_WinContext(NULL),
       m_Width(DEFAULT_WIDTH),
       m_Height(DEFAULT_HEIGHT),
@@ -31,10 +29,7 @@ CNeMoContext::CNeMoContext()
       m_DisplayChanged(false),
       m_DriverIndex(0),
       m_ScreenModeIndex(-1),
-      m_TimeToHideSprite(1),
-      m_MsgClick(0),
-      m_ShowFrameRate(false),
-      m_ShowMadeWith(false)
+      m_MsgClick(0)
 {
     m_RenderEngine = CKStrdup("CK2_3D");
     strcpy(m_ProgPath, "");
@@ -43,61 +38,6 @@ CNeMoContext::CNeMoContext()
 CNeMoContext::~CNeMoContext()
 {
     delete[] m_RenderEngine;
-}
-
-void CNeMoContext::SetFrameRateSpritePosition(int x, int y)
-{
-    m_FrameRateSprite->SetPosition(Vx2DVector(x, y));
-}
-
-void CNeMoContext::SetMadeWithSpritePosition(int x, int y)
-{
-    m_MadeWithSprite->SetPosition(Vx2DVector(x, y));
-}
-
-void CNeMoContext::SetFrameRateSpriteText(CKSTRING text)
-{
-    m_FrameRateSprite->SetText(text);
-}
-
-void CNeMoContext::SetMadeWithSpriteText(CKSTRING text)
-{
-    m_MadeWithSprite->SetText(text);
-}
-
-void CNeMoContext::AdjustFrameRateSpritePosition()
-{
-    SetFrameRateSpritePosition(m_Width * 0.5 - 60.0, m_Height * 0.5 - 15.0);
-}
-
-void CNeMoContext::SetTimeToHideSprite(int time)
-{
-    m_TimeToHideSprite = time;
-}
-
-void CNeMoContext::ShowFrameRate(bool show)
-{
-    m_ShowFrameRate = show;
-}
-
-void CNeMoContext::ShowMadeWith(bool show)
-{
-    m_ShowMadeWith = show;
-}
-
-int CNeMoContext::GetTimeToHideSprite() const
-{
-    return m_TimeToHideSprite;
-}
-
-bool CNeMoContext::IsShowingFrameRate() const
-{
-    return m_ShowFrameRate;
-}
-
-bool CNeMoContext::IsShowingMadeWith() const
-{
-    return m_ShowMadeWith;
 }
 
 void CNeMoContext::SetDriverIndex(int idx)
@@ -152,16 +92,6 @@ void CNeMoContext::SetMsgClick(int msg)
 void CNeMoContext::SetRenderContext(CKRenderContext *renderContext)
 {
     m_RenderContext = renderContext;
-}
-
-void CNeMoContext::SetFrameRateSprite(CKSpriteText *sprite)
-{
-    m_FrameRateSprite = sprite;
-}
-
-void CNeMoContext::SetMadeWithSprite(CKSpriteText *sprite)
-{
-    m_MadeWithSprite = sprite;
 }
 
 void CNeMoContext::SetWinContext(CWinContext *winContext)
@@ -277,26 +207,6 @@ CKERROR CNeMoContext::Render(CK_RENDER_FLAGS flags)
     return m_RenderContext->Render(flags);
 }
 
-void CNeMoContext::HideFrameRateSprite()
-{
-    m_FrameRateSprite->Show(CKHIDE);
-}
-
-void CNeMoContext::ShowFrameRateSprite()
-{
-    m_FrameRateSprite->Show();
-}
-
-void CNeMoContext::HideMadeWithSprite()
-{
-    m_MadeWithSprite->Show(CKHIDE);
-}
-
-void CNeMoContext::ShowMadeWithSprite()
-{
-    m_MadeWithSprite->Show();
-}
-
 void CNeMoContext::Cleanup()
 {
     Pause();
@@ -364,19 +274,8 @@ CKERROR CNeMoContext::Process()
 
 void CNeMoContext::Update()
 {
-    static int frame = 0;
-    static LARGE_INTEGER fps;
-    LARGE_INTEGER freq;
-    LARGE_INTEGER current;
-
     if (IsPlaying())
     {
-        if (IsShowingMadeWith() && ::GetTickCount() > m_TimeToHideSprite)
-        {
-            HideMadeWithSprite();
-            m_TimeToHideSprite = 0;
-        }
-
         float beforeRender = 0.0f;
         float beforeProcess = 0.0f;
         m_TimeManager->GetTimeToWaitForLimits(beforeRender, beforeProcess);
@@ -389,24 +288,6 @@ void CNeMoContext::Update()
         {
             m_TimeManager->ResetChronos(TRUE, FALSE);
             Render();
-
-            // Calculate FrameRate every 30 frames
-            if (frame == 30)
-            {
-                frame = 0;
-                QueryPerformanceCounter(&current);
-                QueryPerformanceFrequency(&freq);
-                float rate = 30.0f * (float)freq.LowPart / (float)(current.LowPart - fps.LowPart);
-                if (m_ShowFrameRate)
-                {
-                    char str[32];
-                    sprintf(str, "%.1f fps", rate);
-                    m_FrameRateSprite->SetPosition(Vx2DVector(10.0f, 10.0f));
-                    m_FrameRateSprite->SetText(str);
-                }
-                fps = current;
-            }
-            ++frame;
         }
     }
 }
@@ -501,37 +382,7 @@ bool CNeMoContext::Init()
     m_WinContext->UpdateWindows();
     m_WinContext->ShowWindows();
 
-    CreateInterfaceSprite();
-
     return true;
-}
-
-void CNeMoContext::CreateInterfaceSprite()
-{
-    if (m_RenderContext)
-    {
-        m_FrameRateSprite = (CKSpriteText *)m_CKContext->CreateObject(CKCID_SPRITETEXT, "FrameRateSprite");
-        m_FrameRateSprite->Create(60, 20);
-        m_FrameRateSprite->SetTransparent(FALSE);
-        m_FrameRateSprite->SetFont("Arial", 8);
-        m_FrameRateSprite->SetBackgroundColor(0);
-        m_FrameRateSprite->SetTextColor(0x00FFFFFF);
-        m_FrameRateSprite->SetPosition(Vx2DVector(350.0f, 225.0f));
-        m_FrameRateSprite->Show(CKHIDE);
-
-        m_MadeWithSprite = (CKSpriteText *)m_CKContext->CreateObject(CKCID_SPRITETEXT, "MadeWithSprite");
-        m_MadeWithSprite->Create(m_Width, m_Height);
-        m_MadeWithSprite->SetTransparent(FALSE);
-        m_MadeWithSprite->SetFont("Arial", 14);
-        m_MadeWithSprite->SetBackgroundColor(0x00FFFFFF);
-        m_MadeWithSprite->SetTextColor(0x00FFFF00);
-        m_MadeWithSprite->SetZOrder(2000000);
-        m_MadeWithSprite->Show(CKHIDE);
-
-        m_RenderContext->AddObject(m_MadeWithSprite);
-        m_RenderContext->AddObject(m_FrameRateSprite);
-        m_FrameRateSprite->SetPosition(Vx2DVector(0.0f, 0.0f));
-    }
 }
 
 bool CNeMoContext::CreateRenderContext()
@@ -669,7 +520,6 @@ bool CNeMoContext::ReInit()
 
     m_WinContext->UpdateWindows();
     m_WinContext->ShowWindows();
-    CreateInterfaceSprite();
     return true;
 }
 
@@ -704,31 +554,6 @@ void CNeMoContext::SetWindow(CWinContext *wincontext,
 CKRenderContext *CNeMoContext::GetRenderContext() const
 {
     return m_RenderContext;
-}
-
-CKSpriteText *CNeMoContext::GetFrameRateSprite() const
-{
-    return m_FrameRateSprite;
-}
-
-CKSpriteText *CNeMoContext::GetMadeWithSprite() const
-{
-    return m_MadeWithSprite;
-}
-
-bool CNeMoContext::IsReseted() const
-{
-    return m_CKContext->IsReseted() == TRUE;
-}
-
-void CNeMoContext::DestroyMadeWithSprite()
-{
-    m_CKContext->DestroyObject(GetMadeWithSprite()->GetID());
-}
-
-void CNeMoContext::DestroyFrameRateSprite()
-{
-    m_CKContext->DestroyObject(GetFrameRateSprite()->GetID());
 }
 
 CKERROR CNeMoContext::GetFileInfo(CKSTRING filename, CKFileInfo *fileinfo)
@@ -849,7 +674,6 @@ bool CNeMoContext::ChangeScreenMode(int driver, int screenMode)
 
     m_WinContext->SetResolution(m_Width, m_Height);
     m_RenderContext->Resize();
-    AdjustFrameRateSpritePosition();
 
     if (fullscreenBefore && !m_RenderContext->IsFullScreen())
     {
@@ -902,5 +726,4 @@ void CNeMoContext::ResizeWindow()
                    rect.bottom - rect.top,
                    SWP_NOMOVE | SWP_NOZORDER);
     m_RenderContext->Resize();
-    AdjustFrameRateSpritePosition();
 }

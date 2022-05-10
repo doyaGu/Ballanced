@@ -499,7 +499,6 @@ void CGamePlayer::OnSized()
         ::GetClientRect(m_WinContext.GetMainWindow(), &rect);
         ::SetWindowPos(m_WinContext.GetRenderWindow(), NULL, 0, 0, rect.right, rect.bottom, SWP_NOMOVE | SWP_NOZORDER);
         renderContext->Resize();
-        m_NeMoContext.AdjustFrameRateSpritePosition();
     }
 }
 
