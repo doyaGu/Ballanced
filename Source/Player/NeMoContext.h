@@ -10,17 +10,6 @@ public:
     CNeMoContext();
     ~CNeMoContext();
 
-    void SetFrameRateSpritePosition(int x, int y);
-    void SetMadeWithSpritePosition(int x, int y);
-    void SetFrameRateSpriteText(CKSTRING text);
-    void SetMadeWithSpriteText(CKSTRING text);
-    void AdjustFrameRateSpritePosition();
-    void SetTimeToHideSprite(int time);
-    void ShowFrameRate(bool show);
-    void ShowMadeWith(bool show);
-    int GetTimeToHideSprite() const;
-    bool IsShowingFrameRate() const;
-    bool IsShowingMadeWith() const;
     void SetDriverIndex(int idx);
     bool ApplyScreenMode(int idx);
     void SetFullscreen(bool fullscreen);
@@ -52,10 +41,6 @@ public:
     void MinimizeWindow();
     CKERROR Reset();
     CKERROR Render(CK_RENDER_FLAGS flags = CK_RENDER_USECURRENTSETTINGS);
-    void HideFrameRateSprite();
-    void ShowFrameRateSprite();
-    void HideMadeWithSprite();
-    void ShowMadeWithSprite();
     void Cleanup();
     void Shutdown();
     void GoFullscreen();
@@ -64,7 +49,6 @@ public:
     void SwitchFullscreen();
     bool RestoreWindow();
     bool Init();
-    void CreateInterfaceSprite();
     bool CreateRenderContext();
     int GetRenderEnginePluginIdx();
     bool FindScreenMode();
@@ -85,8 +69,6 @@ public:
     CKSpriteText *GetFrameRateSprite() const;
     CKSpriteText *GetMadeWithSprite() const;
     bool IsReseted() const;
-    void DestroyMadeWithSprite();
-    void DestroyFrameRateSprite();
     CKERROR GetFileInfo(CKSTRING filename, CKFileInfo *fileinfo);
     void AddSoundPath(const char *path);
     void AddBitmapPath(const char *path);
@@ -137,8 +119,6 @@ private:
     CKPluginManager *m_PluginManager;
     CKMessageManager *m_MessageManager;
     CKRenderContext *m_RenderContext;
-    CKSpriteText *m_FrameRateSprite;
-    CKSpriteText *m_MadeWithSprite;
     CWinContext *m_WinContext;
     CKSTRING m_RenderEngine;
     int m_Width;
@@ -149,11 +129,8 @@ private:
     bool m_DisplayChanged;
     int m_DriverIndex;
     int m_ScreenModeIndex;
-    DWORD m_TimeToHideSprite;
     char m_ProgPath[512];
     int m_MsgClick;
-    bool m_ShowFrameRate;
-    bool m_ShowMadeWith;
 
     static CNeMoContext *instance;
 };

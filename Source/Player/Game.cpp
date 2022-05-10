@@ -68,51 +68,6 @@ bool CGame::Load()
 
     m_NeMoContext->Cleanup();
 
-    m_NeMoContext->CreateInterfaceSprite();
-    m_NeMoContext->AdjustFrameRateSpritePosition();
-    m_NeMoContext->SetTimeToHideSprite(::GetTickCount() + 3000);
-
-    memset(&m_CKFileInfo, 0, sizeof(CKFileInfo));
-    if (m_NeMoContext->GetFileInfo(cmoPath, &m_CKFileInfo) == CK_OK)
-    {
-        char text[128] = "Made with Virtools ";
-        switch (m_CKFileInfo.ProductVersion)
-        {
-        case CK_VIRTOOLS_DEV:
-        case CK_VIRTOOLS_CREATION:
-            break;
-        case CK_VIRTOOLS_DEV_NFR:
-            strcat(text, "Dev \n (Not For Resale)");
-            break;
-        case CK_VIRTOOLS_CREA_NFR:
-            strcat(text, "Creation \n (Not For Resale)");
-            break;
-        case CK_VIRTOOLS_DEV_EDU:
-            strcat(text, "Dev \n (Education version)");
-            break;
-        case CK_VIRTOOLS_CREA_EDU:
-            strcat(text, "Creation \n (Education version)");
-            break;
-        case CK_VIRTOOLS_DEV_TB:
-        case CK_VIRTOOLS_DEV_EVAL:
-            strcat(text, "Dev \n (Evaluation version)");
-            break;
-        case CK_VIRTOOLS_CREA_TB:
-        case CK_VIRTOOLS_CREA_EVAL:
-            strcat(text, "Creation \n (Evaluation version)");
-            break;
-        default:
-            m_NeMoContext->SetTimeToHideSprite(0);
-            break;
-        }
-
-        if (m_NeMoContext->GetTimeToHideSprite() > 0)
-        {
-            m_NeMoContext->SetMadeWithSpriteText(text);
-            m_NeMoContext->ShowMadeWithSprite();
-        }
-    }
-
     if (m_NeMoContext->Render(CK_RENDER_BACKGROUNDSPRITES) != CK_OK)
     {
         TT_ERROR("Game.cpp", "Load", "Exception on Render() before CKLoad()");
@@ -212,9 +167,6 @@ bool CGame::Load()
     // ReRegister OnClick Message in case it changed
     m_NeMoContext->AddMessageType("OnClick");
     m_NeMoContext->AddMessageType("OnDblClick");
-
-    m_NeMoContext->HideMadeWithSprite();
-    m_NeMoContext->HideFrameRateSprite();
 
     return true;
 }
