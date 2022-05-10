@@ -9,7 +9,7 @@ class CGame
 {
 public:
     CGame();
-    virtual ~CGame();
+    ~CGame();
 
     bool Load();
     void Play();
@@ -46,7 +46,7 @@ class CGameDataManager
 {
 public:
     CGameDataManager();
-    virtual ~CGameDataManager() {}
+    ~CGameDataManager() {}
 
     void Save(CGameInfo *gameInfo);
     void Load(CGameInfo *gameInfo, const char *filename);

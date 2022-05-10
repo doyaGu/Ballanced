@@ -7,7 +7,7 @@ class CWinContext
 {
 public:
     CWinContext();
-    virtual ~CWinContext() {}
+    ~CWinContext() {}
 
     bool Init(HINSTANCE hInstance, LPFNWNDPROC lpfnWndProc, bool fullscreen);
 
