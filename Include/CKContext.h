@@ -143,7 +143,6 @@ public:
 
 //------------------------------------------------------
 // Common Managers functions
-	// CKVariableManager  *GetVariableManager();
 	CKRenderManager    *GetRenderManager();
 	CKBehaviorManager  *GetBehaviorManager();
 	CKParameterManager *GetParameterManager();
