@@ -197,7 +197,7 @@ CKGUID			ParameterNameToGuid(CKSTRING name);
 CKParameterType	ParameterNameToType(CKSTRING name);
 
 ///----------------------------------------------------------------------
-// Dervated types functions
+// Derivated types functions
 CKBOOL		IsDerivedFrom(CKGUIDCONSTREF guid1,CKGUIDCONSTREF parent);
 CKBOOL		IsDerivedFrom(CKParameterType child,CKParameterType parent);
 CKBOOL		IsTypeCompatible(CKGUIDCONSTREF guid1,CKGUIDCONSTREF guid2);
