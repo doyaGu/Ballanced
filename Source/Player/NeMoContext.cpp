@@ -25,6 +25,7 @@ CNeMoContext::CNeMoContext()
       m_SoundManager(NULL),
       m_InputManager(NULL),
       m_CollisionManager(NULL),
+      m_InterfaceManager(NULL),
       m_RenderContext(NULL),
       m_DebugContext(NULL),
       m_WinContext(NULL),
@@ -50,13 +51,13 @@ CNeMoContext::~CNeMoContext()
 {
 }
 
-bool CNeMoContext::Init()
+CKERROR CNeMoContext::Init()
 {
     int renderEnginePluginIdx = GetRenderEnginePluginIdx();
     if (renderEnginePluginIdx == -1)
     {
         TT_ERROR("NemoContext.cpp", "Init()", "Found no render-engine! (Driver? Critical!!!)");
-        return false;
+        return CKERR_NORENDERENGINE;
     }
 
     CKERROR res = CKCreateContext(&m_CKContext, m_WinContext->GetMainWindow(), renderEnginePluginIdx, NULL);
@@ -65,11 +66,11 @@ bool CNeMoContext::Init()
         if (res == CKERR_NODLLFOUND)
         {
             TT_ERROR("NemoContext.cpp", "Init()", "Dll not found");
-            return false;
+            return CKERR_NODLLFOUND;
         }
 
         TT_ERROR("NemoContext.cpp", "Init()", "Create Context - render engine not loadable");
-        return false;
+        return CKERR_NORENDERENGINE;
     }
 
     m_CKContext->SetVirtoolsVersion(CK_VIRTOOLS_DEV, 0x2000043);
@@ -81,27 +82,34 @@ bool CNeMoContext::Init()
     m_MessageManager = m_CKContext->GetMessageManager();
     m_TimeManager = m_CKContext->GetTimeManager();
     m_PluginManager = CKGetPluginManager();
+
     m_SoundManager = (CKSoundManager *)m_CKContext->GetManagerByGuid(SOUND_MANAGER_GUID);
     m_InputManager = (CKInputManager *)m_CKContext->GetManagerByGuid(INPUT_MANAGER_GUID);
     m_CollisionManager = (CKCollisionManager *)m_CKContext->GetManagerByGuid(COLLISION_MANAGER_GUID);
+    m_InterfaceManager = (CTTInterfaceManager *)m_CKContext->GetManagerByGuid(TT_INTERFACE_MANAGER_GUID);
+    if (!m_InterfaceManager)
+    {
+        TT_ERROR("NemoContext.cpp", "Init()", "No InterfaceManager");
+        return CKERR_NODLLFOUND;
+    }
 
     if (!FindScreenMode())
     {
         TT_ERROR("NemoContext.cpp", "Init()", "Found no capable screen mode");
-        return false;
+        return CKERR_INVALIDPARAMETER;
     }
 
     if (!CreateRenderContext())
     {
         TT_ERROR("NemoContext.cpp", "Init()", "Create Render Context Failed");
-        return false;
+        return CKERR_INVALIDPARAMETER;
     }
 
     AddClickMessage();
     AddDoubleClickMessage();
     AddCloseMessage();
 
-    return true;
+    return CK_OK;
 }
 
 bool CNeMoContext::ReInit()
@@ -575,6 +583,142 @@ int CNeMoContext::GetObjectsCountByClassID(CK_CLASSID cid)
     return m_CKContext->GetObjectsCountByClassID(cid);
 }
 
+CKDataArray *CNeMoContext::GetArrayByName(CKSTRING name)
+{
+    return (CKDataArray *)m_CKContext->GetObjectByNameAndClass(name, CKCID_DATAARRAY);
+}
+
+CKGroup *CNeMoContext::GetGroupByName(CKSTRING name)
+{
+    return (CKGroup *)m_CKContext->GetObjectByNameAndClass(name, CKCID_GROUP);
+}
+
+CKMaterial *CNeMoContext::GetMaterialByName(CKSTRING name)
+{
+    return (CKMaterial *)m_CKContext->GetObjectByNameAndClass(name, CKCID_MATERIAL);
+}
+
+CKMesh *CNeMoContext::GetMeshByName(CKSTRING name)
+{
+    return (CKMesh *)m_CKContext->GetObjectByNameAndClass(name, CKCID_MESH);
+}
+
+CK2dEntity *CNeMoContext::Get2dEntityByName(CKSTRING name)
+{
+    return (CK2dEntity *)m_CKContext->GetObjectByNameAndClass(name, CKCID_2DENTITY);
+}
+
+CK3dEntity *CNeMoContext::Get3dEntityByName(CKSTRING name)
+{
+    return (CK3dEntity *)m_CKContext->GetObjectByNameAndClass(name, CKCID_3DENTITY);
+}
+
+CK3dObject *CNeMoContext::Get3dObjectByName(CKSTRING name)
+{
+    return (CK3dObject *)m_CKContext->GetObjectByNameAndClass(name, CKCID_3DOBJECT);
+}
+
+CKCamera *CNeMoContext::GetCameraByName(CKSTRING name)
+{
+    return (CKCamera *)m_CKContext->GetObjectByNameAndClass(name, CKCID_CAMERA);
+}
+
+CKTargetCamera *CNeMoContext::GetTargetCameraByName(CKSTRING name)
+{
+    return (CKTargetCamera *)m_CKContext->GetObjectByNameAndClass(name, CKCID_TARGETCAMERA);
+}
+
+CKLight *CNeMoContext::GetLightByName(CKSTRING name)
+{
+    return (CKLight *)m_CKContext->GetObjectByNameAndClass(name, CKCID_LIGHT);
+}
+
+CKTargetLight *CNeMoContext::GetTargetLightByName(CKSTRING name)
+{
+    return (CKTargetLight *)m_CKContext->GetObjectByNameAndClass(name, CKCID_TARGETLIGHT);
+}
+
+CKSound *CNeMoContext::GetSoundByName(CKSTRING name)
+{
+    return (CKSound *)m_CKContext->GetObjectByNameAndClass(name, CKCID_SOUND);
+}
+
+CKTexture *CNeMoContext::GetTextureByName(CKSTRING name)
+{
+    return (CKTexture *)m_CKContext->GetObjectByNameAndClass(name, CKCID_TEXTURE);
+}
+
+CKBehavior *CNeMoContext::GetScriptByName(CKSTRING name)
+{
+    return (CKBehavior *)m_CKContext->GetObjectByNameAndClass(name, CKCID_BEHAVIOR);
+}
+
+CKLevel *CNeMoContext::GetCurrentLevel()
+{
+    return m_CKContext->GetCurrentLevel();
+}
+
+CKScene *CNeMoContext::GetCurrentScene()
+{
+    return m_CKContext->GetCurrentScene();
+}
+
+void CNeMoContext::SetIC(CKBeObject *obj, bool hierarchy)
+{
+    GetCurrentScene()->SetObjectInitialValue(obj, CKSaveObjectState(obj));
+
+    if (hierarchy)
+    {
+        int i;
+        if (CKIsChildClassOf(obj, CKCID_2DENTITY))
+        {
+            CK2dEntity *entity = (CK2dEntity *)obj;
+            for (i = 0; i < entity->GetChildrenCount(); ++i)
+            {
+                SetIC(entity->GetChild(i), true);
+            }
+        }
+        if (CKIsChildClassOf(obj, CKCID_3DENTITY))
+        {
+            CK3dEntity *entity = (CK3dEntity *)obj;
+            for (i = 0; i < entity->GetChildrenCount(); ++i)
+            {
+                SetIC(entity->GetChild(i), true);
+            }
+        }
+    }
+}
+
+void CNeMoContext::RestoreIC(CKBeObject *obj, bool hierarchy)
+{
+    CKStateChunk *chunk = GetCurrentScene()->GetObjectInitialValue(obj);
+    if (chunk)
+    {
+        CKReadObjectState(obj, chunk);
+    }
+
+    if (hierarchy)
+    {
+        int i;
+        if (CKIsChildClassOf(obj, CKCID_2DENTITY))
+        {
+            CK2dEntity *entity = (CK2dEntity *)obj;
+            for (i = 0; i < entity->GetChildrenCount(); ++i)
+            {
+                RestoreIC(entity->GetChild(i), true);
+            }
+        }
+        if (CKIsChildClassOf(obj, CKCID_3DENTITY))
+        {
+            CK3dEntity *entity = (CK3dEntity *)obj;
+            for (i = 0; i < entity->GetChildrenCount(); ++i)
+            {
+                RestoreIC(entity->GetChild(i), true);
+            }
+        }
+    }
+}
+
 CKMessageType CNeMoContext::AddMessageType(CKSTRING msg)
 {
     return m_MessageManager->AddMessageType(msg);
@@ -606,18 +750,4 @@ void CNeMoContext::AddCloseMessage()
 bool CNeMoContext::BroadcastCloseMessage()
 {
     return m_MessageManager->SendMessageBroadcast(m_MsgWindowClose, CKCID_BEOBJECT) != NULL;
-}
-
-CKLevel *CNeMoContext::GetCurrentLevel()
-{
-    return m_CKContext->GetCurrentLevel();
-}
-
-CTTInterfaceManager *CNeMoContext::GetInterfaceManager()
-{
-    if (m_CKContext)
-    {
-        return (CTTInterfaceManager *)m_CKContext->GetManagerByGuid(TT_INTERFACE_MANAGER_GUID);
-    }
-    return NULL;
 }
