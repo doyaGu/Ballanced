@@ -34,7 +34,7 @@ public:
     void OnMouseClick();
     int OnKeyDown(UINT uKey);
     int OnSysKeyDown(UINT uKey);
-    void OnActivateApp(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+    void OnActivateApp(WPARAM wParam, LPARAM lParam);
     LRESULT OnScreenModeChanged(WPARAM wParam, LPARAM lParam);
     void OnCommand(UINT id, UINT code);
     ~CGamePlayer();

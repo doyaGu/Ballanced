@@ -88,8 +88,8 @@ public:
         CKBeObject *sender = NULL);
     bool IsPlaying() const;
     bool ChangeScreenMode(int driver, int screenMode);
-    bool SendMessageWindowCloseToAll();
-    void AddMessageWindowClose();
+    bool BroadcastCloseMessage();
+    void AddCloseMessage();
     CKContext *GetCKContext();
     void Refresh();
     void ResizeWindow();
