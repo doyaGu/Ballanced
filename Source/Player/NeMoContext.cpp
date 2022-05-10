@@ -15,11 +15,20 @@ CNeMoContext *CNeMoContext::instance = NULL;
 CNeMoContext::CNeMoContext()
     : m_CKContext(NULL),
       m_RenderManager(NULL),
+      m_BehaviorManager(NULL),
+      m_ParameterManager(NULL),
+      m_AttributeManager(NULL),
+      m_PathManager(NULL),
+      m_MessageManager(NULL),
       m_TimeManager(NULL),
       m_PluginManager(NULL),
-      m_MessageManager(NULL),
+      m_SoundManager(NULL),
+      m_InputManager(NULL),
+      m_CollisionManager(NULL),
       m_RenderContext(NULL),
+      m_DebugContext(NULL),
       m_WinContext(NULL),
+      m_RenderEngine("CK2_3D"),
       m_Width(DEFAULT_WIDTH),
       m_Height(DEFAULT_HEIGHT),
       m_Bpp(DEFAULT_BPP),
@@ -30,15 +39,15 @@ CNeMoContext::CNeMoContext()
       m_ScreenModeIndex(-1),
       m_MsgClick(0),
       m_MsgDoubleClick(0),
-      m_MsgWindowClose(0)
+      m_MsgWindowClose(0),
+      m_DebugMode(FALSE),
+      m_Debugging(FALSE)
 {
-    m_RenderEngine = CKStrdup("CK2_3D");
     strcpy(m_ProgPath, "");
 }
 
 CNeMoContext::~CNeMoContext()
 {
-    delete[] m_RenderEngine;
 }
 
 bool CNeMoContext::Init()
@@ -64,9 +73,17 @@ bool CNeMoContext::Init()
     }
 
     m_CKContext->SetVirtoolsVersion(CK_VIRTOOLS_DEV, 0x2000043);
+    m_RenderManager = m_CKContext->GetRenderManager();
+    m_BehaviorManager = m_CKContext->GetBehaviorManager();
+    m_ParameterManager = m_CKContext->GetParameterManager();
+    m_AttributeManager = m_CKContext->GetAttributeManager();
+    m_PathManager = m_CKContext->GetPathManager();
     m_MessageManager = m_CKContext->GetMessageManager();
     m_TimeManager = m_CKContext->GetTimeManager();
-    m_RenderManager = m_CKContext->GetRenderManager();
+    m_PluginManager = CKGetPluginManager();
+    m_SoundManager = (CKSoundManager *)m_CKContext->GetManagerByGuid(SOUND_MANAGER_GUID);
+    m_InputManager = (CKInputManager *)m_CKContext->GetManagerByGuid(INPUT_MANAGER_GUID);
+    m_CollisionManager = (CKCollisionManager *)m_CKContext->GetManagerByGuid(COLLISION_MANAGER_GUID);
 
     if (!FindScreenMode())
     {
@@ -153,14 +170,19 @@ void CNeMoContext::Cleanup()
     m_CKContext->ClearAll();
 }
 
-bool CNeMoContext::IsPlaying() const
+inline bool CNeMoContext::IsPlaying() const
 {
     return m_CKContext->IsPlaying() == TRUE;
 }
 
+bool CNeMoContext::IsReseted() const
+{
+    return m_CKContext->IsReseted() == TRUE;
+}
+
 void CNeMoContext::Update()
 {
-    if (IsPlaying())
+    if (m_CKContext && IsPlaying())
     {
         float beforeRender = 0.0f;
         float beforeProcess = 0.0f;
@@ -180,7 +202,27 @@ void CNeMoContext::Update()
 
 CKERROR CNeMoContext::Process()
 {
-    return m_CKContext->Process();
+    if (m_DebugMode)
+    {
+        if (!m_Debugging)
+        {
+            m_CKContext->ProcessDebugStart();
+        }
+
+        m_Debugging = m_CKContext->ProcessDebugStep();
+        m_DebugContext = m_CKContext->GetDebugContext();
+
+        if (!m_Debugging)
+        {
+            m_CKContext->ProcessDebugEnd();
+        }
+    }
+    else
+    {
+        return m_CKContext->Process();
+    }
+
+    return CK_OK;
 }
 
 CKERROR CNeMoContext::Render(CK_RENDER_FLAGS flags)
@@ -482,7 +524,6 @@ int CNeMoContext::GetRenderEnginePluginIdx()
 
 bool CNeMoContext::ParsePlugins(CKSTRING dir)
 {
-    m_PluginManager = CKGetPluginManager();
     if (!m_PluginManager)
     {
         return false;

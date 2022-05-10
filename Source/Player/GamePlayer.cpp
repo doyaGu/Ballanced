@@ -529,34 +529,21 @@ void CGamePlayer::Run()
 bool CGamePlayer::Step()
 {
     MSG msg;
-    BOOL bRet;
-
-    if (m_NeMoContext.IsPlaying())
+    if (::PeekMessageA(&msg, NULL, 0, 0, PM_REMOVE))
     {
-        bRet = ::PeekMessageA(&msg, NULL, 0, 0, PM_REMOVE);
-    }
-    else
-    {
-        bRet = ::GetMessageA(&msg, NULL, 0, 0);
-    }
-
-    if (!bRet)
-    {
-        m_NeMoContext.Update();
-        return true;
+        if (msg.message == WM_QUIT)
+        {
+            return false;
+        }
+        else if (!::TranslateAcceleratorA(msg.hwnd, m_WinContext.GetAccelTable(), &msg))
+        {
+            ::TranslateMessage(&msg);
+            ::DispatchMessageA(&msg);
+        }
     }
 
-    if (msg.message == WM_QUIT || msg.message == WM_DESTROY)
-    {
-        return false;
-    }
+    m_NeMoContext.Update();
 
-    HACCEL hAccel = m_WinContext.GetAccelTable();
-    if (!::TranslateAcceleratorA(msg.hwnd, hAccel, &msg))
-    {
-        ::TranslateMessage(&msg);
-        ::DispatchMessageA(&msg);
-    }
     return true;
 }
 
@@ -649,22 +636,6 @@ bool CGamePlayer::LoadCMO(const char *filename)
     ::SetFocus(m_WinContext.GetMainWindow());
 
     return true;
-}
-
-void CGamePlayer::Play()
-{
-    m_NeMoContext.Play();
-}
-
-void CGamePlayer::Pause()
-{
-    m_NeMoContext.Pause();
-}
-
-void CGamePlayer::Reset()
-{
-    m_NeMoContext.Reset();
-    m_NeMoContext.Play();
 }
 
 void CGamePlayer::OnDestroy()
@@ -833,7 +804,7 @@ void CGamePlayer::OnExceptionCMO(WPARAM wParam, LPARAM lParam)
     m_NeMoContext.RestoreWindow();
     m_NeMoContext.Cleanup();
     TT_ERROR("GamePlayer.cpp", "CGamePlayer::OnExceptionCMO()", "Exception in the CMO - Abort");
-    ::PostQuitMessage(-1);
+    Done();
 }
 
 void CGamePlayer::OnReturn(WPARAM wParam, LPARAM lParam)
@@ -912,7 +883,7 @@ LRESULT CGamePlayer::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     switch (uMsg)
     {
     case WM_DESTROY:
-        Done();
+        OnDestroy();
         break;
 
     case WM_SIZE:
@@ -940,12 +911,10 @@ LRESULT CGamePlayer::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         break;
 
     case WM_KEYDOWN:
-        OnKeyDown(wParam);
-        break;
+        return OnKeyDown(wParam);
 
     case WM_SYSKEYDOWN:
-        OnSysKeyDown(wParam);
-        break;
+        return OnSysKeyDown(wParam);
 
     case WM_COMMAND:
         OnCommand(LOWORD(wParam), HIWORD(wParam));

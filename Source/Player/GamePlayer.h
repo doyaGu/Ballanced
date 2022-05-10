@@ -32,10 +32,6 @@ public:
         return m_State == eInitialized;
     }
 
-    void Play();
-    void Pause();
-    void Reset();
-
     void OnDestroy();
     void OnSized();
     void OnPaint();

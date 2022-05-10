@@ -22,7 +22,9 @@ public:
     void Pause();
     void Reset();
     void Cleanup();
+
     bool IsPlaying() const;
+    bool IsReseted() const;
 
     void Update();
     CKERROR Process();
@@ -113,7 +115,7 @@ public:
     {
         m_DriverIndex = idx;
     }
-    
+
     int GetDriverIndex() const
     {
         return m_DriverIndex;
@@ -241,10 +243,18 @@ private:
 
     CKContext *m_CKContext;
     CKRenderManager *m_RenderManager;
+    CKBehaviorManager *m_BehaviorManager;
+    CKParameterManager *m_ParameterManager;
+    CKAttributeManager *m_AttributeManager;
+    CKPathManager *m_PathManager;
+    CKMessageManager *m_MessageManager;
     CKTimeManager *m_TimeManager;
     CKPluginManager *m_PluginManager;
-    CKMessageManager *m_MessageManager;
+    CKSoundManager *m_SoundManager;
+    CKInputManager *m_InputManager;
+    CKCollisionManager *m_CollisionManager;
     CKRenderContext *m_RenderContext;
+    CKDebugContext *m_DebugContext;
     CWinContext *m_WinContext;
     CKSTRING m_RenderEngine;
     int m_Width;
@@ -259,6 +269,8 @@ private:
     CKMessageType m_MsgClick;
     CKMessageType m_MsgDoubleClick;
     CKMessageType m_MsgWindowClose;
+    BOOL m_DebugMode;
+    BOOL m_Debugging;
 
     static CNeMoContext *instance;
 };

@@ -86,6 +86,5 @@ int APIENTRY WinMain(HINSTANCE hInstance,
     }
 
     player.Run();
-    player.Done();
     return 0;
 }
