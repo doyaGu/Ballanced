@@ -97,8 +97,6 @@ struct VxImageDescEx;
 #include "XHashTable.h"
 #include "XSHashTable.h"
 #include "XSmartPtr.h"
-#include "FixedSizeAllocator.h"
-
 
 typedef XArray<void*> XVoidArray;
 

@@ -428,10 +428,6 @@ public:
 	void Swap(XBTree& iTree)
 	{
 		Swap(m_KeyCompare, iTree.m_KeyCompare);
-		if (m_Allocator == iTree.m_Allocator) {
-			Swap(m_Head, iTree.m_Head);
-			Swap(m_Size, iTree.m_Size); 
-		} else {
 			XBTree _Ts = *this;
 			*this = iTree;
 			iTree = _Ts; 
