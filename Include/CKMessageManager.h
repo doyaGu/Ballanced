@@ -124,7 +124,6 @@ protected :
 	CKWaitingObjectArray**	m_MsgWaitingList;
 	XArray<CKMessage*>		m_ReceivedMsgThisFrame;
 	XObjectPointerArray		m_LastFrameObjects;
-	XObjectPool<CKMessage>	m_MessagePool;
 };
 
 #endif

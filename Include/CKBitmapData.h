@@ -31,18 +31,9 @@ class CKBitmapSlot {
 public:
 	DWORD*		m_DataBuffer;		// Image Data
 	XString		m_FileName;			// Image Filename
-#ifdef PSX2
-	int*		m_ColorMap;			// ColorMap Data
-	int 		m_ColorMapCount;	// ColorMap Entries Count	
-#endif	
-
 public:
 	CKBitmapSlot() {
 		m_DataBuffer 		= NULL;
-#ifdef PSX2
-		m_ColorMap			= NULL;
-		m_ColorMapCount 	= 0;		
-#endif
 	}
 	
 	void Allocate(int Width,int Height,int iBpp) {
@@ -71,20 +62,8 @@ public:
 	
 	void Flush()
 	{
-		if (VxIsAllocatedByNewAligned(m_DataBuffer,16)) {
-			VxDeleteAligned(m_DataBuffer);
-		} else {
-			delete[] m_DataBuffer;
-		}
+		VxDeleteAligned(m_DataBuffer);
 		m_DataBuffer = NULL;
-#ifdef PSX2		
-		if (VxIsAllocatedByNewAligned(m_ColorMap,16)) {
-			VxDeleteAligned(m_ColorMap);
-		} else {
-			delete[] m_ColorMap;
-		}
-		m_ColorMap = NULL;
-#endif		
 	}
 
 	~CKBitmapSlot() {
@@ -543,13 +522,14 @@ Remarks:
 	+ If Cubemap is TRUE , 6 slots are created to store the 6 faces of a cube map.
 
 *************************************************/
-	void	SetCubeMap(CKBOOL CubeMap) { if (CubeMap)	{
-															SetSlotCount(6);
-															m_BitmapFlags|=CKBITMAPDATA_CUBEMAP; 
-														} else {
-															m_BitmapFlags&=~CKBITMAPDATA_CUBEMAP;	
-														}
-										}
+	void	SetCubeMap(CKBOOL CubeMap) {
+		if (CubeMap) {
+			SetSlotCount(6);
+			m_BitmapFlags|=CKBITMAPDATA_CUBEMAP; 
+		} else {
+			m_BitmapFlags&=~CKBITMAPDATA_CUBEMAP;	
+		}
+	}
 														
 
 	CKBOOL	IsCubeMap() { 

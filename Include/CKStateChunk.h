@@ -184,14 +184,14 @@ class CKStateChunk
 		//----------------------------------------------------------
 		// Parsing Functions
 		// Identifiers must be unique within a chunk
-		void		WriteIdentifier(CKDWORD id);
+		void	WriteIdentifier(CKDWORD id);
 		CKBOOL 	SeekIdentifier(CKDWORD identifier);
 		CKDWORD	ReadIdentifier();
 		int		SeekIdentifierAndReturnSize(CKDWORD identifier);	// Return size until next identifier
 
 		int		GetCurrentPos();
-		void		Skip(int DwordCount);
-		void		Goto(int DwordOffset);
+		void	Skip(int DwordCount);
+		void	Goto(int DwordOffset);
 		int		GetDataSize();
 
 		//----------------------------------------------------------
@@ -251,9 +251,9 @@ class CKStateChunk
 
 		//----------------------------------------------------------
 		// Reading functions
-		int 		StartReadSequence();	// Starts reading a sequence that was written usign StartObjectIDSequence or  StartSubChunkSequence functions ,return value is the count 
+		int 	StartReadSequence();	// Starts reading a sequence that was written usign StartObjectIDSequence or  StartSubChunkSequence functions ,return value is the count 
 
-		int 		StartManagerReadSequence(CKGUID* guid);	// Starts reading a sequence that was written usign StartManagerSequence functions ,return value is the count 
+		int 	StartManagerReadSequence(CKGUID* guid);	// Starts reading a sequence that was written usign StartManagerSequence functions ,return value is the count 
 		int		ReadManagerIntSequence();
 
 		CK_ID	ReadObjectID();				// Returns an object ID  
@@ -266,9 +266,9 @@ class CKStateChunk
 		CKDWORD	ReadDwordAsWords();
 		int		ReadInt();
 		float	ReadFloat();
-		void		ReadVector(VxVector& v);
-		void		ReadVector(VxVector* v);
-		void		ReadMatrix(VxMatrix& mat);
+		void	ReadVector(VxVector& v);
+		void	ReadVector(VxVector* v);
+		void	ReadMatrix(VxMatrix& mat);
 		int		ReadManagerInt(CKGUID* guid);
 
 
@@ -315,14 +315,14 @@ class CKStateChunk
 		// Buffer must be allocated by user (call  ConvertToBuffer(NULL) to get the size of the buffer needed
 #ifdef DOCJETDUMMY // Docjet secret macro
 #else
-		int		ConvertToBuffer	 (void* buffer);
+		int		ConvertToBuffer(void* buffer);
 		CKBOOL ConvertFromBuffer(void *buffer);
 #endif
-			void* LockWriteBuffer(int DwordCount);
-			void* LockReadBuffer();
+		void* LockWriteBuffer(int DwordCount);
+		void* LockReadBuffer();
 
 		BYTE*	ReadRawBitmap(VxImageDescEx& desc);
-		void		WriteRawBitmap(const VxImageDescEx& desc);
+		void	WriteRawBitmap(const VxImageDescEx& desc);
 
 
 		
@@ -336,7 +336,6 @@ class CKStateChunk
 
 	
 
-	//IMPLEMENT_POOL_CLASS(CKStateChunk)
 #endif // Docjet secret macro
 }; 
 
