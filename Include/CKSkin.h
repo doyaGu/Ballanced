@@ -164,7 +164,7 @@ of creation of CKSkin.
 
 See Also:CK3dEntity::CreateSkin
 ************************************************************/
-class CKSkin : public VxPoolObject {
+class CKSkin {
 public:
 /*********************************************
 Summary: Sets the owner 3d Entity initial orientation.

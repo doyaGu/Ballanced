@@ -187,9 +187,9 @@ public:
 
 /***************************************************
  Utility : Convert the attenuation factors from  DX5 model 
-    A(d) = a0+ a1.(1-d/R) + a2.(1-d/R)² 
+    A(d) = a0+ a1.(1-d/R) + a2.(1-d/R)ï¿½ 
  to DX7 or GL attenuation model 
-     A(d) = 1/(a0 + a1.d + a2.d²)
+     A(d) = 1/(a0 + a1.d + a2.dï¿½)
 ( The result is not exactly the same :(  
 *******************************************************/
 void ConvertAttenuationModelFromDX5(float& _a0,float& _a1,float& _a2,float range);
@@ -678,7 +678,7 @@ public:
 //--- Internal structure use in case of Indexed vertex blending 
 //--- done by the rasterizer
 	VxDrawPrimitiveData			m_InternalDrawPrim;
-	VxScratch					m_ScratchPool;
+	// VxScratch					m_ScratchPool;
 	
 //--- Highest stage which has been set since the last call to DisableAllTextureStages
 // This must be updated by implementations in the implementation of the  SetTexture method

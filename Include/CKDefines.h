@@ -217,8 +217,9 @@ See Also: CKMaterial::SetCallback,CKMaterial::SetAsCurrent,The Virtools Render L
 ****************************************************************/
 typedef int (*CK_MATERIALCALLBACK)(CKRenderContext *Dev,CKMaterial* mat,void *Argument);
 
-
 typedef CKERROR  (*CKUICALLBACKFCT)(CKUICallbackStruct& param,void *data);
+
+typedef CK_LOADMODE (*CK_USERLOADCALLBACK)(CK_CLASSID Cid,CKSTRING OldName,CKSTRING NewName,CKObject** newobj,void* Arg);
 
 typedef CK_LOADMODE	(*CK_LOADRENAMECALLBACK)(CK_CLASSID Cid,CKSTRING OldName,CKSTRING NewName,CKObject** newobj,void* Arg);
 

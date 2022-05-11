@@ -100,7 +100,7 @@ Base class to parse a buffer (
 two implementation exist using either 
 a memory buffer or a file...
 *********************************************************/
-class CKBufferParser : public VxPoolObject {
+class CKBufferParser {
 friend class CKFile;
 public:
 	virtual ~CKBufferParser() {};
@@ -273,36 +273,26 @@ protected:
 	void CheckDuplicateNames();
 
 public:
-	int							m_SaveIDMax;			// Maximum CK_ID found when saving or loading objects  {secret}
-	XArray<CKFileObject>		m_FileObjects;			// List of objects being saved / loaded   {secret}
-	XArray<CKFileManagerData>	m_ManagersData;			// Manager Data loaded  {secret}
-	XClassArray<CKFilePluginDependencies> m_PluginsDep;	// Plugins dependencies for this file  {secret}
-	XClassArray<XIntArray>		m_IndexByClassId;		// List of index in the m_FileObjects table sorted by ClassID  {secret}
-	XClassArray<XString>		m_IncludedFiles;		// List of files that should be inserted in the CMO file.  {secret}
-	CKFileInfo					m_FileInfo;				// Headers summary  {secret}
-	CKBOOL						m_SceneSaved;
-	XBitArray					m_AlreadySavedMask;			// BitArray of IDs already saved  {secret}
-	CKDWORD						m_Flags;				// Flags used to save file {secret}
-	CKSTRING					m_FileName;				// Current file name  {secret}
-	CKContext*					m_Context;				// CKContext on which file is loaded/Saved  {secret}
+	int							m_SaveIDMax;				// Maximum CK_ID found when saving or loading objects  {secret}
+	XArray<CKFileObject>		m_FileObjects;				// List of objects being saved / loaded   {secret}
+	XArray<CKFileManagerData>	m_ManagersData;				// Manager Data loaded  {secret}
+	XClassArray<CKFilePluginDependencies> m_PluginsDep;		// Plugins dependencies for this file  {secret}
+	XClassArray<XIntArray>		m_IndexByClassId;			// List of index in the m_FileObjects table sorted by ClassID  {secret}
+	XClassArray<XString>		m_IncludedFiles;			// List of files that should be inserted in the CMO file.  {secret}
+	CKFileInfo					m_FileInfo;					// Headers summary  {secret}
+	CKDWORD						m_Flags;					// Flags used to save file {secret}
+	CKSTRING					m_FileName;					// Current file name  {secret}
+	CKContext*					m_Context;					// CKContext on which file is loaded/Saved  {secret}
 	CKBufferParser*				m_Parser;
 	VxMemoryMappedFile*			m_MappedFile;
 	XFileObjectsTable			m_ObjectsHashTable;
-#ifdef USECHUNKTABLE
-	XClassArray<CKFileChunk>	m_FileChunks;			// Instead of allocating chunk per chunk a whole memory buffer is allocated to store all chunks and their readers
-	CKFileChunk*				m_ObjectChunks;
-	CKFileChunk*				m_ManagersChunks;
-	VxMemoryPool				m_ChunkBuffers;			// Store all decompressed file buffer in memory so that all chunks directly points to it...
-														// can only work for recent files ( > 2.0)
-	BYTE*						m_CurrentChunkBufferPtr;
-#endif					
-	DWORD 						m_Unknown;
 	CKBOOL						m_ReadFileDataDone;
+	CKBOOL						m_SceneSaved;
+	XIntArray					m_DuplicateNameFounds;		// A List of file object index for which a existing object with the same name has been found, this list is build if the load option contains CK_LOAD_AUTOMATICMODE or CK_LOAD_DODIALOG	
+	XBitArray					m_AlreadySavedMask;			// BitArray of IDs already saved  {secret}
 	XBitArray					m_AlreadyReferencedMask;	// BitArray of IDs already referenced  {secret}
 	XObjectPointerArray			m_ReferencedObjects;
-	XIntArray					m_DuplicateNameFounds;	// A List of file object index for which a existing object with the same name has been
-														// found, this list is build if the load option contains CK_LOAD_AUTOMATICMODE or CK_LOAD_DODIALOG	
-	VxTimeProfiler				m_Chrono;
+	VxTimeProfiler				m_Chrono;	
 
 #endif // Docjet secret macro
 }; 
