@@ -9,7 +9,6 @@
 #define CKCONTEXT_H "$Id:$"
 
 #include "VxDefines.h"
-#include "VxAllocator.h"
 
 #include "CKDefines.h"
 #include "XObjectArray.h"
@@ -203,13 +202,13 @@ public:
 // Save/Load functions
 	CKERROR		Load(CKSTRING FileName,CKObjectArray *liste,CK_LOAD_FLAGS LoadFlags=CK_LOAD_DEFAULT,CKGUID* ReaderGuid=NULL);
 	CKERROR		Load(int BufferSize,void* MemoryBuffer,CKObjectArray *ckarray,CK_LOAD_FLAGS LoadFlags=CK_LOAD_DEFAULT);
-	CKSTRING		GetLastFileLoaded();
+	CKSTRING	GetLastFileLoaded();
 	
-	CKSTRING		GetLastCmoLoaded();
-	void			SetLastCmoLoaded(CKSTRING str);
+	CKSTRING	GetLastCmoLoaded();
+	void		SetLastCmoLoaded(CKSTRING str);
 	
-	CKSTRING		GetLastFileSaved();
-	void			SetLastFileSaved(CKSTRING str);
+	CKSTRING	GetLastFileSaved();
+	void		SetLastFileSaved(CKSTRING str);
 	
 	CKERROR		GetFileInfo(CKSTRING FileName,CKFileInfo* FileInfo);
 	CKERROR		GetFileInfo(int BufferSize,void* MemoryBuffer,CKFileInfo* FileInfo);
@@ -217,12 +216,13 @@ public:
 	CKERROR		LoadAnimationOnCharacter(CKSTRING FileName,CKObjectArray *liste,CKCharacter *carac,CKGUID* ReaderGuid=NULL,BOOL AsDynamicObjects = FALSE);
 	CKERROR		LoadAnimationOnCharacter(int BufferSize,void* MemoryBuffer,CKObjectArray *ckarray,CKCharacter *carac,BOOL AsDynamicObjects = FALSE);
 	
-	// Obsolete {Secret}
-	void			SetAutomaticLoadMode(CK_LOADMODE GeneralMode,CK_LOADMODE _3DObjectsMode,CK_LOADMODE MeshMode,CK_LOADMODE MatTexturesMode);
+	void		SetAutomaticLoadMode(CK_LOADMODE GeneralMode,CK_LOADMODE _3DObjectsMode,CK_LOADMODE MeshMode,CK_LOADMODE MatTexturesMode);
+	void		SetUserLoadCallback(CK_USERLOADCALLBACK fct,void* Arg);
+	CK_LOADMODE LoadVerifyObjectUnicity(CKSTRING OldName,CK_CLASSID Cid,const CKSTRING NewName,CKObject** newobj);
 
-	CKBOOL IsInLoad();
-	CKBOOL IsInSave();
-	CKBOOL IsRunTime();
+	CKBOOL		IsInLoad();
+	CKBOOL		IsInSave();
+	CKBOOL		IsRunTime();
 
 //----------------------------------------------------
 //	Render Engine Implementation Specific
@@ -231,10 +231,6 @@ public:
 	void ExecuteManagersOnPreRender(CKRenderContext* dev); 
 	void ExecuteManagersOnPostRender(CKRenderContext* dev); 
 	void ExecuteManagersOnPostSpriteRender(CKRenderContext* dev); 
-	void ExecuteManagersOnPostFullScreen(BOOL Going2FullScreen,CKRenderContext* dev);
-	void ExecuteManagersOnPreFullScreen(BOOL Going2FullScreen,CKRenderContext* dev);
-	void ExecuteManagersOnPreBackToFront(CKRenderContext* dev);
-	void ExecuteManagersOnPostBackToFront(CKRenderContext* dev);
 	
 	void AddProfileTime(CK_PROFILE_CATEGORY cat,float time); 
 
@@ -246,16 +242,13 @@ public:
 	CKERROR ProcessDebugEnd();										
 	CKDebugContext* GetDebugContext();								
 
-	void	 SetVirtoolsVersion(CK_VIRTOOLS_VERSION ver,CKDWORD Build); 
-	int	 GetPVInformation(); 
-	CKBOOL	 IsInDynamicCreationMode(); 
+	void	SetVirtoolsVersion(CK_VIRTOOLS_VERSION ver,CKDWORD Build); 
+	int		GetPVInformation(); 
+	CKBOOL	IsInDynamicCreationMode(); 
 
 // Internal functions 
 #ifdef DOCJETDUMMY // DOCJET secret macro
 #else
-	//---------------- Allocator
-	VxAllocator*			m_Allocator;
-
 
 #endif // Docjet secret macro
 };
@@ -352,36 +345,6 @@ protected:
 	CKContext*			m_Context;
 	XArray<Mark>		m_Marks;
 };
-
-#ifdef _DEBUG
-//	#define PROFILE
-#endif
-
-#ifdef PROFILE
-	#define CKPROFILESTART(title,context) CKTimeProfiler myProfile(title,context,8)
-	#define CKPROFILEMARK(name) myProfile(name)
-#else
-	#define CKPROFILESTART(title,context)
-	#define CKPROFILEMARK(name)
-#endif
-
-template <class T>
-T* CKCreateObject(CKContext* iContext)
-{
-	if (iContext)
-		return def_new (iContext->m_Allocator->AllocatePool(sizeof(T))) T(iContext);
-	else
-		return def_new T(iContext);
-}
-
-template <class T>
-void CKDeleteObject(CKContext* iContext, T* iO)
-{
-	if (iContext)
-		iContext->m_Allocator->ReleasePoolObject(iO);
-	else
-		def_delete iO;
-}
 
 #endif
 

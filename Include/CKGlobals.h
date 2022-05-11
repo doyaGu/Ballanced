@@ -128,8 +128,6 @@ char* CKUnPackData(int DestSize,char* SrcBuffer,int SrcSize);
 // String Utilities 
 
 CKSTRING CKStrdup(CKSTRING string);
-CKSTRING CKStrndup(CKSTRING iString, int iLength);
-void	 CKStrdelete(CKSTRING str);
 CKSTRING CKStrupr(CKSTRING string);
 CKSTRING CKStrlwr(CKSTRING string);
 

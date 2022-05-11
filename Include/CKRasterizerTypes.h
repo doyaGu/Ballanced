@@ -122,7 +122,7 @@ struct CKViewportData {
 	float			ViewZMax;		// 
 };
 
-struct CKRasterizerObjectDesc: public VxPoolObject {
+struct CKRasterizerObjectDesc {
 	virtual ~CKRasterizerObjectDesc() {}
 };
 

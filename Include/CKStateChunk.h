@@ -58,7 +58,7 @@
 	};
 
 
-	class ChunkParser : public VxPoolObject {
+	class ChunkParser {
 	public:
 		CKDWORD  CurrentPos;
 		CKDWORD  PrevIdentifierPos;

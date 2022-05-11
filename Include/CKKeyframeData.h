@@ -323,7 +323,7 @@ Remarks:
 
 See Also:Animation Keys,CKMorphController
 **********************************************************/
-class CKAnimController : public VxPoolObject {
+class CKAnimController {
 public:
 
 	CKAnimController(CKDWORD Type):m_Type(Type),m_NbKeys(0) {} 
