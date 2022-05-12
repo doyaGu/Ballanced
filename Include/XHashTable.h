@@ -955,7 +955,7 @@ private:
 	// Members
 	
 	// the hash table data {secret}
-	XSArray<pEntry>		m_Table;
+	XArray<pEntry>		m_Table;
 	// the entry pool {secret}
 	XClassArray<Entry>	m_Pool;
 };
