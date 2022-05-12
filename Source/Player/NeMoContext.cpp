@@ -178,7 +178,7 @@ void CNeMoContext::Cleanup()
     m_CKContext->ClearAll();
 }
 
-inline bool CNeMoContext::IsPlaying() const
+bool CNeMoContext::IsPlaying() const
 {
     return m_CKContext->IsPlaying() == TRUE;
 }
