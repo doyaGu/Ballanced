@@ -103,55 +103,60 @@ a memory buffer or a file...
 class CKBufferParser {
 friend class CKFile;
 public:
-	virtual ~CKBufferParser() {};
+	~CKBufferParser() {};
 
 //----- Read Write method
-	virtual BOOL Write(void* x,int size) = 0;
-	virtual BOOL Read(void* x,int size) = 0;
-	virtual char* ReadString() = 0;
-	virtual int ReadInt() = 0;
+	BOOL Write(void* x,int size);
+	BOOL Read(void* x,int size);
+	char* ReadString();
+	int ReadInt();
 
 //------ Cursor position 
-	virtual void Seek(int Pos) = 0;
-	virtual void Skip(int Offset) = 0;
+	void Seek(int Pos);
+	void Skip(int Offset);
 
 //------- Is Buffer valid
-	virtual BOOL IsValid() = 0;
-	virtual int  Size() = 0;
-	virtual int  CursorPos() = 0;
+	BOOL IsValid();
+	int  Size();
+	int  CursorPos();
 
 //----- Reading Utilities (always relative to current cursor position
 // Warning : All these methods advance the Cursor of Size bytes !	
 	
 	// Create a CKStateChunk from the Size bytes
 	// returns NULL if data was not valid
-	virtual CKStateChunk*	ExtractChunk(int Size,CKFile* f) = 0;		
-	virtual void			ExtractChunk(int Size,CKFile* f,CKFileChunk* chnk) = 0;
+	CKStateChunk*	ExtractChunk(int Size,CKFile* f);		
+	void			ExtractChunk(int Size,CKFile* f,CKFileChunk* chnk);
 	// Returns the CRC of the next Size bytes
-	virtual DWORD			ComputeCRC(int Size,DWORD PrevCRC=0) = 0; 
+	DWORD			ComputeCRC(int Size,DWORD PrevCRC=0); 
 	// Returns a new BufferParser containing the next size bytes or NULL
 	// if Size is <=0 
-	virtual CKMemoryBufferParser* Extract(int Size) = 0;
+	CKMemoryBufferParser* Extract(int Size);
 	// Saves the next Size bytes to a file 
-	virtual BOOL ExtractFile(char* Filename,int Size) = 0;
+	BOOL ExtractFile(char* Filename,int Size);
 	// Same version but with decoding 
-	virtual CKMemoryBufferParser* ExtractDecoded(int Size,DWORD Key[4]) = 0;
+	CKMemoryBufferParser* ExtractDecoded(int Size,DWORD Key[4]);
 	// Returns a new BufferParser containing the next PackSize bytes 
 	// unpacked to UnpackSize
-	virtual CKBufferParser*		UnPack(int UnpackSize,int PackSize) = 0;
+	CKBufferParser*		UnPack(int UnpackSize,int PackSize);
 
 //----- Writing Utilities (always relative to current cursor position
 // Warning : All these methods advance the Cursor of Size bytes !		
 	
-	virtual void			InsertChunk(CKStateChunk* chunk) = 0;		
+	void			InsertChunk(CKStateChunk* chunk);		
 	// Returns a new BufferParser containing the next Size bytes 
 	// packed with given compression level
-	virtual CKMemoryBufferParser* Pack(int Size,int CompressionLevel) = 0;
+	CKMemoryBufferParser* Pack(int Size,int CompressionLevel);
 
 //---- Others
 	//- Encode the next Size bytes (This does not increment the cursor pointer)
-	virtual void			Encode(int Size,DWORD Key[4]) = 0;		
-	
+	void			Encode(int Size,DWORD Key[4]);		
+
+public:
+    void *m_Buffer;
+    int m_CursorPos;
+    CKBOOL m_Valid;
+    int m_Size;
 };
 
 
@@ -178,7 +183,6 @@ public:
 // Loading (OpenFile  then LoadFileData )
 CKERROR OpenFile(CKSTRING filename,CK_LOAD_FLAGS Flags=CK_LOAD_DEFAULT);
 CKERROR OpenMemory(void* MemoryBuffer,int BufferSize,CK_LOAD_FLAGS Flags=CK_LOAD_DEFAULT);
-// CKERROR OpenStream(VxStream* stream,CK_LOAD_FLAGS Flags=CK_LOAD_DEFAULT);
 
 CKERROR LoadFileData(CKObjectArray *list);
 
@@ -186,7 +190,6 @@ CKERROR LoadFileData(CKObjectArray *list);
 // Direct Loading
 CKERROR Load(CKSTRING filename,CKObjectArray *list,CK_LOAD_FLAGS Flags=CK_LOAD_DEFAULT);
 CKERROR Load(void* MemoryBuffer,int BufferSize,CKObjectArray *list,CK_LOAD_FLAGS Flags=CK_LOAD_DEFAULT);
-// CKERROR Load(VxStream* stream,CKObjectArray *list,CK_LOAD_FLAGS Flags=CK_LOAD_DEFAULT);
 
 
 void	UpdateAndApplyAnimationsTo(CKCharacter* character);
@@ -280,6 +283,8 @@ public:
 	XClassArray<XIntArray>		m_IndexByClassId;			// List of index in the m_FileObjects table sorted by ClassID  {secret}
 	XClassArray<XString>		m_IncludedFiles;			// List of files that should be inserted in the CMO file.  {secret}
 	CKFileInfo					m_FileInfo;					// Headers summary  {secret}
+	CKBOOL						m_SceneSaved;
+	XBitArray					m_AlreadySavedMask;			// BitArray of IDs already saved  {secret}
 	CKDWORD						m_Flags;					// Flags used to save file {secret}
 	CKSTRING					m_FileName;					// Current file name  {secret}
 	CKContext*					m_Context;					// CKContext on which file is loaded/Saved  {secret}
@@ -287,12 +292,8 @@ public:
 	VxMemoryMappedFile*			m_MappedFile;
 	XFileObjectsTable			m_ObjectsHashTable;
 	CKBOOL						m_ReadFileDataDone;
-	CKBOOL						m_SceneSaved;
-	XIntArray					m_DuplicateNameFounds;		// A List of file object index for which a existing object with the same name has been found, this list is build if the load option contains CK_LOAD_AUTOMATICMODE or CK_LOAD_DODIALOG	
-	XBitArray					m_AlreadySavedMask;			// BitArray of IDs already saved  {secret}
 	XBitArray					m_AlreadyReferencedMask;	// BitArray of IDs already referenced  {secret}
 	XObjectPointerArray			m_ReferencedObjects;
-	VxTimeProfiler				m_Chrono;	
 
 #endif // Docjet secret macro
 }; 
