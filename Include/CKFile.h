@@ -103,6 +103,7 @@ a memory buffer or a file...
 class CKBufferParser {
 friend class CKFile;
 public:
+	CKBufferParser(void* Buffer,int Size);
 	~CKBufferParser() {};
 
 //----- Read Write method
