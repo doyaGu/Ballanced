@@ -1557,14 +1557,139 @@ typedef enum CK_VIRTOOLS_VERSION {
 
 #define CKMAX_JOY 4
 
+typedef enum CKKEYBOARD {
+	  CKK
+	, EY_ESCAPE				= 0x01         // Escape
+	, CKKEY_1				= 0x02		  // 1 through 0 on main keyboard		
+	, CKKEY_2				= 0x03     
+	, CKKEY_3				= 0x04     
+	, CKKEY_4				= 0x05     
+	, CKKEY_5				= 0x06     
+	, CKKEY_6				= 0x07     
+	, CKKEY_7				= 0x08     
+	, CKKEY_8				= 0x09     
+	, CKKEY_9				= 0x0A     
+	, CKKEY_0				= 0x0B     
+	, CKKEY_MINUS			= 0x0C       // - on main keyboard 
+	, CKKEY_EQUALS			= 0x0D		 // = on main keyboard 
+	, CKKEY_BACK			= 0x0E       // backspace 
+	, CKKEY_TAB				= 0x0F				
+	, CKKEY_Q				= 0x10         
+	, CKKEY_W				= 0x11         
+	, CKKEY_E				= 0x12       
+	, CKKEY_R				= 0x13       
+	, CKKEY_T				= 0x14       
+	, CKKEY_Y				= 0x15       
+	, CKKEY_U				= 0x16       
+	, CKKEY_I				= 0x17       
+	, CKKEY_O				= 0x18       
+	, CKKEY_P				= 0x19       
+	, CKKEY_LBRACKET		= 0x1A       // [  
+	, CKKEY_RBRACKET		= 0x1B		 // ]
+	, CKKEY_RETURN			= 0x1C       // Enter on main keyboard 
+	, CKKEY_LCONTROL		= 0x1D		 // Left Control 	
+	, CKKEY_A				= 0x1E       
+	, CKKEY_S				= 0x1F       
+	, CKKEY_D				= 0x20       
+	, CKKEY_F				= 0x21       
+	, CKKEY_G				= 0x22       
+	, CKKEY_H				= 0x23       
+	, CKKEY_J				= 0x24       
+	, CKKEY_K				= 0x25       
+	, CKKEY_L				= 0x26       
+	, CKKEY_SEMICOLON		= 0x27		  // ;	
+	, CKKEY_APOSTROPHE		= 0x28		  // '	
+	, CKKEY_GRAVE			= 0x29        // accent grave 
+	, CKKEY_LSHIFT			= 0x2A		  // Left shift		
+	, CKKEY_BACKSLASH		= 0x2B		  //	 
+	, CKKEY_Z				= 0x2C       
+	, CKKEY_X				= 0x2D       
+	, CKKEY_C				= 0x2E       
+	, CKKEY_V				= 0x2F       
+	, CKKEY_B				= 0x30       
+	, CKKEY_N				= 0x31       
+	, CKKEY_M				= 0x32       
+	, CKKEY_COMMA			= 0x33		 // ,	 
+	, CKKEY_PERIOD			= 0x34       // . on main keyboard 
+	, CKKEY_SLASH			= 0x35       // / on main keyboard 
+	, CKKEY_RSHIFT			= 0x36		 // Right Shift
+	, CKKEY_MULTIPLY		= 0x37       // * on numeric keypad 
+	, CKKEY_LMENU			= 0x38       // left Alt 
+	, CKKEY_SPACE			= 0x39		 // Space Bar 
+	, CKKEY_CAPITAL			= 0x3A		 // Caps Lock	
+	, CKKEY_F1				= 0x3B		
+	, CKKEY_F2				= 0x3C       
+	, CKKEY_F3				= 0x3D       
+	, CKKEY_F4				= 0x3E       
+	, CKKEY_F5				= 0x3F       
+	, CKKEY_F6				= 0x40       
+	, CKKEY_F7				= 0x41       
+	, CKKEY_F8				= 0x42       
+	, CKKEY_F9				= 0x43       
+	, CKKEY_F10				= 0x44       
+	, CKKEY_NUMLOCK			= 0x45			  // Num Lock	
+	, CKKEY_SCROLL			= 0x46           // Scroll Lock 
+	, CKKEY_NUMPAD7			= 0x47       
+	, CKKEY_NUMPAD8			= 0x48       
+	, CKKEY_NUMPAD9			= 0x49       
+	, CKKEY_SUBTRACT		= 0x4A           // - on numeric keypad 
+	, CKKEY_NUMPAD4			= 0x4B       
+	, CKKEY_NUMPAD5			= 0x4C       
+	, CKKEY_NUMPAD6			= 0x4D       
+	, CKKEY_ADD				= 0x4E           // + on numeric keypad 
+	, CKKEY_NUMPAD1			= 0x4F       
+	, CKKEY_NUMPAD2			= 0x50       
+	, CKKEY_NUMPAD3			= 0x51       
+	, CKKEY_NUMPAD0			= 0x52       
+	, CKKEY_DECIMAL			= 0x53           // . on numeric keypad 
+	, CKKEY_F11				= 0x57       
+	, CKKEY_F12				= 0x58       
+								
+	, CKKEY_F13				= 0x64                 //   (NEC PC98) 
+	, CKKEY_F14				= 0x65                 //   (NEC PC98) 
+	, CKKEY_F15				= 0x66                 //   (NEC PC98) 
+										
+	, CKKEY_KANA			= 0x70       // (Japanese keyboard)            
+	, CKKEY_CONVERT			= 0x79       // (Japanese keyboard)            
+	, CKKEY_NOCONVERT		= 0x7B       // (Japanese keyboard)            
+	, CKKEY_YEN				= 0x7D       // (Japanese keyboard)            
+	, CKKEY_NUMPADEQUALS	= 0x8D       // = on numeric keypad (NEC PC98) 
+	, CKKEY_CIRCUMFLEX		= 0x90       // (Japanese keyboard)            
+	, CKKEY_AT				= 0x91       //    (NEC PC98) 
+	, CKKEY_COLON			= 0x92       //    (NEC PC98) 
+	, CKKEY_UNDERLINE		= 0x93       //    (NEC PC98) 
+	, CKKEY_KANJI			= 0x94       // (Japanese keyboard)            
+	, CKKEY_STOP			= 0x95       //    (NEC PC98) 
+	, CKKEY_AX				= 0x96       //    (Japan AX) 
+	, CKKEY_UNLABELED		= 0x97       //       (J3100) 
+	, CKKEY_NUMPADENTER		= 0x9C       // Enter on numeric keypad 
+	, CKKEY_RCONTROL		= 0x9D   
+	, CKKEY_NUMPADCOMMA		= 0xB3       // , on numeric keypad (NEC PC98) 
+	, CKKEY_DIVIDE			= 0xB5       // / on numeric keypad 
+	, CKKEY_SYSRQ			= 0xB7   
+	, CKKEY_RMENU			= 0xB8       // right Alt 
+	, CKKEY_HOME			= 0xC7       // Home on arrow keypad 
+	, CKKEY_UP				= 0xC8       // UpArrow on arrow keypad 
+	, CKKEY_PRIOR			= 0xC9       // PgUp on arrow keypad 
+	, CKKEY_LEFT			= 0xCB       // LeftArrow on arrow keypad 
+	, CKKEY_RIGHT			= 0xCD       // RightArrow on arrow keypad 
+	, CKKEY_END				= 0xCF       // End on arrow keypad 
+	, CKKEY_DOWN			= 0xD0       // DownArrow on arrow keypad 
+	, CKKEY_NEXT			= 0xD1       // PgDn on arrow keypad 
+	, CKKEY_INSERT			= 0xD2       // Insert on arrow keypad 
+	, CKKEY_DELETE			= 0xD3       // Delete on arrow keypad 
+	, CKKEY_LWIN			= 0xDB       // Left Windows key 
+	, CKKEY_RWIN			= 0xDC       // Right Windows key 
+	, CKKEY_APPS			= 0xDD,        // AppMenu key 
+
+} CKKEYBOARD;
+
 typedef enum CK_PARAMETER_FLAGS {
 				CKPARAMETER_LOCAL	=0,  // The parameter is local to a CKBehavior
 				CKPARAMETER_IN		=1,	 // The parameter is an input of a CKBehavior	
 				CKPARAMETER_OUT		=2,	 // The	parameter is an output of a CKBehavior or a parameter of a CKBeObject
 				CKPARAMETER_SETTING =3,	 // The	parameter is used as a setting parameter by a CKBehavior.
 } CK_PARAMETER_FLAGS;
-
-
 
 typedef enum CK_PROFILE_CATEGORY {
 	CK_PROFILE_RENDERTIME		= 3,

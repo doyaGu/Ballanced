@@ -109,7 +109,7 @@ public:
 					// we search for the element in the other array
 					if(a.Find(*t) == a.m_End) {
 						// the element is not in the other array, we copy it to the newone
-						*temp = *it;
+						*temp = *t; // t was it
 						++temp;
 					}
 				}
@@ -449,7 +449,7 @@ protected:
 	
 	T* Allocate(int size)
 	{
-		if(size) return (T*) new T[size];
+		if(size) return (T*)VxNew(sizeof(T) * size);
 		else return 0;
 	}
 
