@@ -77,7 +77,7 @@ public:
 	Summary: Copy the pointer and release it the burden 
 	from the source XP.
 	************************************************/
-	XSmartPtr<T>& operator = (const XSmartPtr& a) {return operator=(p.m_Pointee);}
+	XSmartPtr<T>& operator = (const XSmartPtr& a) {return operator=(a.m_Pointee);}
 
 	XSmartPtr<T>& operator = (T* p) {
 		if (p) ++p->m_RefCount;

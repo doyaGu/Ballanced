@@ -55,15 +55,23 @@ public:
 	XBitArray& operator = (const XBitArray& a)
 	{
 		if (this != &a) {
-			if (m_Size > 32)
-				Free();
-			
-			m_Size = a.m_Size;
-			if (m_Size > 32) { // we allocate only if > 32
-				m_Data = Allocate(m_Size>>5);
-				memcpy(m_Data,a.m_Data,m_Size>>3);
+			if (m_Size != a.m_Size) {
+				if (m_Size > 32)
+					Free();
+				
+				m_Size = a.m_Size;
+				if (m_Size > 32) { // we allocate only if > 32
+					m_Data = Allocate(m_Size>>5);
+					memcpy(m_Data,a.m_Data,m_Size>>3);
+				} else {
+					m_Flags = a.m_Flags;
+				}
 			} else {
-				m_Flags = a.m_Flags;
+				if (m_Size>32)
+					memcpy(m_Data,a.m_Data,m_Size>>3);
+				else 
+					m_Flags = a.m_Flags;
+
 			}
 		}
 		return *this;
@@ -275,6 +283,29 @@ public:
 				}
 			}
 		}
+	}
+
+	// Summary: subtract bits from another bitarray
+	XBitArray& operator -= (XBitArray& a)
+	{
+		if (a.m_Size <= 32) {
+			if (m_Size <= 32)
+				m_Flags &= ~a.m_Flags;
+			else {
+				m_Data[0] &= ~a.m_Flags;
+			}
+		} else {
+			if (m_Size <= 32)
+				m_Flags &= ~a.m_Data[0];
+			else {
+				int size = a.m_Size>>5;
+				int i = 0;
+				for (;i<size;++i) {
+					m_Data[i] &= ~a.m_Data[i];
+				}
+			}
+		}
+		return *this;
 	}
 
 	// Summary: Returns TRUE if at least one common bit is set in two arrays

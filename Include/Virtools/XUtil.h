@@ -313,7 +313,7 @@ inline float XFabs(float a)
 
 #define VxNew(a) (new unsigned char[a])
 
-#define VxDelete(a) (delete[] a)
+#define VxDelete(a) (delete[] (unsigned char*) a)
 
 
 template <class T> T* VxAllocate	(int n);

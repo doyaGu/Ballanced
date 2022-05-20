@@ -63,9 +63,7 @@ VX_EXPORT	XBOOL Compare(const VxMatrix &mat) const;
 	void Perspective(float Fov,float Aspect,float Near_plane,float Far_plane);
 	void OrthographicRect(float Left,float Right,float Top,float Bottom,float Near_plane,float Far_plane);
 	void PerspectiveRect(float Left,float Right,float Top,float Bottom,float Near_plane,float Far_plane);
-VX_EXPORT	void RecomposeMatrixEx(const VxVector *Pos,const VxVector *Scale,const VxQuaternion *Quat, const VxQuaternion *Shear, float Sign);
-VX_EXPORT	void RecomposeMatrix(const VxVector *Pos, const VxVector *Scale, const VxQuaternion *Quat);
-	
+
 // operators
 	const VxVector4& operator[] (int i) const {return (const VxVector4&)(*(VxVector4*)(m_Data+i));}
 	VxVector4& operator[] (int i){return (VxVector4&)(*(VxVector4*)(m_Data+i));}
@@ -206,6 +204,7 @@ Sets Mat to
 		L	=	Left
 		T	=	Top
 		B	=	Bottom
+
 				[ 2/(R-L)		0			0			0]
 				[ 0				-2/(T-B)	0			0]
 		  MAT =	[ 0				0			1/F-N		0]

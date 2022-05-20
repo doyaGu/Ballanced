@@ -11,6 +11,9 @@
 VX_EXPORT int	  radToAngle(float val);
 VX_EXPORT float   Tsin(int angle);
 VX_EXPORT float   Tcos(int angle);
+struct VxCompressedVector;
+struct VxCompressedVectorOld;
+class VxMatrix;
 
 //______________________
 // some global variables
@@ -792,7 +795,7 @@ VX_EXPORT void TransformTo(VxVector *pts,const VxMatrix& Mat) const;
 VX_EXPORT void TransformFrom(const VxBbox& sbox,const VxMatrix& Mat);
 } VxBbox;
 
-inline VxVector::VxVector():z(0)
+inline VxVector::VxVector():x(0),y(0),z(0)
 {
 }
 

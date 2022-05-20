@@ -173,9 +173,6 @@ public:
 	// Create from a string and a length
 	VX_EXPORT XString& Create(const char* iString, const int iLength=0);
 
-	// Create from a string and a starting position
-	VX_EXPORT XString& CreateTail(const XBaseString& iString, const int iStart=0);
-
 	/************************************************
 	Summary: Conversion to a char*.
 	************************************************/
@@ -222,12 +219,6 @@ public:
 
 	// Format the string sprintf style, ol skool ! yeahhhhh
 	VX_EXPORT XString& Format(const char* iFormat,...);
-
-	// Format the current time
-	VX_EXPORT XString& FormatTime(const char* iFormat);
-
-	// Format a given time 
-	VX_EXPORT XString& FormatTime(int iTime, const char* iFormat);
 
 	// Capitalize all the characters of the string
 	VX_EXPORT XString& ToUpper();
