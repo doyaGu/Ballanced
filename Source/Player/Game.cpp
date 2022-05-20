@@ -162,10 +162,6 @@ bool CGame::Load()
 
     DeleteCKObjectArray(array);
 
-    // ReRegister OnClick Message in case it changed
-    m_NeMoContext->AddClickMessage();
-    m_NeMoContext->AddDoubleClickMessage();
-
     return true;
 }
 

@@ -42,7 +42,6 @@ public:
     int OnKeyDown(UINT uKey);
     int OnSysKeyDown(UINT uKey);
     void OnCommand(UINT id, UINT code);
-    void OnMouseClick(UINT uMsg);
     void OnExceptionCMO(WPARAM wParam, LPARAM lParam);
     void OnReturn(WPARAM wParam, LPARAM lParam);
     bool OnLoadCMO(WPARAM wParam, LPARAM lParam);

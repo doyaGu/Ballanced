@@ -233,18 +233,6 @@ public:
         CKBeObject *dest,
         CKBeObject *sender = NULL);
 
-    void AddClickMessage();
-    int GetClickMessage() const
-    {
-        return m_MsgClick;
-    }
-
-    void AddDoubleClickMessage();
-    int GetDoubleClickMessage() const
-    {
-        return m_MsgDoubleClick;
-    }
-
     void AddCloseMessage();
     bool BroadcastCloseMessage();
 
@@ -288,8 +276,6 @@ private:
     int m_DriverIndex;
     int m_ScreenModeIndex;
     char m_ProgPath[512];
-    CKMessageType m_MsgClick;
-    CKMessageType m_MsgDoubleClick;
     CKMessageType m_MsgWindowClose;
     BOOL m_DebugMode;
     BOOL m_Debugging;
