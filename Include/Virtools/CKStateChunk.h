@@ -334,7 +334,7 @@ class CKStateChunk
 		BOOL		ReadRawBitmapHeader(VxImageDescEx& desc);
 		BOOL		ReadRawBitmapData(VxImageDescEx& desc);
 
-	
+	CKStateChunk(CK_CLASSID Cid,CKFile* f);
 
 #endif // Docjet secret macro
 }; 

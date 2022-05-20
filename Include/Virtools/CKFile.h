@@ -92,7 +92,6 @@ typedef struct CKFileObject {
 
 
 class CKFileChunk;
-class CKMemoryBufferParser;
 
 /*********************************************************
 {secret}
@@ -128,18 +127,19 @@ public:
 	// returns NULL if data was not valid
 	CKStateChunk*	ExtractChunk(int Size,CKFile* f);		
 	void			ExtractChunk(int Size,CKFile* f,CKFileChunk* chnk);
+
 	// Returns the CRC of the next Size bytes
 	DWORD			ComputeCRC(int Size,DWORD PrevCRC=0); 
 	// Returns a new BufferParser containing the next size bytes or NULL
 	// if Size is <=0 
-	CKMemoryBufferParser* Extract(int Size);
+	CKBufferParser* Extract(int Size);
 	// Saves the next Size bytes to a file 
 	BOOL ExtractFile(char* Filename,int Size);
 	// Same version but with decoding 
-	CKMemoryBufferParser* ExtractDecoded(int Size,DWORD Key[4]);
+	CKBufferParser* ExtractDecoded(int Size,DWORD Key[4]);
 	// Returns a new BufferParser containing the next PackSize bytes 
 	// unpacked to UnpackSize
-	CKBufferParser*		UnPack(int UnpackSize,int PackSize);
+	CKBufferParser*	UnPack(int UnpackSize,int PackSize);
 
 //----- Writing Utilities (always relative to current cursor position
 // Warning : All these methods advance the Cursor of Size bytes !		
@@ -147,7 +147,7 @@ public:
 	void			InsertChunk(CKStateChunk* chunk);		
 	// Returns a new BufferParser containing the next Size bytes 
 	// packed with given compression level
-	CKMemoryBufferParser* Pack(int Size,int CompressionLevel);
+	CKBufferParser* Pack(int Size,int CompressionLevel);
 
 //---- Others
 	//- Encode the next Size bytes (This does not increment the cursor pointer)
@@ -156,7 +156,7 @@ public:
 public:
     void *m_Buffer;
     int m_CursorPos;
-    CKBOOL m_Valid;
+    BOOL m_Valid;
     int m_Size;
 };
 
