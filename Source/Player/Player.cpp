@@ -12,8 +12,6 @@
 
 RESOURCEMAP g_ResMap;
 
-// extern bool AntiPiracyCheck();
-
 static void InitGameInfo(CGameInfo &gameInfo)
 {
     strcpy(gameInfo.path, ".");
@@ -30,7 +28,9 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 {
     HANDLE hMutex = ::CreateMutexA(NULL, FALSE, g_ResMap.gameName);
     if (::GetLastError() == ERROR_ALREADY_EXISTS)
-        exit(-1);
+    {
+        return -1;
+    }
 
     CGameInfo gameInfo;
     InitGameInfo(gameInfo);
@@ -49,20 +49,12 @@ int APIENTRY WinMain(HINSTANCE hInstance,
         }
     }
 
-    // if (!AntiPiracyCheck())
-    //{
-    //     ::LoadStringA(g_ResMap.hResDll, RES_STR_ID[dwLangId * 8 + 5], buffer, 512);
-    //     ::MessageBoxA(NULL, buffer, "Attention", MB_OK);
-    //     ::ReleaseMutex(hMutex);
-    //     exit(-1);
-    // }
-
     if (!player.IsInitialized())
     {
         ::LoadStringA(g_ResMap.hResDll, RES_STR_ID[dwLangId * 8 + 6], buffer, 512);
         ::MessageBoxA(NULL, buffer, "Error", MB_OK);
         TT_ERROR("Player.cpp", "WinMain()", "GamePlayer Constructor - Abort");
-        exit(-1);
+        return -1;
     }
 
     CPlayerRegistry::GetInstance().Init(&player, hInstance);
@@ -73,7 +65,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
         ::MessageBoxA(NULL, buffer, "Error", MB_OK);
         TT_ERROR("Player.cpp", "WinMain()", "The application could not be initialized!!!");
         player.Done();
-        exit(-1);
+        return -1;
     }
 
     if (!player.LoadCMO("base.cmo"))
@@ -82,7 +74,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
         ::MessageBoxA(NULL, buffer, "Error", MB_OK);
         TT_ERROR("Player.cpp", "WinMain()", "SYSTEM HALTED");
         player.Done();
-        exit(-1);
+        return -1;
     }
 
     player.Run();

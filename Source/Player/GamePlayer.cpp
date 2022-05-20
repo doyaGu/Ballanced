@@ -793,39 +793,6 @@ void CGamePlayer::OnCommand(UINT id, UINT code)
 {
 }
 
-void CGamePlayer::OnMouseClick(UINT uMsg)
-{
-    if (!m_NeMoContext.GetRenderContext())
-    {
-        return;
-    }
-
-    int msg = (uMsg == WM_LBUTTONDOWN) ? m_NeMoContext.GetClickMessage() : m_NeMoContext.GetDoubleClickMessage();
-
-    POINT pt;
-    GetCursorPos(&pt);
-    if (!m_NeMoContext.IsRenderFullscreen())
-    {
-        ::ScreenToClient(m_WinContext.GetRenderWindow(), &pt);
-    }
-
-    CKPOINT ckpt = {pt.x, pt.y};
-    CKPICKRESULT res;
-    CKObject *obj = m_NeMoContext.GetRenderContext()->Pick(ckpt, &res, FALSE);
-    if (obj && CKIsChildClassOf(obj, CKCID_BEOBJECT))
-    {
-        m_NeMoContext.SendMessageSingle(msg, (CKBeObject *)obj);
-    }
-    if (res.Sprite)
-    {
-        CKObject *sprite = m_NeMoContext.GetObject(res.Sprite);
-        if (sprite)
-        {
-            m_NeMoContext.SendMessageSingle(msg, (CKBeObject *)sprite);
-        }
-    }
-}
-
 void CGamePlayer::OnExceptionCMO(WPARAM wParam, LPARAM lParam)
 {
     m_NeMoContext.RestoreWindow();
@@ -934,11 +901,6 @@ LRESULT CGamePlayer::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case WM_COMMAND:
         OnCommand(LOWORD(wParam), HIWORD(wParam));
-        break;
-
-    case WM_LBUTTONDOWN:
-    case WM_LBUTTONDBLCLK:
-        OnMouseClick(uMsg);
         break;
 
     case TT_MSG_NO_GAMEINFO:

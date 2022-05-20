@@ -38,8 +38,6 @@ CNeMoContext::CNeMoContext()
       m_DisplayChanged(false),
       m_DriverIndex(0),
       m_ScreenModeIndex(-1),
-      m_MsgClick(0),
-      m_MsgDoubleClick(0),
       m_MsgWindowClose(0),
       m_DebugMode(FALSE),
       m_Debugging(FALSE)
@@ -105,8 +103,6 @@ CKERROR CNeMoContext::Init()
         return CKERR_INVALIDPARAMETER;
     }
 
-    AddClickMessage();
-    AddDoubleClickMessage();
     AddCloseMessage();
 
     return CK_OK;
@@ -730,16 +726,6 @@ CKMessage *CNeMoContext::SendMessageSingle(
     CKBeObject *sender)
 {
     return m_MessageManager->SendMessageSingle(msg, dest, sender);
-}
-
-void CNeMoContext::AddClickMessage()
-{
-    m_MsgWindowClose = m_MessageManager->AddMessageType("OnClick");
-}
-
-void CNeMoContext::AddDoubleClickMessage()
-{
-    m_MsgWindowClose = m_MessageManager->AddMessageType("OnDblClick");
 }
 
 void CNeMoContext::AddCloseMessage()
