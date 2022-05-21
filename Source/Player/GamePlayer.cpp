@@ -548,23 +548,35 @@ void CGamePlayer::Init(HINSTANCE hInstance, LPFNWNDPROC lpfnWndProc)
     ::SendMessageA(m_WinContext.GetMainWindow(), TT_MSG_EXIT_TO_TITLE, NULL, NULL);
     ::SetFocus(m_WinContext.GetMainWindow());
 
+    HMODULE bml = m_NeMoContext.GetBMLModuleHandle();
+    m_StepFunc = (StepFunc)GetProcAddress(bml, "Step");
+
     m_State = eInitialized;
 }
 
 void CGamePlayer::Run()
 {
-    while (Step())
-        continue;
+    CKERROR result = CK_OK;
+    while (result == CK_OK) {
+        if (m_StepFunc == nullptr)
+            result = Step();
+        else {
+            while (true) // BML Step
+                if (m_StepFunc(Step() == CK_OK) == CK_OK)
+                    continue;
+            break;
+        }
+    }
 }
 
-bool CGamePlayer::Step()
+CKERROR CGamePlayer::Step()
 {
     MSG msg;
     if (::PeekMessageA(&msg, NULL, 0, 0, PM_REMOVE))
     {
         if (msg.message == WM_QUIT)
         {
-            return false;
+            return 1;
         }
         else if (!::TranslateAcceleratorA(msg.hwnd, m_WinContext.GetAccelTable(), &msg))
         {
@@ -575,7 +587,7 @@ bool CGamePlayer::Step()
 
     m_NeMoContext.Update();
 
-    return true;
+    return CK_OK;
 }
 
 void CGamePlayer::Done()

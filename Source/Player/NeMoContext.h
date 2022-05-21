@@ -12,6 +12,8 @@ public:
     CNeMoContext();
     ~CNeMoContext();
 
+    HMODULE GetBMLModuleHandle();
+
     CKERROR Init();
     bool ReInit();
 
@@ -279,6 +281,13 @@ private:
     CKMessageType m_MsgWindowClose;
     BOOL m_DebugMode;
     BOOL m_Debugging;
+
+    typedef CKERROR(*ProcessFunc)(CKERROR);
+    typedef CKERROR(*RenderFunc)(CK_RENDER_FLAGS);
+    typedef bool(*SkipRenderFunc)();
+    ProcessFunc m_ProcessFunc = nullptr;
+    RenderFunc m_RenderFunc = nullptr;
+    SkipRenderFunc m_SkipRenderFunc = nullptr;
 
     static CNeMoContext *instance;
 };

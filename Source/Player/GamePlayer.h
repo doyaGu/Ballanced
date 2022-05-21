@@ -24,7 +24,7 @@ public:
 
     void Init(HINSTANCE hInstance, LPFNWNDPROC lpfnWndProc);
     void Run();
-    bool Step();
+    CKERROR Step();
     void Done();
     bool LoadCMO(const char *filename);
     bool IsInitialized() const
@@ -50,6 +50,10 @@ public:
     void OnScreenModeChanged(WPARAM wParam, LPARAM lParam);
     void OnGoFullscreen();
     void OnStopFullscreen();
+
+    typedef CKERROR(*StepFunc)(bool);
+
+    StepFunc m_StepFunc = nullptr;
 
     LRESULT WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 

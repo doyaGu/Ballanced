@@ -105,7 +105,23 @@ CKERROR CNeMoContext::Init()
 
     AddCloseMessage();
 
+    HMODULE bml = GetBMLModuleHandle();
+    m_ProcessFunc = (ProcessFunc)GetProcAddress(bml, "Process");
+    m_RenderFunc = (RenderFunc)GetProcAddress(bml, "Render");
+    m_SkipRenderFunc = (SkipRenderFunc)GetProcAddress(bml, "IsSkipRender");
+
     return CK_OK;
+}
+
+HMODULE CNeMoContext::GetBMLModuleHandle() {
+    CKPluginEntry* bml = m_PluginManager->FindComponent(CKGUID(0x6229385d, 0x197331db), CKPLUGIN_BEHAVIOR_DLL);
+    if (!bml)
+        return NULL;
+    int index = bml->m_PluginDllIndex;
+    CKPluginDll* dll = m_PluginManager->GetPluginDllInfo(index);
+    if (!dll)
+        return NULL;
+    return (HMODULE)dll->m_DllInstance;
 }
 
 bool CNeMoContext::ReInit()
@@ -199,7 +215,9 @@ void CNeMoContext::Update()
         if (beforeRender <= 0)
         {
             m_TimeManager->ResetChronos(TRUE, FALSE);
-            Render();
+            // BML Render
+            if (!m_SkipRenderFunc || !m_SkipRenderFunc())
+                Render();
         }
     }
 }
@@ -223,7 +241,11 @@ CKERROR CNeMoContext::Process()
     }
     else
     {
-        return m_CKContext->Process();
+        // BML Process
+        CKERROR ret = m_CKContext->Process();
+        if (!m_ProcessFunc)
+            return ret;
+        return m_ProcessFunc(ret);
     }
 
     return CK_OK;
@@ -231,7 +253,10 @@ CKERROR CNeMoContext::Process()
 
 CKERROR CNeMoContext::Render(CK_RENDER_FLAGS flags)
 {
-    return m_RenderContext->Render(flags);
+    CKERROR ret = m_RenderContext->Render(flags);
+    if (m_RenderFunc)
+        m_RenderFunc(flags);
+    return ret;
 }
 
 void CNeMoContext::Refresh()
