@@ -33,9 +33,9 @@ public :
 // Special Parameter :: This (MySelf) 
 
 
-void		SetAsMyselfParameter(CKBOOL act);
+	void		SetAsMyselfParameter(CKBOOL act);
 
-			CKBOOL		IsMyselfParameter() {return (m_ObjectFlags & CK_PARAMETERIN_THIS);}
+	CKBOOL		IsMyselfParameter() {return (m_ObjectFlags & CK_PARAMETERIN_THIS);}
 
 	virtual	void		SetOwner(CKObject *o);
 	virtual CKERROR		SetValue(const void *buf,int size = 0);
@@ -43,8 +43,6 @@ void		SetAsMyselfParameter(CKBOOL act);
 
 	virtual	void *		GetWriteDataPtr(); 
 	virtual	CKERROR		SetStringValue(CKSTRING Value);
-
-	void				CheckClass(CKParameterTypeDesc* iType); 
 
 //-------------------------------------------------------------------
 #ifdef DOCJETDUMMY // Docjet secret macro

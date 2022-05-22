@@ -65,9 +65,6 @@ CK_CLASSID	GetParameterClassID();
 virtual	void		SetOwner(CKObject *o);
 CKObject *	GetOwner();
 
-// Virtual added for Fixed Size parameter support
-virtual	void			CheckClass(CKParameterTypeDesc* iType); 
-
 //--------------------------------------------
 // Disabled parameters in behaviors
 
