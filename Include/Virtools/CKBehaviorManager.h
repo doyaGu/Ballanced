@@ -43,19 +43,12 @@ CKERROR Execute(float delta);
 
 //----------------------------------------------
 // Object Management
-CKERROR		AddObject	(CKBeObject *b);
-CKERROR		RemoveObject(CKBeObject *b);
 int			GetObjectsCount();
-CKERROR		RemoveAllObjects();
- CKBeObject * GetObject(int pos);
-
-CKERROR		AddObjectNextFrame		(CKBeObject *b);
-CKERROR		RemoveObjectNextFrame	(CKBeObject *b);
-
+CKBeObject* GetObject(int pos);
 
 //-----------------------------------------------
 // Setup
-int		GetBehaviorMaxIteration();
+int			GetBehaviorMaxIteration();
 void		SetBehaviorMaxIteration(int n);
 
 
@@ -69,7 +62,7 @@ void		SetBehaviorMaxIteration(int n);
 	virtual CKERROR OnCKPlay();
 	virtual CKERROR OnCKPause();
 	virtual CKERROR PreProcess();
-	virtual CKERROR PreClearAll() {  RemoveAllObjects();  return CK_OK; };
+	virtual CKERROR PreClearAll();
 	virtual CKERROR SequenceDeleted(CK_ID *objids,int count);
 	virtual CKERROR SequenceToBeDeleted(CK_ID *objids,int count);
 	virtual CKDWORD	GetValidFunctionsMask()	{ return CKMANAGER_FUNC_PreClearAll							|
