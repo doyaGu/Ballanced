@@ -60,9 +60,7 @@ virtual CKERROR				GetValue(void *buf, CKBOOL update = TRUE);
 virtual CKERROR				SetValue(const void *buf,int size = 0);
 virtual	CKERROR				CopyValue(CKParameter *param,CKBOOL UpdateParam=TRUE);
 virtual	void*				GetReadDataPtr(CKBOOL update = TRUE); 
-virtual	int  				GetStringValue(CKSTRING Value,CKBOOL update = TRUE);	 
-
-		void				CheckClass(CKParameterTypeDesc* iType); 
+virtual	int  				GetStringValue(CKSTRING Value,CKBOOL update = TRUE);	  
 
 //--------------------------------------------
 // Destinations 
