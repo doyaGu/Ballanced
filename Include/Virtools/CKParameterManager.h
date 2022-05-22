@@ -184,7 +184,7 @@ CKERROR RegisterParameterType(CKParameterTypeDesc *param_type);
 CKERROR UnRegisterParameterType(CKGUIDCONSTREF guid);
 CKParameterTypeDesc* GetParameterTypeDescription(int type);
 CKParameterTypeDesc* GetParameterTypeDescription(CKGUIDCONSTREF guid);
- int	GetParameterSize(CKParameterType type);
+int	GetParameterSize(CKParameterType type);
 int GetParameterTypesCount();
 
 //-----------------------------------------------------------------------
@@ -237,11 +237,7 @@ CKERROR UnRegisterOperationType(CKOperationType opcode);
 
 //-----------------------------------------------------------------------
 // Operation function acces
-#ifdef PSX2
-	CKERROR RegisterOperationFunction(CKGUID operation,CKGUID type_paramres,CKGUID type_param1,CKGUID type_param2,CK_PARAMETEROPERATION op);
-#else
-	CKERROR RegisterOperationFunction(CKGUIDREF operation,CKGUIDREF type_paramres,CKGUIDREF type_param1,CKGUIDREF type_param2,CK_PARAMETEROPERATION op);
-#endif
+CKERROR RegisterOperationFunction(CKGUIDREF operation,CKGUIDREF type_paramres,CKGUIDREF type_param1,CKGUIDREF type_param2,CK_PARAMETEROPERATION op);
 
 CK_PARAMETEROPERATION GetOperationFunction(CKGUIDREF operation,CKGUIDREF type_paramres,CKGUIDREF type_param1,CKGUIDREF type_param2);
 CKERROR UnRegisterOperationFunction(CKGUIDREF operation,CKGUIDREF type_paramres,CKGUIDREF type_param1,CKGUIDREF type_param2);
@@ -265,13 +261,10 @@ int GetAvailableOperationsDesc(const CKGUID &opGuid,
 int GetParameterOperationCount();
 
 
-
-
 CKBOOL IsParameterTypeToBeShown(CKParameterType type);
 
 CKBOOL IsParameterTypeToBeShown(CKGUIDCONSTREF guid);
 
-CKBOOL CheckParamTypeValidity(CKParameterType type);
 
 	CKParameterManager(CKContext *Context);
 
@@ -298,6 +291,7 @@ protected :
 	int					m_NbEnumsDefined;
 	CKEnumStruct*		m_Enums;
 
+	CKBOOL CheckParamTypeValidity(CKParameterType type);
 	CKBOOL CheckOpCodeValidity(CKOperationType type);
 
 private:
