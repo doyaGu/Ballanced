@@ -262,7 +262,6 @@ See Also:SetUserMipMapMode
 ************************************************/
 virtual BOOL	GetUserMipMapLevel(int Level,VxImageDescEx& ResultImage) = 0;
 
-
 /************************************************
 Summary: Gets the texture index of this texture in the rasterizer context.
 

@@ -176,10 +176,6 @@ virtual BYTE*	GetModifierVertices(CKDWORD* Stride) = 0;
 
 virtual int		GetModifierVertexCount() = 0;
 
-virtual void	GetModifierVertex(int iIndex, VxVector* oPosition) = 0;
-
-virtual void	SetModifierVertex(int iIndex, VxVector* iPosition) = 0;
-
 /****************************************************
 Summary: Notifies when vertices in the mesh have been moved.
 
@@ -232,9 +228,6 @@ virtual BYTE*	GetModifierUVs(CKDWORD* Stride,int channel=-1) = 0;
 
 virtual int		GetModifierUVCount(int channel=-1) = 0;
 
-virtual void	GetModifierUV(int iIndex, float* oU, float *oV, int channel=-1) = 0;
-
-virtual void	SetModifierUV(int iIndex, float iU, float iV, int channel=-1) = 0;
 /*************************************************
 Summary: Notifies when texture coordinates have been changed.
 
@@ -280,6 +273,55 @@ Remarks:
 See Also: GetVertexColor,SetVertexSpecularColor,SetLitMode
 *************************************************/
 virtual	void	SetVertexColor(int Index, CKDWORD Color) = 0;
+
+/*************************************************
+Summary: Sets the specular color of a vertex.
+
+Arguments:
+	Index: Index of the vertex.
+	Color: Specular color to be set to the vertex.
+Remarks:
+	+ Vertex colors are only used if the mesh is set in prelit mode
+	(see SetLitMode).
+See Also: GetVertexSpecularColor,SetVertexColor
+*************************************************/
+virtual void	SetVertexSpecularColor(int Index, CKDWORD Color) = 0;
+
+/*************************************************
+Summary: Sets the normal for vertex.
+
+Arguments:
+	Index: Index of the vertex.
+	Vector: A pointer to the normal vector that is to be set to the vertex.
+Remarks:
+	+ Vertex normals are only used if the mesh is set in lit mode
+	(see SetLitMode).
+See Also: GetVertexNormal,GetNormalsPtr
+*************************************************/
+virtual void	SetVertexNormal(int Index, VxVector *Vector) = 0;
+
+/*************************************************
+Summary: Sets the position of a vertex.
+
+Arguments:
+	Index: Index of the vertex in the mesh.
+	Vector: A pointer to the position vector that is to be set to the vertex.
+See Also: GetVertexPosition,GetPositionsPtr,GetModifierVertices
+*************************************************/
+virtual void	SetVertexPosition(int Index, VxVector *Vector) = 0;
+
+/*************************************************
+Summary: Sets the texture coordinates of a vertex.
+
+Arguments:
+	Index: Index of the vertex.
+	u: U Texture coordinate .
+	v: V Texture coordinate.
+	channel: Index of the texture channel whose coordinates should be set. -1 means
+	the default texture coordinates, additionnal channels are accessed from 0 to MAX_CHANNELS
+See Also: GetVertexTextureCoordinates,GetTextureCoordinatesPtr
+*************************************************/
+virtual void	SetVertexTextureCoordinates(int Index, float u,float v,int channel=-1) = 0;
 
 /************************************************
 Summary: Returns the array of vertices colors

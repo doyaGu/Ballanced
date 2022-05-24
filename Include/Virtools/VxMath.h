@@ -88,6 +88,7 @@ struct VxImageDescEx;
 #include "VxDistance.h"
 #include "VxFrustum.h"
 #include "VxColor.h"
+#include "VxMemoryPool.h"
 
 // Containers
 #include "XArray.h"
@@ -103,10 +104,6 @@ typedef XArray<void*> XVoidArray;
 // Threads and Synchro
 #include "VxMutex.h"
 #include "VxThread.h"
-
-//---- Aligned memory allocation
-VX_EXPORT void* VxNewAligned(int size,int align);
-VX_EXPORT void  VxDeleteAligned(void* ptr);
 
 //----- Automatically called in dynamic library...{secret}
 
