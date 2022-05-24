@@ -6,7 +6,6 @@
 /*	Copyright (c) Virtools 2000, All Rights Reserved.					 */	
 /*************************************************************************/
 #ifndef CKINPUTMANAGER_H
-
 #define CKINPUTMANAGER_H "$Id:$"
 
 #include  "VxMath.h"
