@@ -4,9 +4,7 @@
 
 This is the WIP reversed source code for Ballance. The final purpose of the project is to recreate the game from scratch, based on the decompilation of the original.
 
-The finished part has been tested and works on Windows XP and newer versions of Windows.
-
-Only compilable code will be found in the `main` branch.
+The recompiled player and building blocks have been tested on Windows XP and newer versions of Windows.
 
 The current progress is shown as follows.
 
@@ -16,11 +14,10 @@ The current progress is shown as follows.
 | Bin/ResDll.dll                            | Completed         |
 | BuildingBlocks/physics_RT.dll             | In Progress       |
 | BuildingBlocks/TT_DatabaseManager_RT.dll  | Completed         |
-| BuildingBlocks/TT_Gravity_RT.dll          | Startup           |
+| BuildingBlocks/TT_Gravity_RT.dll          | In Progress       |
 | BuildingBlocks/TT_InterfaceManager_RT.dll | Completed         |
-| BuildingBlocks/TT_ParticleSystems_RT.dll  | Startup           |
-| BuildingBlocks/TT_Toolbox_RT.dll          | Startup           |
-| Plugins/VirtoolsLoaderR.dll               | Completed         |
+| BuildingBlocks/TT_ParticleSystems_RT.dll  | In Progress       |
+| BuildingBlocks/TT_Toolbox_RT.dll          | In Progress       |
 
 **Note: The repository is at the early stage. There is still a lot of work that needs to be done. Please be aware that the codebase can drastically change at any time.**
 
