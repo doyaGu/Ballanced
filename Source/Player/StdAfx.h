@@ -14,9 +14,9 @@
 
 #include <windows.h>
 
-#include "resource.h"
-
 #include "CKAll.h"
+
+#include "resource.h"
 
 #include "config.h"
 
