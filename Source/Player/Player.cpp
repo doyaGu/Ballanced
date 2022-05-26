@@ -8,6 +8,7 @@
 #include "LogProtocol.h"
 #include "PlayerRegistry.h"
 
+#include "TT_InterfaceManager_RT/GameInfo.h"
 #include "ResDll.h"
 
 RESOURCEMAP g_ResMap;

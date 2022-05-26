@@ -9,7 +9,6 @@
 
 #include "getopt.h"
 #include "XString.h"
-#include "TerraTools.h"
 
 #include "ErrorProtocol.h"
 #include "LogProtocol.h"
@@ -180,7 +179,7 @@ static bool IniSetBPPAndDriver(int bpp, int driver)
 
     char buffer[64];
     sprintf(buffer, "%d", g_ResMap.dwVideoDriverSetting);
-    return ::WritePrivateProfileStringA("Settings", g_ResMap.videoDriver, buffer, g_ResMap.pathSetting);
+    return ::WritePrivateProfileStringA("Settings", g_ResMap.videoDriver, buffer, g_ResMap.pathSetting) == TRUE;
 }
 
 static bool IniSetFullscreen(bool fullscreen)
@@ -189,7 +188,7 @@ static bool IniSetFullscreen(bool fullscreen)
 
     char buffer[64];
     sprintf(buffer, "%d", g_ResMap.fullScreenSetting);
-    return ::WritePrivateProfileStringA("Settings", g_ResMap.fullScreen, buffer, g_ResMap.pathSetting);
+    return ::WritePrivateProfileStringA("Settings", g_ResMap.fullScreen, buffer, g_ResMap.pathSetting) == TRUE;
 }
 
 static bool IniSetResolution(int width, int height)
@@ -198,7 +197,7 @@ static bool IniSetResolution(int width, int height)
 
     char buffer[64];
     sprintf(buffer, "%d", g_ResMap.dwVideoModeSetting);
-    return ::WritePrivateProfileStringA("Settings", g_ResMap.videoMode, buffer, g_ResMap.pathSetting);
+    return ::WritePrivateProfileStringA("Settings", g_ResMap.videoMode, buffer, g_ResMap.pathSetting) == TRUE;
 }
 
 static bool IniGetBPPAndDriver(int *bpp, int *driver)

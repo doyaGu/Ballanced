@@ -1,8 +1,7 @@
 #ifndef PLAYER_GAME_H
 #define PLAYER_GAME_H
 
-#include "GameInfo.h"
-
+class CGameInfo;
 class CNeMoContext;
 
 class CGame

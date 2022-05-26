@@ -9,6 +9,7 @@
 
 #include "ErrorProtocol.h"
 #include "NeMoContext.h"
+#include "TT_InterfaceManager_RT/GameInfo.h"
 
 #define MAX_GAMEDATA 100
 

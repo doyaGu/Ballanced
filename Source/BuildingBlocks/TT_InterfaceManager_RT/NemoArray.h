@@ -1,7 +1,7 @@
 #ifndef BUILDINGBLOCKS_NEMOARRAY_H
 #define BUILDINGBLOCKS_NEMOARRAY_H
 
-#include <CKDataArray.h>
+#include "CKDataArray.h"
 
 class CNemoElement
 {

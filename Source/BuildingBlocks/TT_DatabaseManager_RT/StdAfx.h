@@ -16,6 +16,6 @@
 
 #include "CKAll.h"
 
-#include "TerraTools.h"
+#define TERRATOOLS_GUID CKGUID(0x56495254, 0x4F4F4C53)
 
 #endif // BUILDINGBLOCKS_STDAFX_H

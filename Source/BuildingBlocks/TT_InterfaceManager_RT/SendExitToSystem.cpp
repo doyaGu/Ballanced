@@ -8,7 +8,6 @@
 #include "StdAfx.h"
 
 #include "InterfaceManager.h"
-#include "TerraTools.h"
 
 CKObjectDeclaration *FillBehaviorSendExitToSystemDecl();
 CKERROR CreateSendExitToSystemProto(CKBehaviorPrototype **);

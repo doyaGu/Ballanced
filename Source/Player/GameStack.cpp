@@ -5,6 +5,8 @@
 #include "ErrorProtocol.h"
 #include "Game.h"
 
+#include "TT_InterfaceManager_RT/GameInfo.h"
+
 CGameStack::CGameStack(bool enable) : m_Enabled(enable), m_Node(new Node()), m_Count(0)
 {
     m_Node->head = m_Node;
