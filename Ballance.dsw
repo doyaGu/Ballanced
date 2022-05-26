@@ -3,18 +3,6 @@ Microsoft Developer Studio Workspace File, Format Version 6.00
 
 ###############################################################################
 
-Project: "Common"=.\Source\Common\Common.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-}}}
-
-###############################################################################
-
 Project: "Player"=.\Source\Player\Player.dsp - Package Owner=<4>
 
 Package=<5>
@@ -25,9 +13,6 @@ Package=<4>
 {{{
     Begin Project Dependency
     Project_Dep_Name ResDll
-    End Project Dependency
-    Begin Project Dependency
-    Project_Dep_Name Common
     End Project Dependency
 }}}
 
@@ -58,21 +43,6 @@ Package=<4>
 ###############################################################################
 
 Project: "TT_InterfaceManager_RT"=.\Source\BuildingBlocks\TT_InterfaceManager_RT\TT_InterfaceManager_RT.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
-    Begin Project Dependency
-    Project_Dep_Name Common
-    End Project Dependency
-}}}
-
-###############################################################################
-
-Project: "VirtoolsLoader"=.\Source\Plugins\VirtoolsLoader\VirtoolsLoader.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
