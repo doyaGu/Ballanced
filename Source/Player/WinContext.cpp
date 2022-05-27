@@ -1,9 +1,9 @@
-#include "StdAfx.h"
-
 #include "WinContext.h"
 
 #include <string.h>
 
+#include "config.h"
+#include "resource.h"
 #include "ErrorProtocol.h"
 
 char RenderWindowName[8];

@@ -1,14 +1,14 @@
-#include "StdAfx.h"
-
 #include "NeMoContext.h"
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
+#include "config.h"
+#include "WinContext.h"
 #include "ErrorProtocol.h"
 #include "LogProtocol.h"
 #include "TT_InterfaceManager_RT/InterfaceManager.h"
-#include "WinContext.h"
 
 CNeMoContext *CNeMoContext::instance = NULL;
 
@@ -548,6 +548,19 @@ void CNeMoContext::AddBitmapPath(const char *path)
 void CNeMoContext::AddDataPath(const char *path)
 {
     m_CKContext->GetPathManager()->AddPath(DATA_PATH_IDX, XString(path));
+}
+
+void CNeMoContext::SetProgPath(const char *path)
+{
+    if (path)
+    {
+        strcpy(m_ProgPath, path);
+    }
+}
+
+char *CNeMoContext::GetProgPath() const
+{
+    return (char *)m_ProgPath;
 }
 
 CKERROR CNeMoContext::GetFileInfo(CKSTRING filename, CKFileInfo *fileinfo)

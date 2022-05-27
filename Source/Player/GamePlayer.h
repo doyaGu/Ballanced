@@ -1,10 +1,13 @@
 #ifndef PLAYER_GAMEPLAYER_H
 #define PLAYER_GAMEPLAYER_H
 
+#define WIN32_LEAN_AND_MEAN
+#include "Windows.h"
+
 #include "Game.h"
+#include "GameStack.h"
 #include "NeMoContext.h"
 #include "WinContext.h"
-#include "GameStack.h"
 
 class CPlayerRegistry;
 
@@ -58,7 +61,7 @@ private:
     CGamePlayer &operator=(const CGamePlayer &);
 
     void Construct();
-    CKERROR InitEngine();
+    int InitEngine();
     bool ReInitEngine();
     bool LoadEngineDLL();
     bool LoadStdDLL();

@@ -1,5 +1,3 @@
-#include "StdAfx.h"
-
 #include "GamePlayer.h"
 
 #include <io.h>
@@ -7,13 +5,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "getopt.h"
-#include "XString.h"
-
+#include "config.h"
+#include "resource.h"
+#include "Splash.h"
 #include "ErrorProtocol.h"
 #include "LogProtocol.h"
+
+#include "getopt.h"
 #include "ResDll.h"
-#include "Splash.h"
 #include "TT_InterfaceManager_RT/InterfaceManager.h"
 
 #define MAXOPTIONS 32
@@ -991,7 +990,7 @@ void CGamePlayer::Construct()
     m_State = eInitialized;
 }
 
-CKERROR CGamePlayer::InitEngine()
+int CGamePlayer::InitEngine()
 {
     char drive[4] = "";
     char fullpath[512] = "";
@@ -1005,7 +1004,7 @@ CKERROR CGamePlayer::InitEngine()
 
     if (!m_NeMoContext.StartUp())
     {
-        return false;
+        return CKERR_INVALIDPARAMETER;
     }
 
     ::GetModuleFileNameA(NULL, buffer, MAX_PATH);
@@ -1014,7 +1013,7 @@ CKERROR CGamePlayer::InitEngine()
     if (!fullpath)
     {
         TT_ERROR("GamePlayer.cpp", "CGamePlayer::InitEngine()", "Unable to set ProgPath");
-        return false;
+        return CKERR_INVALIDPARAMETER;
     }
     m_NeMoContext.SetProgPath(fullpath);
 
@@ -1025,7 +1024,7 @@ CKERROR CGamePlayer::InitEngine()
 
     if (!LoadEngineDLL() || !LoadStdDLL())
     {
-        return false;
+        return CKERR_INVALIDPARAMETER;
     }
 
     return m_NeMoContext.Init();

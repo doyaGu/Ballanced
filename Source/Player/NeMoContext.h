@@ -1,7 +1,9 @@
 #ifndef PLAYER_NEMOCONTEXT_H
 #define PLAYER_NEMOCONTEXT_H
 
-#include <string.h>
+#define WIN32_LEAN_AND_MEAN
+#include "Windows.h"
+#include "CKAll.h"
 
 class CWinContext;
 class CTTInterfaceManager;
@@ -183,18 +185,8 @@ public:
     void AddBitmapPath(const char *path);
     void AddDataPath(const char *path);
 
-    void SetProgPath(const char *path)
-    {
-        if (path)
-        {
-            strcpy(m_ProgPath, path);
-        }
-    }
-
-    char *GetProgPath() const
-    {
-        return (char *)m_ProgPath;
-    }
+    void SetProgPath(const char *path);
+    char *GetProgPath() const;
 
     CKERROR GetFileInfo(CKSTRING filename, CKFileInfo *fileinfo);
     CKERROR LoadFile(

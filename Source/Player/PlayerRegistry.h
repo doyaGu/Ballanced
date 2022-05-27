@@ -1,6 +1,9 @@
 #ifndef PLAYER_PLAYERREGISTRY_H
 #define PLAYER_PLAYERREGISTRY_H
 
+#define WIN32_LEAN_AND_MEAN
+#include "Windows.h"
+
 class CGamePlayer;
 
 class CPlayerRegistry

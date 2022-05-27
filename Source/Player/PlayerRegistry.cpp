@@ -1,6 +1,5 @@
-#include "StdAfx.h"
-
 #include "PlayerRegistry.h"
+
 #include "GamePlayer.h"
 #include "ErrorProtocol.h"
 

@@ -1,6 +1,6 @@
-#include "StdAfx.h"
-
 #include "Splash.h"
+
+#include "resource.h"
 
 #include <exception>
 #include <stdio.h>

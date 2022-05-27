@@ -1,8 +1,6 @@
 #ifndef PLAYER_GAMESTACK_H
 #define PLAYER_GAMESTACK_H
 
-#include <exception>
-
 class CGameInfo;
 
 class CGameStack
