@@ -1,6 +1,9 @@
 #ifndef PLAYER_WINCONTEXT_H
 #define PLAYER_WINCONTEXT_H
 
+#define WIN32_LEAN_AND_MEAN
+#include "Windows.h"
+
 typedef LRESULT(CALLBACK *LPFNWNDPROC)(HWND, UINT, WPARAM, LPARAM);
 
 class CWinContext

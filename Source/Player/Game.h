@@ -1,6 +1,10 @@
 #ifndef PLAYER_GAME_H
 #define PLAYER_GAME_H
 
+#define WIN32_LEAN_AND_MEAN
+#include "Windows.h"
+#include "CKAll.h"
+
 class CGameInfo;
 class CNeMoContext;
 

@@ -1,5 +1,3 @@
-#include "StdAfx.h"
-
 #include "LogProtocol.h"
 
 #include <io.h>

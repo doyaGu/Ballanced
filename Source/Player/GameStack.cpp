@@ -1,10 +1,7 @@
-#include "StdAfx.h"
-
 #include "GameStack.h"
 
-#include "ErrorProtocol.h"
 #include "Game.h"
-
+#include "ErrorProtocol.h"
 #include "TT_InterfaceManager_RT/GameInfo.h"
 
 CGameStack::CGameStack(bool enable) : m_Enabled(enable), m_Node(new Node()), m_Count(0)

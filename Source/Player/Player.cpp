@@ -1,15 +1,10 @@
-// Player.cpp : Defines the entry point for the application.
-//
-
-#include "StdAfx.h"
-
 #include "GamePlayer.h"
+#include "PlayerRegistry.h"
 #include "ErrorProtocol.h"
 #include "LogProtocol.h"
-#include "PlayerRegistry.h"
 
-#include "TT_InterfaceManager_RT/GameInfo.h"
 #include "ResDll.h"
+#include "TT_InterfaceManager_RT/GameInfo.h"
 
 RESOURCEMAP g_ResMap;
 
