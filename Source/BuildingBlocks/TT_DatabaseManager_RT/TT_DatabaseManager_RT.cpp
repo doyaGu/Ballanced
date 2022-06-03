@@ -29,9 +29,7 @@ CKERROR ExitInstance(CKContext *context)
 {
     CTTDatabaseManager *man = CTTDatabaseManager::GetManager(context);
     if (man)
-    {
         delete man;
-    }
 
     return CK_OK;
 }
