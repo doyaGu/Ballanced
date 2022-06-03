@@ -63,9 +63,7 @@ int LoadDatabase(const CKBehaviorContext &behcontext)
     }
 
     if (beh->IsInputActive(0))
-    {
         beh->ActivateInput(0, FALSE);
-    }
 
     BOOL autoRegister;
     beh->GetInputParameterValue(0, &autoRegister);

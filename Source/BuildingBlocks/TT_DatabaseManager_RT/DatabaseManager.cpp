@@ -2,11 +2,11 @@
 
 #include "DatabaseManager.h"
 
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <io.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 static inline unsigned char rotl8(unsigned char val, int shift)
 {
@@ -46,18 +46,12 @@ CTTDatabaseManager::~CTTDatabaseManager()
 int CTTDatabaseManager::Register(CKSTRING arrayName)
 {
     if (!arrayName)
-    {
         return 0;
-    }
 
     XArray<CKSTRING>::Iterator it = m_ArrayNames.Begin();
     while (it != m_ArrayNames.End())
-    {
         if (!strcmp(*it++, arrayName))
-        {
             return 21;
-        }
-    }
 
     int nameSize = strlen(arrayName) + 1;
     CKSTRING str = new char[strlen(arrayName) + 1];
@@ -70,12 +64,8 @@ int CTTDatabaseManager::Clear()
 {
     XArray<CKSTRING>::Iterator it = m_ArrayNames.Begin();
     while (it != m_ArrayNames.End())
-    {
         if (*it)
-        {
-            delete[] *it++;
-        }
-    }
+            delete[] * it++;
 
     m_ArrayNames.Clear();
     return true;
@@ -86,15 +76,11 @@ int CTTDatabaseManager::Load(CKContext *context, bool autoRegister, CKSTRING arr
     int i, c;
 
     if (!arrayName)
-    {
         return 33;
-    }
 
     FILE *fp = fopen(m_Filename, "rb");
     if (!fp)
-    {
         return 31;
-    }
 
     fseek(fp, 0, SEEK_END);
     int fileSize = ftell(fp);
@@ -114,9 +100,7 @@ int CTTDatabaseManager::Load(CKContext *context, bool autoRegister, CKSTRING arr
     if (m_Crypted)
     {
         for (i = 0; i < fileSize; ++i)
-        {
             fileData[i] = -(rotl8(fileData[i], 3) ^ 0xAF);
-        }
     }
 
     int nameSize = 0;
@@ -148,14 +132,10 @@ int CTTDatabaseManager::Load(CKContext *context, bool autoRegister, CKSTRING arr
 
     array->Clear();
     for (c = array->GetColumnCount(); c >= 0; --c)
-    {
         array->RemoveColumn(c);
-    }
 
     if (autoRegister)
-    {
         Register(arrayName);
-    }
 
     nameSize = strlen(chunk) + 1;
     arraySize = *(int *)&chunk[nameSize];
@@ -199,9 +179,7 @@ int CTTDatabaseManager::Load(CKContext *context, bool autoRegister, CKSTRING arr
     array->SetKeyColumn(header.keyColumn);
 
     for (i = 0; i < header.rowCount; ++i)
-    {
         array->InsertRow(-1);
-    }
 
     for (c = 0; c < header.columnCount; ++c)
     {
@@ -257,9 +235,7 @@ int CTTDatabaseManager::Save(CKContext *context)
     {
         CKDataArray *array = (CKDataArray *)context->GetObjectByNameAndClass(m_ArrayNames[n], CKCID_DATAARRAY);
         if (!array)
-        {
             return 42;
-        }
 
         int chunkSize = 0;
         CKSTRING arrayName = array->GetName();
@@ -282,15 +258,11 @@ int CTTDatabaseManager::Save(CKContext *context)
             switch (type)
             {
             case CKARRAYTYPE_INT:
-            {
                 chunkSize += rowCount * sizeof(int);
-            }
-            break;
+                break;
             case CKARRAYTYPE_FLOAT:
-            {
                 chunkSize += rowCount * sizeof(float);
-            }
-            break;
+                break;
             case CKARRAYTYPE_STRING:
             {
                 CKSTRING str = NULL;
@@ -298,9 +270,7 @@ int CTTDatabaseManager::Save(CKContext *context)
                 {
                     array->GetElementValue(i, c, &str);
                     if (str)
-                    {
                         chunkSize += strlen(str);
-                    }
                     chunkSize += 1;
                 }
             }
@@ -419,16 +389,12 @@ int CTTDatabaseManager::Save(CKContext *context)
     }
 
     if (!fileData)
-    {
         return 41;
-    }
 
     if (m_Crypted)
     {
         for (i = 0; i < fileSize; ++i)
-        {
             fileData[i] = rotr8(-fileData[i] ^ 0xAF, 3);
-        }
     }
 
     struct _stat buf;
@@ -440,25 +406,17 @@ int CTTDatabaseManager::Save(CKContext *context)
     _chmod(m_Filename, _S_IREAD | _S_IWRITE);
     FILE *fp = fopen(m_Filename, "wb");
     if (!fp)
-    {
         return 41;
-    }
 
     fwrite(fileData, fileSize, sizeof(char), fp);
     fclose(fp);
 
     if (readable)
-    {
         _chmod(m_Filename, _S_IREAD);
-    }
     else if (writable)
-    {
         _chmod(m_Filename, _S_IWRITE);
-    }
     else if (readable && writable)
-    {
         _chmod(m_Filename, _S_IREAD | _S_IWRITE);
-    }
 
     delete[] fileData;
     return 1;
@@ -467,9 +425,7 @@ int CTTDatabaseManager::Save(CKContext *context)
 bool CTTDatabaseManager::SetProperty(CKSTRING filename, BOOL crypted)
 {
     if (!filename || filename[0] == '\0')
-    {
         return false;
-    }
 
     m_Filename = filename;
     m_Crypted = crypted;
