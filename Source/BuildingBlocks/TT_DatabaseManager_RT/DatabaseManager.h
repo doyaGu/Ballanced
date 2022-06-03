@@ -2,6 +2,7 @@
 #define BUILDINGBLOCKS_DATABASEMANAGER_H
 
 #include "CKBaseManager.h"
+#include "CKContext.h"
 
 #define TT_DATABASE_MANAGER_GUID CKGUID(0x4DB6188E, 0x287E1410)
 
