@@ -5,15 +5,16 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "config.h"
-#include "resource.h"
-#include "Splash.h"
 #include "ErrorProtocol.h"
 #include "LogProtocol.h"
+#include "Splash.h"
 
-#include "getopt.h"
 #include "ResDll.h"
 #include "TT_InterfaceManager_RT/InterfaceManager.h"
+#include "getopt.h"
+
+#include "config.h"
+#include "resource.h"
 
 #define MAXOPTIONS 32
 
@@ -47,9 +48,7 @@ static char **GetArgs(int *argc)
 
     char *cmdline = ::GetCommandLineA();
     if (!cmdline || strcmp(cmdline, "") == 0)
-    {
         return NULL;
-    }
 
     char *progend = NULL;
     if (cmdline[0] == '\"')
@@ -103,9 +102,7 @@ static char **GetArgs(int *argc)
     while (token)
     {
         while (isspace(*token))
-        {
             ++token;
-        }
         argv[optind++] = token;
         token = strtok(NULL, " ");
     }
@@ -119,9 +116,7 @@ static bool ParseCommandLine(PlayerOptions &options)
     int argc = 1;
     char **argv = ::GetArgs(&argc);
     if (!argv || argc == 1)
-    {
         return false;
-    }
 
     int ch;
     while ((ch = getopt(argc, argv, "f::d::p::w::h::b::v::")) != -1)
@@ -139,27 +134,19 @@ static bool ParseCommandLine(PlayerOptions &options)
             options.pauseOnTaskSwitch = true;
         case 'w':
             if (optarg)
-            {
                 options.width = atoi(optarg);
-            }
             break;
         case 'h':
             if (optarg)
-            {
                 options.height = atoi(optarg);
-            }
             break;
         case 'b':
             if (optarg)
-            {
                 options.bpp = atoi(optarg);
-            }
             break;
         case 'v':
             if (optarg)
-            {
                 options.driver = atoi(optarg);
-            }
             break;
         default:
             return false;
@@ -203,9 +190,7 @@ static bool IniGetBPPAndDriver(int *bpp, int *driver)
 {
     DWORD dwVideoDriver = ::GetPrivateProfileIntA("Settings", g_ResMap.videoDriver, -1, g_ResMap.pathSetting);
     if (dwVideoDriver == -1)
-    {
         return false;
-    }
 
     *bpp = (dwVideoDriver & 1) != 0 ? 32 : 16;
     *driver = dwVideoDriver >> 16;
@@ -326,9 +311,7 @@ static void OnInitDialog(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 lbStrId = ::SendDlgItemMessageA(hWnd, IDC_LB_SCREEN_MODE, LB_ADDSTRING, 0, (LPARAM)drDesc->DriverName);
                 ::SendDlgItemMessageA(hWnd, IDC_LB_SCREEN_MODE, LB_SETITEMDATA, lbStrId, i);
                 if (i == CNeMoContext::GetInstance()->GetDriverIndex())
-                {
                     ::SendDlgItemMessageA(hWnd, IDC_LB_SCREEN_MODE, LB_SETCURSEL, lbStrId, 0);
-                }
             }
         }
     }
@@ -390,24 +373,19 @@ static BOOL CALLBACK DialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
             BOOL fError = wParam;
             int curIdx = ::SendDlgItemMessageA(hWnd, IDC_LB_SCREEN_MODE, LB_GETCURSEL, 0, 0);
             if (curIdx >= 0)
-            {
                 CNeMoContext::GetInstance()->SetDriverIndex(SendDlgItemMessageA(hWnd, IDC_LB_SCREEN_MODE, LB_GETITEMDATA, curIdx, 0));
-            }
 
             curIdx = ::SendDlgItemMessageA(hWnd, IDC_LB_DRIVER, LB_GETCURSEL, 0, 0);
             if (curIdx >= 0)
-            {
                 fError = CNeMoContext::GetInstance()->ApplyScreenMode(SendDlgItemMessageA(hWnd, IDC_LB_DRIVER, LB_GETITEMDATA, curIdx, 0));
-            }
 
             CTTInterfaceManager *im = CNeMoContext::GetInstance()->GetInterfaceManager();
             im->SetDriverIndex(CNeMoContext::GetInstance()->GetDriverIndex());
             im->SetScreenModeIndex(CNeMoContext::GetInstance()->GetScreenMode());
 
             if (fError)
-            {
                 EndDialog(hWnd, 1);
-            }
+
             return TRUE;
         }
         case IDCANCEL:
@@ -440,9 +418,7 @@ CGamePlayer::CGamePlayer(CGameInfo *gameInfo, int n, bool defaultSetting, HANDLE
     Construct();
 
     for (int i = 0; i < n; i++)
-    {
         m_DataManager.Save(&gameInfo[i]);
-    }
 }
 
 CGamePlayer::~CGamePlayer()
@@ -454,9 +430,7 @@ void CGamePlayer::Init(HINSTANCE hInstance, LPFNWNDPROC lpfnWndProc)
     m_State = eInitial;
 
     if (!CheckPrerequisite())
-    {
         return;
-    }
 
     CNeMoContext::RegisterInstance(&m_NeMoContext);
     m_Game.SetNeMoContext(&m_NeMoContext);
@@ -471,7 +445,7 @@ void CGamePlayer::Init(HINSTANCE hInstance, LPFNWNDPROC lpfnWndProc)
     {
     case CK_OK:
         break;
-        
+
     case CKERR_NODLLFOUND:
         ::MessageBoxA(NULL, "Necessary dll is not found", "Error", MB_OK);
         return;
@@ -497,14 +471,9 @@ void CGamePlayer::Init(HINSTANCE hInstance, LPFNWNDPROC lpfnWndProc)
         if (!m_DefaultSetting || !engineReinitialized)
         {
             if (::DialogBoxParamA(m_WinContext.GetAppInstance(), (LPCSTR)IDD_FULLSCREEN_SETUP, NULL, DialogProc, 0) != 1)
-            {
                 return;
-            }
-
             if (!ReInitEngine())
-            {
                 return;
-            }
             settingChanged = true;
         }
 
@@ -520,19 +489,15 @@ void CGamePlayer::Init(HINSTANCE hInstance, LPFNWNDPROC lpfnWndProc)
     }
 
     {
-        CTTInterfaceManager* im = m_NeMoContext.GetInterfaceManager();
+        CTTInterfaceManager *im = m_NeMoContext.GetInterfaceManager();
 
         im->SetDriverIndex(m_NeMoContext.GetDriverIndex());
         im->SetScreenModeIndex(m_NeMoContext.GetScreenMode());
 
         if (strlen(g_ResMap.pathSetting) > 128)
-        {
             im->SetIniName("Ballance.ini");
-        }
         else
-        {
             im->SetIniName(g_ResMap.pathSetting);
-        }
 
         im->SetRookie(m_IsRookie);
         im->SetTaskSwitchEnabled(m_TaskSwitchEnabled);
@@ -588,9 +553,7 @@ void CGamePlayer::Done()
     {
         m_NeMoContext.Cleanup();
         if (m_NeMoContext.RestoreWindow())
-        {
             m_NeMoContext.Refresh();
-        }
 
         m_NeMoContext.Shutdown();
 
@@ -598,9 +561,7 @@ void CGamePlayer::Done()
         if (gameInfo && gameInfo->fileName)
         {
             if (!m_Stack.GetGameInfo(gameInfo->fileName))
-            {
                 delete gameInfo;
-            }
             m_Game.SetGameInfo(NULL);
         }
         m_Stack.ClearAll();
@@ -626,17 +587,17 @@ bool CGamePlayer::LoadCMO(const char *filename)
         m_DataManager.Load(gameInfo, filename);
         if (gameInfoNow)
         {
-            if (gameInfoNow->type == 1)
+            switch (gameInfoNow->type)
             {
+            case 1:
                 gameInfo->next = gameInfoNow;
-            }
-            else if (gameInfoNow->type == 2)
-            {
+                break;
+            case 2:
                 gameInfo->next = gameInfoNow->next;
-            }
-            else
-            {
+                break;
+            default:
                 gameInfo->next = NULL;
+                break;
             }
         }
         else
@@ -646,15 +607,12 @@ bool CGamePlayer::LoadCMO(const char *filename)
     }
 
     if (gameInfoNow && !m_Stack.GetGameInfo(gameInfoNow->fileName))
-    {
         m_Stack.Push(gameInfoNow);
-    }
 
     RegisterGameInfo();
     if (!m_Game.Load())
-    {
         return false;
-    }
+
     ::SetCursor(::LoadCursorA(NULL, (LPCSTR)IDC_ARROW));
 
     m_Game.Play();
@@ -683,9 +641,7 @@ void CGamePlayer::OnSized()
 void CGamePlayer::OnPaint()
 {
     if (m_NeMoContext.GetRenderContext() && !m_NeMoContext.IsRenderFullscreen())
-    {
         m_NeMoContext.Render();
-    }
 }
 
 void CGamePlayer::OnClose()
@@ -701,28 +657,22 @@ void CGamePlayer::OnActivateApp(WPARAM wParam, LPARAM lParam)
 
     CTTInterfaceManager *im = m_NeMoContext.GetInterfaceManager();
     if (!im || !m_NeMoContext.GetInterfaceManager()->IsTaskSwitchEnabled())
-    {
         return;
-    }
 
     if (wParam != WA_ACTIVE)
     {
         if (m_NeMoContext.GetCKContext())
         {
             if (firstDeActivate)
-            {
                 wasPlaying = m_NeMoContext.IsPlaying();
-            }
+
             if (m_PauseOnTaskSwitch)
-            {
                 m_NeMoContext.Pause();
-            }
+
             if (m_NeMoContext.GetRenderContext() && m_NeMoContext.IsRenderFullscreen())
             {
                 if (firstDeActivate)
-                {
                     wasFullscreen = true;
-                }
                 m_NeMoContext.SwitchFullscreen();
                 m_NeMoContext.MinimizeWindow();
             }
@@ -736,13 +686,11 @@ void CGamePlayer::OnActivateApp(WPARAM wParam, LPARAM lParam)
     else
     {
         if (wasPlaying)
-        {
             m_NeMoContext.Play();
-        }
+
         if (wasFullscreen && !firstDeActivate)
-        {
             m_NeMoContext.GoFullscreen();
-        }
+
         firstDeActivate = true;
     }
 }
@@ -750,9 +698,7 @@ void CGamePlayer::OnActivateApp(WPARAM wParam, LPARAM lParam)
 void CGamePlayer::OnSetCursor()
 {
     if (IsInitialized() && !m_NeMoContext.IsPlaying())
-    {
         ::SetCursor(::LoadCursorA(NULL, (LPCSTR)IDC_ARROW));
-    }
 }
 
 void CGamePlayer::OnGetMinMaxInfo(LPMINMAXINFO lpmmi)
@@ -803,9 +749,7 @@ void CGamePlayer::OnReturn(WPARAM wParam, LPARAM lParam)
 {
     RegisterGameInfo();
     if (!m_Game.Load())
-    {
         Done();
-    }
     m_Game.Play();
 
     m_WinContext.SetResolution(m_NeMoContext.GetWidth(), m_NeMoContext.GetHeight());
@@ -980,9 +924,7 @@ void CGamePlayer::Construct()
     }
 
     if (IsUsingCommandLine())
-    {
         ParseCommandLine(options);
-    }
 
     m_NeMoContext.SetScreen(&m_WinContext, options.fullscreen, options.driver, options.bpp, options.width, options.height);
     m_WinContext.SetResolution(options.width, options.height);
@@ -1003,9 +945,7 @@ int CGamePlayer::InitEngine()
     }
 
     if (!m_NeMoContext.StartUp())
-    {
         return CKERR_INVALIDPARAMETER;
-    }
 
     ::GetModuleFileNameA(NULL, buffer, MAX_PATH);
     _splitpath(buffer, drive, dir, NULL, NULL);
@@ -1023,9 +963,7 @@ int CGamePlayer::InitEngine()
     sprintf(m_BehaviorPath, "%s%s%s%s", drive, dir, m_Path, "BuildingBlocks");
 
     if (!LoadEngineDLL() || !LoadStdDLL())
-    {
         return CKERR_INVALIDPARAMETER;
-    }
 
     return m_NeMoContext.Init();
 }
@@ -1048,9 +986,7 @@ bool CGamePlayer::LoadEngineDLL()
 {
 
     if (!m_NeMoContext.ParsePlugins(m_RenderPath) || _access(m_RenderPath, 0) == -1)
-    {
         return false;
-    }
 
     return true;
 }

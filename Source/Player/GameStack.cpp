@@ -1,10 +1,11 @@
 #include "GameStack.h"
 
-#include "Game.h"
 #include "ErrorProtocol.h"
+#include "Game.h"
+
 #include "TT_InterfaceManager_RT/GameInfo.h"
 
-CGameStack::CGameStack(bool enable) : m_Enabled(enable), m_Node(new Node()), m_Count(0)
+CGameStack::CGameStack(bool enable) : m_Enabled(enable), m_Node(new Node), m_Count(0)
 {
     m_Node->head = m_Node;
     m_Node->next = m_Node;
@@ -13,8 +14,8 @@ CGameStack::CGameStack(bool enable) : m_Enabled(enable), m_Node(new Node()), m_C
 
 CGameStack::~CGameStack()
 {
-    Node *node, *ptr;
-    for (node = m_Node->head; node != m_Node; --m_Count)
+    Node *ptr;
+    for (Node *node = m_Node->head; node != m_Node; --m_Count)
     {
         ptr = node;
         node = node->head;
@@ -29,30 +30,25 @@ CGameStack::~CGameStack()
 
 void CGameStack::Push(CGameInfo *gameInfo)
 {
-    Node *node;
-    Node *head;
-    Node *first;
-    Node *newNode;
-    Node *newHead;
-    Node *nweNext;
+    if (!gameInfo)
+        return;
 
-    node = m_Node;
-    head = node->head;
-    first = node->head->next;
-    newNode = new Node();
-    newHead = head;
+    Node *node = m_Node;
+    Node *head = node->head;
+    Node *first = node->head->next;
+
+    Node *newNode = new Node;
+    Node *newHead = head;
     if (!head)
-    {
         newHead = newNode;
-    }
+
     newNode->head = newHead;
-    nweNext = first;
+    Node *newNext = first;
     if (!first)
-    {
-        nweNext = newNode;
-    }
-    newNode->next = nweNext;
-    head->next = newNode;
+        newNext = newNode;
+
+    newNode->next = newNext;
+    newHead->next = newNode;
     newNode->next->head = newNode;
     newNode->gameInfo = gameInfo;
     ++m_Count;
@@ -60,25 +56,20 @@ void CGameStack::Push(CGameInfo *gameInfo)
 
 CGameInfo *CGameStack::RemoveHead()
 {
-    Node *node;
-    Node *head;
-    Node *ptr;
-    CGameInfo *gameInfo = NULL;
-
     if (m_Count == 0)
     {
         TT_ERROR("GameStack.cpp", "CGameStack::RemoveHead()", "Game stack is empty");
         return NULL;
     }
 
-    node = m_Node;
-    head = node->head;
-    gameInfo = node->head->gameInfo;
+    Node *node = m_Node;
+    Node *head = node->head;
+    CGameInfo *gameInfo = node->head->gameInfo;
     while (head != node)
     {
         if (head->gameInfo == gameInfo)
         {
-            ptr = head;
+            Node *ptr = head;
             head = head->head;
             ptr->next->head = ptr->head;
             ptr->head->next = ptr->next;
@@ -106,32 +97,21 @@ void CGameStack::ClearAll()
 
 CGameInfo *CGameStack::GetGameInfo(const char *path)
 {
-    Node *node;
-    Node *head;
-    CGameInfo *gameInfo;
-
-    node = m_Node;
-    head = node->head;
+    Node *node = m_Node;
+    Node *head = node->head;
     if (node->head == node)
-    {
         return NULL;
-    }
 
+    CGameInfo *gameInfo;
     while (true)
     {
         gameInfo = head->gameInfo;
-        if (gameInfo)
-        {
-            if (!strcmp(gameInfo->fileName, path))
-            {
-                break;
-            }
-        }
+        if (gameInfo && !strcmp(gameInfo->fileName, path))
+            break;
+
         head = head->head;
         if (head == node)
-        {
             return NULL;
-        }
     }
 
     return head->gameInfo;

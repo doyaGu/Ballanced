@@ -4,11 +4,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "config.h"
-#include "WinContext.h"
 #include "ErrorProtocol.h"
 #include "LogProtocol.h"
+#include "WinContext.h"
+
 #include "TT_InterfaceManager_RT/InterfaceManager.h"
+
+#include "config.h"
 
 CNeMoContext *CNeMoContext::instance = NULL;
 
@@ -111,9 +113,7 @@ CKERROR CNeMoContext::Init()
 bool CNeMoContext::ReInit()
 {
     if (!FindScreenMode() || !GetRenderContext() || !CreateRenderContext())
-    {
         return false;
-    }
 
     m_WinContext->UpdateWindows();
     m_WinContext->ShowWindows();
@@ -134,9 +134,7 @@ bool CNeMoContext::StartUp()
 void CNeMoContext::Shutdown()
 {
     if (!m_RenderContext)
-    {
         return;
-    }
 
     Cleanup();
 
@@ -144,9 +142,7 @@ void CNeMoContext::Shutdown()
     m_RenderContext = NULL;
 
     if (m_CKContext)
-    {
         CKCloseContext(m_CKContext);
-    }
     m_CKContext = NULL;
 
     CKShutdown();
@@ -209,17 +205,13 @@ CKERROR CNeMoContext::Process()
     if (m_DebugMode)
     {
         if (!m_Debugging)
-        {
             m_CKContext->ProcessDebugStart();
-        }
 
         m_Debugging = m_CKContext->ProcessDebugStep();
         m_DebugContext = m_CKContext->GetDebugContext();
 
         if (!m_Debugging)
-        {
             m_CKContext->ProcessDebugEnd();
-        }
     }
     else
     {
@@ -252,9 +244,7 @@ bool CNeMoContext::FindScreenMode()
     if (!drDesc)
     {
         if (m_CKContext)
-        {
             CKCloseContext(m_CKContext);
-        }
         m_CKContext = NULL;
 
         TT_ERROR("NemoContext.cpp", "FindScreenMode()", "VxDriverDesc is NULL, critical");
@@ -282,9 +272,7 @@ bool CNeMoContext::ApplyScreenMode(int idx)
     m_ScreenModeIndex = idx;
     VxDriverDesc *drDesc = m_RenderManager->GetRenderDriverDescription(m_DriverIndex);
     if (!drDesc)
-    {
         return false;
-    }
 
     VxDisplayMode *displayMode = &drDesc->DisplayModes[m_ScreenModeIndex];
     m_Width = displayMode->Width;
@@ -296,9 +284,7 @@ bool CNeMoContext::ApplyScreenMode(int idx)
 bool CNeMoContext::ChangeScreenMode(int driver, int screenMode)
 {
     if (!m_RenderContext)
-    {
         return false;
-    }
 
     int driverBefore = m_DriverIndex;
     int screenModeBefore = m_ScreenModeIndex;
@@ -322,9 +308,7 @@ bool CNeMoContext::ChangeScreenMode(int driver, int screenMode)
     m_RenderContext->Resize();
 
     if (fullscreenBefore && !m_RenderContext->IsFullScreen())
-    {
         GoFullscreen();
-    }
 
     ::Sleep(10);
     ::SetFocus(m_WinContext->GetMainWindow());
@@ -336,9 +320,7 @@ bool CNeMoContext::ChangeScreenMode(int driver, int screenMode)
 void CNeMoContext::GoFullscreen()
 {
     if (!m_RenderContext)
-    {
         return;
-    }
 
     if (m_ScreenModeIndex >= 0)
     {
@@ -368,9 +350,7 @@ void CNeMoContext::GoFullscreen()
 void CNeMoContext::SwitchFullscreen()
 {
     if (!m_RenderContext)
-    {
         return;
-    }
 
     if (IsRenderFullscreen())
     {
@@ -423,9 +403,7 @@ void CNeMoContext::ResizeWindow()
 bool CNeMoContext::RestoreWindow()
 {
     if (!m_RenderContext || !IsRenderFullscreen() || m_RenderContext->StopFullScreen())
-    {
         return false;
-    }
     ::ShowWindow(m_WinContext->GetMainWindow(), SW_RESTORE);
     return true;
 }
@@ -441,9 +419,7 @@ bool CNeMoContext::CreateRenderContext()
     CKRECT rect = {0, 0, m_Width, m_Height};
     m_RenderContext = renderManager->CreateRenderContext(m_WinContext->GetRenderWindow(), m_DriverIndex, &rect, FALSE, m_Bpp, -1, -1, m_RefreshRate);
     if (!m_RenderContext)
-    {
         return false;
-    }
 
     Play();
 
@@ -463,9 +439,8 @@ bool CNeMoContext::CreateRenderContext()
     Pause();
 
     if (!m_Fullscreen)
-    {
         RestoreWindow();
-    }
+
     ::SetFocus(m_WinContext->GetMainWindow());
 
     m_RenderContext->Clear();
@@ -491,9 +466,7 @@ bool CNeMoContext::CreateRenderContext()
 int CNeMoContext::GetRenderEnginePluginIdx()
 {
     if (!m_RenderEngine)
-    {
         return -1;
-    }
 
     char filename[512];
     const int pluginCount = m_PluginManager->GetPluginCount(CKPLUGIN_RENDERENGINE_DLL);
@@ -501,37 +474,28 @@ int CNeMoContext::GetRenderEnginePluginIdx()
     {
         CKPluginEntry *entry = m_PluginManager->GetPluginInfo(CKPLUGIN_RENDERENGINE_DLL, i);
         if (!entry)
-        {
             break;
-        }
 
         CKPluginDll *dll = m_PluginManager->GetPluginDllInfo(entry->m_PluginDllIndex);
         if (!dll)
-        {
             break;
-        }
 
         char *dllname = dll->m_DllFileName.Str();
         if (!dllname)
-        {
             break;
-        }
 
         _splitpath(dllname, NULL, NULL, filename, NULL);
         if (!_strnicmp(m_RenderEngine, filename, strlen(filename)))
-        {
             return i;
-        }
     }
+
     return -1;
 }
 
 bool CNeMoContext::ParsePlugins(CKSTRING dir)
 {
     if (!m_PluginManager)
-    {
         return false;
-    }
     return m_PluginManager->ParsePlugins(dir) != 0;
 }
 
@@ -553,9 +517,7 @@ void CNeMoContext::AddDataPath(const char *path)
 void CNeMoContext::SetProgPath(const char *path)
 {
     if (path)
-    {
         strcpy(m_ProgPath, path);
-    }
 }
 
 char *CNeMoContext::GetProgPath() const
@@ -683,17 +645,13 @@ void CNeMoContext::SetIC(CKBeObject *obj, bool hierarchy)
         {
             CK2dEntity *entity = (CK2dEntity *)obj;
             for (i = 0; i < entity->GetChildrenCount(); ++i)
-            {
                 SetIC(entity->GetChild(i), true);
-            }
         }
         if (CKIsChildClassOf(obj, CKCID_3DENTITY))
         {
             CK3dEntity *entity = (CK3dEntity *)obj;
             for (i = 0; i < entity->GetChildrenCount(); ++i)
-            {
                 SetIC(entity->GetChild(i), true);
-            }
         }
     }
 }
@@ -702,9 +660,7 @@ void CNeMoContext::RestoreIC(CKBeObject *obj, bool hierarchy)
 {
     CKStateChunk *chunk = GetCurrentScene()->GetObjectInitialValue(obj);
     if (chunk)
-    {
         CKReadObjectState(obj, chunk);
-    }
 
     if (hierarchy)
     {
@@ -713,17 +669,13 @@ void CNeMoContext::RestoreIC(CKBeObject *obj, bool hierarchy)
         {
             CK2dEntity *entity = (CK2dEntity *)obj;
             for (i = 0; i < entity->GetChildrenCount(); ++i)
-            {
                 RestoreIC(entity->GetChild(i), true);
-            }
         }
         if (CKIsChildClassOf(obj, CKCID_3DENTITY))
         {
             CK3dEntity *entity = (CK3dEntity *)obj;
             for (i = 0; i < entity->GetChildrenCount(); ++i)
-            {
                 RestoreIC(entity->GetChild(i), true);
-            }
         }
     }
 }

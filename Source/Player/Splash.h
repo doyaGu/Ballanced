@@ -11,14 +11,14 @@ public:
     CSplash(HINSTANCE hInstance);
     ~CSplash();
 
-    void Show();
+    bool Show();
     bool LoadBMP(LPCSTR lpFileName);
     DWORD GetWidth() const;
     DWORD GetHeight() const;
     DWORD GetBPP() const;
     DWORD GetDIBHeaderSize() const;
     DWORD GetPaletteNumColors() const;
-    WORD GetPaletteNumEntries() const;
+    DWORD GetPaletteNumEntries() const;
     DWORD GetPaletteSize() const;
     BYTE *GetPaletteData() const;
     BYTE *GetPaletteEntry(DWORD index) const;

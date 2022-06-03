@@ -18,13 +18,9 @@ void CLogProtocol::Open(const char *filename, const char *path, bool overwrite)
     sprintf(m_FullPath, "%sLog%s.csv", path, filename);
 
     if (overwrite)
-    {
         file = fopen(m_FullPath, "w");
-    }
     else
-    {
         file = fopen(m_FullPath, "a");
-    }
 
     if (file)
     {

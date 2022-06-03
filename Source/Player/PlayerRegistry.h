@@ -9,16 +9,16 @@ class CGamePlayer;
 class CPlayerRegistry
 {
 public:
-    static CPlayerRegistry& GetInstance();
+    static CPlayerRegistry &GetInstance();
     void Init(CGamePlayer *player, HINSTANCE hInstance);
     LRESULT WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 private:
     CPlayerRegistry();
 
-	CPlayerRegistry(const CPlayerRegistry&);
+    CPlayerRegistry(const CPlayerRegistry &);
 
-	CPlayerRegistry& operator=(const CPlayerRegistry&);
+    CPlayerRegistry &operator=(const CPlayerRegistry &);
 
     CGamePlayer *m_Player;
     bool m_Initialized;
