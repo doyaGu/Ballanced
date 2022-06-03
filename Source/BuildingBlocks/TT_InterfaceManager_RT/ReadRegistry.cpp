@@ -116,13 +116,9 @@ int ReadRegistry(const CKBehaviorContext &behcontext)
     }
 
     if (saveArrayMode)
-    {
         beh->GetInputParameterValue(3, arrayToLoad);
-    }
     else
-    {
         beh->GetInputParameterValue(1, regEntry);
-    }
 
     if (saveArrayMode)
     {
@@ -285,9 +281,7 @@ float ReadFloatFromIni(const char *section, CKBehavior *beh, CKContext *context,
 
     ::GetPrivateProfileStringA(section, key, "", buffer, 64, ini);
     if (strcmp(buffer, "") == 0)
-    {
         return 0;
-    }
 
     return (float)atof(buffer);
 }
@@ -298,9 +292,7 @@ char *ReadStringFromIni(const char *section, CKBehavior *beh, CKContext *context
 
     ::GetPrivateProfileStringA(section, key, "", buffer, 256, ini);
     if (strcmp(buffer, "") == 0)
-    {
         return NULL;
-    }
 
     return (char *)buffer;
 }

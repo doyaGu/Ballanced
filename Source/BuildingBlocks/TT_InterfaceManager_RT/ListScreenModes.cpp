@@ -71,9 +71,7 @@ int ListScreenModes(const CKBehaviorContext &behcontext)
 	screenModes->GetColumnCount();
 	screenModes->Clear();
 	while (screenModes->GetColumnCount() > 0)
-	{
 		screenModes->RemoveColumn(0);
-	}
 
 	screenModes->InsertColumn(-1, CKARRAYTYPE_INT, "Bpp");
 	screenModes->InsertColumn(0, CKARRAYTYPE_INT, "Mode");

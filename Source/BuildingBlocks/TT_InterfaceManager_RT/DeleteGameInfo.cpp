@@ -60,9 +60,7 @@ int DeleteGameInfo(const CKBehaviorContext &behcontext)
 	if (gameInfo == man->GetGameInfo())
 	{
 		if (gameInfo)
-		{
 			delete gameInfo;
-		}
 		man->SetGameInfo(NULL);
 		beh->ActivateOutput(0);
 	}

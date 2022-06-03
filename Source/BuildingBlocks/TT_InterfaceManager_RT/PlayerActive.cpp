@@ -52,13 +52,9 @@ int PlayerActive(const CKBehaviorContext &behcontext)
     CKContext *context = behcontext.Context;
 
     if (!context->IsInInterfaceMode())
-    {
         beh->ActivateOutput(0);
-    }
     else
-    {
         beh->ActivateOutput(1);
-    }
 
     return CKBR_OK;
 }

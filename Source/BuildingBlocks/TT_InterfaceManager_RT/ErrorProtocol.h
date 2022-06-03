@@ -11,8 +11,8 @@ public:
 
 private:
     CErrorProtocol();
-	CErrorProtocol(const CErrorProtocol&);
-	CErrorProtocol& operator=(const CErrorProtocol&);
+    CErrorProtocol(const CErrorProtocol &);
+    CErrorProtocol &operator=(const CErrorProtocol &);
 
     char m_FullPath[512];
     char m_FileName[512];

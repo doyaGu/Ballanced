@@ -18,7 +18,7 @@ void CErrorProtocol::Open(const char *filename, const char *path, bool overwrite
     FILE *file;
 
     sprintf(m_FullPath, "%sError%s.csv", path, filename);
-    
+
     if (overwrite)
         file = fopen(m_FullPath, "w");
     else
@@ -49,7 +49,7 @@ void CErrorProtocol::Write(const char *srcfile, const char *func, const char *ms
     sprintf(buffer, "%s, %s, %s, %s", m_FileName, srcfile, func, msg);
 
     if (showMsgBox)
-		::MessageBoxA(NULL, buffer, "Error", MB_ICONERROR);
+        ::MessageBoxA(NULL, buffer, "Error", MB_ICONERROR);
 
     file = fopen(m_FullPath, "a");
     if (file)
