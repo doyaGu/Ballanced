@@ -1,6 +1,6 @@
-#include "StdAfx.h"
-
 #include "DatabaseManager.h"
+
+#include "TT_DatabaseManager_RT.h"
 
 #include <io.h>
 #include <stdlib.h>

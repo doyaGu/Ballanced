@@ -5,7 +5,7 @@
 //
 /////////////////////////////////////////////////////
 /////////////////////////////////////////////////////
-#include "StdAfx.h"
+#include "TT_DatabaseManager_RT.h"
 
 #include "DatabaseManager.h"
 
@@ -74,7 +74,7 @@ int SetDatabaseProperties(const CKBehaviorContext &behcontext)
     }
 
     man->SetProperty(filename, crypted);
-    
+
     beh->ActivateOutput(0);
     return CKBR_OK;
 }

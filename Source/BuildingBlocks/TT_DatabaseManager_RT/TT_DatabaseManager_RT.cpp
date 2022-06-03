@@ -1,4 +1,4 @@
-#include "StdAfx.h"
+#include "TT_DatabaseManager_RT.h"
 
 #include "DatabaseManager.h"
 
