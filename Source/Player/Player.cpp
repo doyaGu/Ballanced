@@ -1,7 +1,7 @@
-#include "GamePlayer.h"
-#include "PlayerRegistry.h"
 #include "ErrorProtocol.h"
+#include "GamePlayer.h"
 #include "LogProtocol.h"
+#include "PlayerRegistry.h"
 
 #include "ResDll.h"
 #include "TT_InterfaceManager_RT/GameInfo.h"

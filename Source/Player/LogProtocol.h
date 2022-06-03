@@ -11,8 +11,8 @@ public:
 private:
 	CLogProtocol();
 	CLogProtocol(const CLogProtocol &);
-	CLogProtocol& operator=(const CLogProtocol&);
-	
+	CLogProtocol &operator=(const CLogProtocol &);
+
 	char m_FullPath[512];
 	char m_FileName[512];
 	char m_Path[512];

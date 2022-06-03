@@ -7,6 +7,7 @@
 
 #include "ErrorProtocol.h"
 #include "NeMoContext.h"
+
 #include "TT_InterfaceManager_RT/GameInfo.h"
 
 #define MAX_GAMEDATA 100
@@ -118,9 +119,7 @@ bool CGame::Load()
     int i;
     int sceneCount = level->GetSceneCount();
     for (i = 0; i < sceneCount; ++i)
-    {
         level->GetScene(i)->SetBackgroundColor(0);
-    }
 
     CKRenderContext *renderContext = m_NeMoContext->GetRenderContext();
     level->AddRenderContext(renderContext, TRUE);
@@ -132,9 +131,7 @@ bool CGame::Load()
     {
         CKCamera *camera = (CKCamera *)m_NeMoContext->GetObject(cameraIds[0]);
         if (camera)
-        {
             renderContext->AttachViewpointToCamera(camera);
-        }
     }
 
     m_NeMoContext->Refresh();
@@ -146,18 +143,14 @@ bool CGame::Load()
     {
         CKMesh *mesh = ((CKCurve *)m_NeMoContext->GetObject(curveIds[i]))->GetCurrentMesh();
         if (mesh)
-        {
             mesh->Show(CKHIDE);
-        }
     }
 
     // Sets the initial conditions for the level
     level->LaunchScene(NULL);
 
     for (i = 0; i < sceneCount; ++i)
-    {
         level->GetScene(i)->SetBackgroundColor(0);
-    }
 
     DeleteCKObjectArray(array);
 
@@ -249,12 +242,8 @@ void CGameDataManager::Load(CGameInfo *gameInfo, const char *filename)
     if (m_Count > 0)
     {
         for (i = 0; strcmp(g_GameData[i].fileName, filename); ++i)
-        {
             if (++i >= m_Count)
-            {
                 return;
-            }
-        }
 
         strcpy(gameInfo->fileName, g_GameData[i].fileName);
         strcpy(gameInfo->path, g_GameData[i].path);

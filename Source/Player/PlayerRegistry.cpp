@@ -1,7 +1,7 @@
 #include "PlayerRegistry.h"
 
-#include "GamePlayer.h"
 #include "ErrorProtocol.h"
+#include "GamePlayer.h"
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -19,9 +19,7 @@ void CPlayerRegistry::Init(CGamePlayer *player, HINSTANCE hInstance)
     m_Player = player;
     player->Init(hInstance, ::WndProc);
     if (player->IsInitialized())
-    {
         m_Initialized = true;
-    }
 }
 
 LRESULT CPlayerRegistry::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)

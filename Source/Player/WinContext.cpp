@@ -2,9 +2,10 @@
 
 #include <string.h>
 
+#include "ErrorProtocol.h"
+
 #include "config.h"
 #include "resource.h"
-#include "ErrorProtocol.h"
 
 char RenderWindowName[8];
 
@@ -72,14 +73,10 @@ void CWinContext::RegisterWindowClasses(LPFNWNDPROC lpfnWndProc, int width, int 
     m_RenderWndClass.lpszClassName = m_RenderWndClassName;
 
     if (!::RegisterClassA(&m_RenderWndClass))
-    {
         m_IsWndClassRegistered = false;
-    }
 
     if (!::RegisterClassExA(&m_MainWndClass))
-    {
         m_IsWndClassRegistered = false;
-    }
 
     m_IsWndClassRegistered = true;
 }
@@ -168,13 +165,9 @@ void CWinContext::SetResolution(int width, int height)
         RECT rect = {0, 0, width, height};
         AdjustWindowRect(&rect, m_MainWndStyle, FALSE);
         if (!::SetWindowPos(m_MainWindow, HWND_TOP, 0, 0, rect.right - rect.left, rect.bottom - rect.top, SWP_NOMOVE))
-        {
             TT_ERROR_BOX("WinContext.cpp", "CWinContext::SetResolution(...)", "wrong parameters");
-        }
 
         if (!::SetWindowPos(m_RenderWindow, HWND_TOP, 0, 0, width, height, SWP_NOMOVE))
-        {
             TT_ERROR_BOX("WinContext.cpp", "CWinContext::SetResolution(...)", "wrong parameters");
-        }
     }
 }

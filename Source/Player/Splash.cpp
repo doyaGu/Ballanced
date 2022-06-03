@@ -1,10 +1,9 @@
 #include "Splash.h"
 
-#include "resource.h"
-
-#include <exception>
 #include <stdio.h>
 #include <stdlib.h>
+
+#include "resource.h"
 
 #define PALVERSION 0x300
 
@@ -95,12 +94,10 @@ CSplash::CSplash(HINSTANCE hInstance) : m_hInstance(hInstance) {}
 CSplash::~CSplash()
 {
     if (m_Data)
-    {
         delete[] m_Data;
-    }
 }
 
-void CSplash::Show()
+bool CSplash::Show()
 {
     char drive[20] = "";
     char filename[1024] = "";
@@ -123,57 +120,56 @@ void CSplash::Show()
     wndclass.hIcon = ::LoadIconA(m_hInstance, (LPCSTR)IDI_PLAYER);
 
     if (!::RegisterClassA(&wndclass))
-    {
-        throw std::exception();
-    }
+        return false;
 
     ::GetModuleFileNameA(NULL, buffer, 1024);
     _splitpath(buffer, drive, dir, filename, NULL);
     sprintf(filename, "%s%ssplash.bmp", drive, dir);
+    if (!gSplash.LoadBMP(filename))
+        return false;
 
-    if (gSplash.LoadBMP(filename))
+    int width = gSplash.GetWidth();
+    int height = gSplash.GetHeight();
+
+    m_hWnd = ::CreateWindowExA(
+        WS_EX_LEFT,
+        "SPLASH",
+        "SPLASH",
+        WS_POPUP | WS_BORDER,
+        ::GetSystemMetrics(SM_CXSCREEN) / 2 - width / 2,
+        ::GetSystemMetrics(SM_CYSCREEN) / 2 - height / 2,
+        width,
+        height,
+        NULL,
+        NULL,
+        m_hInstance,
+        NULL);
+    ::UpdateWindow(m_hWnd);
+    ::ShowWindow(m_hWnd, SW_SHOW);
+
+    MSG msg;
+    int counter = 0;
+    while (::GetMessageA(&msg, NULL, 0, 0))
     {
-        int width = gSplash.GetWidth();
-        int height = gSplash.GetHeight();
-
-        m_hWnd = ::CreateWindowExA(
-            WS_EX_LEFT,
-            "SPLASH",
-            "SPLASH",
-            WS_POPUP | WS_BORDER,
-            ::GetSystemMetrics(SM_CXSCREEN) / 2 - width / 2,
-            ::GetSystemMetrics(SM_CYSCREEN) / 2 - height / 2,
-            width,
-            height,
-            NULL,
-            NULL,
-            m_hInstance,
-            NULL);
-        ::UpdateWindow(m_hWnd);
-        ::ShowWindow(m_hWnd, SW_SHOW);
-
-        int counter = 0;
-        MSG msg;
-        while (::GetMessageA(&msg, NULL, 0, 0))
+        if (msg.message == WM_QUIT)
         {
-            if (msg.message == WM_QUIT)
-            {
-                break;
-            }
-
-            ::TranslateMessage(&msg);
-            ::DispatchMessageA(&msg);
-            ::InvalidateRect(m_hWnd, NULL, FALSE);
-
-            if (counter++ == 500)
-            {
-                ::Sleep(100);
-                ::DestroyWindow(m_hWnd);
-                break;
-            }
+            break;
         }
-        ::DeleteObject(hPalette);
+
+        ::TranslateMessage(&msg);
+        ::DispatchMessageA(&msg);
+        ::InvalidateRect(m_hWnd, NULL, FALSE);
+
+        if (counter++ == 500)
+        {
+            ::Sleep(100);
+            ::DestroyWindow(m_hWnd);
+            break;
+        }
     }
+
+    ::DeleteObject(hPalette);
+    return true;
 }
 
 bool CSplash::LoadBMP(LPCSTR lpFileName)
@@ -183,9 +179,7 @@ bool CSplash::LoadBMP(LPCSTR lpFileName)
     char buffer[16];
 
     if (m_Data)
-    {
         delete[] m_Data;
-    }
 
     hFile = ::CreateFileA(lpFileName,
                           GENERIC_READ,
@@ -195,9 +189,7 @@ bool CSplash::LoadBMP(LPCSTR lpFileName)
                           FILE_FLAG_SEQUENTIAL_SCAN,
                           NULL);
     if (hFile == (HANDLE)-1)
-    {
         return false;
-    }
 
     if (!::ReadFile(hFile, buffer, 14, &dwBytesRead, NULL) ||
         dwBytesRead != 14 ||
@@ -252,17 +244,13 @@ DWORD CSplash::GetPaletteNumColors() const
     return (dwHeaderSize == 12) ? 0 : *(DWORD *)&m_Data[32];
 }
 
-WORD CSplash::GetPaletteNumEntries() const
+DWORD CSplash::GetPaletteNumEntries() const
 {
     DWORD dwPaletteNumColors = GetPaletteNumColors();
     if (dwPaletteNumColors || GetBPP() >= 16)
-    {
         return dwPaletteNumColors;
-    }
     else
-    {
         return 1 << GetBPP();
-    }
 }
 
 DWORD CSplash::GetPaletteSize() const
@@ -274,9 +262,7 @@ DWORD CSplash::GetPaletteSize() const
 BYTE *CSplash::GetPaletteData() const
 {
     if (!GetPaletteNumEntries())
-    {
         return NULL;
-    }
 
     return &m_Data[GetDIBHeaderSize()];
 }
@@ -284,9 +270,7 @@ BYTE *CSplash::GetPaletteData() const
 BYTE *CSplash::GetPaletteEntry(DWORD index) const
 {
     if (!GetPaletteNumEntries())
-    {
         return NULL;
-    }
 
     DWORD dwHeaderSize = *(DWORD *)&m_Data[0];
     return (dwHeaderSize == 12) ? &GetPaletteData()[3 * index] : &GetPaletteData()[4 * index];
@@ -300,7 +284,7 @@ BITMAPINFO *CSplash::GetBitmapInfo() const
     bmi.bmiHeader.biWidth = GetWidth();
     bmi.bmiHeader.biHeight = GetHeight();
     bmi.bmiHeader.biPlanes = 1;
-    bmi.bmiHeader.biBitCount = GetBPP();
+    bmi.bmiHeader.biBitCount = (WORD)GetBPP();
     bmi.bmiHeader.biCompression = BI_RGB;
     bmi.bmiHeader.biSizeImage = 0;
     return &bmi;
@@ -315,13 +299,13 @@ HPALETTE CSplash::GetPalette() const
 {
     HPALETTE hPal;
     LPLOGPALETTE lpLogPalette = NULL;
-    WORD palNumEntries = GetPaletteNumEntries();
+    WORD palNumEntries = (WORD)GetPaletteNumEntries();
     if (palNumEntries == 0)
-    {
         return NULL;
-    }
 
     lpLogPalette = (LPLOGPALETTE)malloc(32 * (palNumEntries + 0x7FFFFFF));
+    if (!lpLogPalette)
+        return NULL;
     lpLogPalette->palVersion = PALVERSION;
     lpLogPalette->palNumEntries = palNumEntries;
 
