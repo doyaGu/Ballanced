@@ -8,12 +8,16 @@ project(Ballanced
 )
 
 set(CMAKE_C_STANDARD 90)
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 98)
 
 # Set CMake modules search path
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
 include(BuildingBlockUtils)
+
+# Use folders to organize targets in an IDE
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "CMakeTargets")
 
 if(NOT WIN32)
 	message(FATAL_ERROR "Only Windows is supported.")

@@ -16,6 +16,10 @@ macro(add_building_block NAME)
 		VirtoolsSDK::CK2
 		VirtoolsSDK::VxMath
 	)
+
+	set_target_properties(${NAME} PROPERTIES
+		FOLDER "BuildingBlocks"
+	)
 endmacro()
 
 macro(install_building_block NAME)
