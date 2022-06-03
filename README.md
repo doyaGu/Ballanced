@@ -29,11 +29,13 @@ The current progress is shown as follows.
 
 ## Building from Source
 
-This project offers Visual Studio 6.0 project files and a Visual Studio 2019 solution at this stage.
+This project uses CMake as the build tool, and Visual Studio 6.0 is also supported separately.
 
 Clone the repository with `git clone https://github.com/doyaGu/Ballanced.git`. Then `cd Ballanced` into the cloned repository.
 
-Open `Ballance.dsw` with Visual Studio 6.0 or `Ballance.sln` with Visual Studio 2019, and compile the projects.
+If you use CMake, run the command `cmake -B build -G "Visual Studio 16 2019" -A Win32` to generate Visual Studio projects and solutions. Then open the solution file under the `build` directory and compile the projects.
+
+If you use Visual Studio 6.0, open `Ballance.dsw`, and compile the projects.
 
 When using Visual Studio 6.0, you need [Windows Server 2003 SP1 SDK](http://www.microsoft.com/en-us/download/details.aspx?id=15656) to compile the **Player** project due to the use of `GlobalMemoryStatusEx`.
 
