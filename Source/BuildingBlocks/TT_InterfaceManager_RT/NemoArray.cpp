@@ -24,25 +24,17 @@ CNemoElement::CNemoElement(void *value, CK_ARRAYTYPE type)
         {
             m_Value.str = new char[strlen((char *)value) + 1];
             if (!m_Value.str)
-            {
                 m_Value.str = NULL;
-            }
             else
-            {
                 strcpy(m_Value.str, (char *)value);
-            }
         }
         else
         {
             m_Value.str = new char[2];
             if (!m_Value.str)
-            {
                 m_Value.str = NULL;
-            }
             else
-            {
                 m_Value.str[0] = '\0';
-            }
         }
         break;
 
@@ -73,24 +65,16 @@ CNemoElement::CNemoElement(const CNemoElement &rhs)
         {
             m_Value.str = new char[strlen(rhs.m_Value.str) + 1];
             if (!m_Value.str)
-            {
                 m_Value.str = NULL;
-            }
             else
-            {
                 strcpy(m_Value.str, rhs.m_Value.str);
-            }
         }
         else
         {
             if (!m_Value.str)
-            {
                 m_Value.str = NULL;
-            }
             else
-            {
                 m_Value.str[0] = '\0';
-            }
         }
         break;
 
@@ -128,9 +112,7 @@ CNemoElement &CNemoElement::operator=(const CNemoElement &rhs)
         {
             str = new char[strlen(rhs.m_Value.str) + 1];
             if (!str)
-            {
                 break;
-            }
             strcpy(str, rhs.m_Value.str);
 
             Free();
@@ -140,9 +122,7 @@ CNemoElement &CNemoElement::operator=(const CNemoElement &rhs)
         {
             str = new char[2];
             if (!str)
-            {
                 break;
-            }
             str[0] = '\0';
 
             Free();
@@ -175,9 +155,7 @@ CNemoElement::~CNemoElement()
 bool CNemoElement::operator==(const CNemoElement &rhs)
 {
     if (m_Type != rhs.m_Type)
-    {
         return false;
-    }
 
     switch (rhs.m_Type)
     {
@@ -186,13 +164,9 @@ bool CNemoElement::operator==(const CNemoElement &rhs)
 
     case CKARRAYTYPE_STRING:
         if (m_Value.str && rhs.m_Value.str)
-        {
             return !strcmp(m_Value.str, rhs.m_Value.str);
-        }
         else
-        {
             return (!m_Value.str && !rhs.m_Value.str);
-        }
 
     case CKARRAYTYPE_OBJECT:
     case CKARRAYTYPE_PARAMETER:
@@ -207,9 +181,7 @@ bool CNemoElement::operator==(const CNemoElement &rhs)
 void CNemoElement::Free()
 {
     if (m_Type == CKARRAYTYPE_STRING && m_Value.str)
-    {
         delete[] m_Value.str;
-    }
 }
 
 bool CNemoElement::GetValue(void *value, CK_ARRAYTYPE *type) const
@@ -247,9 +219,7 @@ bool CNemoElement::GetValue(void *value, CK_ARRAYTYPE *type) const
 char *CNemoElement::GetString() const
 {
     if (m_Type != CKARRAYTYPE_STRING || m_Value.str[0] == '\0')
-    {
         return NULL;
-    }
     return m_Value.str;
 }
 
@@ -261,9 +231,7 @@ CK_ARRAYTYPE CNemoElement::GetType() const
 bool CNemoElement::SetValue(void *value, CK_ARRAYTYPE type, bool force)
 {
     if (!force && type != m_Type)
-    {
         return false;
-    }
 
     switch (type)
     {
@@ -278,15 +246,11 @@ bool CNemoElement::SetValue(void *value, CK_ARRAYTYPE type, bool force)
     case CKARRAYTYPE_STRING:
     {
         if (!value)
-        {
             return false;
-        }
 
         char *str = new char[strlen((char *)value) + 1];
         if (!str)
-        {
             return false;
-        }
         strcpy(str, (char *)value);
 
         Free();
@@ -311,15 +275,11 @@ bool CNemoElement::SetValue(void *value, CK_ARRAYTYPE type, bool force)
 bool CNemoElement::SetString(const char *str)
 {
     if (!str || m_Type != CKARRAYTYPE_STRING)
-    {
         return false;
-    }
 
     char *tstr = new char[strlen(str) + 1];
     if (!tstr)
-    {
         return false;
-    }
     strcpy(tstr, str);
 
     Free();

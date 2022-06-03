@@ -58,13 +58,9 @@ int ExistsGameInfo(const CKBehaviorContext &behcontext)
 
 	CTTInterfaceManager *man = CTTInterfaceManager::GetManager(context);
 	if (gameInfo == man->GetGameInfo())
-	{
 		beh->ActivateOutput(0);
-	}
 	else
-	{
 		beh->ActivateOutput(1);
-	}
 
 	return CKBR_OK;
 }

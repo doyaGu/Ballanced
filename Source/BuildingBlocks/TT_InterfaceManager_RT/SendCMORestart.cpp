@@ -53,9 +53,7 @@ int SendCMORestart(const CKBehaviorContext &behcontext)
 
 	CTTInterfaceManager *man = CTTInterfaceManager::GetManager(context);
 	if (!man || !man->GetGameInfo())
-	{
 		TT_ERROR("SendCMORestart.cpp", "int SendCMORestart(...)", " gameInfo == NULL, exit CMO");
-	}
 
 	::PostMessageA((HWND)context->GetRenderManager()->GetRenderContext(man->GetDriverIndex())->GetWindowHandle(), TT_MSG_CMO_RESTART, 0, 0);
 	beh->ActivateOutput(0);

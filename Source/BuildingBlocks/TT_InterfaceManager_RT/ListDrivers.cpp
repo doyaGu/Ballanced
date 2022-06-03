@@ -67,9 +67,7 @@ int ListDrivers(const CKBehaviorContext &behcontext)
 	drivers->GetColumnCount();
 	drivers->Clear();
 	while (drivers->GetColumnCount() > 0)
-	{
 		drivers->RemoveColumn(0);
-	}
 
 	CTTInterfaceManager *man = CTTInterfaceManager::GetManager(context);
 	if (!man)

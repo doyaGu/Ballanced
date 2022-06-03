@@ -60,13 +60,9 @@ int IsRookie(const CKBehaviorContext &behcontext)
     }
 
     if (man->IsRookie())
-    {
         beh->ActivateOutput(0);
-    }
     else
-    {   
         beh->ActivateOutput(1);
-    }
 
     beh->ActivateOutput(2);
     return CKBR_OK;
