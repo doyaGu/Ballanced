@@ -2,6 +2,7 @@
 #define BUILDINGBLOCKS_INTERFACEMANAGER_H
 
 #include "CKBaseManager.h"
+#include "CKContext.h"
 
 #include "GameInfo.h"
 #include "NemoArray.h"

@@ -5,7 +5,7 @@
 //
 /////////////////////////////////////////////////////
 /////////////////////////////////////////////////////
-#include "StdAfx.h"
+#include "TT_InterfaceManager_RT.h"
 
 #include <string.h>
 
@@ -59,9 +59,7 @@ int SendCMOLoad(const CKBehaviorContext &behcontext)
 
 	CTTInterfaceManager *man = CTTInterfaceManager::GetManager(context);
 	if (!man || !man->GetGameInfo())
-	{
 		TT_ERROR("SendCMOLoad.cpp", "int SendCMOLoad(...)", " gameInfo == NULL, exit CMO");
-	}
 
 	man->SetCmoName(name);
 	::PostMessageA((HWND)context->GetRenderManager()->GetRenderContext(man->GetDriverIndex())->GetWindowHandle(), TT_MSG_CMO_LOAD, (WPARAM)man->GetCmoName(), 0);

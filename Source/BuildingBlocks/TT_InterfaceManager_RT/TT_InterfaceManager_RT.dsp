@@ -43,7 +43,8 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "TT_INTERFACEMANAGER_RT_EXPORTS" /YX /FD /c
-# ADD CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "TT_INTERFACEMANAGER_RT_EXPORTS" /YX"stdafx.h" /FD /c
+# ADD CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "TT_INTERFACEMANAGER_RT_EXPORTS" /FD /c
+# SUBTRACT CPP /YX
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x804 /d "NDEBUG"
@@ -69,7 +70,8 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "TT_INTERFACEMANAGER_RT_EXPORTS" /YX /FD /GZ /c
-# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "TT_INTERFACEMANAGER_RT_EXPORTS" /YX"stdafx.h" /FD /GZ /c
+# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "TT_INTERFACEMANAGER_RT_EXPORTS" /FD /GZ /c
+# SUBTRACT CPP /YX
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x804 /d "_DEBUG"
@@ -292,10 +294,6 @@ SOURCE=.\SetTaskSwitchHandler.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\StdAfx.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\TT_InterfaceManager_RT.cpp
 # End Source File
 # Begin Source File
@@ -337,10 +335,6 @@ SOURCE=.\InterfaceManager.h
 # Begin Source File
 
 SOURCE=.\NemoArray.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\StdAfx.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"
