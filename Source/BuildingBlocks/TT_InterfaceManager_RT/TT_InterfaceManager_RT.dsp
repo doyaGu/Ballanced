@@ -336,6 +336,10 @@ SOURCE=.\InterfaceManager.h
 
 SOURCE=.\NemoArray.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\TT_InterfaceManager_RT.h
+# End Source File
 # End Group
 # Begin Group "Resource Files"
 

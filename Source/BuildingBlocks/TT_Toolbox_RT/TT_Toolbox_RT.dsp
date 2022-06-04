@@ -43,7 +43,8 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "TT_TOOLBOX_RT_EXPORTS" /YX /FD /c
-# ADD CPP /nologo /MT /W3 /GX /O2 /I "../../../Include" /I "../../../Include/Virtools" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "TT_TOOLBOX_RT_EXPORTS" /YX"stdafx.h" /FD /c
+# ADD CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "TT_TOOLBOX_RT_EXPORTS" /FD /c
+# SUBTRACT CPP /YX
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x804 /d "NDEBUG"
@@ -53,7 +54,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /machine:I386
-# ADD LINK32 VxMath.lib CK2.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /machine:I386 /out:"../../../BuildingBlocks/TT_Toolbox_RT.dll" /libpath:"../../../Lib"
+# ADD LINK32 CK2.lib VxMath.lib kernel32.lib user32.lib /nologo /dll /machine:I386 /out:"../../../BuildingBlocks/TT_Toolbox_RT.dll"
 
 !ELSEIF  "$(CFG)" == "TT_Toolbox_RT - Win32 Debug"
 
@@ -69,7 +70,8 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "TT_TOOLBOX_RT_EXPORTS" /YX /FD /GZ /c
-# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I "../../../Include" /I "../../../Include/Virtools" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "TT_TOOLBOX_RT_EXPORTS" /YX"stdafx.h" /FD /GZ /c
+# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "TT_TOOLBOX_RT_EXPORTS" /FD /GZ /c
+# SUBTRACT CPP /YX
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x804 /d "_DEBUG"
@@ -79,7 +81,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 VxMath.lib CK2.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /debug /machine:I386 /out:"../../../BuildingBlocks/TT_Toolbox_RT.dll" /pdbtype:sept /libpath:"../../../Lib"
+# ADD LINK32 CK2.lib VxMath.lib kernel32.lib user32.lib /nologo /dll /debug /machine:I386 /out:"../../../BuildingBlocks/TT_Toolbox_RT.dll" /pdbtype:sept
 
 !ENDIF 
 
@@ -92,7 +94,83 @@ LINK32=link.exe
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
-SOURCE=.\StdAfx.cpp
+SOURCE=.\BitmapFont.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\BoundingSphereIntersection.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\CheckCurveCollision.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\ConvertBox.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\DebugManager.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\DXManager.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\FindSubString.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\FollowCamera.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\GetCurvePoint.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\GetFullAngle.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\HomingMissile.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\LensFlare.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\SceneStencilShadow.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\SetDynamicPosition.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\SetFSAA.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\ShadowMapping.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\ShadowPlane.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\SkyAround.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\SwitchOnLayer.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\TimeManager.cpp
 # End Source File
 # Begin Source File
 
@@ -108,7 +186,19 @@ SOURCE=.\TT_Toolbox_RT.def
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
-SOURCE=.\StdAfx.h
+SOURCE=.\DebugManager.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\DXManager.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\TimeManager.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\TT_Toolbox_RT.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"

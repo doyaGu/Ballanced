@@ -128,6 +128,10 @@ SOURCE=.\TT_DatabaseManager_RT.def
 
 SOURCE=.\DatabaseManager.h
 # End Source File
+# Begin Source File
+
+SOURCE=.\TT_DatabaseManager_RT.h
+# End Source File
 # End Group
 # Begin Group "Resource Files"
 
