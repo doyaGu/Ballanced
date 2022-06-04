@@ -13,7 +13,7 @@ public:
         CGameInfo *gameInfo;
     };
 
-    CGameStack(bool enable);
+    CGameStack();
     ~CGameStack();
 
     void Push(CGameInfo *gameInfo);
@@ -22,7 +22,6 @@ public:
     CGameInfo *GetGameInfo(const char *path);
 
 private:
-    bool m_Enabled;
     Node *m_Node;
     int m_Count;
 };

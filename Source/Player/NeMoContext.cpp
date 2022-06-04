@@ -302,7 +302,6 @@ bool CNeMoContext::ChangeScreenMode(int driver, int screenMode)
     }
 
     m_RenderContext->StopFullScreen();
-    ::Sleep(10);
 
     m_WinContext->SetResolution(m_Width, m_Height);
     m_RenderContext->Resize();
@@ -310,7 +309,6 @@ bool CNeMoContext::ChangeScreenMode(int driver, int screenMode)
     if (fullscreenBefore && !m_RenderContext->IsFullScreen())
         GoFullscreen();
 
-    ::Sleep(10);
     ::SetFocus(m_WinContext->GetMainWindow());
 
     m_DisplayChanged = false;
@@ -322,7 +320,15 @@ void CNeMoContext::GoFullscreen()
     if (!m_RenderContext)
         return;
 
-    if (m_ScreenModeIndex >= 0)
+    if (m_ScreenModeIndex < 0)
+    {
+        m_RenderContext->GoFullScreen(m_Width,
+                                      m_Height,
+                                      m_Bpp,
+                                      m_DriverIndex,
+                                      m_RefreshRate);
+    }
+    else
     {
         VxDriverDesc *drDesc = m_RenderManager->GetRenderDriverDescription(m_DriverIndex);
         if (drDesc)
@@ -333,18 +339,10 @@ void CNeMoContext::GoFullscreen()
                                           displayMode->Bpp,
                                           m_DriverIndex,
                                           m_RefreshRate);
-            ::SetFocus(m_WinContext->GetMainWindow());
         }
     }
-    else
-    {
-        m_RenderContext->GoFullScreen(m_Width,
-                                      m_Height,
-                                      m_Bpp,
-                                      m_DriverIndex,
-                                      m_RefreshRate);
-        ::SetFocus(m_WinContext->GetMainWindow());
-    }
+
+    ::SetFocus(m_WinContext->GetMainWindow());
 }
 
 void CNeMoContext::SwitchFullscreen()
@@ -356,28 +354,9 @@ void CNeMoContext::SwitchFullscreen()
     {
         RestoreWindow();
     }
-    else if (m_ScreenModeIndex >= 0)
-    {
-        VxDriverDesc *drDesc = m_RenderManager->GetRenderDriverDescription(m_DriverIndex);
-        if (drDesc)
-        {
-            VxDisplayMode *displayMode = &drDesc->DisplayModes[m_ScreenModeIndex];
-            m_RenderContext->GoFullScreen(displayMode->Width,
-                                          displayMode->Height,
-                                          displayMode->Bpp,
-                                          m_DriverIndex,
-                                          m_RefreshRate);
-            ::ShowWindow(m_WinContext->GetMainWindow(), SW_SHOWMINNOACTIVE);
-        }
-    }
     else
     {
-        m_RenderContext->GoFullScreen(m_Width,
-                                      m_Height,
-                                      m_Bpp,
-                                      m_DriverIndex,
-                                      m_RefreshRate);
-        ::ShowWindow(m_WinContext->GetMainWindow(), SW_SHOWMINNOACTIVE);
+        GoFullscreen();
     }
 }
 
@@ -402,15 +381,13 @@ void CNeMoContext::ResizeWindow()
 
 bool CNeMoContext::RestoreWindow()
 {
-    if (!m_RenderContext || !IsRenderFullscreen() || m_RenderContext->StopFullScreen())
+    if (!m_RenderContext || !IsRenderFullscreen() || m_RenderContext->StopFullScreen() != CK_OK)
         return false;
+
+    m_WinContext->SetResolution(m_Width, m_Height);
+    m_RenderContext->Resize();
     ::ShowWindow(m_WinContext->GetMainWindow(), SW_RESTORE);
     return true;
-}
-
-void CNeMoContext::MinimizeWindow()
-{
-    m_WinContext->MinimizeWindow();
 }
 
 bool CNeMoContext::CreateRenderContext()
@@ -542,6 +519,11 @@ CKERROR CNeMoContext::LoadFile(
 CKObject *CNeMoContext::GetObject(CK_ID objID)
 {
     return m_CKContext->GetObject(objID);
+}
+
+CKObject *CNeMoContext::GetObjectByNameAndClass(CKSTRING name, CK_CLASSID cid, CKObject *previous)
+{
+    return m_CKContext->GetObjectByNameAndClass(name, cid, previous);
 }
 
 CK_ID *CNeMoContext::GetObjectsListByClassID(CK_CLASSID cid)

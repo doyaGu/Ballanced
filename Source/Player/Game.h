@@ -8,6 +8,7 @@
 
 class CGameInfo;
 class CNeMoContext;
+struct CGameConfig;
 
 class CGame
 {
@@ -15,7 +16,7 @@ public:
     CGame();
     ~CGame();
 
-    bool Load();
+    bool Load(const CGameConfig &config);
     void Play();
 
     CGameInfo *NewGameInfo();

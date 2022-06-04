@@ -9,6 +9,6 @@
 
 #define DEFAULT_WIDTH 640
 #define DEFAULT_HEIGHT 480
-#define DEFAULT_BPP 16
+#define DEFAULT_BPP 32
 
 #endif // PLAYER_CONFIG_H

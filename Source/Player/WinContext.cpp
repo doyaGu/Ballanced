@@ -83,7 +83,7 @@ void CWinContext::RegisterWindowClasses(LPFNWNDPROC lpfnWndProc, int width, int 
 
 bool CWinContext::CreateWindows()
 {
-    m_MainWndStyle = WS_OVERLAPPEDWINDOW & ~(WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SYSMENU);
+    m_MainWndStyle = (m_Fullscreen) ? WS_POPUP : WS_OVERLAPPEDWINDOW & ~(WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SYSMENU);
 
     RECT rect = {0, 0, m_Width, m_Height};
     AdjustWindowRect(&rect, m_MainWndStyle, FALSE);

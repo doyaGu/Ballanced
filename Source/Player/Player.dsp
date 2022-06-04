@@ -43,7 +43,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /W3 /O2 /I "../ResDll" /I "../BuildingBlocks" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /FD /c
+# ADD CPP /nologo /W3 /GX /O2 /I "../BuildingBlocks" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /FD /c
 # SUBTRACT CPP /YX /Yc /Yu
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
@@ -54,7 +54,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /machine:I386
-# ADD LINK32 CK2.lib VxMath.lib kernel32.lib user32.lib gdi32.lib /nologo /subsystem:windows /machine:I386 /out:"../../Bin/Player.exe" /libpath:"../../../Lib"
+# ADD LINK32 CK2.lib VxMath.lib kernel32.lib user32.lib gdi32.lib /nologo /subsystem:windows /machine:I386 /out:"../../Bin/Player.exe"
 
 !ELSEIF  "$(CFG)" == "Player - Win32 Debug"
 
@@ -70,7 +70,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /Yu"stdafx.h" /FD /GZ /c
-# ADD CPP /nologo /W3 /Gm /ZI /Od /I "../ResDll" /I "../BuildingBlocks" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /FR /FD /GZ /c
+# ADD CPP /nologo /W3 /Gm /GX /ZI /Od /I "../BuildingBlocks" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /FR /FD /GZ /c
 # SUBTRACT CPP /YX /Yc /Yu
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
@@ -81,7 +81,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 CK2.lib VxMath.lib kernel32.lib user32.lib gdi32.lib /nologo /subsystem:windows /debug /machine:I386 /out:"../../Bin/Player.exe" /pdbtype:sept /libpath:"../../../Lib"
+# ADD LINK32 CK2.lib VxMath.lib kernel32.lib user32.lib gdi32.lib /nologo /subsystem:windows /debug /machine:I386 /out:"../../Bin/Player.exe" /pdbtype:sept
 
 !ENDIF 
 
@@ -94,6 +94,10 @@ LINK32=link.exe
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
+SOURCE=.\CmdlineParser.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\ErrorProtocol.cpp
 # End Source File
 # Begin Source File
@@ -102,15 +106,15 @@ SOURCE=.\Game.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\GameConfig.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\GamePlayer.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=.\GameStack.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\getopt.cpp
 # End Source File
 # Begin Source File
 
@@ -142,6 +146,10 @@ SOURCE=.\WinContext.cpp
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
+SOURCE=.\CmdlineParser.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\config.h
 # End Source File
 # Begin Source File
@@ -154,15 +162,15 @@ SOURCE=.\Game.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\GameConfig.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\GamePlayer.h
 # End Source File
 # Begin Source File
 
 SOURCE=.\GameStack.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\getopt.h
 # End Source File
 # Begin Source File
 
@@ -175,6 +183,10 @@ SOURCE=.\NeMoContext.h
 # Begin Source File
 
 SOURCE=.\PlayerRegistry.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\resource.h
 # End Source File
 # Begin Source File
 

@@ -3,52 +3,24 @@
 #include "LogProtocol.h"
 #include "PlayerRegistry.h"
 
-#include "ResDll.h"
 #include "TT_InterfaceManager_RT/GameInfo.h"
-
-RESOURCEMAP g_ResMap;
-
-static void InitGameInfo(CGameInfo &gameInfo)
-{
-    strcpy(gameInfo.path, ".");
-    gameInfo.type = 0;
-    gameInfo.hkRoot = (HKEY)-1;
-    strcpy(gameInfo.regSubkey, g_ResMap.settings);
-    strcpy(gameInfo.fileName, "base.cmo");
-}
 
 int APIENTRY WinMain(HINSTANCE hInstance,
                      HINSTANCE hPrevInstance,
                      LPSTR lpCmdLine,
                      int nCmdShow)
 {
-    HANDLE hMutex = ::CreateMutexA(NULL, FALSE, g_ResMap.gameName);
+    HANDLE hMutex = ::CreateMutexA(NULL, FALSE, "Ballance");
     if (::GetLastError() == ERROR_ALREADY_EXISTS)
-    {
         return -1;
-    }
 
-    CGameInfo gameInfo;
-    InitGameInfo(gameInfo);
+    CGameInfo gameInfo(".", 0, (HKEY)-1, "Software\\Ballance\\Settings", "base.cmo");
 
-    CGamePlayer player(&gameInfo, 1, true, hMutex, false);
-
-    char buffer[512];
-    ::LoadStringA(g_ResMap.hResDll, 2, buffer, 512);
-
-    DWORD dwLangId = ::GetPrivateProfileIntA("Settings", "Language", -1, g_ResMap.pathSetting);
-    if (dwLangId == -1)
-    {
-        if (::LoadStringA(g_ResMap.hResDll, 24, buffer, 512))
-        {
-            dwLangId = atoi(buffer);
-        }
-    }
+    CGamePlayer player(&gameInfo, 1, hMutex);
 
     if (!player.IsInitialized())
     {
-        ::LoadStringA(g_ResMap.hResDll, RES_STR_ID[dwLangId * 8 + 6], buffer, 512);
-        ::MessageBoxA(NULL, buffer, "Error", MB_OK);
+        ::MessageBoxA(NULL, "The game could not be started!", "Error", MB_OK);
         TT_ERROR("Player.cpp", "WinMain()", "GamePlayer Constructor - Abort");
         return -1;
     }
@@ -57,8 +29,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 
     if (!player.IsInitialized())
     {
-        ::LoadStringA(g_ResMap.hResDll, RES_STR_ID[dwLangId * 8 + 6], buffer, 512);
-        ::MessageBoxA(NULL, buffer, "Error", MB_OK);
+        ::MessageBoxA(NULL, "The game could not be started!", "Error", MB_OK);
         TT_ERROR("Player.cpp", "WinMain()", "The application could not be initialized!!!");
         player.Done();
         return -1;
@@ -66,8 +37,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 
     if (!player.LoadCMO("base.cmo"))
     {
-        ::LoadStringA(g_ResMap.hResDll, RES_STR_ID[dwLangId * 8 + 7], buffer, 512);
-        ::MessageBoxA(NULL, buffer, "Error", MB_OK);
+        ::MessageBoxA(NULL, "The base module could not be loaded!", "Error", MB_OK);
         TT_ERROR("Player.cpp", "WinMain()", "SYSTEM HALTED");
         player.Done();
         return -1;
