@@ -1,3 +1,0 @@
-; Resource Dll
-EXPORTS
-	fillResourceMap
