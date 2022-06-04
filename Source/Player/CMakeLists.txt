@@ -8,35 +8,37 @@ set(PLAYER_VERSION ${CMAKE_PROJECT_VERSION})
 
 set(PLAYER_SCREEN_WIDTH 640 CACHE STRING "Player screen width default value" FORCE)
 set(PLAYER_SCREEN_HEIGHT 480 CACHE STRING "Player screen height default value" FORCE)
-set(PLAYER_SCREEN_BPP 16 CACHE STRING "Player screen bpp default value" FORCE)
+set(PLAYER_SCREEN_BPP 32 CACHE STRING "Player screen bpp default value" FORCE)
 
 configure_file(config.h.in "${CMAKE_CURRENT_SOURCE_DIR}/config.h")
 
 set(PLAYER_HEADERS
 	Game.h
+	GameConfig.h
 	GameStack.h
 	GamePlayer.h
 	PlayerRegistry.h
 	NeMoContext.h
 	WinContext.h
 	Splash.h
+	CmdlineParser.h
 	ErrorProtocol.h
 	LogProtocol.h
-	getopt.h
 )
 
 set(PLAYER_SOURCES
 	Player.cpp
 	Game.cpp
+	GameConfig.cpp
 	GameStack.cpp
 	GamePlayer.cpp
 	PlayerRegistry.cpp
 	NeMoContext.cpp
 	WinContext.cpp
 	Splash.cpp
+	CmdlineParser.cpp
 	ErrorProtocol.cpp
 	LogProtocol.cpp
-	getopt.cpp
     Player.rc
 )
 
@@ -52,7 +54,6 @@ target_include_directories(Player PRIVATE
 )
 
 target_link_libraries(Player PRIVATE
-    ResDll
 	VirtoolsSDK::CK2
 	VirtoolsSDK::VxMath
 )

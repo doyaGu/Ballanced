@@ -5,6 +5,7 @@
 #include "Windows.h"
 
 #include "Game.h"
+#include "GameConfig.h"
 #include "GameStack.h"
 #include "NeMoContext.h"
 #include "WinContext.h"
@@ -22,7 +23,7 @@ public:
         eInitialized = 1,
     };
 
-    CGamePlayer(CGameInfo *gameInfo, int n, bool defaultSetting, HANDLE hMutex, bool rookie);
+    CGamePlayer(CGameInfo *gameInfo, int n, HANDLE hMutex);
     ~CGamePlayer();
 
     void Init(HINSTANCE hInstance, LPFNWNDPROC lpfnWndProc);
@@ -70,21 +71,19 @@ private:
 
     int m_State;
     HANDLE m_hMutex;
-    bool m_DefaultSetting;
     bool m_Cleared;
     char m_RenderPath[512];
     char m_PluginPath[512];
     char m_ManagerPath[512];
     char m_BehaviorPath[512];
     char m_Path[512];
+    char m_IniPath[512];
     CGameDataManager m_DataManager;
     CNeMoContext m_NeMoContext;
     CWinContext m_WinContext;
     CGameStack m_Stack;
+    CGameConfig m_Config;
     CGame m_Game;
-    bool m_IsRookie;
-    bool m_TaskSwitchEnabled;
-    bool m_PauseOnTaskSwitch;
 };
 
 #endif /* PLAYER_GAMEPLAYER_H */

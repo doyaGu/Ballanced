@@ -9,210 +9,10 @@
 #include "LogProtocol.h"
 #include "Splash.h"
 
-#include "ResDll.h"
 #include "TT_InterfaceManager_RT/InterfaceManager.h"
-#include "getopt.h"
 
 #include "config.h"
 #include "resource.h"
-
-#define MAXOPTIONS 32
-
-extern RESOURCEMAP g_ResMap;
-
-struct PlayerOptions
-{
-    int width;
-    int height;
-    int bpp;
-    int driver;
-    bool fullscreen;
-    bool taskSwitchEnabled;
-    bool pauseOnTaskSwitch;
-};
-
-static inline bool IsNoSettingsInIni()
-{
-    return (g_ResMap.fKey & 2) == 2;
-}
-
-static inline bool IsUsingCommandLine()
-{
-    return (g_ResMap.fKey & 4) == 4;
-}
-
-static char **GetArgs(int *argc)
-{
-    int optind = 0;
-    static char *argv[MAXOPTIONS] = {0};
-
-    char *cmdline = ::GetCommandLineA();
-    if (!cmdline || strcmp(cmdline, "") == 0)
-        return NULL;
-
-    char *progend = NULL;
-    if (cmdline[0] == '\"')
-    {
-        progend = strchr(cmdline + 1, '\"');
-    }
-    else
-    {
-        progend = strchr(cmdline, ' ');
-        if (!progend)
-        {
-            argv[optind] = cmdline;
-            ++optind;
-            *argc = optind;
-            return argv;
-        }
-    }
-
-    *progend = '\0';
-    if (cmdline[0] == '\"')
-    {
-        char *sep = strrchr(cmdline, '\\');
-        if (sep)
-        {
-            argv[optind] = sep + 1;
-        }
-        else
-        {
-            argv[optind] = cmdline + 1;
-        }
-        ++optind;
-        ++progend;
-    }
-    else
-    {
-        argv[optind] = cmdline;
-        ++optind;
-        *progend = ' ';
-    }
-
-    char *optstart = strchr(progend, ' ');
-    if (!optstart)
-    {
-        argv[optind] = cmdline;
-        ++optind;
-        *argc = optind;
-        return argv;
-    }
-
-    char *token = strtok(optstart, " ");
-    while (token)
-    {
-        while (isspace(*token))
-            ++token;
-        argv[optind++] = token;
-        token = strtok(NULL, " ");
-    }
-
-    *argc = optind;
-    return argv;
-}
-
-static bool ParseCommandLine(PlayerOptions &options)
-{
-    int argc = 1;
-    char **argv = ::GetArgs(&argc);
-    if (!argv || argc == 1)
-        return false;
-
-    int ch;
-    while ((ch = getopt(argc, argv, "f::d::p::w::h::b::v::")) != -1)
-    {
-        switch (ch)
-        {
-        case 'f':
-            options.fullscreen = true;
-            options.taskSwitchEnabled = false;
-            break;
-        case 'd':
-            options.taskSwitchEnabled = false;
-            break;
-        case 'p':
-            options.pauseOnTaskSwitch = true;
-        case 'w':
-            if (optarg)
-                options.width = atoi(optarg);
-            break;
-        case 'h':
-            if (optarg)
-                options.height = atoi(optarg);
-            break;
-        case 'b':
-            if (optarg)
-                options.bpp = atoi(optarg);
-            break;
-        case 'v':
-            if (optarg)
-                options.driver = atoi(optarg);
-            break;
-        default:
-            return false;
-        }
-    }
-
-    return true;
-}
-
-static bool IniSetBPPAndDriver(int bpp, int driver)
-{
-    if (bpp == 32)
-        g_ResMap.dwVideoDriverSetting = (driver << 16) | 1;
-    else if (bpp == 16)
-        g_ResMap.dwVideoDriverSetting = (driver << 16) | 0;
-
-    char buffer[64];
-    sprintf(buffer, "%d", g_ResMap.dwVideoDriverSetting);
-    return ::WritePrivateProfileStringA("Settings", g_ResMap.videoDriver, buffer, g_ResMap.pathSetting) == TRUE;
-}
-
-static bool IniSetFullscreen(bool fullscreen)
-{
-    g_ResMap.fullScreenSetting = fullscreen;
-
-    char buffer[64];
-    sprintf(buffer, "%d", g_ResMap.fullScreenSetting);
-    return ::WritePrivateProfileStringA("Settings", g_ResMap.fullScreen, buffer, g_ResMap.pathSetting) == TRUE;
-}
-
-static bool IniSetResolution(int width, int height)
-{
-    g_ResMap.dwVideoModeSetting = (width << 16) | height;
-
-    char buffer[64];
-    sprintf(buffer, "%d", g_ResMap.dwVideoModeSetting);
-    return ::WritePrivateProfileStringA("Settings", g_ResMap.videoMode, buffer, g_ResMap.pathSetting) == TRUE;
-}
-
-static bool IniGetBPPAndDriver(int *bpp, int *driver)
-{
-    DWORD dwVideoDriver = ::GetPrivateProfileIntA("Settings", g_ResMap.videoDriver, -1, g_ResMap.pathSetting);
-    if (dwVideoDriver == -1)
-        return false;
-
-    *bpp = (dwVideoDriver & 1) != 0 ? 32 : 16;
-    *driver = dwVideoDriver >> 16;
-    g_ResMap.dwVideoDriverSetting = dwVideoDriver;
-
-    return true;
-}
-
-static bool IniGetFullScreen()
-{
-    return g_ResMap.fullScreenSetting == TRUE;
-}
-
-static int IniGetWidth()
-{
-    return HIWORD(g_ResMap.dwVideoModeSetting);
-}
-
-static int IniGetHeight()
-{
-    return LOWORD(g_ResMap.dwVideoModeSetting);
-}
 
 static bool CheckPrerequisite()
 {
@@ -227,13 +27,13 @@ static bool CheckPrerequisite()
         if (sysinfo.wProcessorArchitecture)
         {
             TT_LOG("No Intel architecture ... failed");
-            ::MessageBoxA(NULL, g_ResMap.needIntelPC, "Error", MB_ICONERROR);
+            ::MessageBoxA(NULL, "This program requires a PC with an Intel compatible processor!", "Error", MB_ICONERROR);
             return false;
         }
         if (sysinfo.dwProcessorType != PROCESSOR_INTEL_PENTIUM)
         {
             TT_LOG("No Intel processor ... failed");
-            ::MessageBoxA(NULL, g_ResMap.needPentiumCPU, "Error", MB_ICONERROR);
+            ::MessageBoxA(NULL, "This program requires a PC with an Intel Pentium compatible (or higher) processor!", "Error", MB_ICONERROR);
             return false;
         }
 
@@ -279,10 +79,10 @@ static bool CheckPrerequisite()
         sprintf(buffer, "%llu free %sbytes of virtual memory.\n", statex.ullAvailVirtual / (1024 * 1024), "M");
         TT_LOG(buffer);
 
-        if (statex.ullAvailVirtual < g_ResMap.dwMinMem)
+        if (statex.ullAvailVirtual < 64000000)
         {
             TT_LOG("Memory check failed (below 64MB)!");
-            ::MessageBoxA(NULL, g_ResMap.needMEM64MB, "Error", MB_ICONERROR);
+            ::MessageBoxA(NULL, "This program requires a PC with at least 64 MB RAM!", "Error", MB_ICONERROR);
             return false;
         }
 
@@ -395,25 +195,23 @@ static BOOL CALLBACK DialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
     return FALSE;
 }
 
-CGamePlayer::CGamePlayer(CGameInfo *gameInfo, int n, bool defaultSetting, HANDLE hMutex, bool rookie)
+CGamePlayer::CGamePlayer(CGameInfo *gameInfo, int n, HANDLE hMutex)
     : m_State(eInitial),
       m_hMutex(hMutex),
-      m_DefaultSetting(defaultSetting),
       m_Cleared(false),
       m_DataManager(),
       m_NeMoContext(),
       m_WinContext(),
-      m_Stack(defaultSetting),
-      m_Game(),
-      m_IsRookie(rookie),
-      m_TaskSwitchEnabled(true),
-      m_PauseOnTaskSwitch(false)
+      m_Stack(),
+      m_Config(),
+      m_Game()
 {
     memset(m_RenderPath, 0, sizeof(m_RenderPath));
     memset(m_PluginPath, 0, sizeof(m_PluginPath));
     memset(m_ManagerPath, 0, sizeof(m_ManagerPath));
     memset(m_BehaviorPath, 0, sizeof(m_BehaviorPath));
     memset(m_Path, 0, sizeof(m_Path));
+    memset(m_IniPath, 0, sizeof(m_IniPath));
 
     Construct();
 
@@ -445,63 +243,42 @@ void CGamePlayer::Init(HINSTANCE hInstance, LPFNWNDPROC lpfnWndProc)
     {
     case CK_OK:
         break;
-
     case CKERR_NODLLFOUND:
         ::MessageBoxA(NULL, "Necessary dll is not found", "Error", MB_OK);
         return;
-
     case CKERR_NORENDERENGINE:
         ::MessageBoxA(NULL, "No RenderEngine", "Error", MB_OK);
         return;
-
     case CKERR_INVALIDPARAMETER:
     {
-        bool settingChanged = false;
-        bool engineReinitialized = false;
+        m_NeMoContext.SetDriverIndex(0);
+        m_NeMoContext.SetBPP(DEFAULT_BPP);
+        m_NeMoContext.SetResolution(DEFAULT_WIDTH, DEFAULT_HEIGHT);
 
-        if (m_DefaultSetting)
-        {
-            m_NeMoContext.SetDriverIndex(0);
-            m_NeMoContext.SetBPP(DEFAULT_BPP);
-            m_NeMoContext.SetResolution(DEFAULT_WIDTH, DEFAULT_HEIGHT);
-            engineReinitialized = ReInitEngine();
-            settingChanged = true;
-        }
-
-        if (!m_DefaultSetting || !engineReinitialized)
+        if (!ReInitEngine())
         {
             if (::DialogBoxParamA(m_WinContext.GetAppInstance(), (LPCSTR)IDD_FULLSCREEN_SETUP, NULL, DialogProc, 0) != 1)
                 return;
             if (!ReInitEngine())
                 return;
-            settingChanged = true;
         }
 
-        if (settingChanged)
-        {
-            IniSetBPPAndDriver(m_NeMoContext.GetBPP(), m_NeMoContext.GetScreenMode());
-            IniSetResolution(m_NeMoContext.GetWidth(), m_NeMoContext.GetHeight());
-        }
+        m_Config.bpp = m_NeMoContext.GetBPP();
+        m_Config.driver = m_NeMoContext.GetScreenMode();
+        m_Config.width = m_NeMoContext.GetWidth();
+        m_Config.height = m_NeMoContext.GetHeight();
     }
-
+    break;
     default:
         return;
     }
 
-    {
-        CTTInterfaceManager *im = m_NeMoContext.GetInterfaceManager();
-
-        im->SetDriverIndex(m_NeMoContext.GetDriverIndex());
-        im->SetScreenModeIndex(m_NeMoContext.GetScreenMode());
-
-        if (strlen(g_ResMap.pathSetting) > 128)
-            im->SetIniName("Ballance.ini");
-        else
-            im->SetIniName(g_ResMap.pathSetting);
-
-        im->SetRookie(m_IsRookie);
-        im->SetTaskSwitchEnabled(m_TaskSwitchEnabled);
-    }
+    CTTInterfaceManager *im = m_NeMoContext.GetInterfaceManager();
+    im->SetDriverIndex(m_NeMoContext.GetDriverIndex());
+    im->SetScreenModeIndex(m_NeMoContext.GetScreenMode());
+    im->SetIniName(m_IniPath);
+    im->SetRookie(m_Config.rookie);
+    im->SetTaskSwitchEnabled(m_Config.taskSwitchEnabled);
 
     m_WinContext.ShowWindows();
     m_WinContext.UpdateWindows();
@@ -526,10 +303,9 @@ bool CGamePlayer::Step()
     if (::PeekMessageA(&msg, NULL, 0, 0, PM_REMOVE))
     {
         if (msg.message == WM_QUIT)
-        {
             return false;
-        }
-        else if (!::TranslateAcceleratorA(msg.hwnd, m_WinContext.GetAccelTable(), &msg))
+
+        if (!::TranslateAcceleratorA(msg.hwnd, m_WinContext.GetAccelTable(), &msg))
         {
             ::TranslateMessage(&msg);
             ::DispatchMessageA(&msg);
@@ -568,6 +344,7 @@ void CGamePlayer::Done()
     }
 
     m_Cleared = true;
+    m_Config.SaveToIni(m_IniPath);
     ::PostQuitMessage(0);
 }
 
@@ -610,7 +387,7 @@ bool CGamePlayer::LoadCMO(const char *filename)
         m_Stack.Push(gameInfoNow);
 
     RegisterGameInfo();
-    if (!m_Game.Load())
+    if (!m_Game.Load(m_Config))
         return false;
 
     ::SetCursor(::LoadCursorA(NULL, (LPCSTR)IDC_ARROW));
@@ -630,12 +407,7 @@ void CGamePlayer::OnSized()
 {
     CKRenderContext *renderContext = m_NeMoContext.GetRenderContext();
     if (renderContext && !renderContext->IsFullScreen())
-    {
-        RECT rect;
-        ::GetClientRect(m_WinContext.GetMainWindow(), &rect);
-        ::SetWindowPos(m_WinContext.GetRenderWindow(), NULL, 0, 0, rect.right, rect.bottom, SWP_NOMOVE | SWP_NOZORDER);
-        renderContext->Resize();
-    }
+        m_NeMoContext.ResizeWindow();
 }
 
 void CGamePlayer::OnPaint()
@@ -666,15 +438,15 @@ void CGamePlayer::OnActivateApp(WPARAM wParam, LPARAM lParam)
             if (firstDeActivate)
                 wasPlaying = m_NeMoContext.IsPlaying();
 
-            if (m_PauseOnTaskSwitch)
+            if (m_Config.pauseOnTaskSwitch)
                 m_NeMoContext.Pause();
 
             if (m_NeMoContext.GetRenderContext() && m_NeMoContext.IsRenderFullscreen())
             {
                 if (firstDeActivate)
                     wasFullscreen = true;
-                m_NeMoContext.SwitchFullscreen();
-                m_NeMoContext.MinimizeWindow();
+                m_NeMoContext.RestoreWindow();
+                m_WinContext.MinimizeWindow();
             }
             else if (firstDeActivate)
             {
@@ -748,7 +520,7 @@ void CGamePlayer::OnExceptionCMO(WPARAM wParam, LPARAM lParam)
 void CGamePlayer::OnReturn(WPARAM wParam, LPARAM lParam)
 {
     RegisterGameInfo();
-    if (!m_Game.Load())
+    if (!m_Game.Load(m_Config))
         Done();
     m_Game.Play();
 
@@ -777,8 +549,10 @@ void CGamePlayer::OnScreenModeChanged(WPARAM wParam, LPARAM lParam)
     im->SetDriverIndex(m_NeMoContext.GetDriverIndex());
     im->SetScreenModeIndex(m_NeMoContext.GetScreenMode());
 
-    IniSetBPPAndDriver(m_NeMoContext.GetBPP(), m_NeMoContext.GetDriverIndex());
-    IniSetResolution(m_NeMoContext.GetWidth(), m_NeMoContext.GetHeight());
+    m_Config.bpp = m_NeMoContext.GetBPP();
+    m_Config.driver = m_NeMoContext.GetScreenMode();
+    m_Config.width = m_NeMoContext.GetWidth();
+    m_Config.height = m_NeMoContext.GetHeight();
 
     ::SetFocus(m_WinContext.GetMainWindow());
 }
@@ -886,14 +660,6 @@ LRESULT CGamePlayer::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 void CGamePlayer::Construct()
 {
-    PlayerOptions options = {
-        DEFAULT_WIDTH,
-        DEFAULT_HEIGHT,
-        DEFAULT_BPP,
-        0,
-        false,
-        true};
-
     char fullPath[MAX_PATH] = "";
     char drive[4] = "";
     char dir[MAX_PATH] = "";
@@ -903,31 +669,30 @@ void CGamePlayer::Construct()
     ::GetModuleFileNameA(NULL, fullPath, MAX_PATH);
     _splitpath(fullPath, drive, dir, filename, NULL);
     strcpy(m_Path, "..\\");
+    sprintf(m_IniPath, "%s%s%s.ini", drive, dir, filename);
     sprintf(rootPath, "%s%s%s", drive, dir, m_Path);
     TT_ERROR_OPEN(filename, rootPath, true);
     TT_LOG_OPEN(filename, rootPath, false);
 
-    fillResourceMap(&g_ResMap);
-    if (IsNoSettingsInIni())
-    {
-        // Default settings
-        IniSetFullscreen(options.fullscreen);
-        IniSetBPPAndDriver(options.bpp, options.driver);
-        IniSetResolution(options.width, options.height);
-    }
-    else
-    {
-        options.fullscreen = IniGetFullScreen();
-        IniGetBPPAndDriver(&options.bpp, &options.driver);
-        options.width = IniGetWidth();
-        options.height = IniGetHeight();
-    }
+    m_Config.langId = 1;
+    m_Config.width = DEFAULT_WIDTH;
+    m_Config.height = DEFAULT_HEIGHT;
+    m_Config.bpp = DEFAULT_BPP;
+    m_Config.driver = 0;
+    m_Config.fullscreen = false;
+    m_Config.unlockFramerate = false;
+    m_Config.taskSwitchEnabled = true;
+    m_Config.pauseOnTaskSwitch = false;
+    m_Config.playerActive = false;
+    m_Config.godmode = false;
+    m_Config.debug = false;
+    m_Config.rookie = false;
 
-    if (IsUsingCommandLine())
-        ParseCommandLine(options);
+    m_Config.LoadFromIni(m_IniPath);
+    m_Config.LoadFromCmdline(__argc, __argv);
 
-    m_NeMoContext.SetScreen(&m_WinContext, options.fullscreen, options.driver, options.bpp, options.width, options.height);
-    m_WinContext.SetResolution(options.width, options.height);
+    m_NeMoContext.SetScreen(&m_WinContext, m_Config.fullscreen, m_Config.driver, m_Config.bpp, m_Config.width, m_Config.height);
+    m_WinContext.SetResolution(m_Config.width, m_Config.height);
 
     m_State = eInitialized;
 }

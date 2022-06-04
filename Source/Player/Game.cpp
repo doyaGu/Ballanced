@@ -6,6 +6,7 @@
 #include <string.h>
 
 #include "ErrorProtocol.h"
+#include "GameConfig.h"
 #include "NeMoContext.h"
 
 #include "TT_InterfaceManager_RT/GameInfo.h"
@@ -46,7 +47,7 @@ CGame::~CGame()
     SetNeMoContext(NULL);
 }
 
-bool CGame::Load()
+bool CGame::Load(const CGameConfig &config)
 {
     char cmoPath[MAX_PATH] = "";
     char dir[MAX_PATH] = "";
@@ -146,7 +147,51 @@ bool CGame::Load()
             mesh->Show(CKHIDE);
     }
 
-    // Sets the initial conditions for the level
+    // Correct the bbp filter
+    for (CKBehavior *rri = (CKBehavior *)m_NeMoContext->GetObjectByNameAndClass("Remove Row If", CKCID_BEHAVIOR);
+         rri != NULL;
+         rri = (CKBehavior *)m_NeMoContext->GetObjectByNameAndClass("Remove Row If", CKCID_BEHAVIOR, rri))
+    {
+        if (rri->GetTarget() && strcmp(rri->GetTarget()->GetName(), "ScreenModes") == 0)
+        {
+            int column = -1;
+            rri->GetInputParameterValue(0, &column);
+            int *value = (int *)rri->GetInputParameterReadDataPtr(2);
+
+            if (column == 3) // ScreenModes.Bpp
+            {
+                *value = m_NeMoContext->GetBPP();
+                break;
+            }
+        }
+    }
+
+    // Unlock frame rate limitation
+    if (config.unlockFramerate)
+    {
+        for (CKBehavior *timeSettings = (CKBehavior *)m_NeMoContext->GetObjectByNameAndClass("Time Settings", CKCID_BEHAVIOR);
+             timeSettings != NULL;
+             timeSettings = (CKBehavior *)m_NeMoContext->GetObjectByNameAndClass("Time Settings", CKCID_BEHAVIOR, timeSettings))
+        {
+            DWORD *frameRate = (DWORD *)timeSettings->GetInputParameterReadDataPtr(0);
+            if (*frameRate == 3) // Frame Rate == Limit
+            {
+                *frameRate = 1; // Frame Rate = Free
+                break;
+            }
+        }
+    }
+
+    // Modify game settings according to initilization configurations
+    CKDataArray *gameSettings = (CKDataArray *)m_NeMoContext->GetObjectByNameAndClass("GameSettings", CKCID_DATAARRAY);
+    if (config.playerActive)
+        gameSettings->SetElementStringValue(0, 5, "TRUE");
+    if (config.godmode)
+        gameSettings->SetElementStringValue(0, 6, "TRUE");
+    if (config.debug)
+        gameSettings->SetElementStringValue(0, 7, "TRUE");
+
+    // Set the initial conditions for the level
     level->LaunchScene(NULL);
 
     for (i = 0; i < sceneCount; ++i)

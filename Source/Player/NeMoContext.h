@@ -146,7 +146,6 @@ public:
 
     void ResizeWindow();
     bool RestoreWindow();
-    void MinimizeWindow();
 
     void SetRenderContext(CKRenderContext *renderContext)
     {
@@ -197,6 +196,7 @@ public:
         CKGUID *readerGuid = (CKGUID *)0);
 
     CKObject *GetObject(CK_ID objID);
+    CKObject *GetObjectByNameAndClass(CKSTRING name, CK_CLASSID cid, CKObject *previous = NULL);
     CK_ID *GetObjectsListByClassID(CK_CLASSID cid);
     int GetObjectsCountByClassID(CK_CLASSID cid);
     CKDataArray *GetArrayByName(CKSTRING name);
