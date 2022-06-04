@@ -11,21 +11,6 @@ Package=<5>
 
 Package=<4>
 {{{
-    Begin Project Dependency
-    Project_Dep_Name ResDll
-    End Project Dependency
-}}}
-
-###############################################################################
-
-Project: "ResDll"=.\Source\ResDll\ResDll.dsp - Package Owner=<4>
-
-Package=<5>
-{{{
-}}}
-
-Package=<4>
-{{{
 }}}
 
 ###############################################################################
@@ -42,7 +27,55 @@ Package=<4>
 
 ###############################################################################
 
+Project: "TT_Gravity_RT"=.\Source\BuildingBlocks\TT_Gravity_RT\TT_Gravity_RT.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
 Project: "TT_InterfaceManager_RT"=.\Source\BuildingBlocks\TT_InterfaceManager_RT\TT_InterfaceManager_RT.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "TT_ParticleSystems_RT"=.\Source\BuildingBlocks\TT_ParticleSystems_RT\TT_ParticleSystems_RT.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "TT_Toolbox_RT"=.\Source\BuildingBlocks\TT_Toolbox_RT\TT_Toolbox_RT.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "physics_RT"=.\Source\BuildingBlocks\physics_RT\physics_RT.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
