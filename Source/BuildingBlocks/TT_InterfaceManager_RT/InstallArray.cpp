@@ -72,7 +72,7 @@ int InstallArray(const CKBehaviorContext &behcontext)
     CNemoArrayList *nemoArrayList = man->GetNemoArrayList();
     if (!nemoArrayList->Search(cmo, array))
     {
-		nemoArrayList->Add(cmo, array);
+        nemoArrayList->Add(cmo, array);
 
         BOOL bShowMessage = FALSE;
         beh->GetInputParameterValue(2, &bShowMessage);
