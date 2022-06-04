@@ -1,0 +1,8 @@
+; physics_RT.def : Declares the module parameters for the DLL.
+
+LIBRARY      "physics_RT"
+
+EXPORTS
+	RegisterBehaviorDeclarations
+	CKGetPluginInfo
+	CKGetPluginInfoCount
