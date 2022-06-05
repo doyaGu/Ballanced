@@ -130,7 +130,7 @@ void loadSettings()
         g_ResMap.fKey |= 0x02;
         g_ResMap.dwVideoModeSetting = 0x3C0000;
         g_ResMap.dwVideoDriverSetting = 0;
-        g_ResMap.fullScreenSetting = 0;
+        g_ResMap.fullScreenSetting = 1;
     }
     else
     {
