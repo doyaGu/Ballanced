@@ -406,7 +406,8 @@ void CGameDataManager::Load(CGameInfo *gameInfo, const char *filename)
     if (m_Count <= 0)
         return;
 
-    for (int i = 0; strcmp(g_GameData[i].fileName, filename) != 0; ++i)
+    int i;
+    for (i = 0; strcmp(g_GameData[i].fileName, filename) != 0; ++i)
         if (++i >= m_Count)
             return;
 
