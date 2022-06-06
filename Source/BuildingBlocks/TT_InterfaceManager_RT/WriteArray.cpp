@@ -81,7 +81,7 @@ int WriteArray(const CKBehaviorContext &behcontext)
         {
             char *msg = new char[256];
             sprintf(msg, " '%s'  from file '%s' written to manager", array->GetName(), cmo);
-            ::MessageBoxA((HWND)context->GetRenderManager()->GetRenderContext(man->GetDriverIndex())->GetWindowHandle(), msg, "message...", MB_OK);
+            ::MessageBoxA((HWND)context->GetRenderManager()->GetRenderContext(man->GetDriver())->GetWindowHandle(), msg, "message...", MB_OK);
             delete[] msg;
         }
     }

@@ -97,8 +97,8 @@ int ListDrivers(const CKBehaviorContext &behcontext)
             }
     }
 
-    int driverIndex = man->GetDriverIndex();
-    beh->SetOutputParameterValue(0, &driverIndex, sizeof(int));
+    int driver = man->GetDriver();
+    beh->SetOutputParameterValue(0, &driver, sizeof(int));
     beh->ActivateOutput(0);
     return CKBR_OK;
 }

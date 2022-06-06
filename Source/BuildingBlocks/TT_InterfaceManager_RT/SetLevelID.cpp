@@ -63,7 +63,7 @@ int SetLevelID(const CKBehaviorContext &behcontext)
     CGameInfo *gameInfo = man->GetGameInfo();
     if (!gameInfo)
     {
-        ::PostMessageA((HWND)context->GetRenderManager()->GetRenderContext(man->GetDriverIndex())->GetWindowHandle(), TT_MSG_NO_GAMEINFO, 0x12, 0);
+        ::PostMessageA((HWND)context->GetRenderManager()->GetRenderContext(man->GetDriver())->GetWindowHandle(), TT_MSG_NO_GAMEINFO, 0x12, 0);
         TT_ERROR("SetLevelID.cpp", "int SetLevelID(...)", " gameInfo not exists");
     }
 
