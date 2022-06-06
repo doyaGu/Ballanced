@@ -165,7 +165,7 @@ void CWinContext::ShowWindows()
 
 void CWinContext::MinimizeWindow()
 {
-    ::ShowWindow(m_RenderWindow, SW_SHOWMINIMIZED);
+    ::ShowWindow(m_MainWindow, SW_SHOWMINIMIZED);
 }
 
 HINSTANCE CWinContext::GetAppInstance() const
