@@ -430,8 +430,8 @@ LRESULT CGamePlayer::OnActivateApp(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
     static bool firstDeActivate = true;
 
     CTTInterfaceManager *im = m_NeMoContext.GetInterfaceManager();
-    if (!im || !m_NeMoContext.GetInterfaceManager()->IsTaskSwitchEnabled())
-        ::DefWindowProcA(hWnd, uMsg, wParam, lParam);
+    if (im && !im->IsTaskSwitchEnabled())
+        return ::DefWindowProcA(hWnd, uMsg, wParam, lParam);
 
     if (wParam != WA_ACTIVE)
     {
