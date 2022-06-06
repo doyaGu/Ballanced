@@ -85,7 +85,7 @@ int ChangeScreenMode(const CKBehaviorContext &behcontext)
         return CKBR_OK;
     }
 
-    if (!::SendMessageA((HWND)context->GetRenderManager()->GetRenderContext(man->GetDriverIndex())->GetWindowHandle(), TT_MSG_SCREEN_MODE_CHG, screenModeId, driverId))
+    if (!::SendMessageA((HWND)context->GetRenderManager()->GetRenderContext(man->GetDriver())->GetWindowHandle(), TT_MSG_SCREEN_MODE_CHG, screenModeId, driverId))
     {
         beh->ActivateOutput(1);
         return CKBR_OK;

@@ -117,8 +117,8 @@ int ListScreenModes(const CKBehaviorContext &behcontext)
 		return CKBR_OK;
 	}
 
-	int screenModeIndex = man->GetScreenModeIndex();
-	beh->SetOutputParameterValue(0, &screenModeIndex, sizeof(int));
+	int screenMode = man->GetScreenMode();
+	beh->SetOutputParameterValue(0, &screenMode, sizeof(int));
 	beh->ActivateOutput(0);
 	return CKBR_OK;
 }

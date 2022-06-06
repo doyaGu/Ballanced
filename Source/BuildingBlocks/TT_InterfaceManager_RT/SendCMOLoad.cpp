@@ -62,7 +62,7 @@ int SendCMOLoad(const CKBehaviorContext &behcontext)
         TT_ERROR("SendCMOLoad.cpp", "int SendCMOLoad(...)", " gameInfo == NULL, exit CMO");
 
     man->SetCmoName(name);
-    ::PostMessageA((HWND)context->GetRenderManager()->GetRenderContext(man->GetDriverIndex())->GetWindowHandle(), TT_MSG_CMO_LOAD, (WPARAM)man->GetCmoName(), 0);
+    ::PostMessageA((HWND)context->GetRenderManager()->GetRenderContext(man->GetDriver())->GetWindowHandle(), TT_MSG_CMO_LOAD, (WPARAM)man->GetCmoName(), 0);
     beh->ActivateOutput(0);
 
     return CKBR_OK;

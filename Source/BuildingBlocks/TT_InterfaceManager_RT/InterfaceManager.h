@@ -46,24 +46,24 @@ public:
                CKMANAGER_FUNC_OnCKReset;
     }
 
-    int GetScreenModeIndex() const
+    int GetScreenMode() const
     {
-        return m_ScreenModeIndex;
+        return m_ScreenMode;
     }
 
-    void SetScreenModeIndex(int idx)
+    void SetScreenMode(int screenMode)
     {
-        m_ScreenModeIndex = idx;
+        m_ScreenMode = screenMode;
     }
 
-    int GetDriverIndex() const
+    int GetDriver() const
     {
-        return m_DriverIndex;
+        return m_Driver;
     }
 
-    void SetDriverIndex(int idx)
+    void SetDriver(int driver)
     {
-        m_DriverIndex = idx;
+        m_Driver = driver;
     }
 
     bool IsTaskSwitchEnabled() const
@@ -137,8 +137,8 @@ public:
     }
 
 protected:
-    int m_ScreenModeIndex;
-    int m_DriverIndex;
+    int m_ScreenMode;
+    int m_Driver;
     bool m_TaskSwitchEnabled;
     bool m_Rookie;
     CGameInfo *m_GameInfo;
