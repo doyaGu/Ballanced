@@ -150,9 +150,24 @@ void CWinContext::ShowWindows()
     ::ShowWindow(m_RenderWindow, SW_SHOW);
 }
 
+void CWinContext::RestoreWindow()
+{
+    ::ShowWindow(m_MainWindow, SW_RESTORE);
+}
+
 void CWinContext::MinimizeWindow()
 {
-    ::ShowWindow(m_RenderWindow, SW_SHOWMINIMIZED);
+    ::ShowWindow(m_MainWindow, SW_SHOWMINIMIZED);
+}
+
+void CWinContext::FocusMainWindow()
+{
+    ::SetFocus(m_MainWindow);
+}
+
+void CWinContext::FocusRenderWindow()
+{
+    ::SetFocus(m_RenderWindow);
 }
 
 void CWinContext::SetResolution(int width, int height)

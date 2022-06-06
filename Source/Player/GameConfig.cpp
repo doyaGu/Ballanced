@@ -197,8 +197,8 @@ void CGameConfig::SaveToIni(const char *filename)
     IniSetBoolean("Settings", "UnlockFramerate", unlockFramerate, filename);
     IniSetBoolean("Settings", "TaskSwitchEnabled", taskSwitchEnabled, filename);
     IniSetBoolean("Settings", "PauseOnTaskSwitch", pauseOnTaskSwitch, filename);
-    IniSetBoolean("Settings", "PlayerActive", playerActive, filename);
-    IniSetBoolean("Settings", "GodMode", godmode, filename);
-    IniSetBoolean("Settings", "Debug", debug, filename);
-    IniSetBoolean("Settings", "Rookie", rookie, filename);
+    // IniSetBoolean("Settings", "PlayerActive", playerActive, filename);
+    // IniSetBoolean("Settings", "GodMode", godmode, filename);
+    // IniSetBoolean("Settings", "Debug", debug, filename);
+    // IniSetBoolean("Settings", "Rookie", rookie, filename);
 }
