@@ -619,7 +619,7 @@ LRESULT CGamePlayer::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         static bool firstDeActivate = true;
 
         CTTInterfaceManager *im = m_NeMoContext.GetInterfaceManager();
-        if (!im || !m_NeMoContext.GetInterfaceManager()->IsTaskSwitchEnabled())
+        if (im && !im->IsTaskSwitchEnabled())
             break;
 
         if (wParam != WA_ACTIVE)
