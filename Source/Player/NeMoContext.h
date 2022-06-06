@@ -46,7 +46,7 @@ public:
         m_Bpp = bpp;
         m_Width = width;
         m_Height = height;
-        m_ScreenModeIndex = driver;
+        m_ScreenMode = driver;
     }
 
     void SetWindow(CWinContext *wincontext,
@@ -114,22 +114,22 @@ public:
         return m_RefreshRate;
     }
 
-    void SetDriverIndex(int idx)
+    void SetDriver(int driver)
     {
-        m_DriverIndex = idx;
+        m_Driver = driver;
     }
 
-    int GetDriverIndex() const
+    int GetDriver() const
     {
-        return m_DriverIndex;
+        return m_Driver;
     }
 
     bool FindScreenMode();
-    bool ApplyScreenMode(int idx);
+    bool ApplyScreenMode(int screenMode);
     bool ChangeScreenMode(int driver, int screenMode);
     int GetScreenMode() const
     {
-        return m_ScreenModeIndex;
+        return m_ScreenMode;
     }
 
     void GoFullscreen();
@@ -146,6 +146,7 @@ public:
 
     void ResizeWindow();
     bool RestoreWindow();
+    void MinimizeWindow();
 
     void SetRenderContext(CKRenderContext *renderContext)
     {
@@ -266,8 +267,8 @@ private:
     int m_RefreshRate;
     bool m_Fullscreen;
     bool m_DisplayChanged;
-    int m_DriverIndex;
-    int m_ScreenModeIndex;
+    int m_Driver;
+    int m_ScreenMode;
     char m_ProgPath[512];
     CKMessageType m_MsgWindowClose;
     BOOL m_DebugMode;

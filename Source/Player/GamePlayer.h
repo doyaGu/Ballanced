@@ -40,7 +40,7 @@ public:
     void OnSized();
     void OnPaint();
     void OnClose();
-    void OnActivateApp(WPARAM wParam, LPARAM lParam);
+    LRESULT OnActivateApp(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
     void OnSetCursor();
     void OnGetMinMaxInfo(LPMINMAXINFO lpmmi);
     int OnKeyDown(UINT uKey);
@@ -51,7 +51,7 @@ public:
     bool OnLoadCMO(WPARAM wParam, LPARAM lParam);
     void OnExitToSystem(WPARAM wParam, LPARAM lParam);
     void OnExitToTitle(WPARAM wParam, LPARAM lParam);
-    void OnScreenModeChanged(WPARAM wParam, LPARAM lParam);
+    LRESULT OnChangeScreenMode(WPARAM wParam, LPARAM lParam);
     void OnGoFullscreen();
     void OnStopFullscreen();
 

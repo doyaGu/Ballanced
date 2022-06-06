@@ -110,13 +110,13 @@ static void OnInitDialog(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             {
                 lbStrId = ::SendDlgItemMessageA(hWnd, IDC_LB_SCREEN_MODE, LB_ADDSTRING, 0, (LPARAM)drDesc->DriverName);
                 ::SendDlgItemMessageA(hWnd, IDC_LB_SCREEN_MODE, LB_SETITEMDATA, lbStrId, i);
-                if (i == CNeMoContext::GetInstance()->GetDriverIndex())
+                if (i == CNeMoContext::GetInstance()->GetDriver())
                     ::SendDlgItemMessageA(hWnd, IDC_LB_SCREEN_MODE, LB_SETCURSEL, lbStrId, 0);
             }
         }
     }
 
-    drDesc = CNeMoContext::GetInstance()->GetRenderManager()->GetRenderDriverDescription(CNeMoContext::GetInstance()->GetDriverIndex());
+    drDesc = CNeMoContext::GetInstance()->GetRenderManager()->GetRenderDriverDescription(CNeMoContext::GetInstance()->GetDriver());
     for (int i = 0, j = 0; i < drDesc->DisplayModeCount; ++i, ++j)
     {
         displayMode = drDesc->DisplayModes;
@@ -173,15 +173,15 @@ static BOOL CALLBACK DialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
             BOOL fError = wParam;
             int curIdx = ::SendDlgItemMessageA(hWnd, IDC_LB_SCREEN_MODE, LB_GETCURSEL, 0, 0);
             if (curIdx >= 0)
-                CNeMoContext::GetInstance()->SetDriverIndex(SendDlgItemMessageA(hWnd, IDC_LB_SCREEN_MODE, LB_GETITEMDATA, curIdx, 0));
+                CNeMoContext::GetInstance()->SetDriver(SendDlgItemMessageA(hWnd, IDC_LB_SCREEN_MODE, LB_GETITEMDATA, curIdx, 0));
 
             curIdx = ::SendDlgItemMessageA(hWnd, IDC_LB_DRIVER, LB_GETCURSEL, 0, 0);
             if (curIdx >= 0)
                 fError = CNeMoContext::GetInstance()->ApplyScreenMode(SendDlgItemMessageA(hWnd, IDC_LB_DRIVER, LB_GETITEMDATA, curIdx, 0));
 
             CTTInterfaceManager *im = CNeMoContext::GetInstance()->GetInterfaceManager();
-            im->SetDriverIndex(CNeMoContext::GetInstance()->GetDriverIndex());
-            im->SetScreenModeIndex(CNeMoContext::GetInstance()->GetScreenMode());
+            im->SetDriver(CNeMoContext::GetInstance()->GetDriver());
+            im->SetScreenMode(CNeMoContext::GetInstance()->GetScreenMode());
 
             if (fError)
                 EndDialog(hWnd, 1);
@@ -190,7 +190,9 @@ static BOOL CALLBACK DialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
         }
         case IDCANCEL:
             EndDialog(hWnd, 2);
+            break;
         }
+        break;
     }
     return FALSE;
 }
@@ -251,7 +253,7 @@ void CGamePlayer::Init(HINSTANCE hInstance, LPFNWNDPROC lpfnWndProc)
         return;
     case CKERR_INVALIDPARAMETER:
     {
-        m_NeMoContext.SetDriverIndex(0);
+        m_NeMoContext.SetDriver(0);
         m_NeMoContext.SetBPP(DEFAULT_BPP);
         m_NeMoContext.SetResolution(DEFAULT_WIDTH, DEFAULT_HEIGHT);
 
@@ -274,8 +276,8 @@ void CGamePlayer::Init(HINSTANCE hInstance, LPFNWNDPROC lpfnWndProc)
     }
 
     CTTInterfaceManager *im = m_NeMoContext.GetInterfaceManager();
-    im->SetDriverIndex(m_NeMoContext.GetDriverIndex());
-    im->SetScreenModeIndex(m_NeMoContext.GetScreenMode());
+    im->SetDriver(m_NeMoContext.GetDriver());
+    im->SetScreenMode(m_NeMoContext.GetScreenMode());
     im->SetIniName(m_IniPath);
     im->SetRookie(m_Config.rookie);
     im->SetTaskSwitchEnabled(m_Config.taskSwitchEnabled);
@@ -286,7 +288,7 @@ void CGamePlayer::Init(HINSTANCE hInstance, LPFNWNDPROC lpfnWndProc)
     m_NeMoContext.Refresh();
 
     ::SendMessageA(m_WinContext.GetMainWindow(), TT_MSG_EXIT_TO_TITLE, NULL, NULL);
-    ::SetFocus(m_WinContext.GetMainWindow());
+    m_WinContext.FocusMainWindow();
 
     m_State = eInitialized;
 }
@@ -393,7 +395,7 @@ bool CGamePlayer::LoadCMO(const char *filename)
     ::SetCursor(::LoadCursorA(NULL, (LPCSTR)IDC_ARROW));
 
     m_Game.Play();
-    ::SetFocus(m_WinContext.GetMainWindow());
+    m_WinContext.FocusMainWindow();
 
     return true;
 }
@@ -421,7 +423,7 @@ void CGamePlayer::OnClose()
     m_NeMoContext.BroadcastCloseMessage();
 }
 
-void CGamePlayer::OnActivateApp(WPARAM wParam, LPARAM lParam)
+LRESULT CGamePlayer::OnActivateApp(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     static bool wasPlaying = false;
     static bool wasFullscreen = false;
@@ -429,7 +431,7 @@ void CGamePlayer::OnActivateApp(WPARAM wParam, LPARAM lParam)
 
     CTTInterfaceManager *im = m_NeMoContext.GetInterfaceManager();
     if (!im || !m_NeMoContext.GetInterfaceManager()->IsTaskSwitchEnabled())
-        return;
+        ::DefWindowProcA(hWnd, uMsg, wParam, lParam);
 
     if (wParam != WA_ACTIVE)
     {
@@ -446,7 +448,7 @@ void CGamePlayer::OnActivateApp(WPARAM wParam, LPARAM lParam)
                 if (firstDeActivate)
                     wasFullscreen = true;
                 m_NeMoContext.RestoreWindow();
-                m_WinContext.MinimizeWindow();
+                m_NeMoContext.MinimizeWindow();
             }
             else if (firstDeActivate)
             {
@@ -454,6 +456,7 @@ void CGamePlayer::OnActivateApp(WPARAM wParam, LPARAM lParam)
             }
         }
         firstDeActivate = false;
+        return DefWindowProcA(hWnd, WM_ACTIVATEAPP, 0, lParam);
     }
     else
     {
@@ -464,6 +467,7 @@ void CGamePlayer::OnActivateApp(WPARAM wParam, LPARAM lParam)
             m_NeMoContext.GoFullscreen();
 
         firstDeActivate = true;
+        return DefWindowProcA(hWnd, WM_ACTIVATEAPP, wParam, lParam);
     }
 }
 
@@ -541,20 +545,28 @@ void CGamePlayer::OnExitToTitle(WPARAM wParam, LPARAM lParam)
 {
 }
 
-void CGamePlayer::OnScreenModeChanged(WPARAM wParam, LPARAM lParam)
+LRESULT CGamePlayer::OnChangeScreenMode(WPARAM wParam, LPARAM lParam)
 {
-    m_NeMoContext.ChangeScreenMode(lParam, wParam);
+    if (!m_NeMoContext.ChangeScreenMode(lParam, wParam))
+        return 0;
 
     CTTInterfaceManager *im = m_NeMoContext.GetInterfaceManager();
-    im->SetDriverIndex(m_NeMoContext.GetDriverIndex());
-    im->SetScreenModeIndex(m_NeMoContext.GetScreenMode());
+    if (!im)
+    {
+        TT_ERROR("GamePlayer.cpp", "WndProc()", "No InterfaceManager");
+        return 1;
+    }
+    im->SetDriver(m_NeMoContext.GetDriver());
+    im->SetScreenMode(m_NeMoContext.GetScreenMode());
 
     m_Config.bpp = m_NeMoContext.GetBPP();
     m_Config.driver = m_NeMoContext.GetScreenMode();
     m_Config.width = m_NeMoContext.GetWidth();
     m_Config.height = m_NeMoContext.GetHeight();
 
-    ::SetFocus(m_WinContext.GetMainWindow());
+    m_WinContext.FocusMainWindow();
+
+    return 1;
 }
 
 void CGamePlayer::OnGoFullscreen()
@@ -562,9 +574,9 @@ void CGamePlayer::OnGoFullscreen()
     if (!m_NeMoContext.IsRenderFullscreen())
     {
         m_NeMoContext.GoFullscreen();
-        ::SetFocus(m_WinContext.GetMainWindow());
+        m_WinContext.FocusMainWindow();
         m_NeMoContext.Play();
-        ::SetFocus(m_WinContext.GetMainWindow());
+        m_WinContext.FocusMainWindow();
     }
 }
 
@@ -573,7 +585,7 @@ void CGamePlayer::OnStopFullscreen()
     if (m_NeMoContext.IsFullscreen() && m_NeMoContext.GetRenderContext()->IsFullScreen())
     {
         m_NeMoContext.GetRenderContext()->StopFullScreen();
-        ::ShowWindow(m_WinContext.GetMainWindow(), SW_MINIMIZE);
+        m_WinContext.MinimizeWindow();
     }
 }
 
@@ -598,8 +610,7 @@ LRESULT CGamePlayer::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         break;
 
     case WM_ACTIVATEAPP:
-        OnActivateApp(wParam, lParam);
-        break;
+        return OnActivateApp(hWnd, uMsg, wParam, lParam);
 
     case WM_SETCURSOR:
         OnSetCursor();
@@ -621,35 +632,34 @@ LRESULT CGamePlayer::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
     case TT_MSG_NO_GAMEINFO:
         OnExceptionCMO(wParam, lParam);
-        return TRUE;
+        break;
 
     case TT_MSG_CMO_RESTART:
         OnReturn(wParam, lParam);
-        return TRUE;
+        break;
 
     case TT_MSG_CMO_LOAD:
         OnLoadCMO(wParam, lParam);
-        return TRUE;
+        break;
 
     case TT_MSG_EXIT_TO_SYS:
         OnExitToSystem(wParam, lParam);
-        return TRUE;
+        break;
 
     case TT_MSG_EXIT_TO_TITLE:
         OnExitToTitle(wParam, lParam);
-        return TRUE;
+        break;
 
     case TT_MSG_SCREEN_MODE_CHG:
-        OnScreenModeChanged(wParam, lParam);
-        return TRUE;
+        return OnChangeScreenMode(wParam, lParam);
 
     case TT_MSG_GO_FULLSCREEN:
         OnGoFullscreen();
-        return TRUE;
+        break;
 
     case TT_MSG_STOP_FULLSCREEN:
         OnStopFullscreen();
-        return TRUE;
+        return 1;
 
     default:
         break;

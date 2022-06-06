@@ -38,8 +38,8 @@ CNeMoContext::CNeMoContext()
       m_RefreshRate(0),
       m_Fullscreen(false),
       m_DisplayChanged(false),
-      m_DriverIndex(0),
-      m_ScreenModeIndex(-1),
+      m_Driver(0),
+      m_ScreenMode(-1),
       m_MsgWindowClose(0),
       m_DebugMode(FALSE),
       m_Debugging(FALSE)
@@ -240,7 +240,7 @@ void CNeMoContext::Refresh()
 
 bool CNeMoContext::FindScreenMode()
 {
-    VxDriverDesc *drDesc = m_RenderManager->GetRenderDriverDescription(m_DriverIndex);
+    VxDriverDesc *drDesc = m_RenderManager->GetRenderDriverDescription(m_Driver);
     if (!drDesc)
     {
         if (m_CKContext)
@@ -259,22 +259,22 @@ bool CNeMoContext::FindScreenMode()
             dm[i].Height == m_Height &&
             dm[i].Bpp == m_Bpp)
         {
-            m_ScreenModeIndex = i;
+            m_ScreenMode = i;
             break;
         }
     }
 
-    return m_ScreenModeIndex >= 0;
+    return m_ScreenMode >= 0;
 }
 
-bool CNeMoContext::ApplyScreenMode(int idx)
+bool CNeMoContext::ApplyScreenMode(int screenMode)
 {
-    m_ScreenModeIndex = idx;
-    VxDriverDesc *drDesc = m_RenderManager->GetRenderDriverDescription(m_DriverIndex);
+    m_ScreenMode = screenMode;
+    VxDriverDesc *drDesc = m_RenderManager->GetRenderDriverDescription(m_Driver);
     if (!drDesc)
         return false;
 
-    VxDisplayMode *displayMode = &drDesc->DisplayModes[m_ScreenModeIndex];
+    VxDisplayMode *displayMode = &drDesc->DisplayModes[m_ScreenMode];
     m_Width = displayMode->Width;
     m_Height = displayMode->Height;
     m_Bpp = displayMode->Bpp;
@@ -286,30 +286,39 @@ bool CNeMoContext::ChangeScreenMode(int driver, int screenMode)
     if (!m_RenderContext)
         return false;
 
-    int driverBefore = m_DriverIndex;
-    int screenModeBefore = m_ScreenModeIndex;
+    int driverBefore = m_Driver;
+    int screenModeBefore = m_ScreenMode;
     bool fullscreenBefore = IsRenderFullscreen();
 
     m_DisplayChanged = true;
-    m_DriverIndex = driver;
+    m_Driver = driver;
 
     if (!ApplyScreenMode(screenMode))
     {
-        m_DriverIndex = driverBefore;
-        m_ScreenModeIndex = screenModeBefore;
+        m_Driver = driverBefore;
+        ApplyScreenMode(screenModeBefore);
+
+        m_WinContext->SetResolution(m_Width, m_Height);
+        m_RenderContext->Resize();
+
+        if (IsRenderFullscreen())
+            GoFullscreen();
+
         m_DisplayChanged = false;
         return false;
     }
 
     m_RenderContext->StopFullScreen();
+    ::Sleep(10);
 
     m_WinContext->SetResolution(m_Width, m_Height);
     m_RenderContext->Resize();
 
     if (fullscreenBefore && !m_RenderContext->IsFullScreen())
         GoFullscreen();
+    ::Sleep(10);
 
-    ::SetFocus(m_WinContext->GetMainWindow());
+    m_WinContext->FocusMainWindow();
 
     m_DisplayChanged = false;
     return true;
@@ -320,29 +329,29 @@ void CNeMoContext::GoFullscreen()
     if (!m_RenderContext)
         return;
 
-    if (m_ScreenModeIndex < 0)
+    if (m_ScreenMode < 0)
     {
         m_RenderContext->GoFullScreen(m_Width,
                                       m_Height,
                                       m_Bpp,
-                                      m_DriverIndex,
+                                      m_Driver,
                                       m_RefreshRate);
     }
     else
     {
-        VxDriverDesc *drDesc = m_RenderManager->GetRenderDriverDescription(m_DriverIndex);
+        VxDriverDesc *drDesc = m_RenderManager->GetRenderDriverDescription(m_Driver);
         if (drDesc)
         {
-            VxDisplayMode *displayMode = &drDesc->DisplayModes[m_ScreenModeIndex];
+            VxDisplayMode *displayMode = &drDesc->DisplayModes[m_ScreenMode];
             m_RenderContext->GoFullScreen(displayMode->Width,
                                           displayMode->Height,
                                           displayMode->Bpp,
-                                          m_DriverIndex,
+                                          m_Driver,
                                           m_RefreshRate);
         }
     }
 
-    ::SetFocus(m_WinContext->GetMainWindow());
+    m_WinContext->FocusMainWindow();
 }
 
 void CNeMoContext::SwitchFullscreen()
@@ -351,13 +360,9 @@ void CNeMoContext::SwitchFullscreen()
         return;
 
     if (IsRenderFullscreen())
-    {
         RestoreWindow();
-    }
     else
-    {
         GoFullscreen();
-    }
 }
 
 bool CNeMoContext::IsRenderFullscreen() const
@@ -383,24 +388,30 @@ bool CNeMoContext::RestoreWindow()
 {
     if (!m_RenderContext || !IsRenderFullscreen() || m_RenderContext->StopFullScreen() != CK_OK)
         return false;
-
     m_WinContext->SetResolution(m_Width, m_Height);
     m_RenderContext->Resize();
-    ::ShowWindow(m_WinContext->GetMainWindow(), SW_RESTORE);
+    m_WinContext->RestoreWindow();
     return true;
+}
+
+void CNeMoContext::MinimizeWindow()
+{
+    if (!m_RenderContext || !IsRenderFullscreen() || m_RenderContext->StopFullScreen() != CK_OK)
+        return;
+    m_WinContext->MinimizeWindow();
 }
 
 bool CNeMoContext::CreateRenderContext()
 {
     CKRenderManager *renderManager = m_CKContext->GetRenderManager();
     CKRECT rect = {0, 0, m_Width, m_Height};
-    m_RenderContext = renderManager->CreateRenderContext(m_WinContext->GetRenderWindow(), m_DriverIndex, &rect, FALSE, m_Bpp, -1, -1, m_RefreshRate);
+    m_RenderContext = renderManager->CreateRenderContext(m_WinContext->GetRenderWindow(), m_Driver, &rect, FALSE, m_Bpp, -1, -1, m_RefreshRate);
     if (!m_RenderContext)
         return false;
 
     Play();
 
-    if (m_Fullscreen && m_RenderContext->GoFullScreen(m_Width, m_Height, m_Bpp, m_DriverIndex, m_RefreshRate))
+    if (m_Fullscreen && m_RenderContext->GoFullScreen(m_Width, m_Height, m_Bpp, m_Driver, m_RefreshRate))
     {
         if (!RestoreWindow())
         {
@@ -418,7 +429,7 @@ bool CNeMoContext::CreateRenderContext()
     if (!m_Fullscreen)
         RestoreWindow();
 
-    ::SetFocus(m_WinContext->GetMainWindow());
+    m_WinContext->FocusMainWindow();
 
     m_RenderContext->Clear();
     m_RenderContext->Clear(CK_RENDER_BACKGROUNDSPRITES);

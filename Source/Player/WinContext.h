@@ -18,8 +18,13 @@ public:
     void RegisterWindowClasses(LPFNWNDPROC lpfnWndProc, int width, int height);
     bool CreateWindows();
     void UpdateWindows();
+
     void ShowWindows();
+    void RestoreWindow();
     void MinimizeWindow();
+
+    void FocusMainWindow();
+    void FocusRenderWindow();
 
     HINSTANCE GetAppInstance() const
     {

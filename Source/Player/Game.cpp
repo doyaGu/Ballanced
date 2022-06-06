@@ -269,31 +269,30 @@ CGameDataManager::CGameDataManager() : m_Count(14) {}
 
 void CGameDataManager::Save(CGameInfo *gameInfo)
 {
-    if (m_Count < 100)
-    {
-        strcpy(g_GameData[m_Count].fileName, gameInfo->fileName);
-        strcpy(g_GameData[m_Count].path, gameInfo->path);
-        g_GameData[m_Count].hkRoot = gameInfo->hkRoot;
-        g_GameData[m_Count].type = gameInfo->type;
-        strcpy(g_GameData[m_Count].regSubkey, gameInfo->regSubkey);
-    }
+    if (m_Count >= 100)
+        return;
+
+    strcpy(g_GameData[m_Count].fileName, gameInfo->fileName);
+    strcpy(g_GameData[m_Count].path, gameInfo->path);
+    g_GameData[m_Count].hkRoot = gameInfo->hkRoot;
+    g_GameData[m_Count].type = gameInfo->type;
+    strcpy(g_GameData[m_Count].regSubkey, gameInfo->regSubkey);
     ++m_Count;
 }
 
 void CGameDataManager::Load(CGameInfo *gameInfo, const char *filename)
 {
+    if (m_Count <= 0)
+        return;
+
     int i;
+    for (i = 0; strcmp(g_GameData[i].fileName, filename); ++i)
+        if (++i >= m_Count)
+            return;
 
-    if (m_Count > 0)
-    {
-        for (i = 0; strcmp(g_GameData[i].fileName, filename); ++i)
-            if (++i >= m_Count)
-                return;
-
-        strcpy(gameInfo->fileName, g_GameData[i].fileName);
-        strcpy(gameInfo->path, g_GameData[i].path);
-        gameInfo->hkRoot = g_GameData[i].hkRoot;
-        gameInfo->type = g_GameData[i].type;
-        strcpy(gameInfo->regSubkey, g_GameData[i].regSubkey);
-    }
+    strcpy(gameInfo->fileName, g_GameData[i].fileName);
+    strcpy(gameInfo->path, g_GameData[i].path);
+    gameInfo->hkRoot = g_GameData[i].hkRoot;
+    gameInfo->type = g_GameData[i].type;
+    strcpy(gameInfo->regSubkey, g_GameData[i].regSubkey);
 }
