@@ -714,11 +714,17 @@ LRESULT CGamePlayer::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
         LRESULT res = 0;
 
-        int screenMode = m_NeMoContext.GetScreenModeIndex();
-        int driver = m_NeMoContext.GetDriverIndex();
-
-        if (m_NeMoContext.ChangeScreenMode(lParam, wParam))
+        int screenModeBefore = m_NeMoContext.GetScreenModeIndex();
+        int driverBefore = m_NeMoContext.GetDriverIndex();
+        if (!m_NeMoContext.ChangeScreenMode(lParam, wParam))
+        {
+            wParam = screenModeBefore;
+            lParam = driverBefore;
+        }
+        else
+        {
             res = 1;
+        }
 
         CTTInterfaceManager *im = m_NeMoContext.GetInterfaceManager();
         if (!im)
@@ -726,8 +732,8 @@ LRESULT CGamePlayer::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             TT_ERROR("GamePlayer.cpp", "WndProc()", "No InterfaceManager");
             return 1;
         }
-        im->SetDriverIndex(m_NeMoContext.GetDriverIndex());
-        im->SetScreenModeIndex(m_NeMoContext.GetScreenModeIndex());
+        im->SetDriverIndex(lParam);
+        im->SetScreenModeIndex(wParam);
 
         RegSetBPPAndDriver(m_NeMoContext.GetBPP(), m_NeMoContext.GetDriverIndex());
         RegSetResolution(m_NeMoContext.GetWidth(), m_NeMoContext.GetHeight());
