@@ -266,7 +266,7 @@ void CGamePlayer::Init(HINSTANCE hInstance, LPFNWNDPROC lpfnWndProc)
         }
 
         m_Config.bpp = m_NeMoContext.GetBPP();
-        m_Config.driver = m_NeMoContext.GetScreenMode();
+        m_Config.driver = m_NeMoContext.GetDriver();
         m_Config.width = m_NeMoContext.GetWidth();
         m_Config.height = m_NeMoContext.GetHeight();
     }
@@ -560,7 +560,7 @@ LRESULT CGamePlayer::OnChangeScreenMode(WPARAM wParam, LPARAM lParam)
     im->SetScreenMode(m_NeMoContext.GetScreenMode());
 
     m_Config.bpp = m_NeMoContext.GetBPP();
-    m_Config.driver = m_NeMoContext.GetScreenMode();
+    m_Config.driver = m_NeMoContext.GetDriver();
     m_Config.width = m_NeMoContext.GetWidth();
     m_Config.height = m_NeMoContext.GetHeight();
 
