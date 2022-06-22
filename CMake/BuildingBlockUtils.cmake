@@ -9,7 +9,6 @@ macro(add_building_block NAME)
 	target_sources(${NAME} PRIVATE
 		${BB_${NAME}_HEADERS}
 		${BB_${NAME}_SOURCES}
-		${NAME}.def
 	)
 
 	target_link_libraries(${NAME} PRIVATE
