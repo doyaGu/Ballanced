@@ -1,8 +1,0 @@
-; TT_DatabaseManager_RT.def : Declares the module parameters for the DLL.
-
-LIBRARY      "TT_DatabaseManager_RT"
-
-EXPORTS
-	RegisterBehaviorDeclarations
-	CKGetPluginInfo
-	CKGetPluginInfoCount
