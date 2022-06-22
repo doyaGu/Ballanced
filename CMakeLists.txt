@@ -24,6 +24,10 @@ if(NOT WIN32)
 endif()
 
 if(MSVC)
+    if (NOT CMAKE_GENERATOR_PLATFORM)
+        set(CMAKE_GENERATOR_PLATFORM Win32)
+    endif()
+
     string(TOLOWER ${CMAKE_GENERATOR_PLATFORM} TARGET_PLATFORM)
     if(NOT ("${TARGET_PLATFORM}" STREQUAL "win32"))
         message(FATAL_ERROR "You can only build 32-bit executable since only 32-bit SDK is provided.")
