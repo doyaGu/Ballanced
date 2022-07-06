@@ -84,7 +84,7 @@ void RegisterBehaviorDeclarations(XObjectDeclarationArray *reg)
 
     ::GetModuleFileNameA(NULL, fullpath, 260);
     _splitpath(fullpath, drive, dir, filename, ext);
-    sprintf(buffer, "%s%s", drive, dir);
+    sprintf(buffer, "%s%s..\\", drive, dir);
     TT_ERROR_OPEN("TT_Player_CMO_Interface", buffer, true);
 
     // Message
