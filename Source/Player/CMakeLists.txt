@@ -9,6 +9,7 @@ set(PLAYER_VERSION ${CMAKE_PROJECT_VERSION})
 set(PLAYER_SCREEN_WIDTH 640 CACHE STRING "Player screen width default value" FORCE)
 set(PLAYER_SCREEN_HEIGHT 480 CACHE STRING "Player screen height default value" FORCE)
 set(PLAYER_SCREEN_BPP 32 CACHE STRING "Player screen bpp default value" FORCE)
+set(PLAYER_EXPORT_CLASSES TRUE CACHE BOOL "Export some classes for hooking" FORCE)
 
 configure_file(config.h.in "${CMAKE_CURRENT_SOURCE_DIR}/config.h")
 
@@ -52,6 +53,10 @@ set_target_properties(Player PROPERTIES
 target_include_directories(Player PRIVATE
     ${BUILDING_BLOCKS_SOURCE_DIR}
 )
+
+if(PLAYER_EXPORT_CLASSES)
+	target_compile_definitions(Player PRIVATE PLAYER_EXPORTS)
+endif()
 
 target_link_libraries(Player PRIVATE
 	VirtoolsSDK::CK2
