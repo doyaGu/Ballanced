@@ -10,9 +10,11 @@
 #include "NeMoContext.h"
 #include "WinContext.h"
 
+#include "config.h"
+
 class CPlayerRegistry;
 
-class CGamePlayer
+class PLAYER_EXPORT CGamePlayer
 {
     friend CPlayerRegistry;
 

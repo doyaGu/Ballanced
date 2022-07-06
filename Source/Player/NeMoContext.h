@@ -6,10 +6,12 @@
 
 #include "CKAll.h"
 
+#include "config.h"
+
 class CWinContext;
 class CTTInterfaceManager;
 
-class CNeMoContext
+class PLAYER_EXPORT CNeMoContext
 {
 public:
     CNeMoContext();
