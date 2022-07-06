@@ -149,7 +149,7 @@ static bool IniSetInteger(const char *section, const char *name, int value, cons
 
 static bool IniSetBoolean(const char *section, const char *name, bool value, const char *filename)
 {
-    char *buf = (value) ? "1" : "0";
+    const char *buf = (value) ? "1" : "0";
     return ::WritePrivateProfileStringA(section, name, buf, filename) != 0;
 }
 
