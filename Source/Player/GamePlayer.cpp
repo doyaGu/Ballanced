@@ -321,6 +321,8 @@ bool CGamePlayer::Step()
 
 void CGamePlayer::Done()
 {
+    m_Config.SaveToIni(m_IniPath);
+
     if (m_hMutex)
     {
         ::ReleaseMutex(m_hMutex);
@@ -346,7 +348,6 @@ void CGamePlayer::Done()
     }
 
     m_Cleared = true;
-    m_Config.SaveToIni(m_IniPath);
     ::PostQuitMessage(0);
 }
 
@@ -681,6 +682,7 @@ void CGamePlayer::Construct()
     strcpy(m_Path, "..\\");
     sprintf(m_IniPath, "%s%s%s.ini", drive, dir, filename);
     sprintf(rootPath, "%s%s%s", drive, dir, m_Path);
+
     TT_ERROR_OPEN(filename, rootPath, true);
     TT_LOG_OPEN(filename, rootPath, false);
 
@@ -725,7 +727,7 @@ int CGamePlayer::InitEngine()
     ::GetModuleFileNameA(NULL, buffer, MAX_PATH);
     _splitpath(buffer, drive, dir, NULL, NULL);
     sprintf(fullpath, "%s%s%s", drive, dir, m_Path);
-    if (!fullpath)
+    if (strcmp(fullpath, "") == 0)
     {
         TT_ERROR("GamePlayer.cpp", "CGamePlayer::InitEngine()", "Unable to set ProgPath");
         return CKERR_INVALIDPARAMETER;
