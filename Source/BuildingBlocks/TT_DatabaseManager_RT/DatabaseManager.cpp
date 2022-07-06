@@ -422,7 +422,7 @@ int CTTDatabaseManager::Save(CKContext *context)
     return 1;
 }
 
-bool CTTDatabaseManager::SetProperty(CKSTRING filename, BOOL crypted)
+bool CTTDatabaseManager::SetProperty(CKSTRING filename, CKBOOL crypted)
 {
     if (!filename || filename[0] == '\0')
         return false;
