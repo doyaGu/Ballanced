@@ -44,7 +44,7 @@ public:
 
     int Save(CKContext *context);
 
-    bool SetProperty(CKSTRING filename, BOOL crypted);
+    bool SetProperty(CKSTRING filename, CKBOOL crypted);
 
     static CTTDatabaseManager *GetManager(CKContext *context)
     {
@@ -56,7 +56,7 @@ protected:
     bool field_2C;
     XArray<CKSTRING> m_ArrayNames;
     CKSTRING m_Filename;
-    BOOL m_Crypted;
+    CKBOOL m_Crypted;
 };
 
 #endif // BUILDINGBLOCKS_DATABASEMANAGER_H
