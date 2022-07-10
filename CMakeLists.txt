@@ -9,6 +9,8 @@ project(Ballanced
 
 set(CMAKE_C_STANDARD 90)
 set(CMAKE_CXX_STANDARD 98)
+set(CMAKE_CXX_STANDARD_REQUIRED NO)
+set(CMAKE_CXX_EXTENSIONS YES)
 
 # Set CMake modules search path
 list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
@@ -22,6 +24,12 @@ set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "CMakeTargets")
 if(NOT WIN32)
 	message(FATAL_ERROR "Only Windows is supported.")
 endif()
+
+# Use relative paths
+if (WIN32)
+    set(CMAKE_USE_RELATIVE_PATHS TRUE)
+    set(CMAKE_SUPPRESS_REGENERATION TRUE)
+endif ()
 
 if(MSVC)
     if (NOT CMAKE_GENERATOR_PLATFORM)
@@ -43,6 +51,9 @@ if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     set(CMAKE_INSTALL_PREFIX "${PROJECT_SOURCE_DIR}" CACHE PATH "The root directory of the installation" FORCE)
     message(STATUS "Setting default install directory to ${CMAKE_INSTALL_PREFIX} as no install directory was specified")
 endif()
+
+# Generate a CompilationDatabase (compile_commands.json)
+set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
 if(NOT BUILDING_BLOCKS_DIR)
     set(BUILDING_BLOCKS_DIR "BuildingBlocks" CACHE PATH "The directory of the building blocks" FORCE)
@@ -83,11 +94,6 @@ add_compile_definitions(
     $<$<C_COMPILER_ID:MSVC>:_CRT_SECURE_NO_WARNINGS>
     $<$<C_COMPILER_ID:MSVC>:_CRT_NONSTDC_NO_WARNINGS>
 )
-
-if(MINGW)
-    add_compile_options($<$<C_COMPILER_ID:GNU>:-m32>)
-    add_link_options($<$<C_COMPILER_ID:GNU>:-m32>)
-endif()
 
 add_subdirectory(Source)
 

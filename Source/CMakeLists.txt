@@ -1,5 +1,5 @@
-# The building blocks
+# Building blocks
 add_subdirectory(BuildingBlocks)
 
-# The player and its subsidiary
+# Player
 add_subdirectory(Player)
