@@ -37,14 +37,15 @@ include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(VirtoolsSDK DEFAULT_MSG VIRTOOLS_SDK_LIBRARIES VIRTOOLS_SDK_INCLUDE_DIR)
 
 foreach(LIBNAME IN LISTS VIRTOOLS_SDK_LIBNAMES)
-	if(NOT TARGET VirtoolsSDK::${LIBNAME})
-		add_library(VirtoolsSDK::${LIBNAME} UNKNOWN IMPORTED)
-		set_target_properties(VirtoolsSDK::${LIBNAME} PROPERTIES
+	if(NOT TARGET ${LIBNAME})
+		add_library(${LIBNAME} UNKNOWN IMPORTED)
+		add_library(VirtoolsSDK::${LIBNAME} ALIAS ${LIBNAME})
+		set_target_properties(${LIBNAME} PROPERTIES
 			IMPORTED_LOCATION ${VIRTOOLS_SDK_${LIBNAME}}
 			INTERFACE_INCLUDE_DIRECTORIES ${VIRTOOLS_SDK_INCLUDE_DIR}
 		)
 		# Disable strict const-qualification conformance for pointers initialized by using string literals
-		target_compile_options(VirtoolsSDK::${LIBNAME} INTERFACE
+		target_compile_options(${LIBNAME} INTERFACE
 			$<$<COMPILE_LANGUAGE:CXX>:$<$<CXX_COMPILER_ID:MSVC>:/Zc:strictStrings->>
 			$<$<COMPILE_LANGUAGE:CXX>:$<$<CXX_COMPILER_ID:GNU>:-fpermissive>>
 			$<$<COMPILE_LANGUAGE:CXX>:$<$<CXX_COMPILER_ID:GNU>:-Wno-write-strings>>
