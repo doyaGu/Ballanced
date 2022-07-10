@@ -41,12 +41,12 @@ endif()
 
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     set(CMAKE_INSTALL_PREFIX "${PROJECT_SOURCE_DIR}" CACHE PATH "The root directory of the installation" FORCE)
-    message(STATUS "Setting defalut install directory to ${CMAKE_INSTALL_PREFIX} as no install directory was specified")
+    message(STATUS "Setting default install directory to ${CMAKE_INSTALL_PREFIX} as no install directory was specified")
 endif()
 
 if(NOT BUILDING_BLOCKS_DIR)
     set(BUILDING_BLOCKS_DIR "BuildingBlocks" CACHE PATH "The directory of the building blocks" FORCE)
-    message(STATUS "Setting defalut building blocks directory to ${CMAKE_INSTALL_PREFIX}/${BUILDING_BLOCKS_DIR}")
+    message(STATUS "Setting default building blocks directory to ${CMAKE_INSTALL_PREFIX}/${BUILDING_BLOCKS_DIR}")
 endif()
 
 set(VIRTOOLS_SDK_PATH "${VIRTOOLS_SDK_PATH}" CACHE PATH "Path to the Virtools SDK")
