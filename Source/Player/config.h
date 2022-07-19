@@ -11,12 +11,4 @@
 #define DEFAULT_HEIGHT 480
 #define DEFAULT_BPP 32
 
-#ifndef PLAYER_EXPORT
-#ifdef PLAYER_EXPORTS
-#define PLAYER_EXPORT __declspec(dllexport)
-#else
-#define PLAYER_EXPORT
-#endif
-#endif
-
 #endif // PLAYER_CONFIG_H
