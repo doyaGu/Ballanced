@@ -14,7 +14,7 @@
 
 class CPlayerRegistry;
 
-class PLAYER_EXPORT CGamePlayer
+class CGamePlayer
 {
     friend CPlayerRegistry;
 
