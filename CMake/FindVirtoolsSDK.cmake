@@ -1,11 +1,10 @@
-# - Find Virtools SDK
 # Find the Virtools SDK header + import library
 #
-#  VIRTOOLS_SDK_INCLUDE_DIR - Where to find mss.h
-#  VIRTOOLS_SDK_LIBRARIES   - List of libraries when using MilesSDK.
-#  VIRTOOLS_SDK_FOUND       - True if Miles SDK found.
-#  VirtoolsSDK::CK2			- Imported library of CK2
-#  VirtoolsSDK::VxMath		- Imported library of VxMath
+#  VIRTOOLS_SDK_INCLUDE_DIR - Where to find CKAll.h
+#  VIRTOOLS_SDK_LIBRARIES   - List of libraries when using VirtoolsSDK.
+#  VIRTOOLS_SDK_FOUND       - True if Virtools SDK found.
+#  VirtoolsSDK::CK2         - Imported library of CK2
+#  VirtoolsSDK::VxMath      - Imported library of VxMath
 
 set(VIRTOOLS_SDK_SEARCH_PATHS
 	"${PROJECT_SOURCE_DIR}/SDK"
