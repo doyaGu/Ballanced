@@ -116,10 +116,6 @@ SOURCE=.\SetDatabaseProperties.cpp
 
 SOURCE=.\TT_DatabaseManager_RT.cpp
 # End Source File
-# Begin Source File
-
-SOURCE=.\TT_DatabaseManager_RT.def
-# End Source File
 # End Group
 # Begin Group "Header Files"
 
