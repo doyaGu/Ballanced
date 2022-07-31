@@ -1,6 +1,5 @@
 #include "LogProtocol.h"
 
-#include <io.h>
 #include <stdio.h>
 #include <string.h>
 #include <time.h>

@@ -7,8 +7,6 @@
 /////////////////////////////////////////////////////
 #include "TT_Toolbox_RT.h"
 
-#include "InterfaceManager.h"
-
 CKObjectDeclaration *FillBehaviorSetDynamicPositionDecl();
 CKERROR CreateSetDynamicPositionProto(CKBehaviorPrototype **);
 int SetDynamicPosition(const CKBehaviorContext &behcontext);
@@ -62,6 +60,7 @@ CKERROR CreateSetDynamicPositionProto(CKBehaviorPrototype **pproto)
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
     proto->SetFunction(SetDynamicPosition);
+
     proto->SetBehaviorFlags((CK_BEHAVIOR_FLAGS)CKBEHAVIOR_TARGETABLE);
 
     *pproto = proto;

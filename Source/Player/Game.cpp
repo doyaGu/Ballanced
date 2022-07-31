@@ -2,7 +2,6 @@
 
 #include <io.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 #include "ErrorProtocol.h"
@@ -286,7 +285,7 @@ void CGameDataManager::Load(CGameInfo *gameInfo, const char *filename)
         return;
 
     int i;
-    for (i = 0; strcmp(g_GameData[i].fileName, filename); ++i)
+    for (i = 0; strcmp(g_GameData[i].fileName, filename) != 0; ++i)
         if (++i >= m_Count)
             return;
 

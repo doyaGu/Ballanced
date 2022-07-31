@@ -7,8 +7,6 @@
 /////////////////////////////////////////////////////
 #include "TT_Toolbox_RT.h"
 
-#include "InterfaceManager.h"
-
 CKObjectDeclaration *FillBehaviorHomingMissileDecl();
 CKERROR CreateHomingMissileProto(CKBehaviorPrototype **);
 int HomingMissile(const CKBehaviorContext &behcontext);
@@ -48,6 +46,7 @@ CKERROR CreateHomingMissileProto(CKBehaviorPrototype **pproto)
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
     proto->SetFunction(HomingMissile);
+
     proto->SetBehaviorFlags((CK_BEHAVIOR_FLAGS)CKBEHAVIOR_TARGETABLE);
 
     *pproto = proto;

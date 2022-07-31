@@ -1,14 +1,10 @@
 #include "ErrorProtocol.h"
 #include "GamePlayer.h"
-#include "LogProtocol.h"
 #include "PlayerRegistry.h"
 
 #include "TT_InterfaceManager_RT/GameInfo.h"
 
-int APIENTRY WinMain(HINSTANCE hInstance,
-                     HINSTANCE hPrevInstance,
-                     LPSTR lpCmdLine,
-                     int nCmdShow)
+int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
     HANDLE hMutex = ::CreateMutexA(NULL, FALSE, "Ballance");
     if (::GetLastError() == ERROR_ALREADY_EXISTS)

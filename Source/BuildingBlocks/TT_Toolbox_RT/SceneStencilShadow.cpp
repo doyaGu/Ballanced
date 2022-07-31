@@ -50,6 +50,7 @@ CKERROR CreateSceneStencilShadowProto(CKBehaviorPrototype **pproto)
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
     proto->SetFunction(SceneStencilShadow);
+
     proto->SetBehaviorCallbackFct(SceneStencilShadowCallBack);
 
     *pproto = proto;
