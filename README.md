@@ -49,17 +49,15 @@ There are serval changes and improvements implemented to the original game.
 - Replace registry operation with using initialization file
 - No dependency on `Dsetup`
 - Disabled Exception Handling in **Player**
+- Support command-line configuration
+- Support 32-bit color mode
+- ResDll is integrated into Player
 - ...
 
 ## To-Do
 
 The following works will be done in the future.
 
-- Support 32 bit color mode
-- Support larger resolution
-- Add MinGW port
-- Add debugging functions
-- Add modding support
 - Reverse remaining classes and functions
 - Reimplement all game-specific Building Blocks
 - Migrate to the Virtools Dev 3.5
