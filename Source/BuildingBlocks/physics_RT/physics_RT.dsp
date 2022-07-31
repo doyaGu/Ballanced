@@ -110,10 +110,6 @@ SOURCE=.\physics_RT.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\physics_RT.def
-# End Source File
-# Begin Source File
-
 SOURCE=.\PhysicsBallJoint.cpp
 # End Source File
 # Begin Source File

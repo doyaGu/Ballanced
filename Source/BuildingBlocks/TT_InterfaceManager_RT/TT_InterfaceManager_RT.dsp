@@ -298,10 +298,6 @@ SOURCE=.\TT_InterfaceManager_RT.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\TT_InterfaceManager_RT.def
-# End Source File
-# Begin Source File
-
 SOURCE=.\UninstallArray.cpp
 # End Source File
 # Begin Source File

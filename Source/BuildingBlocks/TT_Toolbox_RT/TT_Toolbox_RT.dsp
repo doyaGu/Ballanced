@@ -176,10 +176,6 @@ SOURCE=.\TimeManager.cpp
 
 SOURCE=.\TT_Toolbox_RT.cpp
 # End Source File
-# Begin Source File
-
-SOURCE=.\TT_Toolbox_RT.def
-# End Source File
 # End Group
 # Begin Group "Header Files"
 
