@@ -11,10 +11,7 @@ macro(add_building_block NAME)
 		${BB_${NAME}_SOURCES}
 	)
 
-	target_link_libraries(${NAME} PRIVATE
-		VirtoolsSDK::CK2
-		VirtoolsSDK::VxMath
-	)
+	target_link_libraries(${NAME} PRIVATE CK2 VxMath)
 
 	set_target_properties(${NAME} PROPERTIES
 		FOLDER "BuildingBlocks"
