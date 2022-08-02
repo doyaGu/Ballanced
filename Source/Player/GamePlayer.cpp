@@ -235,9 +235,9 @@ void CGamePlayer::Init(HINSTANCE hInstance, LPFNWNDPROC lpfnWndProc)
     CNeMoContext::RegisterInstance(&m_NeMoContext);
     m_Game.SetNeMoContext(&m_NeMoContext);
 
-    if (!m_WinContext.Init(hInstance, lpfnWndProc, m_NeMoContext.IsFullscreen()))
+    if (!m_WinContext.Init(hInstance, lpfnWndProc, m_Config.fullscreen, m_Config.borderless, m_Config.resizable))
     {
-        TT_ERROR("GamePlayer.cpp", "CGamePlayer::Init()", "WinContext Initilizaition Failed");
+        TT_ERROR("GamePlayer.cpp", "CGamePlayer::Init()", "WinContext Initialization Failed");
         return;
     }
 
@@ -692,6 +692,8 @@ void CGamePlayer::Construct()
     m_Config.bpp = DEFAULT_BPP;
     m_Config.driver = 0;
     m_Config.fullscreen = false;
+    m_Config.borderless = false;
+    m_Config.resizable = false;
     m_Config.unlockFramerate = false;
     m_Config.taskSwitchEnabled = true;
     m_Config.pauseOnTaskSwitch = false;

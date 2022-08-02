@@ -9,6 +9,8 @@ struct CGameConfig
     int bpp;
     int driver;
     bool fullscreen;
+    bool borderless;
+    bool resizable;
     bool unlockFramerate;
     bool taskSwitchEnabled;
     bool pauseOnTaskSwitch;

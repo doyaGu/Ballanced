@@ -12,7 +12,7 @@ public:
     CWinContext();
     ~CWinContext() {}
 
-    bool Init(HINSTANCE hInstance, LPFNWNDPROC lpfnWndProc, bool fullscreen);
+    bool Init(HINSTANCE hInstance, LPFNWNDPROC lpfnWndProc, bool fullscreen = false, bool borderless = false, bool resizable = false);
 
     void LoadWindowNames();
     void RegisterWindowClasses(LPFNWNDPROC lpfnWndProc, int width, int height);
@@ -65,6 +65,8 @@ private:
     int m_Width;
     bool m_IsWndClassRegistered;
     bool m_Fullscreen;
+    bool m_Borderless;
+    bool m_Resizable;
     DWORD m_MainWndStyle;
     DWORD m_RenderWndStyle;
 };
