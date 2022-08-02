@@ -47,6 +47,16 @@ static void ParseCmdline(CmdlineParser &parser, CGameConfig &config)
             config.fullscreen = true;
             continue;
         }
+        if (parser.Next(arg, "--borderless", 'c'))
+        {
+            config.borderless = true;
+            continue;
+        }
+        if (parser.Next(arg, "--resizable", 's'))
+        {
+            config.resizable = true;
+            continue;
+        }
         if (parser.Next(arg, "--unlock-framerate", 'u'))
         {
             config.unlockFramerate = true;
@@ -180,6 +190,8 @@ void CGameConfig::LoadFromIni(const char *filename)
     IniGetResolution(width, height, filename);
     IniGetBppAndDriver(bpp, driver, filename);
     IniGetBoolean("Settings", "FullScreen", fullscreen, filename);
+    IniGetBoolean("Settings", "Borderless", borderless, filename);
+    IniGetBoolean("Settings", "Resizable", resizable, filename);
     IniGetBoolean("Settings", "UnlockFramerate", unlockFramerate, filename);
     IniGetBoolean("Settings", "TaskSwitchEnabled", taskSwitchEnabled, filename);
     IniGetBoolean("Settings", "PauseOnTaskSwitch", pauseOnTaskSwitch, filename);
@@ -197,6 +209,8 @@ void CGameConfig::SaveToIni(const char *filename)
     IniSetResolution(width, height, filename);
     IniSetBppAndDriver(bpp, driver, filename);
     IniSetBoolean("Settings", "FullScreen", fullscreen, filename);
+    IniSetBoolean("Settings", "Borderless", borderless, filename);
+    IniSetBoolean("Settings", "Resizable", resizable, filename);
     IniSetBoolean("Settings", "UnlockFramerate", unlockFramerate, filename);
     IniSetBoolean("Settings", "TaskSwitchEnabled", taskSwitchEnabled, filename);
     IniSetBoolean("Settings", "PauseOnTaskSwitch", pauseOnTaskSwitch, filename);

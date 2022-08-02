@@ -28,10 +28,12 @@ CWinContext::CWinContext()
     memset(m_RenderWndClassName, 0, sizeof(m_RenderWndClassName));
 }
 
-bool CWinContext::Init(HINSTANCE hInstance, LPFNWNDPROC lpfnWndProc, bool fullscreen)
+bool CWinContext::Init(HINSTANCE hInstance, LPFNWNDPROC lpfnWndProc, bool fullscreen, bool borderless, bool resizable)
 {
     m_hInstance = hInstance;
     m_Fullscreen = fullscreen;
+    m_Borderless = borderless;
+    m_Resizable = resizable;
 
     LoadWindowNames();
     RegisterWindowClasses(lpfnWndProc, m_Width, m_Height);
@@ -83,7 +85,9 @@ void CWinContext::RegisterWindowClasses(LPFNWNDPROC lpfnWndProc, int width, int 
 
 bool CWinContext::CreateWindows()
 {
-    m_MainWndStyle = (m_Fullscreen) ? WS_POPUP : WS_OVERLAPPEDWINDOW & ~(WS_MAXIMIZEBOX | WS_MINIMIZEBOX | WS_SYSMENU);
+    m_MainWndStyle = (m_Fullscreen || m_Borderless) ? WS_POPUP : WS_OVERLAPPED;
+    if (!m_Fullscreen && m_Resizable)
+        m_MainWndStyle |= WS_SIZEBOX;
 
     RECT rect = {0, 0, m_Width, m_Height};
     AdjustWindowRect(&rect, m_MainWndStyle, FALSE);
