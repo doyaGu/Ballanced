@@ -85,7 +85,7 @@ void CWinContext::RegisterWindowClasses(LPFNWNDPROC lpfnWndProc, int width, int 
 
 bool CWinContext::CreateWindows()
 {
-    m_MainWndStyle = (m_Fullscreen || m_Borderless) ? WS_POPUP : WS_OVERLAPPED;
+    m_MainWndStyle = (m_Fullscreen || m_Borderless) ? WS_POPUP : WS_OVERLAPPED | WS_CAPTION;
     if (!m_Fullscreen && m_Resizable)
         m_MainWndStyle |= WS_SIZEBOX;
 
