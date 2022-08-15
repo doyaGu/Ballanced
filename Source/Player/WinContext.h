@@ -15,7 +15,7 @@ public:
     bool Init(HINSTANCE hInstance, LPFNWNDPROC lpfnWndProc, bool fullscreen = false, bool borderless = false, bool resizable = false);
 
     void LoadWindowNames();
-    void RegisterWindowClasses(LPFNWNDPROC lpfnWndProc, int width, int height);
+    bool RegisterWindowClasses(LPFNWNDPROC lpfnWndProc, int width, int height);
     bool CreateWindows();
     void UpdateWindows();
 
@@ -63,7 +63,6 @@ private:
     char m_RenderWndClassName[100];
     int m_Height;
     int m_Width;
-    bool m_IsWndClassRegistered;
     bool m_Fullscreen;
     bool m_Borderless;
     bool m_Resizable;

@@ -16,7 +16,6 @@ CWinContext::CWinContext()
       m_hAccelTable(NULL),
       m_Width(DEFAULT_WIDTH),
       m_Height(DEFAULT_HEIGHT),
-      m_IsWndClassRegistered(false),
       m_Fullscreen(true),
       m_MainWndStyle(0),
       m_RenderWndStyle(0)
@@ -36,15 +35,13 @@ bool CWinContext::Init(HINSTANCE hInstance, LPFNWNDPROC lpfnWndProc, bool fullsc
     m_Resizable = resizable;
 
     LoadWindowNames();
-    RegisterWindowClasses(lpfnWndProc, m_Width, m_Height);
-    if (m_IsWndClassRegistered && CreateWindows())
-    {
-        ShowWindows();
-        UpdateWindows();
-        return true;
-    }
+    if (!RegisterWindowClasses(lpfnWndProc, m_Width, m_Height))
+        return false;
 
-    return false;
+    if (!CreateWindows())
+        return false;
+
+    return true;
 }
 
 void CWinContext::LoadWindowNames()
@@ -54,7 +51,7 @@ void CWinContext::LoadWindowNames()
     ::LoadStringA(m_hInstance, IDS_RENDER_WND_CLASS_NAME, m_RenderWndClassName, 100);
 }
 
-void CWinContext::RegisterWindowClasses(LPFNWNDPROC lpfnWndProc, int width, int height)
+bool CWinContext::RegisterWindowClasses(LPFNWNDPROC lpfnWndProc, int width, int height)
 {
     m_MainWndClass.lpfnWndProc = lpfnWndProc;
     m_MainWndClass.cbSize = sizeof(WNDCLASSEXA);
@@ -75,12 +72,12 @@ void CWinContext::RegisterWindowClasses(LPFNWNDPROC lpfnWndProc, int width, int 
     m_RenderWndClass.lpszClassName = m_RenderWndClassName;
 
     if (!::RegisterClassA(&m_RenderWndClass))
-        m_IsWndClassRegistered = false;
+        return false;
 
     if (!::RegisterClassExA(&m_MainWndClass))
-        m_IsWndClassRegistered = false;
+        return false;
 
-    m_IsWndClassRegistered = true;
+    return true;
 }
 
 bool CWinContext::CreateWindows()
@@ -182,7 +179,7 @@ void CWinContext::SetResolution(int width, int height)
     if (m_MainWindow)
     {
         RECT rect = {0, 0, width, height};
-        AdjustWindowRect(&rect, m_MainWndStyle, FALSE);
+        ::AdjustWindowRect(&rect, m_MainWndStyle, FALSE);
         if (!::SetWindowPos(m_MainWindow, HWND_TOP, 0, 0, rect.right - rect.left, rect.bottom - rect.top, SWP_NOMOVE))
             TT_ERROR_BOX("WinContext.cpp", "CWinContext::SetResolution(...)", "wrong parameters");
 
