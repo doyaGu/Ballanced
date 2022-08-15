@@ -18,6 +18,18 @@ static void ParseCmdline(CmdlineParser &parser, CGameConfig &config)
                 config.langId = value;
             continue;
         }
+        if (parser.Next(arg, "--position-x", 'x', 1))
+        {
+            if (arg.GetValue(0, value))
+                config.posX = value;
+            continue;
+        }
+        if (parser.Next(arg, "--position-y", 'y', 1))
+        {
+            if (arg.GetValue(0, value))
+                config.posY = value;
+            continue;
+        }
         if (parser.Next(arg, "--width", 'w', 1))
         {
             if (arg.GetValue(0, value))
@@ -187,6 +199,8 @@ void CGameConfig::LoadFromCmdline(int argc, char **argv)
 void CGameConfig::LoadFromIni(const char *filename)
 {
     IniGetInteger("Settings", "Language", langId, filename);
+    IniGetInteger("Settings", "X", posX, filename);
+    IniGetInteger("Settings", "Y", posY, filename);
     IniGetResolution(width, height, filename);
     IniGetBppAndDriver(bpp, driver, filename);
     IniGetBoolean("Settings", "FullScreen", fullscreen, filename);
@@ -206,6 +220,8 @@ void CGameConfig::LoadFromIni(const char *filename)
 void CGameConfig::SaveToIni(const char *filename)
 {
     IniSetInteger("Settings", "Language", langId, filename);
+    IniSetInteger("Settings", "X", posX, filename);
+    IniSetInteger("Settings", "Y", posY, filename);
     IniSetResolution(width, height, filename);
     IniSetBppAndDriver(bpp, driver, filename);
     IniSetBoolean("Settings", "FullScreen", fullscreen, filename);

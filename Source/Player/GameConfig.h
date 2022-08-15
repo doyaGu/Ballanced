@@ -4,6 +4,8 @@
 struct CGameConfig
 {
     int langId;
+    int posX;
+    int posY;
     int width;
     int height;
     int bpp;
