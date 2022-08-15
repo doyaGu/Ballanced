@@ -171,6 +171,27 @@ void CWinContext::FocusRenderWindow()
     ::SetFocus(m_RenderWindow);
 }
 
+void CWinContext::SetPosition(int x, int y)
+{
+    if (m_MainWindow && x + m_Width <= ::GetSystemMetrics(SM_CXSCREEN) && y + m_Height <= ::GetSystemMetrics(SM_CYSCREEN))
+    {
+        RECT rc;
+
+        ::GetWindowRect(m_MainWindow, &rc);
+        rc.right = x + (rc.right - rc.left);
+        rc.bottom = y + (rc.bottom - rc.top);
+        rc.left = x;
+        rc.top = y;
+        ::AdjustWindowRect(&rc, m_MainWndStyle, FALSE);
+        if (!::SetWindowPos(m_MainWindow, HWND_TOP, rc.left, rc.top, 0, 0, SWP_NOSIZE))
+            TT_ERROR_BOX("WinContext.cpp", "CWinContext::SetPosition(...)", "wrong parameters");
+
+        ::GetClientRect(m_MainWindow, &rc);
+        if (!::SetWindowPos(m_RenderWindow, HWND_TOP, rc.left, rc.top, 0, 0, SWP_NOSIZE))
+            TT_ERROR_BOX("WinContext.cpp", "CWinContext::SetPosition(...)", "wrong parameters");
+    }
+}
+
 void CWinContext::SetResolution(int width, int height)
 {
     m_Width = width;

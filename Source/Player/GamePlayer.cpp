@@ -235,6 +235,9 @@ void CGamePlayer::Init(HINSTANCE hInstance, LPFNWNDPROC lpfnWndProc)
     CNeMoContext::RegisterInstance(&m_NeMoContext);
     m_Game.SetNeMoContext(&m_NeMoContext);
 
+    int x = m_Config.posX;
+    int y = m_Config.posY;
+
     if (!m_WinContext.Init(hInstance, lpfnWndProc, m_Config.fullscreen, m_Config.borderless, m_Config.resizable))
     {
         TT_ERROR("GamePlayer.cpp", "CGamePlayer::Init()", "WinContext Initialization Failed");
@@ -281,6 +284,9 @@ void CGamePlayer::Init(HINSTANCE hInstance, LPFNWNDPROC lpfnWndProc)
     im->SetIniName(m_IniPath);
     im->SetRookie(m_Config.rookie);
     im->SetTaskSwitchEnabled(m_Config.taskSwitchEnabled);
+
+    if (x >= 0 || y >= 0)
+        m_WinContext.SetPosition(x, y);
 
     m_WinContext.ShowWindows();
     m_WinContext.UpdateWindows();
@@ -404,6 +410,12 @@ bool CGamePlayer::LoadCMO(const char *filename)
 void CGamePlayer::OnDestroy()
 {
     Done();
+}
+
+void CGamePlayer::OnMove(int x, int y)
+{
+    m_Config.posX = x;
+    m_Config.posY = y;
 }
 
 void CGamePlayer::OnSized()
@@ -598,6 +610,10 @@ LRESULT CGamePlayer::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         OnDestroy();
         break;
 
+    case WM_MOVE:
+        OnMove((int)(short)LOWORD(lParam), (int)(short)HIWORD(lParam));
+        break;
+
     case WM_SIZE:
         OnSized();
         break;
@@ -687,6 +703,8 @@ void CGamePlayer::Construct()
     TT_LOG_OPEN(filename, rootPath, false);
 
     m_Config.langId = 1;
+    m_Config.posX = -1;
+    m_Config.posY = -1;
     m_Config.width = DEFAULT_WIDTH;
     m_Config.height = DEFAULT_HEIGHT;
     m_Config.bpp = DEFAULT_BPP;

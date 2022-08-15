@@ -46,6 +46,8 @@ public:
         return m_RenderWindow;
     }
 
+    void SetPosition(int x, int y);
+
     void SetResolution(int width, int height);
 
 private:
