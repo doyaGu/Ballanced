@@ -11,6 +11,7 @@ set(PLAYER_SCREEN_HEIGHT 480 CACHE STRING "Player screen height default value" F
 set(PLAYER_SCREEN_BPP 32 CACHE STRING "Player screen bpp default value" FORCE)
 
 configure_file(config.h.in "${CMAKE_CURRENT_SOURCE_DIR}/config.h")
+configure_file(Player.rc.in "${CMAKE_CURRENT_SOURCE_DIR}/Player.rc")
 
 set(PLAYER_HEADERS
         Game.h
