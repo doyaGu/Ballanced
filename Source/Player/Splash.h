@@ -1,7 +1,9 @@
 #ifndef PLAYER_SPLASH_H
 #define PLAYER_SPLASH_H
 
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif
 #include "Windows.h"
 
 class CSplash

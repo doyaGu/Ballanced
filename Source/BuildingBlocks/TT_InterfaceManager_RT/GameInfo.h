@@ -1,7 +1,9 @@
 #ifndef BUILDINGBLOCKS_GAMEINFO_H
 #define BUILDINGBLOCKS_GAMEINFO_H
 
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif
 #include <string.h>
 #include <windows.h>
 

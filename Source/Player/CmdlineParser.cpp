@@ -2,7 +2,9 @@
 
 #include <string.h>
 
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif
 #include "Windows.h"
 
 bool CmdlineArg::GetValue(int i, std::string &value) const
