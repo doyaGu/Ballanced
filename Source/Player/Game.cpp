@@ -181,7 +181,7 @@ bool CGame::Load(const CGameConfig &config)
         }
     }
 
-    // Modify game settings according to initilization configurations
+    // Modify game settings according to initialization configurations
     CKDataArray *gameSettings = (CKDataArray *)m_NeMoContext->GetObjectByNameAndClass("GameSettings", CKCID_DATAARRAY);
     if (config.playerActive)
         gameSettings->SetElementStringValue(0, 5, "TRUE");
