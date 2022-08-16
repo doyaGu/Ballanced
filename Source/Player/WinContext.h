@@ -56,22 +56,23 @@ private:
     CWinContext(const CWinContext &);
     CWinContext &operator=(const CWinContext &);
 
-    WNDCLASSA m_RenderWndClass;
-    WNDCLASSEXA m_MainWndClass;
     HWND m_MainWindow;
     HWND m_RenderWindow;
     HINSTANCE m_hInstance;
     HACCEL m_hAccelTable;
+    WNDCLASSEXA m_MainWndClass;
+    WNDCLASSA m_RenderWndClass;
     char m_MainWndName[100];
+    char m_RenderWndName[100];
     char m_MainWndClassName[100];
     char m_RenderWndClassName[100];
+    DWORD m_MainWndStyle;
+    DWORD m_RenderWndStyle;
     int m_Height;
     int m_Width;
     bool m_Fullscreen;
     bool m_Borderless;
     bool m_Resizable;
-    DWORD m_MainWndStyle;
-    DWORD m_RenderWndStyle;
 };
 
 #endif /* PLAYER_WINCONTEXT_H */

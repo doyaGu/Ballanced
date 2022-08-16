@@ -7,22 +7,23 @@
 #include "config.h"
 #include "resource.h"
 
-char RenderWindowName[8];
-
 CWinContext::CWinContext()
     : m_MainWindow(NULL),
       m_RenderWindow(NULL),
       m_hInstance(NULL),
       m_hAccelTable(NULL),
+      m_MainWndStyle(0),
+      m_RenderWndStyle(0),
       m_Width(DEFAULT_WIDTH),
       m_Height(DEFAULT_HEIGHT),
       m_Fullscreen(true),
-      m_MainWndStyle(0),
-      m_RenderWndStyle(0)
+      m_Borderless(false),
+      m_Resizable(false)
 {
-    memset(&m_RenderWndClass, 0, sizeof(WNDCLASSA));
     memset(&m_MainWndClass, 0, sizeof(WNDCLASSEXA));
+    memset(&m_RenderWndClass, 0, sizeof(WNDCLASSA));
     memset(m_MainWndName, 0, sizeof(m_MainWndName));
+    memset(m_RenderWndName, 0, sizeof(m_RenderWndName));
     memset(m_MainWndClassName, 0, sizeof(m_MainWndClassName));
     memset(m_RenderWndClassName, 0, sizeof(m_RenderWndClassName));
 }
@@ -47,6 +48,7 @@ bool CWinContext::Init(HINSTANCE hInstance, LPFNWNDPROC lpfnWndProc, bool fullsc
 void CWinContext::LoadWindowNames()
 {
     ::LoadStringA(m_hInstance, IDS_MAIN_WND_NAME, m_MainWndName, 100);
+    ::LoadStringA(m_hInstance, IDS_RENDER_WND_NAME, m_RenderWndName, 100);
     ::LoadStringA(m_hInstance, IDS_MAIN_WND_CLASS_NAME, m_MainWndClassName, 100);
     ::LoadStringA(m_hInstance, IDS_RENDER_WND_CLASS_NAME, m_RenderWndClassName, 100);
 }
@@ -118,7 +120,7 @@ bool CWinContext::CreateWindows()
     m_RenderWindow = ::CreateWindowExA(
         WS_EX_TOPMOST,
         m_RenderWndClassName,
-        RenderWindowName,
+        m_RenderWndName,
         m_RenderWndStyle,
         0,
         0,
