@@ -1,4 +1,5 @@
 #define IDS_MAIN_WND_NAME               103
+#define IDS_RENDER_WND_NAME             105
 #define ID_ACCEL_HELP                   104
 #define IDI_PLAYER                      107
 #define IDR_ACCEL                       109
