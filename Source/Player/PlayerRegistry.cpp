@@ -26,7 +26,7 @@ LRESULT CPlayerRegistry::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 {
     if (!m_Player)
     {
-        TT_ERROR("PayerRegistry.cpp", "CPlayerRegistry::WndProc()", "Couldn't register gameplayer");
+        TT_ERROR("PlayerRegistry.cpp", "CPlayerRegistry::WndProc()", "Couldn't register game player");
         ::PostQuitMessage(-1);
         return ::DefWindowProcA(hWnd, uMsg, wParam, lParam);
     }
