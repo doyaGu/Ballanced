@@ -211,8 +211,7 @@ void CGameConfig::LoadFromIni(const char *filename)
     IniGetBoolean("Settings", "UnlockFramerate", unlockFramerate, filename);
     IniGetBoolean("Settings", "TaskSwitchEnabled", taskSwitchEnabled, filename);
     IniGetBoolean("Settings", "PauseOnTaskSwitch", pauseOnTaskSwitch, filename);
-    if (pauseOnTaskSwitch)
-        taskSwitchEnabled = true;
+    if (pauseOnTaskSwitch) taskSwitchEnabled = true;
     IniGetBoolean("Settings", "PlayerActive", playerActive, filename);
     IniGetBoolean("Settings", "GodMode", godmode, filename);
     IniGetBoolean("Settings", "Debug", debug, filename);

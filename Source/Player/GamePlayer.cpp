@@ -100,23 +100,25 @@ static void OnInitDialog(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     VxDriverDesc *drDesc;
     VxDisplayMode *displayMode;
 
-    drCount = CNeMoContext::GetInstance()->GetRenderManager()->GetRenderDriverCount();
+    CNeMoContext *context = CNeMoContext::GetInstance();
+
+    drCount = context->GetRenderManager()->GetRenderDriverCount();
     if (drCount > 0)
     {
         for (int i = 0; i < drCount; ++i)
         {
-            drDesc = CNeMoContext::GetInstance()->GetRenderManager()->GetRenderDriverDescription(i);
+            drDesc = context->GetRenderManager()->GetRenderDriverDescription(i);
             if (drDesc->IsHardware)
             {
                 lbStrId = ::SendDlgItemMessageA(hWnd, IDC_LB_SCREEN_MODE, LB_ADDSTRING, 0, (LPARAM)drDesc->DriverName);
                 ::SendDlgItemMessageA(hWnd, IDC_LB_SCREEN_MODE, LB_SETITEMDATA, lbStrId, i);
-                if (i == CNeMoContext::GetInstance()->GetDriver())
+                if (i == context->GetDriver())
                     ::SendDlgItemMessageA(hWnd, IDC_LB_SCREEN_MODE, LB_SETCURSEL, lbStrId, 0);
             }
         }
     }
 
-    drDesc = CNeMoContext::GetInstance()->GetRenderManager()->GetRenderDriverDescription(CNeMoContext::GetInstance()->GetDriver());
+    drDesc = context->GetRenderManager()->GetRenderDriverDescription(context->GetDriver());
     for (int i = 0, j = 0; i < drDesc->DisplayModeCount; ++i, ++j)
     {
         displayMode = drDesc->DisplayModes;
@@ -127,7 +129,7 @@ static void OnInitDialog(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                 sprintf(buffer, "%d x %d x %d", displayMode[j].Width, displayMode[j].Height, displayMode[j].Bpp);
                 lbStrId = SendDlgItemMessageA(hWnd, IDC_LB_DRIVER, LB_ADDSTRING, 0, (LPARAM)buffer);
                 SendDlgItemMessageA(hWnd, IDC_LB_DRIVER, LB_SETITEMDATA, lbStrId, i);
-                if (i == CNeMoContext::GetInstance()->GetScreenMode())
+                if (i == context->GetScreenMode())
                 {
                     SendDlgItemMessageA(hWnd, IDC_LB_DRIVER, LB_SETCURSEL, lbStrId, 0);
                     SendDlgItemMessageA(hWnd, IDC_LB_DRIVER, LB_SETTOPINDEX, lbStrId, 0);
@@ -146,7 +148,7 @@ static void OnInitDialog(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
                     sprintf(buffer, "%d x %d x %d", displayMode[j].Width, displayMode[j].Height, displayMode[j].Bpp);
                     lbStrId = ::SendDlgItemMessageA(hWnd, IDC_LB_DRIVER, LB_ADDSTRING, 0, (LPARAM)buffer);
                     ::SendDlgItemMessageA(hWnd, IDC_LB_DRIVER, LB_SETITEMDATA, lbStrId, i);
-                    if (i == CNeMoContext::GetInstance()->GetScreenMode())
+                    if (i == context->GetScreenMode())
                     {
                         ::SendDlgItemMessageA(hWnd, IDC_LB_DRIVER, LB_SETCURSEL, lbStrId, 0);
                         ::SendDlgItemMessageA(hWnd, IDC_LB_DRIVER, LB_SETTOPINDEX, lbStrId, 0);
@@ -171,17 +173,19 @@ static BOOL CALLBACK DialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
         case IDOK:
         {
             BOOL fError = wParam;
+            CNeMoContext *context = CNeMoContext::GetInstance();
+
             int curIdx = ::SendDlgItemMessageA(hWnd, IDC_LB_SCREEN_MODE, LB_GETCURSEL, 0, 0);
             if (curIdx >= 0)
-                CNeMoContext::GetInstance()->SetDriver(SendDlgItemMessageA(hWnd, IDC_LB_SCREEN_MODE, LB_GETITEMDATA, curIdx, 0));
+                context->SetDriver(SendDlgItemMessageA(hWnd, IDC_LB_SCREEN_MODE, LB_GETITEMDATA, curIdx, 0));
 
             curIdx = ::SendDlgItemMessageA(hWnd, IDC_LB_DRIVER, LB_GETCURSEL, 0, 0);
             if (curIdx >= 0)
-                fError = CNeMoContext::GetInstance()->ApplyScreenMode(SendDlgItemMessageA(hWnd, IDC_LB_DRIVER, LB_GETITEMDATA, curIdx, 0));
+                fError = context->ApplyScreenMode(SendDlgItemMessageA(hWnd, IDC_LB_DRIVER, LB_GETITEMDATA, curIdx, 0));
 
-            CTTInterfaceManager *im = CNeMoContext::GetInstance()->GetInterfaceManager();
-            im->SetDriver(CNeMoContext::GetInstance()->GetDriver());
-            im->SetScreenMode(CNeMoContext::GetInstance()->GetScreenMode());
+            CTTInterfaceManager *im = context->GetInterfaceManager();
+            im->SetDriver(context->GetDriver());
+            im->SetScreenMode(context->GetScreenMode());
 
             if (fError)
                 EndDialog(hWnd, 1);

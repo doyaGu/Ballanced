@@ -18,8 +18,6 @@ class CPlayerRegistry;
 
 class CGamePlayer
 {
-    friend CPlayerRegistry;
-
 public:
     enum PlayerState
     {
