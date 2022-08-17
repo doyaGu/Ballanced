@@ -253,11 +253,23 @@ bool CNeMoContext::FindScreenMode()
 
     VxDisplayMode *dm = drDesc->DisplayModes;
     const int dmCount = drDesc->DisplayModeCount;
-    for (int i = 0; i < dmCount; ++i)
+
+    int i;
+    int maxRefreshRate = 0;
+    for (i = 0; i < dmCount; ++i)
+    {
+        if (dm[i].RefreshRate > maxRefreshRate)
+            maxRefreshRate = dm[i].RefreshRate;
+        else
+            break;
+    }
+
+    for (i = 0; i < dmCount; ++i)
     {
         if (dm[i].Width == m_Width &&
             dm[i].Height == m_Height &&
-            dm[i].Bpp == m_Bpp)
+            dm[i].Bpp == m_Bpp &&
+            dm[i].RefreshRate == maxRefreshRate)
         {
             m_ScreenMode = i;
             break;
