@@ -547,76 +547,6 @@ int CNeMoContext::GetObjectsCountByClassID(CK_CLASSID cid)
     return m_CKContext->GetObjectsCountByClassID(cid);
 }
 
-CKDataArray *CNeMoContext::GetArrayByName(CKSTRING name)
-{
-    return (CKDataArray *)m_CKContext->GetObjectByNameAndClass(name, CKCID_DATAARRAY);
-}
-
-CKGroup *CNeMoContext::GetGroupByName(CKSTRING name)
-{
-    return (CKGroup *)m_CKContext->GetObjectByNameAndClass(name, CKCID_GROUP);
-}
-
-CKMaterial *CNeMoContext::GetMaterialByName(CKSTRING name)
-{
-    return (CKMaterial *)m_CKContext->GetObjectByNameAndClass(name, CKCID_MATERIAL);
-}
-
-CKMesh *CNeMoContext::GetMeshByName(CKSTRING name)
-{
-    return (CKMesh *)m_CKContext->GetObjectByNameAndClass(name, CKCID_MESH);
-}
-
-CK2dEntity *CNeMoContext::Get2dEntityByName(CKSTRING name)
-{
-    return (CK2dEntity *)m_CKContext->GetObjectByNameAndClass(name, CKCID_2DENTITY);
-}
-
-CK3dEntity *CNeMoContext::Get3dEntityByName(CKSTRING name)
-{
-    return (CK3dEntity *)m_CKContext->GetObjectByNameAndClass(name, CKCID_3DENTITY);
-}
-
-CK3dObject *CNeMoContext::Get3dObjectByName(CKSTRING name)
-{
-    return (CK3dObject *)m_CKContext->GetObjectByNameAndClass(name, CKCID_3DOBJECT);
-}
-
-CKCamera *CNeMoContext::GetCameraByName(CKSTRING name)
-{
-    return (CKCamera *)m_CKContext->GetObjectByNameAndClass(name, CKCID_CAMERA);
-}
-
-CKTargetCamera *CNeMoContext::GetTargetCameraByName(CKSTRING name)
-{
-    return (CKTargetCamera *)m_CKContext->GetObjectByNameAndClass(name, CKCID_TARGETCAMERA);
-}
-
-CKLight *CNeMoContext::GetLightByName(CKSTRING name)
-{
-    return (CKLight *)m_CKContext->GetObjectByNameAndClass(name, CKCID_LIGHT);
-}
-
-CKTargetLight *CNeMoContext::GetTargetLightByName(CKSTRING name)
-{
-    return (CKTargetLight *)m_CKContext->GetObjectByNameAndClass(name, CKCID_TARGETLIGHT);
-}
-
-CKSound *CNeMoContext::GetSoundByName(CKSTRING name)
-{
-    return (CKSound *)m_CKContext->GetObjectByNameAndClass(name, CKCID_SOUND);
-}
-
-CKTexture *CNeMoContext::GetTextureByName(CKSTRING name)
-{
-    return (CKTexture *)m_CKContext->GetObjectByNameAndClass(name, CKCID_TEXTURE);
-}
-
-CKBehavior *CNeMoContext::GetScriptByName(CKSTRING name)
-{
-    return (CKBehavior *)m_CKContext->GetObjectByNameAndClass(name, CKCID_BEHAVIOR);
-}
-
 CKLevel *CNeMoContext::GetCurrentLevel()
 {
     return m_CKContext->GetCurrentLevel();
@@ -625,52 +555,6 @@ CKLevel *CNeMoContext::GetCurrentLevel()
 CKScene *CNeMoContext::GetCurrentScene()
 {
     return m_CKContext->GetCurrentScene();
-}
-
-void CNeMoContext::SetIC(CKBeObject *obj, bool hierarchy)
-{
-    GetCurrentScene()->SetObjectInitialValue(obj, CKSaveObjectState(obj));
-
-    if (hierarchy)
-    {
-        int i;
-        if (CKIsChildClassOf(obj, CKCID_2DENTITY))
-        {
-            CK2dEntity *entity = (CK2dEntity *)obj;
-            for (i = 0; i < entity->GetChildrenCount(); ++i)
-                SetIC(entity->GetChild(i), true);
-        }
-        if (CKIsChildClassOf(obj, CKCID_3DENTITY))
-        {
-            CK3dEntity *entity = (CK3dEntity *)obj;
-            for (i = 0; i < entity->GetChildrenCount(); ++i)
-                SetIC(entity->GetChild(i), true);
-        }
-    }
-}
-
-void CNeMoContext::RestoreIC(CKBeObject *obj, bool hierarchy)
-{
-    CKStateChunk *chunk = GetCurrentScene()->GetObjectInitialValue(obj);
-    if (chunk)
-        CKReadObjectState(obj, chunk);
-
-    if (hierarchy)
-    {
-        int i;
-        if (CKIsChildClassOf(obj, CKCID_2DENTITY))
-        {
-            CK2dEntity *entity = (CK2dEntity *)obj;
-            for (i = 0; i < entity->GetChildrenCount(); ++i)
-                RestoreIC(entity->GetChild(i), true);
-        }
-        if (CKIsChildClassOf(obj, CKCID_3DENTITY))
-        {
-            CK3dEntity *entity = (CK3dEntity *)obj;
-            for (i = 0; i < entity->GetChildrenCount(); ++i)
-                RestoreIC(entity->GetChild(i), true);
-        }
-    }
 }
 
 CKMessageType CNeMoContext::AddMessageType(CKSTRING msg)

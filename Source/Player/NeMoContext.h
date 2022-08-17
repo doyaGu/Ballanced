@@ -202,26 +202,9 @@ public:
     CKObject *GetObjectByNameAndClass(CKSTRING name, CK_CLASSID cid, CKObject *previous = NULL);
     CK_ID *GetObjectsListByClassID(CK_CLASSID cid);
     int GetObjectsCountByClassID(CK_CLASSID cid);
-    CKDataArray *GetArrayByName(CKSTRING name);
-    CKGroup *GetGroupByName(CKSTRING name);
-    CKMaterial *GetMaterialByName(CKSTRING name);
-    CKMesh *GetMeshByName(CKSTRING name);
-    CK2dEntity *Get2dEntityByName(CKSTRING name);
-    CK3dEntity *Get3dEntityByName(CKSTRING name);
-    CK3dObject *Get3dObjectByName(CKSTRING name);
-    CKCamera *GetCameraByName(CKSTRING name);
-    CKTargetCamera *GetTargetCameraByName(CKSTRING name);
-    CKLight *GetLightByName(CKSTRING name);
-    CKTargetLight *GetTargetLightByName(CKSTRING name);
-    CKSound *GetSoundByName(CKSTRING name);
-    CKTexture *GetTextureByName(CKSTRING name);
-    CKBehavior *GetScriptByName(CKSTRING name);
 
     CKLevel *GetCurrentLevel();
     CKScene *GetCurrentScene();
-
-    void SetIC(CKBeObject *obj, bool hierarchy);
-    void RestoreIC(CKBeObject *obj, bool hierarchy);
 
     CKMessageType AddMessageType(CKSTRING msg);
     CKMessage *SendMessageSingle(
