@@ -89,24 +89,35 @@ int ListScreenModes(const CKBehaviorContext &behcontext)
 	if (drDesc->DisplayModeCount > 0)
 	{
 		VxDisplayMode *dm = drDesc->DisplayModes;
+        const int dmCount = drDesc->DisplayModeCount;
 
-		int i = 0, j = 0, k = 0;
-		while (i < drDesc->DisplayModeCount)
-		{
-			if (dm[i].Bpp > 8)
-			{
-				screenModes->InsertRow();
-				screenModes->SetElementValue(j, 0, &i, sizeof(int));
-				screenModes->SetElementValue(j, 1, &dm[i].Width, sizeof(int));
-				screenModes->SetElementValue(j, 2, &dm[i].Height, sizeof(int));
-				screenModes->SetElementValue(j, 3, &dm[i].Bpp, sizeof(int));
-				++j;
-			}
+        int i;
+        int maxRefreshRate = 0;
+        for (i = 0; i < dmCount; ++i)
+        {
+            if (dm[i].RefreshRate > maxRefreshRate)
+                maxRefreshRate = dm[i].RefreshRate;
+            else
+                break;
+        }
 
-			for (k = i + 1; dm[k].Width == dm[i].Width && dm[k].Height == dm[i].Height && dm[k].Bpp == dm[i].Bpp; ++k)
-				continue;
-			i = k;
-		}
+		int j = 0;
+        int width = 0, height = 0;
+        for (i = 0; i < dmCount; ++i)
+        {
+            if ((dm[i].Width != width || dm[i].Height != height) && dm[i].Bpp > 8 && dm[i].RefreshRate == maxRefreshRate)
+            {
+                screenModes->InsertRow();
+                screenModes->SetElementValue(j, 0, &i, sizeof(int));
+                screenModes->SetElementValue(j, 1, &dm[i].Width, sizeof(int));
+                screenModes->SetElementValue(j, 2, &dm[i].Height, sizeof(int));
+                screenModes->SetElementValue(j, 3, &dm[i].Bpp, sizeof(int));
+                ++j;
+
+                width = dm[i].Width;
+                height = dm[i].Height;
+            }
+        }
 	}
 
 	CTTInterfaceManager *man = CTTInterfaceManager::GetManager(context);
