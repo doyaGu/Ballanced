@@ -489,17 +489,20 @@ bool CNeMoContext::ParsePlugins(CKSTRING dir)
 
 void CNeMoContext::AddSoundPath(const char *path)
 {
-    m_CKContext->GetPathManager()->AddPath(SOUND_PATH_IDX, XString(path));
+    XString str = path;
+    m_CKContext->GetPathManager()->AddPath(SOUND_PATH_IDX, str);
 }
 
 void CNeMoContext::AddBitmapPath(const char *path)
 {
-    m_CKContext->GetPathManager()->AddPath(BITMAP_PATH_IDX, XString(path));
+    XString str = path;
+    m_CKContext->GetPathManager()->AddPath(BITMAP_PATH_IDX, str);
 }
 
 void CNeMoContext::AddDataPath(const char *path)
 {
-    m_CKContext->GetPathManager()->AddPath(DATA_PATH_IDX, XString(path));
+    XString str = path;
+    m_CKContext->GetPathManager()->AddPath(DATA_PATH_IDX, str);
 }
 
 void CNeMoContext::SetProgPath(const char *path)
