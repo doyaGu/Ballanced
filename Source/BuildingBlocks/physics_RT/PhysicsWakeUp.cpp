@@ -7,7 +7,7 @@
 /////////////////////////////////////////////////////
 #include "physics_RT.h"
 
-#include "PhysicsManager.h"
+#include "CKIpionManager.h"
 
 CKObjectDeclaration *FillBehaviorPhysicsWakeUpDecl();
 CKERROR CreatePhysicsWakeUpProto(CKBehaviorPrototype **);
@@ -57,7 +57,7 @@ int PhysicsWakeUp(const CKBehaviorContext &behcontext)
         return CKBR_OWNERERROR;
     }
 
-    CKPhysicsManager *man = CKPhysicsManager::GetManager(context);
+    CKIpionManager *man = CKIpionManager::GetManager(context);
     if (!man)
     {
         context->OutputToConsoleExBeep("TT_PhysicsWakeUp: pm==NULL.");

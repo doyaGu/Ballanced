@@ -7,7 +7,7 @@
 /////////////////////////////////////////////////////
 #include "physics_RT.h"
 
-#include "PhysicsManager.h"
+#include "CKIpionManager.h"
 
 CKObjectDeclaration *FillBehaviorPhysicsBallJointDecl();
 CKERROR CreatePhysicsBallJointProto(CKBehaviorPrototype **);
@@ -16,7 +16,7 @@ CKERROR PhysicsBallJointCallBack(const CKBehaviorContext &behcontext);
 
 CKObjectDeclaration *FillBehaviorPhysicsBallJointDecl()
 {
-    CKObjectDeclaration *od = CreateCKObjectDeclaration("Physics Ball Joint");
+    CKObjectDeclaration *od = CreateCKObjectDeclaration("Physics Balljoint");
     od->SetDescription("Sets a Physics Balljoint ...");
     od->SetCategory("Physics");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
@@ -31,7 +31,7 @@ CKObjectDeclaration *FillBehaviorPhysicsBallJointDecl()
 
 CKERROR CreatePhysicsBallJointProto(CKBehaviorPrototype **pproto)
 {
-    CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("Physics Ball Joint");
+    CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("Set Physics Ball Joint");
     if (!proto)
         return CKERR_OUTOFMEMORY;
 
@@ -74,7 +74,7 @@ int PhysicsBallJoint(const CKBehaviorContext &behcontext)
         return CKBR_OWNERERROR;
     }
 
-    CKPhysicsManager *man = CKPhysicsManager::GetManager(context);
+    CKIpionManager *man = CKIpionManager::GetManager(context);
     if (!man)
     {
         context->OutputToConsoleExBeep("TT_PhysicsBallJoint: pm==NULL.");

@@ -7,7 +7,7 @@
 /////////////////////////////////////////////////////
 #include "physics_RT.h"
 
-#include "PhysicsManager.h"
+#include "CKIpionManager.h"
 
 CKObjectDeclaration *FillBehaviorPhysicsImpulseDecl();
 CKERROR CreatePhysicsImpulseProto(CKBehaviorPrototype **);
@@ -71,18 +71,10 @@ int PhysicsImpulse(const CKBehaviorContext &behcontext)
 
     CK3dEntity *ent = (CK3dEntity *)beh->GetTarget();
     if (!ent)
-    {
         return CKBR_OWNERERROR;
-    }
 
-    CKPhysicsManager *man = CKPhysicsManager::GetManager(context);
-    if (!man)
-    {
-        context->OutputToConsoleExBeep("TT_PhysicsImpulse: pm==NULL.");
-        return CKBR_OK;
-    }
+    CKIpionManager *man = CKIpionManager::GetManager(context);
 
-    // TODO
 
     return CKBR_OK;
 }

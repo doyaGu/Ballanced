@@ -7,7 +7,7 @@
 /////////////////////////////////////////////////////
 #include "physics_RT.h"
 
-#include "PhysicsManager.h"
+#include "CKIpionManager.h"
 
 CKObjectDeclaration *FillBehaviorPhysicsCollDetectionDecl();
 CKERROR CreatePhysicsCollDetectionProto(CKBehaviorPrototype **);
@@ -16,7 +16,7 @@ CKERROR PhysicsCollDetectionCallBack(const CKBehaviorContext &behcontext);
 
 CKObjectDeclaration *FillBehaviorPhysicsCollDetectionDecl()
 {
-    CKObjectDeclaration *od = CreateCKObjectDeclaration("Physics CollDetection");
+    CKObjectDeclaration *od = CreateCKObjectDeclaration("PhysicsCollDetection");
     od->SetDescription("Physics Collision Detection");
     od->SetCategory("Physics");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
@@ -31,7 +31,7 @@ CKObjectDeclaration *FillBehaviorPhysicsCollDetectionDecl()
 
 CKERROR CreatePhysicsCollDetectionProto(CKBehaviorPrototype **pproto)
 {
-    CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("Physics CollDetection");
+    CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("PhysicsCollDetection");
     if (!proto)
         return CKERR_OUTOFMEMORY;
 
@@ -46,10 +46,11 @@ CKERROR CreatePhysicsCollDetectionProto(CKBehaviorPrototype **pproto)
     proto->DeclareInParameter("Max Speed m/s", CKPGUID_FLOAT, "10.0");
     proto->DeclareInParameter("Sleep afterwards", CKPGUID_FLOAT, "0.5");
     proto->DeclareInParameter("Collision ID", CKPGUID_INT, "1");
-    proto->DeclareInParameter("Entity", CKPGUID_3DENTITY);
-    proto->DeclareInParameter("Speed (0-1)", CKPGUID_FLOAT);
-    proto->DeclareInParameter("Collision Normal World", CKPGUID_VECTOR);
-    proto->DeclareInParameter("Position World", CKPGUID_VECTOR);
+
+    proto->DeclareOutParameter("Entity", CKPGUID_3DENTITY);
+    proto->DeclareOutParameter("Speed (0-1)", CKPGUID_FLOAT);
+    proto->DeclareOutParameter("Collision Normal World", CKPGUID_VECTOR);
+    proto->DeclareOutParameter("Position World", CKPGUID_VECTOR);
 
     proto->DeclareSetting("Use Collision ID", CKPGUID_BOOL, "FALSE");
 
@@ -83,7 +84,7 @@ int PhysicsCollDetection(const CKBehaviorContext &behcontext)
         return CKBR_OWNERERROR;
     }
 
-    CKPhysicsManager *man = CKPhysicsManager::GetManager(context);
+    CKIpionManager *man = CKIpionManager::GetManager(context);
     if (!man)
     {
         context->OutputToConsoleExBeep("TT_PhysicsCollDetection: pm==NULL.");

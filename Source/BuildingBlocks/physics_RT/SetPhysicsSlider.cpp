@@ -7,16 +7,16 @@
 /////////////////////////////////////////////////////
 #include "physics_RT.h"
 
-#include "PhysicsManager.h"
+#include "CKIpionManager.h"
 
-CKObjectDeclaration *FillBehaviorPhysicsSliderDecl();
-CKERROR CreatePhysicsSliderProto(CKBehaviorPrototype **);
-int PhysicsSlider(const CKBehaviorContext &behcontext);
-CKERROR PhysicsSliderCallBack(const CKBehaviorContext &behcontext);
+CKObjectDeclaration *FillBehaviorSetPhysicsSliderDecl();
+CKERROR CreateSetPhysicsSliderProto(CKBehaviorPrototype **);
+int SetPhysicsSlider(const CKBehaviorContext &behcontext);
+CKERROR SetPhysicsSliderCallBack(const CKBehaviorContext &behcontext);
 
-CKObjectDeclaration *FillBehaviorPhysicsSliderDecl()
+CKObjectDeclaration *FillBehaviorSetPhysicsSliderDecl()
 {
-    CKObjectDeclaration *od = CreateCKObjectDeclaration("Physics Slider");
+    CKObjectDeclaration *od = CreateCKObjectDeclaration("Set Physics Slider");
     od->SetDescription("Set a Physics Sliders...");
     od->SetCategory("Physics");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
@@ -24,14 +24,14 @@ CKObjectDeclaration *FillBehaviorPhysicsSliderDecl()
     od->SetAuthorGuid(TERRATOOLS_GUID);
     od->SetAuthorName("TERRATOOLS");
     od->SetVersion(0x00010001);
-    od->SetCreationFunction(CreatePhysicsSliderProto);
+    od->SetCreationFunction(CreateSetPhysicsSliderProto);
     od->SetCompatibleClassId(CKCID_3DENTITY);
     return od;
 }
 
-CKERROR CreatePhysicsSliderProto(CKBehaviorPrototype **pproto)
+CKERROR CreateSetPhysicsSliderProto(CKBehaviorPrototype **pproto)
 {
-    CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("Physics Slider");
+    CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("Set Physics Slider");
     if (!proto)
         return CKERR_OUTOFMEMORY;
 
@@ -51,10 +51,10 @@ CKERROR CreatePhysicsSliderProto(CKBehaviorPrototype **pproto)
     proto->DeclareInParameter("Upper Limit", CKPGUID_FLOAT, "1.0");
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
-    proto->SetFunction(PhysicsSlider);
+    proto->SetFunction(SetPhysicsSlider);
 
     proto->SetBehaviorFlags((CK_BEHAVIOR_FLAGS)CKBEHAVIOR_TARGETABLE);
-    proto->SetBehaviorCallbackFct(PhysicsSliderCallBack);
+    proto->SetBehaviorCallbackFct(SetPhysicsSliderCallBack);
 
     *pproto = proto;
     return CK_OK;
@@ -67,7 +67,7 @@ CKERROR CreatePhysicsSliderProto(CKBehaviorPrototype **pproto)
 #define LOWER_LIMIT 4
 #define UPPER_LIMIT 5
 
-int PhysicsSlider(const CKBehaviorContext &behcontext)
+int SetPhysicsSlider(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
     CKContext *context = behcontext.Context;
@@ -78,10 +78,10 @@ int PhysicsSlider(const CKBehaviorContext &behcontext)
         return CKBR_OWNERERROR;
     }
 
-    CKPhysicsManager *man = CKPhysicsManager::GetManager(context);
+    CKIpionManager *man = CKIpionManager::GetManager(context);
     if (!man)
     {
-        context->OutputToConsoleExBeep("TT_PhysicsSlider: pm==NULL.");
+        context->OutputToConsoleExBeep("TT_SetPhysicsSlider: pm==NULL.");
         return CKBR_OK;
     }
 
@@ -90,7 +90,7 @@ int PhysicsSlider(const CKBehaviorContext &behcontext)
     return CKBR_OK;
 }
 
-CKERROR PhysicsSliderCallBack(const CKBehaviorContext &behcontext)
+CKERROR SetPhysicsSliderCallBack(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
 

@@ -1,6 +1,6 @@
 #include "physics_RT.h"
 
-#include "PhysicsManager.h"
+#include "CKIpionManager.h"
 
 #ifdef CK_LIB
 #define RegisterBehaviorDeclarations Register_TT_Physics_BehaviorDeclarations
@@ -20,14 +20,14 @@
 
 CKERROR InitInstance(CKContext *context)
 {
-    new CKPhysicsManager(context);
+    new CKIpionManager(context);
 
     return CK_OK;
 }
 
 CKERROR ExitInstance(CKContext *context)
 {
-    CKPhysicsManager *man = CKPhysicsManager::GetManager(context);
+    CKIpionManager *man = CKIpionManager::GetManager(context);
     if (man)
     {
         delete man;
@@ -76,17 +76,14 @@ void RegisterBehaviorDeclarations(XObjectDeclarationArray *reg)
     RegisterBehavior(reg, FillBehaviorPhysicsImpulseDecl);
     RegisterBehavior(reg, FillBehaviorPhysicsForceDecl);
     RegisterBehavior(reg, FillBehaviorPhysicsWakeUpDecl);
-
     RegisterBehavior(reg, FillBehaviorSetPhysicsGlobalsDecl);
     RegisterBehavior(reg, FillBehaviorPhysicsHingeDecl);
-    RegisterBehavior(reg, FillBehaviorPhysicsSpringDecl);
-    RegisterBehavior(reg, FillBehaviorPhysicsSliderDecl);
-
+    RegisterBehavior(reg, FillBehaviorSetPhysicsSpringDecl);
+    RegisterBehavior(reg, FillBehaviorSetPhysicsSliderDecl);
     RegisterBehavior(reg, FillBehaviorPhysicsBallJointDecl);
     RegisterBehavior(reg, FillBehaviorPhysicsCollDetectionDecl);
     RegisterBehavior(reg, FillBehaviorPhysicsContinuousContactDecl);
     RegisterBehavior(reg, FillBehaviorPhysicsBuoyancyDecl);
-
     RegisterBehavior(reg, FillBehaviorPhysicsResetDecl);
     RegisterBehavior(reg, FillBehaviorGetProfilerValuesDecl);
     RegisterBehavior(reg, FillBehaviorDeleteCollisionSurfacesDecl);

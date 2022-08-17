@@ -7,7 +7,7 @@
 /////////////////////////////////////////////////////
 #include "physics_RT.h"
 
-#include "PhysicsManager.h"
+#include "CKIpionManager.h"
 
 CKObjectDeclaration *FillBehaviorPhysicsBuoyancyDecl();
 CKERROR CreatePhysicsBuoyancyProto(CKBehaviorPrototype **);
@@ -16,8 +16,8 @@ CKERROR PhysicsBuoyancyCallBack(const CKBehaviorContext &behcontext);
 
 CKObjectDeclaration *FillBehaviorPhysicsBuoyancyDecl()
 {
-    CKObjectDeclaration *od = CreateCKObjectDeclaration("Physics Buoyancy");
-    od->SetDescription("Physics Buoyancys...");
+    CKObjectDeclaration *od = CreateCKObjectDeclaration("PhysicsBuoyancy");
+    od->SetDescription("PhysicsBuoyancys...");
     od->SetCategory("Physics");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
     od->SetGuid(CKGUID(0x2C015F2B, 0x5B147512));
@@ -31,7 +31,7 @@ CKObjectDeclaration *FillBehaviorPhysicsBuoyancyDecl()
 
 CKERROR CreatePhysicsBuoyancyProto(CKBehaviorPrototype **pproto)
 {
-    CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("Physics Buoyancy");
+    CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("PhysicsBuoyancy");
     if (!proto)
         return CKERR_OUTOFMEMORY;
 
@@ -86,7 +86,7 @@ int PhysicsBuoyancy(const CKBehaviorContext &behcontext)
         return CKBR_OWNERERROR;
     }
 
-    CKPhysicsManager *man = CKPhysicsManager::GetManager(context);
+    CKIpionManager *man = CKIpionManager::GetManager(context);
     if (!man)
     {
         context->OutputToConsoleExBeep("TT_PhysicsBuoyancy: pm==NULL.");
