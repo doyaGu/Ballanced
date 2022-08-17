@@ -7,7 +7,7 @@
 /////////////////////////////////////////////////////
 #include "physics_RT.h"
 
-#include "PhysicsManager.h"
+#include "CKIpionManager.h"
 
 CKObjectDeclaration *FillBehaviorPhysicsHingeDecl();
 CKERROR CreatePhysicsHingeProto(CKBehaviorPrototype **);
@@ -31,7 +31,7 @@ CKObjectDeclaration *FillBehaviorPhysicsHingeDecl()
 
 CKERROR CreatePhysicsHingeProto(CKBehaviorPrototype **pproto)
 {
-    CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("Physics Hinge");
+    CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("Set Physics Hinge");
     if (!proto)
         return CKERR_OUTOFMEMORY;
 
@@ -76,7 +76,7 @@ int PhysicsHinge(const CKBehaviorContext &behcontext)
         return CKBR_OWNERERROR;
     }
 
-    CKPhysicsManager *man = CKPhysicsManager::GetManager(context);
+    CKIpionManager *man = CKIpionManager::GetManager(context);
     if (!man)
     {
         context->OutputToConsoleExBeep("TT_PhysicsHinge: pm==NULL.");

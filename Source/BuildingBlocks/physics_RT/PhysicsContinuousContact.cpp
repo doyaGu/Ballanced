@@ -7,7 +7,7 @@
 /////////////////////////////////////////////////////
 #include "physics_RT.h"
 
-#include "PhysicsManager.h"
+#include "CKIpionManager.h"
 
 CKObjectDeclaration *FillBehaviorPhysicsContinuousContactDecl();
 CKERROR CreatePhysicsContinuousContactProto(CKBehaviorPrototype **);
@@ -16,8 +16,8 @@ CKERROR PhysicsContinuousContactCallBack(const CKBehaviorContext &behcontext);
 
 CKObjectDeclaration *FillBehaviorPhysicsContinuousContactDecl()
 {
-    CKObjectDeclaration *od = CreateCKObjectDeclaration("Physics Continuous Contact");
-    od->SetDescription("Physics Continuous Contact");
+    CKObjectDeclaration *od = CreateCKObjectDeclaration("PhysicsContinuousContact");
+    od->SetDescription("PhysicsContinuousContact");
     od->SetCategory("Physics");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
     od->SetGuid(CKGUID(0x199E4CF1, 0x545A78FE));
@@ -31,7 +31,7 @@ CKObjectDeclaration *FillBehaviorPhysicsContinuousContactDecl()
 
 CKERROR CreatePhysicsContinuousContactProto(CKBehaviorPrototype **pproto)
 {
-    CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("Physics Continuous Contact");
+    CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("PhysicsContinuousContact");
     if (!proto)
         return CKERR_OUTOFMEMORY;
 
@@ -77,7 +77,7 @@ int PhysicsContinuousContact(const CKBehaviorContext &behcontext)
         return CKBR_OWNERERROR;
     }
 
-    CKPhysicsManager *man = CKPhysicsManager::GetManager(context);
+    CKIpionManager *man = CKIpionManager::GetManager(context);
     if (!man)
     {
         context->OutputToConsoleExBeep("TT_PhysicsContinuousContact: pm==NULL.");

@@ -7,7 +7,7 @@
 /////////////////////////////////////////////////////
 #include "physics_RT.h"
 
-#include "PhysicsManager.h"
+#include "CKIpionManager.h"
 
 CKObjectDeclaration *FillBehaviorDeleteCollisionSurfacesDecl();
 CKERROR CreateDeleteCollisionSurfacesProto(CKBehaviorPrototype **);
@@ -15,7 +15,7 @@ int DeleteCollisionSurfaces(const CKBehaviorContext &behcontext);
 
 CKObjectDeclaration *FillBehaviorDeleteCollisionSurfacesDecl()
 {
-    CKObjectDeclaration *od = CreateCKObjectDeclaration("Delete Collision Surfaces");
+    CKObjectDeclaration *od = CreateCKObjectDeclaration("DeleteCollisionSurfaces");
     od->SetDescription("Delete Collision Behaviors");
     od->SetCategory("Physics");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
@@ -30,7 +30,7 @@ CKObjectDeclaration *FillBehaviorDeleteCollisionSurfacesDecl()
 
 CKERROR CreateDeleteCollisionSurfacesProto(CKBehaviorPrototype **pproto)
 {
-    CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("Delete Collision Surfaces");
+    CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("DeleteCollisionSurfaces");
     if (!proto)
         return CKERR_OUTOFMEMORY;
 
@@ -50,7 +50,7 @@ int DeleteCollisionSurfaces(const CKBehaviorContext &behcontext)
     CKBehavior *beh = behcontext.Behavior;
     CKContext *context = behcontext.Context;
 
-    CKPhysicsManager *man = CKPhysicsManager::GetManager(context);
+    CKIpionManager *man = CKIpionManager::GetManager(context);
     if (!man)
     {
         context->OutputToConsoleExBeep("TT_DeleteCollisionSurfaces: pm==NULL.");

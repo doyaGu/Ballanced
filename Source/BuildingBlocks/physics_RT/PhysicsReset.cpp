@@ -7,7 +7,7 @@
 /////////////////////////////////////////////////////
 #include "physics_RT.h"
 
-#include "PhysicsManager.h"
+#include "CKIpionManager.h"
 
 CKObjectDeclaration *FillBehaviorPhysicsResetDecl();
 CKERROR CreatePhysicsResetProto(CKBehaviorPrototype **);
@@ -50,7 +50,7 @@ int PhysicsReset(const CKBehaviorContext &behcontext)
     CKBehavior *beh = behcontext.Behavior;
     CKContext *context = behcontext.Context;
 
-    CKPhysicsManager *man = CKPhysicsManager::GetManager(context);
+    CKIpionManager *man = CKIpionManager::GetManager(context);
     if (!man)
     {
         context->OutputToConsoleExBeep("TT_PhysicsReset: pm==NULL.");

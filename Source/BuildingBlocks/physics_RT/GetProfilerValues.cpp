@@ -7,7 +7,7 @@
 /////////////////////////////////////////////////////
 #include "physics_RT.h"
 
-#include "PhysicsManager.h"
+#include "CKIpionManager.h"
 
 CKObjectDeclaration *FillBehaviorGetProfilerValuesDecl();
 CKERROR CreateGetProfilerValuesProto(CKBehaviorPrototype **);
@@ -60,7 +60,7 @@ int GetProfilerValues(const CKBehaviorContext &behcontext)
     CKBehavior *beh = behcontext.Behavior;
     CKContext *context = behcontext.Context;
 
-    CKPhysicsManager *man = CKPhysicsManager::GetManager(context);
+    CKIpionManager *man = CKIpionManager::GetManager(context);
     if (!man)
     {
         context->OutputToConsoleExBeep("TT_GetProfilerValues: pm==NULL.");

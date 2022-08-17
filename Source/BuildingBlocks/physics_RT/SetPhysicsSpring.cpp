@@ -1,22 +1,22 @@
 /////////////////////////////////////////////////////
 /////////////////////////////////////////////////////
 //
-//		           Physics Spring
+//		          Set Physics Spring
 //
 /////////////////////////////////////////////////////
 /////////////////////////////////////////////////////
 #include "physics_RT.h"
 
-#include "PhysicsManager.h"
+#include "CKIpionManager.h"
 
-CKObjectDeclaration *FillBehaviorPhysicsSpringDecl();
-CKERROR CreatePhysicsSpringProto(CKBehaviorPrototype **);
-int PhysicsSpring(const CKBehaviorContext &behcontext);
-CKERROR PhysicsSpringCallBack(const CKBehaviorContext &behcontext);
+CKObjectDeclaration *FillBehaviorSetPhysicsSpringDecl();
+CKERROR CreateSetPhysicsSpringProto(CKBehaviorPrototype **);
+int SetPhysicsSpring(const CKBehaviorContext &behcontext);
+CKERROR SetPhysicsSpringCallBack(const CKBehaviorContext &behcontext);
 
-CKObjectDeclaration *FillBehaviorPhysicsSpringDecl()
+CKObjectDeclaration *FillBehaviorSetPhysicsSpringDecl()
 {
-    CKObjectDeclaration *od = CreateCKObjectDeclaration("Physics Spring");
+    CKObjectDeclaration *od = CreateCKObjectDeclaration("Set Physics Spring");
     od->SetDescription("Set a Physics Springs...");
     od->SetCategory("Physics");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
@@ -24,14 +24,14 @@ CKObjectDeclaration *FillBehaviorPhysicsSpringDecl()
     od->SetAuthorGuid(TERRATOOLS_GUID);
     od->SetAuthorName("TERRATOOLS");
     od->SetVersion(0x00010001);
-    od->SetCreationFunction(CreatePhysicsSpringProto);
+    od->SetCreationFunction(CreateSetPhysicsSpringProto);
     od->SetCompatibleClassId(CKCID_3DENTITY);
     return od;
 }
 
-CKERROR CreatePhysicsSpringProto(CKBehaviorPrototype **pproto)
+CKERROR CreateSetPhysicsSpringProto(CKBehaviorPrototype **pproto)
 {
-    CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("Physics Spring");
+    CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("Set Physics Spring");
     if (!proto)
         return CKERR_OUTOFMEMORY;
 
@@ -54,10 +54,10 @@ CKERROR CreatePhysicsSpringProto(CKBehaviorPrototype **pproto)
     proto->DeclareInParameter("Global Dampening", CKPGUID_FLOAT, "0.1");
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
-    proto->SetFunction(PhysicsSpring);
+    proto->SetFunction(SetPhysicsSpring);
 
     proto->SetBehaviorFlags((CK_BEHAVIOR_FLAGS)CKBEHAVIOR_TARGETABLE);
-    proto->SetBehaviorCallbackFct(PhysicsSpringCallBack);
+    proto->SetBehaviorCallbackFct(SetPhysicsSpringCallBack);
 
     *pproto = proto;
     return CK_OK;
@@ -73,7 +73,7 @@ CKERROR CreatePhysicsSpringProto(CKBehaviorPrototype **pproto)
 #define LINEAR_DAMPENING 7
 #define GLOBAL_DAMPENING 8
 
-int PhysicsSpring(const CKBehaviorContext &behcontext)
+int SetPhysicsSpring(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
     CKContext *context = behcontext.Context;
@@ -84,19 +84,14 @@ int PhysicsSpring(const CKBehaviorContext &behcontext)
         return CKBR_OWNERERROR;
     }
 
-    CKPhysicsManager *man = CKPhysicsManager::GetManager(context);
-    if (!man)
-    {
-        context->OutputToConsoleExBeep("TT_PhysicsSpring: pm==NULL.");
-        return CKBR_OK;
-    }
+    CKIpionManager *man = CKIpionManager::GetManager(context);
 
     // TODO
 
     return CKBR_OK;
 }
 
-CKERROR PhysicsSpringCallBack(const CKBehaviorContext &behcontext)
+CKERROR SetPhysicsSpringCallBack(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
 

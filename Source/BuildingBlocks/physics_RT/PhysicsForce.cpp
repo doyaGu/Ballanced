@@ -7,7 +7,7 @@
 /////////////////////////////////////////////////////
 #include "physics_RT.h"
 
-#include "PhysicsManager.h"
+#include "CKIpionManager.h"
 
 CKObjectDeclaration *FillBehaviorPhysicsForceDecl();
 CKERROR CreatePhysicsForceProto(CKBehaviorPrototype **);
@@ -76,7 +76,7 @@ int PhysicsForce(const CKBehaviorContext &behcontext)
         return CKBR_OWNERERROR;
     }
 
-    CKPhysicsManager *man = CKPhysicsManager::GetManager(context);
+    CKIpionManager *man = CKIpionManager::GetManager(context);
     if (!man)
     {
         context->OutputToConsoleExBeep("TT_PhysicsForce: pm==NULL.");
