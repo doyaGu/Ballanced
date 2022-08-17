@@ -81,20 +81,17 @@ int ListDrivers(const CKBehaviorContext &behcontext)
     drivers->InsertColumn(0, CKARRAYTYPE_STRING, "DriverName");
     drivers->InsertColumn(1, CKARRAYTYPE_INT, "DriverID");
 
-    int count = context->GetRenderManager()->GetRenderContextCount();
-    if (count > 0)
+    const int driverCount = context->GetRenderManager()->GetRenderDriverCount();
+    for (int i = 0; i < driverCount; ++i)
     {
-            for (int i = 0; i < count; ++i)
-            {
-                VxDriverDesc *drDesc = context->GetRenderManager()->GetRenderDriverDescription(i);
-                if (drDesc->IsHardware)
-                {
-                    drivers->InsertRow();
-                    drivers->SetElementStringValue(i, 0, drDesc->DriverName);
-                    drivers->SetElementValue(i, 1, &i, sizeof(int));
-                    drivers->SetElementStringValue(i, 2, drDesc->DriverDesc);
-                }
-            }
+        VxDriverDesc *drDesc = context->GetRenderManager()->GetRenderDriverDescription(i);
+        if (drDesc->IsHardware)
+        {
+            drivers->InsertRow();
+            drivers->SetElementStringValue(i, 0, drDesc->DriverName);
+            drivers->SetElementValue(i, 1, &i, sizeof(int));
+            drivers->SetElementStringValue(i, 2, drDesc->DriverDesc);
+        }
     }
 
     int driver = man->GetDriver();
