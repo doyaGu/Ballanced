@@ -155,6 +155,14 @@ void CWinContext::ShowWindows()
 
 void CWinContext::RestoreWindow()
 {
+    if (m_Fullscreen)
+    {
+        m_MainWndStyle = m_Borderless ? WS_POPUP : WS_OVERLAPPED | WS_CAPTION;
+        if (m_Resizable) m_MainWndStyle |= WS_SIZEBOX;
+        ::SetWindowLongA(m_MainWindow, GWL_STYLE, m_MainWndStyle);
+        ::SetWindowPos(m_MainWindow, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
+        SetResolution(m_Width, m_Height);
+    }
     ::ShowWindow(m_MainWindow, SW_RESTORE);
 }
 
@@ -173,24 +181,39 @@ void CWinContext::FocusRenderWindow()
     ::SetFocus(m_RenderWindow);
 }
 
-void CWinContext::SetPosition(int x, int y)
+void CWinContext::GetPosition(int &x, int &y)
 {
-    if (m_MainWindow && x + m_Width <= ::GetSystemMetrics(SM_CXSCREEN) && y + m_Height <= ::GetSystemMetrics(SM_CYSCREEN))
+    if (m_MainWindow)
     {
         RECT rc;
-
         ::GetWindowRect(m_MainWindow, &rc);
-        rc.right = x + (rc.right - rc.left);
-        rc.bottom = y + (rc.bottom - rc.top);
-        rc.left = x;
-        rc.top = y;
-        ::AdjustWindowRect(&rc, m_MainWndStyle, FALSE);
-        if (!::SetWindowPos(m_MainWindow, HWND_TOP, rc.left, rc.top, 0, 0, SWP_NOSIZE))
+        x = rc.left;
+        y = rc.top;
+    }
+}
+
+void CWinContext::SetPosition(int x, int y)
+{
+    if (m_MainWindow && -m_Width < x && x < ::GetSystemMetrics(SM_CXSCREEN) && -m_Height < y && y < ::GetSystemMetrics(SM_CYSCREEN))
+    {
+        if (!::SetWindowPos(m_MainWindow, HWND_TOP, x, y, 0, 0, SWP_NOSIZE))
             TT_ERROR_BOX("WinContext.cpp", "CWinContext::SetPosition(...)", "wrong parameters");
 
+        RECT rc;
         ::GetClientRect(m_MainWindow, &rc);
         if (!::SetWindowPos(m_RenderWindow, HWND_TOP, rc.left, rc.top, 0, 0, SWP_NOSIZE))
             TT_ERROR_BOX("WinContext.cpp", "CWinContext::SetPosition(...)", "wrong parameters");
+    }
+}
+
+void CWinContext::GetResolution(int &width, int &height)
+{
+    if (m_MainWindow)
+    {
+        RECT rc;
+        ::GetClientRect(m_MainWindow, &rc);
+        width = rc.right - rc.left;
+        height = rc.bottom - rc.top;
     }
 }
 

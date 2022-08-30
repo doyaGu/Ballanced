@@ -289,7 +289,7 @@ void CGamePlayer::Init(HINSTANCE hInstance, LPFNWNDPROC lpfnWndProc)
     im->SetRookie(m_Config.rookie);
     im->SetTaskSwitchEnabled(m_Config.taskSwitchEnabled);
 
-    if (x >= 0 || y >= 0)
+    if (!m_Config.fullscreen)
         m_WinContext.SetPosition(x, y);
 
     m_WinContext.ShowWindows();
@@ -412,13 +412,9 @@ bool CGamePlayer::LoadCMO(const char *filename)
 
 void CGamePlayer::OnDestroy()
 {
+    m_WinContext.GetPosition(m_Config.posX, m_Config.posY);
+    m_NeMoContext.BroadcastCloseMessage();
     ::PostQuitMessage(0);
-}
-
-void CGamePlayer::OnMove(int x, int y)
-{
-    m_Config.posX = x;
-    m_Config.posY = y;
 }
 
 void CGamePlayer::OnSized()
@@ -436,7 +432,6 @@ void CGamePlayer::OnPaint()
 
 void CGamePlayer::OnClose()
 {
-    m_NeMoContext.BroadcastCloseMessage();
 }
 
 LRESULT CGamePlayer::OnActivateApp(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -515,6 +510,9 @@ int CGamePlayer::OnSysKeyDown(UINT uKey)
     case VK_RETURN:
         // ALT + ENTER -> SwitchFullscreen
         m_NeMoContext.SwitchFullscreen();
+        m_Config.fullscreen = m_NeMoContext.IsFullscreen();
+        if (!m_Config.fullscreen)
+            m_WinContext.SetPosition(m_Config.posX, m_Config.posY);
         break;
 
     case VK_F4:
@@ -589,6 +587,7 @@ void CGamePlayer::OnGoFullscreen()
 {
     if (!m_NeMoContext.IsRenderFullscreen())
     {
+        m_Config.fullscreen = true;
         m_NeMoContext.GoFullscreen();
         m_WinContext.FocusMainWindow();
         m_NeMoContext.Play();
@@ -600,6 +599,7 @@ void CGamePlayer::OnStopFullscreen()
 {
     if (m_NeMoContext.IsFullscreen() && m_NeMoContext.GetRenderContext()->IsFullScreen())
     {
+        m_Config.fullscreen = false;
         m_NeMoContext.GetRenderContext()->StopFullScreen();
         m_WinContext.MinimizeWindow();
     }
@@ -611,10 +611,6 @@ LRESULT CGamePlayer::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     {
     case WM_DESTROY:
         OnDestroy();
-        break;
-
-    case WM_MOVE:
-        OnMove((int)(short)LOWORD(lParam), (int)(short)HIWORD(lParam));
         break;
 
     case WM_SIZE:
@@ -690,11 +686,11 @@ LRESULT CGamePlayer::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 void CGamePlayer::Construct()
 {
-    char fullPath[MAX_PATH] = "";
-    char drive[4] = "";
-    char dir[MAX_PATH] = "";
-    char filename[MAX_PATH] = "";
-    char rootPath[512] = "";
+    char fullPath[MAX_PATH];
+    char drive[4];
+    char dir[MAX_PATH];
+    char filename[MAX_PATH];
+    char rootPath[512];
 
     ::GetModuleFileNameA(NULL, fullPath, MAX_PATH);
     _splitpath(fullPath, drive, dir, filename, NULL);
@@ -706,8 +702,8 @@ void CGamePlayer::Construct()
     TT_LOG_OPEN(filename, rootPath, false);
 
     m_Config.langId = 1;
-    m_Config.posX = -1;
-    m_Config.posY = -1;
+    m_Config.posX = 2147483647;
+    m_Config.posY = 2147483647;
     m_Config.width = DEFAULT_WIDTH;
     m_Config.height = DEFAULT_HEIGHT;
     m_Config.bpp = DEFAULT_BPP;

@@ -225,8 +225,10 @@ void CGameConfig::LoadFromIni(const char *filename)
 void CGameConfig::SaveToIni(const char *filename)
 {
     IniSetInteger("Settings", "Language", langId, filename);
-    IniSetInteger("Settings", "X", posX, filename);
-    IniSetInteger("Settings", "Y", posY, filename);
+    if (!fullscreen) {
+        IniSetInteger("Settings", "X", posX, filename);
+        IniSetInteger("Settings", "Y", posY, filename);
+    }
     IniSetResolution(width, height, filename);
     IniSetBppAndDriver(bpp, driver, filename);
     IniSetBoolean("Settings", "FullScreen", fullscreen, filename);

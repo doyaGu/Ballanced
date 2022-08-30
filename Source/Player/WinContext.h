@@ -48,8 +48,10 @@ public:
         return m_RenderWindow;
     }
 
+    void GetPosition(int &x, int &y);
     void SetPosition(int x, int y);
 
+    void GetResolution(int &width, int &height);
     void SetResolution(int width, int height);
 
 private:

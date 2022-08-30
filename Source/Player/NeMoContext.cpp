@@ -326,6 +326,7 @@ void CNeMoContext::GoFullscreen()
         }
     }
 
+    m_Fullscreen = true;
     m_WinContext->FocusMainWindow();
 }
 
@@ -356,6 +357,7 @@ void CNeMoContext::ResizeWindow()
                    rect.right - rect.left,
                    rect.bottom - rect.top,
                    SWP_NOMOVE | SWP_NOZORDER);
+    m_WinContext->SetResolution(m_Width, m_Height);
     m_RenderContext->Resize();
 }
 
@@ -363,6 +365,8 @@ bool CNeMoContext::RestoreWindow()
 {
     if (!m_RenderContext || !IsRenderFullscreen() || m_RenderContext->StopFullScreen() != CK_OK)
         return false;
+
+    m_Fullscreen = false;
     m_WinContext->SetResolution(m_Width, m_Height);
     m_RenderContext->Resize();
     m_WinContext->RestoreWindow();
