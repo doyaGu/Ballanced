@@ -32,16 +32,10 @@ public:
     bool IsReseted() const;
 
     void Update();
-    CKERROR Process();
     CKERROR Render(CK_RENDER_FLAGS flags = CK_RENDER_USECURRENTSETTINGS);
     void Refresh();
 
-    void SetScreen(CWinContext *wincontext,
-                   bool fullscreen,
-                   int driver,
-                   int bpp,
-                   int width,
-                   int height)
+    void SetScreen(CWinContext *wincontext, bool fullscreen, int driver, int bpp, int width, int height)
     {
         m_WinContext = wincontext;
         m_Fullscreen = fullscreen;
@@ -51,11 +45,7 @@ public:
         m_ScreenMode = driver;
     }
 
-    void SetWindow(CWinContext *wincontext,
-                   bool fullscreen,
-                   int bpp,
-                   int width,
-                   int height)
+    void SetWindow(CWinContext *wincontext, bool fullscreen, int bpp, int width, int height)
     {
         m_WinContext = wincontext;
         m_Fullscreen = fullscreen;
@@ -192,11 +182,7 @@ public:
     char *GetProgPath() const;
 
     CKERROR GetFileInfo(CKSTRING filename, CKFileInfo *fileinfo);
-    CKERROR LoadFile(
-        char *filename,
-        CKObjectArray *liste,
-        CK_LOAD_FLAGS loadFlags = CK_LOAD_DEFAULT,
-        CKGUID *readerGuid = (CKGUID *)0);
+    CKERROR LoadFile(char *filename, CKObjectArray *liste, CK_LOAD_FLAGS loadFlags = CK_LOAD_DEFAULT, CKGUID *readerGuid = NULL);
 
     CKObject *GetObject(CK_ID objID);
     CKObject *GetObjectByNameAndClass(CKSTRING name, CK_CLASSID cid, CKObject *previous = NULL);
@@ -207,10 +193,7 @@ public:
     CKScene *GetCurrentScene();
 
     CKMessageType AddMessageType(CKSTRING msg);
-    CKMessage *SendMessageSingle(
-        int msg,
-        CKBeObject *dest,
-        CKBeObject *sender = NULL);
+    CKMessage *SendMessageSingle(int msg, CKBeObject *dest, CKBeObject *sender = NULL);
 
     void AddCloseMessage();
     bool BroadcastCloseMessage();
@@ -251,13 +234,10 @@ private:
     int m_Bpp;
     int m_RefreshRate;
     bool m_Fullscreen;
-    bool m_DisplayChanged;
     int m_Driver;
     int m_ScreenMode;
     char m_ProgPath[512];
     CKMessageType m_MsgWindowClose;
-    BOOL m_DebugMode;
-    BOOL m_Debugging;
 
     static CNeMoContext *instance;
 };
