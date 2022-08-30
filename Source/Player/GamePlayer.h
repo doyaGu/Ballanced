@@ -39,7 +39,6 @@ public:
     }
 
     void OnDestroy();
-    void OnMove(int x, int y);
     void OnSized();
     void OnPaint();
     void OnClose();
