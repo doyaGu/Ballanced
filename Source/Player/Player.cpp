@@ -40,5 +40,6 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     }
 
     player.Run();
+    player.Done();
     return 0;
 }

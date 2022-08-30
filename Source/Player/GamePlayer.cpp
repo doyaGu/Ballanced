@@ -358,7 +358,6 @@ void CGamePlayer::Done()
     }
 
     m_Cleared = true;
-    ::PostQuitMessage(0);
 }
 
 bool CGamePlayer::LoadCMO(const char *filename)
@@ -413,7 +412,7 @@ bool CGamePlayer::LoadCMO(const char *filename)
 
 void CGamePlayer::OnDestroy()
 {
-    Done();
+    ::PostQuitMessage(0);
 }
 
 void CGamePlayer::OnMove(int x, int y)
@@ -520,7 +519,7 @@ int CGamePlayer::OnSysKeyDown(UINT uKey)
 
     case VK_F4:
         // ALT + F4 -> Quit the application
-        Done();
+        OnDestroy();
         return 1;
     }
     return 0;
@@ -535,14 +534,14 @@ void CGamePlayer::OnExceptionCMO(WPARAM wParam, LPARAM lParam)
     m_NeMoContext.RestoreWindow();
     m_NeMoContext.Cleanup();
     TT_ERROR("GamePlayer.cpp", "CGamePlayer::OnExceptionCMO()", "Exception in the CMO - Abort");
-    Done();
+    OnDestroy();
 }
 
 void CGamePlayer::OnReturn(WPARAM wParam, LPARAM lParam)
 {
     RegisterGameInfo();
     if (!m_Game.Load(m_Config))
-        Done();
+        OnDestroy();
     m_Game.Play();
 
     m_WinContext.SetResolution(m_NeMoContext.GetWidth(), m_NeMoContext.GetHeight());
@@ -555,7 +554,7 @@ bool CGamePlayer::OnLoadCMO(WPARAM wParam, LPARAM lParam)
 
 void CGamePlayer::OnExitToSystem(WPARAM wParam, LPARAM lParam)
 {
-    Done();
+    OnDestroy();
 }
 
 void CGamePlayer::OnExitToTitle(WPARAM wParam, LPARAM lParam)
