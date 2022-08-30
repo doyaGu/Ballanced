@@ -123,8 +123,12 @@ static bool IniGetString(const char *section, const char *name, std::string &str
 
 static bool IniGetInteger(const char *section, const char *name, int &value, const char *filename)
 {
-    UINT val = ::GetPrivateProfileIntA(section, name, -1, filename);
-    if (val == -1)
+    char buf[512];
+    ::GetPrivateProfileStringA(section, name, "", buf, 512, filename);
+    if (strcmp(buf, "") == 0)
+        return false;
+    int val = atoi(buf);
+    if (val == 0 && strcmp(buf, "0") != 0)
         return false;
     value = val;
     return true;
