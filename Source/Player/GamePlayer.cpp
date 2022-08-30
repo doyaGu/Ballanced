@@ -159,7 +159,7 @@ static void OnInitDialog(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     }
 }
 
-static BOOL CALLBACK DialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+static BOOL CALLBACK FullscreenSetup(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     switch (uMsg)
     {
@@ -266,7 +266,7 @@ void CGamePlayer::Init(HINSTANCE hInstance, LPFNWNDPROC lpfnWndProc)
 
         if (!ReInitEngine())
         {
-            if (::DialogBoxParamA(m_WinContext.GetAppInstance(), (LPCSTR)IDD_FULLSCREEN_SETUP, NULL, DialogProc, 0) != 1)
+            if (::DialogBoxParamA(m_WinContext.GetAppInstance(), (LPCSTR)IDD_FULLSCREEN_SETUP, NULL, FullscreenSetup, 0) != 1)
                 return;
             if (!ReInitEngine())
                 return;
@@ -735,10 +735,10 @@ void CGamePlayer::Construct()
 
 int CGamePlayer::InitEngine()
 {
-    char drive[4] = "";
-    char fullpath[512] = "";
-    char buffer[MAX_PATH] = "";
-    char dir[MAX_PATH] = "";
+    char drive[4];
+    char fullpath[512];
+    char buffer[MAX_PATH];
+    char dir[MAX_PATH];
 
     {
         CSplash splash(m_WinContext.GetAppInstance());
@@ -763,7 +763,9 @@ int CGamePlayer::InitEngine()
     sprintf(m_ManagerPath, "%s%s%s%s", drive, dir, m_Path, "Managers");
     sprintf(m_BehaviorPath, "%s%s%s%s", drive, dir, m_Path, "BuildingBlocks");
 
-    if (!LoadEngineDLL() || !LoadStdDLL())
+    if (!LoadEngineDLL())
+        return CKERR_INVALIDPARAMETER;
+    if (!LoadStdDLL())
         return CKERR_INVALIDPARAMETER;
 
     return m_NeMoContext.Init();
