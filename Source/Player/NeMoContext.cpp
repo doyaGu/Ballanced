@@ -5,7 +5,6 @@
 #include <string.h>
 
 #include "ErrorProtocol.h"
-#include "LogProtocol.h"
 #include "WinContext.h"
 
 #include "TT_InterfaceManager_RT/InterfaceManager.h"
@@ -37,12 +36,9 @@ CNeMoContext::CNeMoContext()
       m_Bpp(DEFAULT_BPP),
       m_RefreshRate(0),
       m_Fullscreen(false),
-      m_DisplayChanged(false),
       m_Driver(0),
       m_ScreenMode(-1),
-      m_MsgWindowClose(0),
-      m_DebugMode(FALSE),
-      m_Debugging(FALSE)
+      m_MsgWindowClose(0)
 {
     strcpy(m_ProgPath, "");
 }
@@ -60,7 +56,7 @@ CKERROR CNeMoContext::Init()
         return CKERR_NORENDERENGINE;
     }
 
-    CKERROR res = CKCreateContext(&m_CKContext, m_WinContext->GetMainWindow(), renderEnginePluginIdx, NULL);
+    CKERROR res = CKCreateContext(&m_CKContext, m_WinContext->GetMainWindow(), renderEnginePluginIdx, 0);
     if (res != CK_OK)
     {
         if (res == CKERR_NODLLFOUND)
@@ -182,7 +178,7 @@ bool CNeMoContext::IsReseted() const
 
 void CNeMoContext::Update()
 {
-    if (m_CKContext && IsPlaying())
+    if (m_CKContext->IsPlaying())
     {
         float beforeRender = 0.0f;
         float beforeProcess = 0.0f;
@@ -190,35 +186,14 @@ void CNeMoContext::Update()
         if (beforeProcess <= 0)
         {
             m_TimeManager->ResetChronos(FALSE, TRUE);
-            Process();
+            m_CKContext->Process();
         }
         if (beforeRender <= 0)
         {
             m_TimeManager->ResetChronos(TRUE, FALSE);
-            Render();
+            m_RenderContext->Render();
         }
     }
-}
-
-CKERROR CNeMoContext::Process()
-{
-    if (m_DebugMode)
-    {
-        if (!m_Debugging)
-            m_CKContext->ProcessDebugStart();
-
-        m_Debugging = m_CKContext->ProcessDebugStep();
-        m_DebugContext = m_CKContext->GetDebugContext();
-
-        if (!m_Debugging)
-            m_CKContext->ProcessDebugEnd();
-    }
-    else
-    {
-        return m_CKContext->Process();
-    }
-
-    return CK_OK;
 }
 
 CKERROR CNeMoContext::Render(CK_RENDER_FLAGS flags)
@@ -255,11 +230,10 @@ bool CNeMoContext::FindScreenMode()
     const int dmCount = drDesc->DisplayModeCount;
 
     int i;
-    int maxRefreshRate = 0;
     for (i = 0; i < dmCount; ++i)
     {
-        if (dm[i].RefreshRate > maxRefreshRate)
-            maxRefreshRate = dm[i].RefreshRate;
+        if (dm[i].RefreshRate > m_RefreshRate)
+            m_RefreshRate = dm[i].RefreshRate;
         else
             break;
     }
@@ -269,7 +243,7 @@ bool CNeMoContext::FindScreenMode()
         if (dm[i].Width == m_Width &&
             dm[i].Height == m_Height &&
             dm[i].Bpp == m_Bpp &&
-            dm[i].RefreshRate == maxRefreshRate)
+            dm[i].RefreshRate == m_RefreshRate)
         {
             m_ScreenMode = i;
             break;
@@ -302,7 +276,6 @@ bool CNeMoContext::ChangeScreenMode(int driver, int screenMode)
     int screenModeBefore = m_ScreenMode;
     bool fullscreenBefore = IsRenderFullscreen();
 
-    m_DisplayChanged = true;
     m_Driver = driver;
 
     if (!ApplyScreenMode(screenMode))
@@ -316,7 +289,6 @@ bool CNeMoContext::ChangeScreenMode(int driver, int screenMode)
         if (IsRenderFullscreen())
             GoFullscreen();
 
-        m_DisplayChanged = false;
         return false;
     }
 
@@ -332,7 +304,6 @@ bool CNeMoContext::ChangeScreenMode(int driver, int screenMode)
 
     m_WinContext->FocusMainWindow();
 
-    m_DisplayChanged = false;
     return true;
 }
 
@@ -343,11 +314,7 @@ void CNeMoContext::GoFullscreen()
 
     if (m_ScreenMode < 0)
     {
-        m_RenderContext->GoFullScreen(m_Width,
-                                      m_Height,
-                                      m_Bpp,
-                                      m_Driver,
-                                      m_RefreshRate);
+        m_RenderContext->GoFullScreen(m_Width,  m_Height, m_Bpp, m_Driver, 0);
     }
     else
     {
@@ -355,11 +322,7 @@ void CNeMoContext::GoFullscreen()
         if (drDesc)
         {
             VxDisplayMode *displayMode = &drDesc->DisplayModes[m_ScreenMode];
-            m_RenderContext->GoFullScreen(displayMode->Width,
-                                          displayMode->Height,
-                                          displayMode->Bpp,
-                                          m_Driver,
-                                          m_RefreshRate);
+            m_RenderContext->GoFullScreen(displayMode->Width, displayMode->Height, displayMode->Bpp, m_Driver, 0);
         }
     }
 
@@ -417,13 +380,11 @@ bool CNeMoContext::CreateRenderContext()
 {
     CKRenderManager *renderManager = m_CKContext->GetRenderManager();
     CKRECT rect = {0, 0, m_Width, m_Height};
-    m_RenderContext = renderManager->CreateRenderContext(m_WinContext->GetRenderWindow(), m_Driver, &rect, FALSE, m_Bpp, -1, -1, m_RefreshRate);
+    m_RenderContext = renderManager->CreateRenderContext(m_WinContext->GetRenderWindow(), m_Driver, &rect, FALSE, m_Bpp, -1, -1, 0);
     if (!m_RenderContext)
         return false;
 
-    Play();
-
-    if (m_Fullscreen && m_RenderContext->GoFullScreen(m_Width, m_Height, m_Bpp, m_Driver, m_RefreshRate))
+    if (m_Fullscreen && m_RenderContext->GoFullScreen(m_Width, m_Height, m_Bpp, m_Driver, 0))
     {
         if (!RestoreWindow())
         {
@@ -435,8 +396,6 @@ bool CNeMoContext::CreateRenderContext()
         ::SetWindowPos(m_WinContext->GetRenderWindow(), HWND_TOPMOST, 0, 0, m_Width, m_Height, 0);
         return false;
     }
-
-    Pause();
 
     if (!m_Fullscreen)
         RestoreWindow();
@@ -533,11 +492,7 @@ CKERROR CNeMoContext::GetFileInfo(CKSTRING filename, CKFileInfo *fileinfo)
     return m_CKContext->GetFileInfo(filename, fileinfo);
 }
 
-CKERROR CNeMoContext::LoadFile(
-    char *filename,
-    CKObjectArray *liste,
-    CK_LOAD_FLAGS loadFlags,
-    CKGUID *readerGuid)
+CKERROR CNeMoContext::LoadFile(char *filename, CKObjectArray *liste, CK_LOAD_FLAGS loadFlags, CKGUID *readerGuid)
 {
     return m_CKContext->Load(filename, liste, loadFlags, readerGuid);
 }
@@ -577,10 +532,7 @@ CKMessageType CNeMoContext::AddMessageType(CKSTRING msg)
     return m_MessageManager->AddMessageType(msg);
 }
 
-CKMessage *CNeMoContext::SendMessageSingle(
-    int msg,
-    CKBeObject *dest,
-    CKBeObject *sender)
+CKMessage *CNeMoContext::SendMessageSingle(int msg, CKBeObject *dest, CKBeObject *sender)
 {
     return m_MessageManager->SendMessageSingle(msg, dest, sender);
 }
