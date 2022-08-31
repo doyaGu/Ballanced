@@ -3,8 +3,8 @@
 
 #define VERSION_MAJOR 0
 #define VERSION_MINOR 1
-#define VERSION_PATCH 8
-#define VERSION "0.1.8"
+#define VERSION_PATCH 9
+#define VERSION "0.1.9"
 #define DESCRIPTION "Ballance Decompilation"
 
 #define DEFAULT_WIDTH 640
