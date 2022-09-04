@@ -10,7 +10,7 @@
 #include "CKIpionManager.h"
 
 CKObjectDeclaration *FillBehaviorDeleteCollisionSurfacesDecl();
-CKERROR CreateDeleteCollisionSurfacesProto(CKBehaviorPrototype **);
+CKERROR CreateDeleteCollisionSurfacesProto(CKBehaviorPrototype **pproto);
 int DeleteCollisionSurfaces(const CKBehaviorContext &behcontext);
 
 CKObjectDeclaration *FillBehaviorDeleteCollisionSurfacesDecl()
@@ -19,9 +19,9 @@ CKObjectDeclaration *FillBehaviorDeleteCollisionSurfacesDecl()
     od->SetDescription("Delete Collision Behaviors");
     od->SetCategory("Physics");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x53BF75AA, 0x770C7021));
+    od->SetGuid(CKGUID(0x53bf75aa, 0x770c7021));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("TERRATOOLS");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateDeleteCollisionSurfacesProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
@@ -31,8 +31,7 @@ CKObjectDeclaration *FillBehaviorDeleteCollisionSurfacesDecl()
 CKERROR CreateDeleteCollisionSurfacesProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("DeleteCollisionSurfaces");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
 

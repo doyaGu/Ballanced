@@ -10,19 +10,19 @@
 #include "CKIpionManager.h"
 
 CKObjectDeclaration *FillBehaviorSetPhysicsSliderDecl();
-CKERROR CreateSetPhysicsSliderProto(CKBehaviorPrototype **);
+CKERROR CreateSetPhysicsSliderProto(CKBehaviorPrototype **pproto);
 int SetPhysicsSlider(const CKBehaviorContext &behcontext);
 CKERROR SetPhysicsSliderCallBack(const CKBehaviorContext &behcontext);
 
 CKObjectDeclaration *FillBehaviorSetPhysicsSliderDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("Set Physics Slider");
-    od->SetDescription("Set a Physics Sliders...");
+    od->SetDescription("Set a Physics Slider...");
     od->SetCategory("Physics");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x2973360E, 0x23D31AA7));
+    od->SetGuid(CKGUID(0x2973360e, 0x23d31aa7));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("TERRATOOLS");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010001);
     od->SetCreationFunction(CreateSetPhysicsSliderProto);
     od->SetCompatibleClassId(CKCID_3DENTITY);
@@ -32,16 +32,13 @@ CKObjectDeclaration *FillBehaviorSetPhysicsSliderDecl()
 CKERROR CreateSetPhysicsSliderProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("Set Physics Slider");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("Create");
     proto->DeclareInput("Destroy");
 
     proto->DeclareOutput("Out1");
     proto->DeclareOutput("Out2");
-
-    proto->DeclareLocalParameter("IVP_Handle", CKPGUID_POINTER);
 
     proto->DeclareInParameter("Object2", CKPGUID_3DENTITY);
     proto->DeclareInParameter("Axis first Point", CKPGUID_3DENTITY);
@@ -50,10 +47,12 @@ CKERROR CreateSetPhysicsSliderProto(CKBehaviorPrototype **pproto)
     proto->DeclareInParameter("Lower Limit", CKPGUID_FLOAT, "-1.0");
     proto->DeclareInParameter("Upper Limit", CKPGUID_FLOAT, "1.0");
 
+    proto->DeclareLocalParameter("IVP_Handle", CKPGUID_POINTER);
+
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
     proto->SetFunction(SetPhysicsSlider);
 
-    proto->SetBehaviorFlags((CK_BEHAVIOR_FLAGS)CKBEHAVIOR_TARGETABLE);
+    proto->SetBehaviorFlags((CKBEHAVIOR_TARGETABLE);
     proto->SetBehaviorCallbackFct(SetPhysicsSliderCallBack);
 
     *pproto = proto;

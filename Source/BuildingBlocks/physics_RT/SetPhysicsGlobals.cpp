@@ -10,7 +10,7 @@
 #include "CKIpionManager.h"
 
 CKObjectDeclaration *FillBehaviorSetPhysicsGlobalsDecl();
-CKERROR CreateSetPhysicsGlobalsProto(CKBehaviorPrototype **);
+CKERROR CreateSetPhysicsGlobalsProto(CKBehaviorPrototype **pproto);
 int SetPhysicsGlobals(const CKBehaviorContext &behcontext);
 
 CKObjectDeclaration *FillBehaviorSetPhysicsGlobalsDecl()
@@ -19,9 +19,9 @@ CKObjectDeclaration *FillBehaviorSetPhysicsGlobalsDecl()
     od->SetDescription("Set the Physics Global Variables...");
     od->SetCategory("Physics");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x72AF347C, 0x3DA71E1));
+    od->SetGuid(CKGUID(0x72af347c, 0x3da71e1));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("TERRATOOLS");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateSetPhysicsGlobalsProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
@@ -31,8 +31,7 @@ CKObjectDeclaration *FillBehaviorSetPhysicsGlobalsDecl()
 CKERROR CreateSetPhysicsGlobalsProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("Set Physics Globals");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("Set Values");
     proto->DeclareInput("Clean Physics World");
@@ -40,11 +39,12 @@ CKERROR CreateSetPhysicsGlobalsProto(CKBehaviorPrototype **pproto)
     proto->DeclareOutput("Out");
 
     proto->DeclareInParameter("Gravity", CKPGUID_VECTOR, "0,-9.81,0");
-    proto->DeclareInParameter("Physics Time Factor", CKPGUID_FLOAT, "1");
+    proto->DeclareInParameter("Physic Time Factor", CKPGUID_FLOAT, "1");
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
     proto->SetFunction(SetPhysicsGlobals);
-    proto->SetBehaviorFlags((CK_BEHAVIOR_FLAGS)CKBEHAVIOR_TARGETABLE);
+
+    proto->SetBehaviorFlags(CKBEHAVIOR_TARGETABLE);
 
     *pproto = proto;
     return CK_OK;

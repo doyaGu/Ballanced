@@ -10,7 +10,7 @@
 #include "CKIpionManager.h"
 
 CKObjectDeclaration *FillBehaviorPhysicsImpulseDecl();
-CKERROR CreatePhysicsImpulseProto(CKBehaviorPrototype **);
+CKERROR CreatePhysicsImpulseProto(CKBehaviorPrototype **pproto);
 int PhysicsImpulse(const CKBehaviorContext &behcontext);
 CKERROR PhysicsImpulseCallBack(const CKBehaviorContext &behcontext);
 
@@ -20,9 +20,9 @@ CKObjectDeclaration *FillBehaviorPhysicsImpulseDecl()
     od->SetDescription("Give a instantaneous Impulse to the object");
     od->SetCategory("Physics");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0xC7E39BB, 0x16DB20D5));
+    od->SetGuid(CKGUID(0xc7e39bb, 0x16db20d5));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("TERRATOOLS");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreatePhysicsImpulseProto);
     od->SetCompatibleClassId(CKCID_3DENTITY);
@@ -32,8 +32,7 @@ CKObjectDeclaration *FillBehaviorPhysicsImpulseDecl()
 CKERROR CreatePhysicsImpulseProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("Physics Impulse");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
 
@@ -51,7 +50,7 @@ CKERROR CreatePhysicsImpulseProto(CKBehaviorPrototype **pproto)
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
     proto->SetFunction(PhysicsImpulse);
 
-    proto->SetBehaviorFlags((CK_BEHAVIOR_FLAGS)(CKBEHAVIOR_INTERNALLYCREATEDINPUTPARAMS | CKBEHAVIOR_TARGETABLE));
+    proto->SetBehaviorFlags((CK_BEHAVIOR_FLAGS)(CKBEHAVIOR_TARGETABLE | CKBEHAVIOR_INTERNALLYCREATEDINPUTPARAMS));
     proto->SetBehaviorCallbackFct(PhysicsImpulseCallBack);
 
     *pproto = proto;
@@ -74,7 +73,6 @@ int PhysicsImpulse(const CKBehaviorContext &behcontext)
         return CKBR_OWNERERROR;
 
     CKIpionManager *man = CKIpionManager::GetManager(context);
-
 
     return CKBR_OK;
 }

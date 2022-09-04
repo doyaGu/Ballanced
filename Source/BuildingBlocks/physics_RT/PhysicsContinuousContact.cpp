@@ -10,7 +10,7 @@
 #include "CKIpionManager.h"
 
 CKObjectDeclaration *FillBehaviorPhysicsContinuousContactDecl();
-CKERROR CreatePhysicsContinuousContactProto(CKBehaviorPrototype **);
+CKERROR CreatePhysicsContinuousContactProto(CKBehaviorPrototype **pproto);
 int PhysicsContinuousContact(const CKBehaviorContext &behcontext);
 CKERROR PhysicsContinuousContactCallBack(const CKBehaviorContext &behcontext);
 
@@ -20,9 +20,9 @@ CKObjectDeclaration *FillBehaviorPhysicsContinuousContactDecl()
     od->SetDescription("PhysicsContinuousContact");
     od->SetCategory("Physics");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x199E4CF1, 0x545A78FE));
+    od->SetGuid(CKGUID(0x199e4cf1, 0x545a78fe));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("TERRATOOLS");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010001);
     od->SetCreationFunction(CreatePhysicsContinuousContactProto);
     od->SetCompatibleClassId(CKCID_3DENTITY);
@@ -32,31 +32,33 @@ CKObjectDeclaration *FillBehaviorPhysicsContinuousContactDecl()
 CKERROR CreatePhysicsContinuousContactProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("PhysicsContinuousContact");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("Create");
     proto->DeclareInput("Stop");
 
+    proto->DeclareOutput("contact on 1");
+    proto->DeclareOutput("contact off 1");
+    proto->DeclareOutput("contact on 2");
+    proto->DeclareOutput("contact off 2");
+    proto->DeclareOutput("contact on 3");
+    proto->DeclareOutput("contact off 3");
+    proto->DeclareOutput("contact on 4");
+    proto->DeclareOutput("contact off 4");
+    proto->DeclareOutput("contact on 5");
+    proto->DeclareOutput("contact off 5");
+
     proto->DeclareInParameter("Time Delay Start", CKPGUID_FLOAT, "0.1");
     proto->DeclareInParameter("Time Delay End", CKPGUID_FLOAT, "0.1");
 
-    proto->DeclareSetting("Number Group Output", CKPGUID_INT, "5");
     proto->DeclareLocalParameter("IVP_Handle", CKPGUID_POINTER, "NULL");
 
-    char buffer[248];
-    for (int i = 1; i <= 5; ++i)
-    {
-        sprintf(buffer, "contact on %d", i);
-        proto->DeclareOutput(buffer);
-        sprintf(buffer, "contact off %d", i);
-        proto->DeclareOutput(buffer);
-    }
+    proto->DeclareSetting("Number Group Output", CKPGUID_INT, "5");
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
     proto->SetFunction(PhysicsContinuousContact);
 
-    proto->SetBehaviorFlags((CK_BEHAVIOR_FLAGS)(CKBEHAVIOR_INTERNALLYCREATEDINPUTPARAMS | CKBEHAVIOR_TARGETABLE));
+    proto->SetBehaviorFlags((CK_BEHAVIOR_FLAGS)(CKBEHAVIOR_TARGETABLE | CKBEHAVIOR_INTERNALLYCREATEDINPUTPARAMS));
     proto->SetBehaviorCallbackFct(PhysicsContinuousContactCallBack);
 
     *pproto = proto;

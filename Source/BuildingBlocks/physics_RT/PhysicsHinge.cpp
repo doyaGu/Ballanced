@@ -10,7 +10,7 @@
 #include "CKIpionManager.h"
 
 CKObjectDeclaration *FillBehaviorPhysicsHingeDecl();
-CKERROR CreatePhysicsHingeProto(CKBehaviorPrototype **);
+CKERROR CreatePhysicsHingeProto(CKBehaviorPrototype **pproto);
 int PhysicsHinge(const CKBehaviorContext &behcontext);
 CKERROR PhysicsHingeCallBack(const CKBehaviorContext &behcontext);
 
@@ -20,9 +20,9 @@ CKObjectDeclaration *FillBehaviorPhysicsHingeDecl()
     od->SetDescription("Set a Physics Hinge joint...");
     od->SetCategory("Physics");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x41CD3653, 0xDE60C1D));
+    od->SetGuid(CKGUID(0x41cd3653, 0xde60c1d));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("TERRATOOLS");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010001);
     od->SetCreationFunction(CreatePhysicsHingeProto);
     od->SetCompatibleClassId(CKCID_3DENTITY);
@@ -32,8 +32,7 @@ CKObjectDeclaration *FillBehaviorPhysicsHingeDecl()
 CKERROR CreatePhysicsHingeProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("Set Physics Hinge");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("Create");
     proto->DeclareInput("Destroy");
@@ -41,18 +40,18 @@ CKERROR CreatePhysicsHingeProto(CKBehaviorPrototype **pproto)
     proto->DeclareOutput("Out1");
     proto->DeclareOutput("Out2");
 
-    proto->DeclareLocalParameter("IVP_Handle", CKPGUID_POINTER);
-
     proto->DeclareInParameter("Object2", CKPGUID_3DENTITY);
     proto->DeclareInParameter("Joint Referential", CKPGUID_3DENTITY);
     proto->DeclareInParameter("Limitations (-180 to 180 degree)", CKPGUID_BOOL, "FALSE");
     proto->DeclareInParameter("Lower Limit", CKPGUID_FLOAT, "-45.0");
     proto->DeclareInParameter("Upper Limit", CKPGUID_FLOAT, "45.0");
 
+    proto->DeclareLocalParameter("IVP_Handle", CKPGUID_POINTER);
+
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
     proto->SetFunction(PhysicsHinge);
 
-    proto->SetBehaviorFlags((CK_BEHAVIOR_FLAGS)CKBEHAVIOR_TARGETABLE);
+    proto->SetBehaviorFlags(CKBEHAVIOR_TARGETABLE);
     proto->SetBehaviorCallbackFct(PhysicsHingeCallBack);
 
     *pproto = proto;

@@ -12,7 +12,7 @@
 #include <string.h>
 
 CKObjectDeclaration *FillBehaviorPhysicalizeDecl();
-CKERROR CreatePhysicalizeProto(CKBehaviorPrototype **);
+CKERROR CreatePhysicalizeProto(CKBehaviorPrototype **pproto);
 int Physicalize(const CKBehaviorContext &behcontext);
 CKERROR PhysicalizeCallBack(const CKBehaviorContext &behcontext);
 
@@ -22,9 +22,9 @@ CKObjectDeclaration *FillBehaviorPhysicalizeDecl()
     od->SetDescription("Physicalizes ... ");
     od->SetCategory("Physics");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x7522370E, 0x37EC15EC));
+    od->SetGuid(CKGUID(0x7522370e, 0x37ec15ec));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("TERRATOOLS");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreatePhysicalizeProto);
     od->SetCompatibleClassId(CKCID_3DENTITY);
@@ -34,8 +34,7 @@ CKObjectDeclaration *FillBehaviorPhysicalizeDecl()
 CKERROR CreatePhysicalizeProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("Physicalize");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("Physicalize");
     proto->DeclareInput("Unphysicalize");
@@ -64,7 +63,7 @@ CKERROR CreatePhysicalizeProto(CKBehaviorPrototype **pproto)
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
     proto->SetFunction(Physicalize);
 
-    proto->SetBehaviorFlags((CK_BEHAVIOR_FLAGS)(CKBEHAVIOR_INTERNALLYCREATEDINPUTPARAMS | CKBEHAVIOR_TARGETABLE));
+    proto->SetBehaviorFlags((CK_BEHAVIOR_FLAGS)(CKBEHAVIOR_TARGETABLE | CKBEHAVIOR_INTERNALLYCREATEDINPUTPARAMS));
     proto->SetBehaviorCallbackFct(PhysicalizeCallBack);
 
     *pproto = proto;
@@ -113,7 +112,7 @@ int Physicalize(const CKBehaviorContext &behcontext)
             return CKBR_OK;
         }
 
-        BOOL fixed;
+        CKBOOL fixed;
         beh->GetInputParameterValue(FIXED, &fixed);
         float friction;
         beh->GetInputParameterValue(FRICTION, &friction);
@@ -122,11 +121,11 @@ int Physicalize(const CKBehaviorContext &behcontext)
         float mass;
         beh->GetInputParameterValue(MASS, &mass);
         CKSTRING collisionGroup = (CKSTRING)beh->GetInputParameterReadDataPtr(COLLISION_GROUP);
-        BOOL startFrozen;
+        CKBOOLBOOL startFrozen;
         beh->GetInputParameterValue(START_FROZEN, &startFrozen);
-        BOOL enableCollision;
+        CKBOOLBOOL enableCollision;
         beh->GetInputParameterValue(ENABLE_COLLISION, &enableCollision);
-        BOOL autoCalcMassCenter;
+        CKBOOLBOOL autoCalcMassCenter;
         beh->GetInputParameterValue(AUTOMATIC_CALCULATE_MASS_CENTER, &autoCalcMassCenter);
         float linearSpeedDampening;
         beh->GetInputParameterValue(LINEAR_SPEED_DAMPENING, &linearSpeedDampening);
@@ -169,23 +168,23 @@ int Physicalize(const CKBehaviorContext &behcontext)
         IVP_Material *material = new IVP_Material_Simple(friction, elasticity);
         man->m_Materials.add(material);
         int ret = man->CreatePhysicObjectOnParameters(ent,
-                                   convexCount,
-                                   convexes,
-                                   ballCount,
-                                   concaveCount,
-                                   concaves,
-                                   ballRadius,
-                                   collisionSurface,
-                                   &shiftMassCenter,
-                                   fixed,
-                                   material,
-                                   mass,
-                                   collisionGroup,
-                                   startFrozen,
-                                   enableCollision,
-                                   autoCalcMassCenter,
-                                   linearSpeedDampening,
-                                   rotSpeedDampening);
+                                                      convexCount,
+                                                      convexes,
+                                                      ballCount,
+                                                      concaveCount,
+                                                      concaves,
+                                                      ballRadius,
+                                                      collisionSurface,
+                                                      &shiftMassCenter,
+                                                      fixed,
+                                                      material,
+                                                      mass,
+                                                      collisionGroup,
+                                                      startFrozen,
+                                                      enableCollision,
+                                                      autoCalcMassCenter,
+                                                      linearSpeedDampening,
+                                                      rotSpeedDampening);
 
         if (convexes)
             delete[] convexes;
@@ -255,7 +254,7 @@ CKERROR PhysicalizeCallBack(const CKBehaviorContext &behcontext)
         int inputParamCount = beh->GetInputParameterCount();
         while (inputParamCount > CONVEX)
         {
-            CKParameterIn *paramIn =  beh->RemoveInputParameter(--inputParamCount);
+            CKParameterIn *paramIn = beh->RemoveInputParameter(--inputParamCount);
             CKDestroyObject(paramIn);
         }
 
