@@ -76,7 +76,7 @@ int HomingMissile(const CKBehaviorContext &behcontext)
 
     float missileSpeed;
     beh->GetInputParameterValue(1, &missileSpeed);
-    missileSpeed *= behcontext.DeltaTime * 0.001;
+    missileSpeed *= behcontext.DeltaTime * 0.001f;
 
     if (beh->IsInputActive(0))
     {
