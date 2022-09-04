@@ -183,7 +183,7 @@ static BOOL CALLBACK FullscreenSetup(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
             if (curIdx >= 0)
                 fError = context->ApplyScreenMode(SendDlgItemMessageA(hWnd, IDC_LB_DRIVER, LB_GETITEMDATA, curIdx, 0));
 
-            CTTInterfaceManager *im = context->GetInterfaceManager();
+            InterfaceManager *im = context->GetInterfaceManager();
             im->SetDriver(context->GetDriver());
             im->SetScreenMode(context->GetScreenMode());
 
@@ -282,7 +282,7 @@ void CGamePlayer::Init(HINSTANCE hInstance, LPFNWNDPROC lpfnWndProc)
         return;
     }
 
-    CTTInterfaceManager *im = m_NeMoContext.GetInterfaceManager();
+    InterfaceManager *im = m_NeMoContext.GetInterfaceManager();
     im->SetDriver(m_NeMoContext.GetDriver());
     im->SetScreenMode(m_NeMoContext.GetScreenMode());
     im->SetIniName(m_IniPath);
@@ -440,7 +440,7 @@ LRESULT CGamePlayer::OnActivateApp(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
     static bool wasFullscreen = false;
     static bool firstDeActivate = true;
 
-    CTTInterfaceManager *im = m_NeMoContext.GetInterfaceManager();
+    InterfaceManager *im = m_NeMoContext.GetInterfaceManager();
     if (im && !im->IsTaskSwitchEnabled())
         return ::DefWindowProcA(hWnd, uMsg, wParam, lParam);
 
@@ -564,7 +564,7 @@ LRESULT CGamePlayer::OnChangeScreenMode(WPARAM wParam, LPARAM lParam)
     if (!m_NeMoContext.ChangeScreenMode(lParam, wParam))
         return 0;
 
-    CTTInterfaceManager *im = m_NeMoContext.GetInterfaceManager();
+    InterfaceManager *im = m_NeMoContext.GetInterfaceManager();
     if (!im)
     {
         TT_ERROR("GamePlayer.cpp", "WndProc()", "No InterfaceManager");
@@ -817,6 +817,6 @@ bool CGamePlayer::LoadStdDLL()
 
 void CGamePlayer::RegisterGameInfo()
 {
-    CTTInterfaceManager *im = m_NeMoContext.GetInterfaceManager();
+    InterfaceManager *im = m_NeMoContext.GetInterfaceManager();
     im->SetGameInfo(m_Game.GetGameInfo());
 }

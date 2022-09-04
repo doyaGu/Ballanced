@@ -8,8 +8,8 @@
 
 #include "CKAll.h"
 
-class CGameInfo;
 class CNeMoContext;
+class CGameInfo;
 struct CGameConfig;
 
 class CGame
