@@ -5,30 +5,32 @@
 //
 //////////////////////////////////////
 //////////////////////////////////////
-#include "TT_Toolbox_RT.h"
+#include "CKAll.h"
+#include "ToolboxGuids.h"
 
-CKERROR CreateTTGetMemoryStatusBehaviorProto(CKBehaviorPrototype **pproto);
-int TTGetMemoryStatus(const CKBehaviorContext& behcontext);
+CKObjectDeclaration *FillBehaviorGetMemoryStatusDecl();
+CKERROR CreateGetMemoryStatusProto(CKBehaviorPrototype **pproto);
+int GetMemoryStatus(const CKBehaviorContext &behcontext);
 
-CKObjectDeclaration *FillBehaviorTTGetMemoryStatusDecl()
+CKObjectDeclaration *FillBehaviorGetMemoryStatusDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT GetMemoryStatus");
     od->SetDescription("reads system memory status");
     od->SetCategory("TT Toolbox/System");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x3b826e04,0x6e764285));
+    od->SetGuid(CKGUID(0x3b826e04, 0x6e764285));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("Virtools");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
-    od->SetCreationFunction(CreateTTGetMemoryStatusBehaviorProto);
+    od->SetCreationFunction(CreateGetMemoryStatusProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
     return od;
 }
 
-CKERROR CreateTTGetMemoryStatusBehaviorProto(CKBehaviorPrototype **pproto)
+CKERROR CreateGetMemoryStatusProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT GetMemoryStatus");
-    if(!proto) return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
 
@@ -41,22 +43,15 @@ CKERROR CreateTTGetMemoryStatusBehaviorProto(CKBehaviorPrototype **pproto)
     proto->DeclareOutParameter("Available Virtual Address Space", CKPGUID_FLOAT);
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
-    proto->SetFunction(TTGetMemoryStatus);
+    proto->SetFunction(GetMemoryStatus);
 
     *pproto = proto;
     return CK_OK;
 }
 
-int TTGetMemoryStatus(const CKBehaviorContext& behcontext)
+int GetMemoryStatus(const CKBehaviorContext &behcontext)
 {
-    CKBehavior* beh = behcontext.Behavior;
-    // TODO: To be finished.
-    return CKBR_OK;
-}
-
-CKERROR TTGetMemoryStatusCallBack(const CKBehaviorContext& behcontext)
-{
-    CKBehavior* beh = behcontext.Behavior;
+    CKBehavior *beh = behcontext.Behavior;
     // TODO: To be finished.
     return CKBR_OK;
 }

@@ -6,11 +6,11 @@
 
 #define TT_DX_MANAGER_GUID CKGUID(0x6B7D4793, 0x423C6AD4)
 
-class CTTDXManager : public CKBaseManager
+class DXManager : public CKBaseManager
 {
 public:
-    CTTDXManager(CKContext *ctx);
-    ~CTTDXManager();
+    DXManager(CKContext *ctx);
+    ~DXManager();
 
     CKERROR OnCKInit() { return CK_OK; }
     CKERROR OnCKEnd() { return CK_OK; }
@@ -30,9 +30,9 @@ public:
                CKMANAGER_FUNC_OnCKReset;
     }
 
-    static CTTDXManager *GetManager(CKContext *context)
+    static DXManager *GetManager(CKContext *context)
     {
-        return (CTTDXManager *)context->GetManagerByGuid(TT_DX_MANAGER_GUID);
+        return (DXManager *)context->GetManagerByGuid(TT_DX_MANAGER_GUID);
     }
 
 protected:

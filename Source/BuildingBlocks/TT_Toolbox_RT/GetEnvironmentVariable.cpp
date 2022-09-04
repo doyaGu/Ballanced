@@ -5,30 +5,32 @@
 //
 /////////////////////////////////////////////
 /////////////////////////////////////////////
-#include "TT_Toolbox_RT.h"
+#include "CKAll.h"
+#include "ToolboxGuids.h"
 
-CKERROR CreateTTGetEnvironmentVariableBehaviorProto(CKBehaviorPrototype **pproto);
-int TTGetEnvironmentVariable(const CKBehaviorContext& behcontext);
+CKObjectDeclaration *FillBehaviorGetEnvironmentVariableDecl();
+CKERROR CreateGetEnvironmentVariableProto(CKBehaviorPrototype **pproto);
+int GetEnvironmentVariable(const CKBehaviorContext &behcontext);
 
-CKObjectDeclaration *FillBehaviorTTGetEnvironmentVariableDecl()
+CKObjectDeclaration *FillBehaviorGetEnvironmentVariableDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT GetEnvironmentVariable");
     od->SetDescription("Gets the value of a square");
     od->SetCategory("TT Toolbox/Advanced");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x4c6513e9,0x20e11177));
+    od->SetGuid(CKGUID(0x4c6513e9, 0x20e11177));
     od->SetAuthorGuid(TERRATOOLS_GUID);
     od->SetAuthorName("Virtools");
     od->SetVersion(0x00010000);
-    od->SetCreationFunction(CreateTTGetEnvironmentVariableBehaviorProto);
+    od->SetCreationFunction(CreateGetEnvironmentVariableProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
     return od;
 }
 
-CKERROR CreateTTGetEnvironmentVariableBehaviorProto(CKBehaviorPrototype **pproto)
+CKERROR CreateGetEnvironmentVariableProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT GetEnvironmentVariable");
-    if(!proto) return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("Go and get it!");
 
@@ -37,25 +39,18 @@ CKERROR CreateTTGetEnvironmentVariableBehaviorProto(CKBehaviorPrototype **pproto
 
     proto->DeclareInParameter("Variablename", CKPGUID_STRING, "N2DEVPATH");
 
-    proto->DeclareOutParameter("Environment Variable", CKPGUID_STRING, "C:\Programme\Virtools Dev 2.0\");
+    proto->DeclareOutParameter("Environment Variable", CKPGUID_STRING, "C:\\Programme\\Virtools Dev 2.0\\");
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
-    proto->SetFunction(TTGetEnvironmentVariable);
+    proto->SetFunction(GetEnvironmentVariable);
 
     *pproto = proto;
     return CK_OK;
 }
 
-int TTGetEnvironmentVariable(const CKBehaviorContext& behcontext)
+int GetEnvironmentVariable(const CKBehaviorContext &behcontext)
 {
-    CKBehavior* beh = behcontext.Behavior;
-    // TODO: To be finished.
-    return CKBR_OK;
-}
-
-CKERROR TTGetEnvironmentVariableCallBack(const CKBehaviorContext& behcontext)
-{
-    CKBehavior* beh = behcontext.Behavior;
+    CKBehavior *beh = behcontext.Behavior;
     // TODO: To be finished.
     return CKBR_OK;
 }

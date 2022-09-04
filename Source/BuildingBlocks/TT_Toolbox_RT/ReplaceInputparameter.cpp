@@ -5,30 +5,32 @@
 //
 ////////////////////////////////////////////
 ////////////////////////////////////////////
-#include "TT_Toolbox_RT.h"
+#include "CKAll.h"
+#include "ToolboxGuids.h"
 
-CKERROR CreateTTReplaceInputparameterBehaviorProto(CKBehaviorPrototype **pproto);
-int TTReplaceInputparameter(const CKBehaviorContext& behcontext);
+CKObjectDeclaration *FillBehaviorReplaceInputparameterDecl();
+CKERROR CreateReplaceInputparameterProto(CKBehaviorPrototype **pproto);
+int ReplaceInputparameter(const CKBehaviorContext &behcontext);
 
-CKObjectDeclaration *FillBehaviorTTReplaceInputparameterDecl()
+CKObjectDeclaration *FillBehaviorReplaceInputparameterDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT ReplaceInputparameter");
     od->SetDescription("Verlinkt einen Inputparameter mit einem anderen Parameter.");
     od->SetCategory("TT Toolbox/Advanced");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x54a776b7,0x20fc1e7c));
+    od->SetGuid(CKGUID(0x54a776b7, 0x20fc1e7c));
     od->SetAuthorGuid(TERRATOOLS_GUID);
     od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
-    od->SetCreationFunction(CreateTTReplaceInputparameterBehaviorProto);
+    od->SetCreationFunction(CreateReplaceInputparameterProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
     return od;
 }
 
-CKERROR CreateTTReplaceInputparameterBehaviorProto(CKBehaviorPrototype **pproto)
+CKERROR CreateReplaceInputparameterProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT ReplaceInputparameter");
-    if(!proto) return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("Replace!");
 
@@ -38,22 +40,15 @@ CKERROR CreateTTReplaceInputparameterBehaviorProto(CKBehaviorPrototype **pproto)
     proto->DeclareInParameter("Set-Parametername", CKPGUID_STRING);
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
-    proto->SetFunction(TTReplaceInputparameter);
+    proto->SetFunction(ReplaceInputparameter);
 
     *pproto = proto;
     return CK_OK;
 }
 
-int TTReplaceInputparameter(const CKBehaviorContext& behcontext)
+int ReplaceInputparameter(const CKBehaviorContext &behcontext)
 {
-    CKBehavior* beh = behcontext.Behavior;
-    // TODO: To be finished.
-    return CKBR_OK;
-}
-
-CKERROR TTReplaceInputparameterCallBack(const CKBehaviorContext& behcontext)
-{
-    CKBehavior* beh = behcontext.Behavior;
+    CKBehavior *beh = behcontext.Behavior;
     // TODO: To be finished.
     return CKBR_OK;
 }

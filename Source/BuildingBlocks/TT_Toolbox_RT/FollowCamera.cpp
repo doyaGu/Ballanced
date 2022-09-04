@@ -1,37 +1,37 @@
-/////////////////////////////////////////////////////
-/////////////////////////////////////////////////////
+///////////////////////////////////
+///////////////////////////////////
 //
-//		            TT FollowCamera
+//        TT FollowCamera
 //
-/////////////////////////////////////////////////////
-/////////////////////////////////////////////////////
-#include "TT_Toolbox_RT.h"
+///////////////////////////////////
+///////////////////////////////////
+#include "CKAll.h"
+#include "ToolboxGuids.h"
 
 CKObjectDeclaration *FillBehaviorFollowCameraDecl();
-CKERROR CreateFollowCameraProto(CKBehaviorPrototype **);
+CKERROR CreateFollowCameraProto(CKBehaviorPrototype **pproto);
 int FollowCamera(const CKBehaviorContext &behcontext);
 CKERROR FollowCameraCallBack(const CKBehaviorContext &behcontext);
 
 CKObjectDeclaration *FillBehaviorFollowCameraDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT FollowCamera");
-    od->SetDescription("Camera follows an object");
+    od->SetDescription("Kamera folgt einem Objekt");
     od->SetCategory("TT Toolbox/3D Transformations");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x595B4723, 0x576C6749));
+    od->SetGuid(CKGUID(0x595b4723, 0x576c6749));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("TERRATOOLS");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateFollowCameraProto);
-    od->SetCompatibleClassId(CKCID_CAMERA);
+    od->SetCompatibleClassId(CKCID_BEOBJECT);
     return od;
 }
 
 CKERROR CreateFollowCameraProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT FollowCamera");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("On");
     proto->DeclareInput("Stop");
@@ -47,17 +47,18 @@ CKERROR CreateFollowCameraProto(CKBehaviorPrototype **pproto)
     proto->DeclareInParameter("FOV Angle", CKPGUID_ANGLE, "0:50");
     proto->DeclareInParameter("Back Attenuation", CKPGUID_PERCENTAGE, "25");
 
-    proto->DeclareSetting("Time Based", CKPGUID_BOOL, "TRUE");
-    proto->DeclareSetting("Init actPos", CKPGUID_BOOL, "FALSE");
     proto->DeclareLocalParameter("ViewPosOld", CKPGUID_VECTOR);
     proto->DeclareLocalParameter("CamPosOld", CKPGUID_VECTOR);
     proto->DeclareLocalParameter("oldDeltaTime", CKPGUID_FLOAT);
     proto->DeclareLocalParameter("init", CKPGUID_BOOL, "true");
 
+    proto->DeclareSetting("Time Based", CKPGUID_BOOL, "TRUE");
+    proto->DeclareSetting("Init actPos", CKPGUID_BOOL, "FALSE");
+
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
     proto->SetFunction(FollowCamera);
 
-    proto->SetBehaviorFlags((CK_BEHAVIOR_FLAGS)CKBEHAVIOR_TARGETABLE);
+    proto->SetBehaviorFlags(CKBEHAVIOR_TARGETABLE);
     proto->SetBehaviorCallbackFct(FollowCameraCallBack);
 
     *pproto = proto;
@@ -67,18 +68,13 @@ CKERROR CreateFollowCameraProto(CKBehaviorPrototype **pproto)
 int FollowCamera(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
-    CKContext *context = behcontext.Context;
+    // TODO: To be finished.
+    return CKBR_OK;
 }
 
 CKERROR FollowCameraCallBack(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
-
-    switch (behcontext.CallbackMessage)
-    {
-    default:
-        break;
-    }
-
+    // TODO: To be finished.
     return CKBR_OK;
 }

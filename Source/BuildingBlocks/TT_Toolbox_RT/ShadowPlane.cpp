@@ -1,43 +1,42 @@
-/////////////////////////////////////////////////////
-/////////////////////////////////////////////////////
+//////////////////////////////////
+//////////////////////////////////
 //
-//		           TT ShadowPlane
+//        TT ShadowPlane
 //
-/////////////////////////////////////////////////////
-/////////////////////////////////////////////////////
-#include "TT_Toolbox_RT.h"
+//////////////////////////////////
+//////////////////////////////////
+#include "CKAll.h"
+#include "ToolboxGuids.h"
 
 CKObjectDeclaration *FillBehaviorShadowPlaneDecl();
-CKERROR CreateShadowPlaneProto(CKBehaviorPrototype **);
+CKERROR CreateShadowPlaneProto(CKBehaviorPrototype **pproto);
 int ShadowPlane(const CKBehaviorContext &behcontext);
 
 CKObjectDeclaration *FillBehaviorShadowPlaneDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT ShadowPlane");
-    od->SetDescription("Creates shadow planes without ZBuffer writing");
+    od->SetDescription("erstellt Schatten-Plane ohne ZBuffer-Schreiben");
     od->SetCategory("TT Toolbox/FX");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x137C3D66, 0x3FF1752D));
+    od->SetGuid(CKGUID(0x137c3d66, 0x3ff1752d));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("TERRATOOLS");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateShadowPlaneProto);
-    od->SetCompatibleClassId(CKCID_3DENTITY);
-    od->NeedManager(FLOOR_MANAGER_GUID);
+    od->SetCompatibleClassId(CKCID_BEOBJECT);
     return od;
 }
 
 CKERROR CreateShadowPlaneProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT ShadowPlane");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("On");
     proto->DeclareInput("Off");
 
     proto->DeclareOutput("Exit On");
-    proto->DeclareOutput("Exit Stop");
+    proto->DeclareOutput("Exit Off");
 
     proto->DeclareInParameter("Light", CKPGUID_LIGHT);
     proto->DeclareInParameter("Texture", CKPGUID_TEXTURE);
@@ -50,7 +49,7 @@ CKERROR CreateShadowPlaneProto(CKBehaviorPrototype **pproto)
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
     proto->SetFunction(ShadowPlane);
 
-    proto->SetBehaviorFlags((CK_BEHAVIOR_FLAGS)CKBEHAVIOR_TARGETABLE);
+    proto->SetBehaviorFlags(CKBEHAVIOR_TARGETABLE);
 
     *pproto = proto;
     return CK_OK;
@@ -59,5 +58,6 @@ CKERROR CreateShadowPlaneProto(CKBehaviorPrototype **pproto)
 int ShadowPlane(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
-    CKContext *context = behcontext.Context;
+    // TODO: To be finished.
+    return CKBR_OK;
 }

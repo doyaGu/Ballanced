@@ -5,30 +5,32 @@
 //
 //////////////////////////////////////
 //////////////////////////////////////
-#include "TT_Toolbox_RT.h"
+#include "CKAll.h"
+#include "ToolboxGuids.h"
 
-CKERROR CreateTTIsObjectVisibleBehaviorProto(CKBehaviorPrototype **pproto);
-int TTIsObjectVisible(const CKBehaviorContext& behcontext);
+CKObjectDeclaration *FillBehaviorIsObjectVisibleDecl();
+CKERROR CreateIsObjectVisibleProto(CKBehaviorPrototype **pproto);
+int IsObjectVisible(const CKBehaviorContext &behcontext);
 
-CKObjectDeclaration *FillBehaviorTTIsObjectVisibleDecl()
+CKObjectDeclaration *FillBehaviorIsObjectVisibleDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT_IsObjectVisible");
     od->SetDescription("testet ob Objekt sichtbar ist");
     od->SetCategory("TT Toolbox/Test");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x39cf3dd3,0x11a92281));
+    od->SetGuid(CKGUID(0x39cf3dd3, 0x11a92281));
     od->SetAuthorGuid(TERRATOOLS_GUID);
     od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
-    od->SetCreationFunction(CreateTTIsObjectVisibleBehaviorProto);
+    od->SetCreationFunction(CreateIsObjectVisibleProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
     return od;
 }
 
-CKERROR CreateTTIsObjectVisibleBehaviorProto(CKBehaviorPrototype **pproto)
+CKERROR CreateIsObjectVisibleProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT_IsObjectVisible");
-    if(!proto) return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
 
@@ -38,22 +40,15 @@ CKERROR CreateTTIsObjectVisibleBehaviorProto(CKBehaviorPrototype **pproto)
     proto->DeclareInParameter("Object", CKPGUID_BEOBJECT);
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
-    proto->SetFunction(TTIsObjectVisible);
+    proto->SetFunction(IsObjectVisible);
 
     *pproto = proto;
     return CK_OK;
 }
 
-int TTIsObjectVisible(const CKBehaviorContext& behcontext)
+int IsObjectVisible(const CKBehaviorContext &behcontext)
 {
-    CKBehavior* beh = behcontext.Behavior;
-    // TODO: To be finished.
-    return CKBR_OK;
-}
-
-CKERROR TTIsObjectVisibleCallBack(const CKBehaviorContext& behcontext)
-{
-    CKBehavior* beh = behcontext.Behavior;
+    CKBehavior *beh = behcontext.Behavior;
     // TODO: To be finished.
     return CKBR_OK;
 }

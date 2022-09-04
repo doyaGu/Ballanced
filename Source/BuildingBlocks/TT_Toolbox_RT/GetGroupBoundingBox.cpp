@@ -1,25 +1,26 @@
-/////////////////////////////////////////////////////
-/////////////////////////////////////////////////////
+//////////////////////////////////////////
+//////////////////////////////////////////
 //
-//		        TT GetGroupBoundingBox
+//        TT GetGroupBoundingBox
 //
-/////////////////////////////////////////////////////
-/////////////////////////////////////////////////////
-#include "TT_Toolbox_RT.h"
+//////////////////////////////////////////
+//////////////////////////////////////////
+#include "CKAll.h"
+#include "ToolboxGuids.h"
 
 CKObjectDeclaration *FillBehaviorGetGroupBoundingBoxDecl();
-CKERROR CreateGetGroupBoundingBoxProto(CKBehaviorPrototype **);
+CKERROR CreateGetGroupBoundingBoxProto(CKBehaviorPrototype **pproto);
 int GetGroupBoundingBox(const CKBehaviorContext &behcontext);
 
 CKObjectDeclaration *FillBehaviorGetGroupBoundingBoxDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT GetGroupBoundingBox");
-    od->SetDescription("Fetches BoundingBox for group");
+    od->SetDescription("holt BoundingBox f�r Gruppe");
     od->SetCategory("TT Toolbox/Logic");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x3CC07535, 0x37E351C));
+    od->SetGuid(CKGUID(0x3cc07535, 0x37e351c));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("TERRATOOLS");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateGetGroupBoundingBoxProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
@@ -29,10 +30,9 @@ CKObjectDeclaration *FillBehaviorGetGroupBoundingBoxDecl()
 CKERROR CreateGetGroupBoundingBoxProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT GetGroupBoundingBox");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
-    proto->DeclareInput("On");
+    proto->DeclareInput("In");
 
     proto->DeclareOutput("Out");
 
@@ -43,7 +43,7 @@ CKERROR CreateGetGroupBoundingBoxProto(CKBehaviorPrototype **pproto)
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
     proto->SetFunction(GetGroupBoundingBox);
 
-    proto->SetBehaviorFlags((CK_BEHAVIOR_FLAGS)CKBEHAVIOR_TARGETABLE);
+    proto->SetBehaviorFlags(CKBEHAVIOR_TARGETABLE);
 
     *pproto = proto;
     return CK_OK;
@@ -52,8 +52,6 @@ CKERROR CreateGetGroupBoundingBoxProto(CKBehaviorPrototype **pproto)
 int GetGroupBoundingBox(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
-
-    // TODO
-
+    // TODO: To be finished.
     return CKBR_OK;
 }

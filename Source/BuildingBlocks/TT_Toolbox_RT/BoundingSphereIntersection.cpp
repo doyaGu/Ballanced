@@ -1,14 +1,15 @@
-/////////////////////////////////////////////////////
-/////////////////////////////////////////////////////
+///////////////////////////////////////////////////
+///////////////////////////////////////////////////
 //
-//	       TT Bounding Sphere Intersection
+//        TT Bounding Sphere Intersection
 //
-/////////////////////////////////////////////////////
-/////////////////////////////////////////////////////
-#include "TT_Toolbox_RT.h"
+///////////////////////////////////////////////////
+///////////////////////////////////////////////////
+#include "CKAll.h"
+#include "ToolboxGuids.h"
 
 CKObjectDeclaration *FillBehaviorBoundingSphereIntersectionDecl();
-CKERROR CreateBoundingSphereIntersectionProto(CKBehaviorPrototype **);
+CKERROR CreateBoundingSphereIntersectionProto(CKBehaviorPrototype **pproto);
 int BoundingSphereIntersection(const CKBehaviorContext &behcontext);
 
 CKObjectDeclaration *FillBehaviorBoundingSphereIntersectionDecl()
@@ -17,9 +18,9 @@ CKObjectDeclaration *FillBehaviorBoundingSphereIntersectionDecl()
     od->SetDescription("Detects the collision between two 3D entities at the bounding sphere level.");
     od->SetCategory("TT Toolbox/Collision");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x32A6308D, 0x1D3D0931));
+    od->SetGuid(CKGUID(0x32a6308d, 0x1d3d0931));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("TERRATOOLS");
+    od->SetAuthorName("Virtools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateBoundingSphereIntersectionProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
@@ -29,8 +30,7 @@ CKObjectDeclaration *FillBehaviorBoundingSphereIntersectionDecl()
 CKERROR CreateBoundingSphereIntersectionProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT Bounding Sphere Intersection");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
 
@@ -53,5 +53,6 @@ CKERROR CreateBoundingSphereIntersectionProto(CKBehaviorPrototype **pproto)
 int BoundingSphereIntersection(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
-    CKContext *context = behcontext.Context;
+    // TODO: To be finished.
+    return CKBR_OK;
 }

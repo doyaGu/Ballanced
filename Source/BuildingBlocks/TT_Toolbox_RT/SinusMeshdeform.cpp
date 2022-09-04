@@ -5,31 +5,33 @@
 //
 //////////////////////////////////////
 //////////////////////////////////////
-#include "TT_Toolbox_RT.h"
+#include "CKAll.h"
+#include "ToolboxGuids.h"
 
-CKERROR CreateTTSinusMeshdeformBehaviorProto(CKBehaviorPrototype **pproto);
-int TTSinusMeshdeform(const CKBehaviorContext& behcontext);
-CKERROR TTSinusMeshdeformCallBack(const CKBehaviorContext& behcontext);
+CKObjectDeclaration *FillBehaviorSinusMeshdeformDecl();
+CKERROR CreateSinusMeshdeformProto(CKBehaviorPrototype **pproto);
+int SinusMeshdeform(const CKBehaviorContext &behcontext);
+CKERROR SinusMeshdeformCallBack(const CKBehaviorContext &behcontext);
 
-CKObjectDeclaration *FillBehaviorTTSinusMeshdeformDecl()
+CKObjectDeclaration *FillBehaviorSinusMeshdeformDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT SinusMeshdeform");
     od->SetDescription("generiert Sinuswellen");
     od->SetCategory("TT Toolbox/Mesh");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x4f907f12,0x16af15d6));
+    od->SetGuid(CKGUID(0x4f907f12, 0x16af15d6));
     od->SetAuthorGuid(TERRATOOLS_GUID);
     od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
-    od->SetCreationFunction(CreateTTSinusMeshdeformBehaviorProto);
+    od->SetCreationFunction(CreateSinusMeshdeformProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
     return od;
 }
 
-CKERROR CreateTTSinusMeshdeformBehaviorProto(CKBehaviorPrototype **pproto)
+CKERROR CreateSinusMeshdeformProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT SinusMeshdeform");
-    if(!proto) return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("On");
     proto->DeclareInput("Off");
@@ -48,25 +50,25 @@ CKERROR CreateTTSinusMeshdeformBehaviorProto(CKBehaviorPrototype **pproto)
     proto->DeclareSetting("SinusCount", CKPGUID_INT, "1");
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
-    proto->SetFunction(TTSinusMeshdeform);
+    proto->SetFunction(SinusMeshdeform);
 
-    proto->SetBehaviorFlags((CK_BEHAVIOR_FLAGS)(CKBEHAVIOR_TARGETABLE));
-    proto->SetBehaviorCallbackFct(TTSinusMeshdeformCallBack);
+    proto->SetBehaviorFlags(CKBEHAVIOR_TARGETABLE);
+    proto->SetBehaviorCallbackFct(SinusMeshdeformCallBack);
 
     *pproto = proto;
     return CK_OK;
 }
 
-int TTSinusMeshdeform(const CKBehaviorContext& behcontext)
+int SinusMeshdeform(const CKBehaviorContext &behcontext)
 {
-    CKBehavior* beh = behcontext.Behavior;
+    CKBehavior *beh = behcontext.Behavior;
     // TODO: To be finished.
     return CKBR_OK;
 }
 
-CKERROR TTSinusMeshdeformCallBack(const CKBehaviorContext& behcontext)
+CKERROR SinusMeshdeformCallBack(const CKBehaviorContext &behcontext)
 {
-    CKBehavior* beh = behcontext.Behavior;
+    CKBehavior *beh = behcontext.Behavior;
     // TODO: To be finished.
     return CKBR_OK;
 }

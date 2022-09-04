@@ -5,31 +5,33 @@
 //
 /////////////////////////////////
 /////////////////////////////////
-#include "TT_Toolbox_RT.h"
+#include "CKAll.h"
+#include "ToolboxGuids.h"
 
-CKERROR CreateTTMotorSoundBehaviorProto(CKBehaviorPrototype **pproto);
-int TTMotorSound(const CKBehaviorContext& behcontext);
-CKERROR TTMotorSoundCallBack(const CKBehaviorContext& behcontext);
+CKObjectDeclaration *FillBehaviorMotorSoundDecl();
+CKERROR CreateMotorSoundProto(CKBehaviorPrototype **pproto);
+int MotorSound(const CKBehaviorContext &behcontext);
+CKERROR MotorSoundCallBack(const CKBehaviorContext &behcontext);
 
-CKObjectDeclaration *FillBehaviorTTMotorSoundDecl()
+CKObjectDeclaration *FillBehaviorMotorSoundDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT_MotorSound");
     od->SetDescription("plays different samples according to a given vehicle velocity");
     od->SetCategory("TT Toolbox/Sounds");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x1a1a67aa,0x664108ed));
+    od->SetGuid(CKGUID(0x1a1a67aa, 0x664108ed));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("TERRATOOLS");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
-    od->SetCreationFunction(CreateTTMotorSoundBehaviorProto);
+    od->SetCreationFunction(CreateMotorSoundProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
     return od;
 }
 
-CKERROR CreateTTMotorSoundBehaviorProto(CKBehaviorPrototype **pproto)
+CKERROR CreateMotorSoundProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT_MotorSound");
-    if(!proto) return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("Start");
     proto->DeclareInput("Stop");
@@ -54,24 +56,24 @@ CKERROR CreateTTMotorSoundBehaviorProto(CKBehaviorPrototype **pproto)
     proto->DeclareLocalParameter("FirstTime", CKPGUID_BOOL, "TRUE");
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
-    proto->SetFunction(TTMotorSound);
+    proto->SetFunction(MotorSound);
 
-    proto->SetBehaviorCallbackFct(TTMotorSoundCallBack);
+    proto->SetBehaviorCallbackFct(MotorSoundCallBack);
 
     *pproto = proto;
     return CK_OK;
 }
 
-int TTMotorSound(const CKBehaviorContext& behcontext)
+int MotorSound(const CKBehaviorContext &behcontext)
 {
-    CKBehavior* beh = behcontext.Behavior;
+    CKBehavior *beh = behcontext.Behavior;
     // TODO: To be finished.
     return CKBR_OK;
 }
 
-CKERROR TTMotorSoundCallBack(const CKBehaviorContext& behcontext)
+CKERROR MotorSoundCallBack(const CKBehaviorContext &behcontext)
 {
-    CKBehavior* beh = behcontext.Behavior;
+    CKBehavior *beh = behcontext.Behavior;
     // TODO: To be finished.
     return CKBR_OK;
 }

@@ -5,30 +5,32 @@
 //
 //////////////////////////////
 //////////////////////////////
-#include "TT_Toolbox_RT.h"
+#include "CKAll.h"
+#include "ToolboxGuids.h"
 
-CKERROR CreateTTSaveICBehaviorProto(CKBehaviorPrototype **pproto);
-int TTSaveIC(const CKBehaviorContext& behcontext);
+CKObjectDeclaration *FillBehaviorSaveICDecl();
+CKERROR CreateSaveICProto(CKBehaviorPrototype **pproto);
+int SaveIC(const CKBehaviorContext &behcontext);
 
-CKObjectDeclaration *FillBehaviorTTSaveICDecl()
+CKObjectDeclaration *FillBehaviorSaveICDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT Save IC");
     od->SetDescription("Saves an object's Initial Condition in the scene being played.");
     od->SetCategory("TT Toolbox/Narratives");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x30362f34,0x1935316f));
+    od->SetGuid(CKGUID(0x30362f34, 0x1935316f));
     od->SetAuthorGuid(TERRATOOLS_GUID);
     od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
-    od->SetCreationFunction(CreateTTSaveICBehaviorProto);
+    od->SetCreationFunction(CreateSaveICProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
     return od;
 }
 
-CKERROR CreateTTSaveICBehaviorProto(CKBehaviorPrototype **pproto)
+CKERROR CreateSaveICProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT Save IC");
-    if(!proto) return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
 
@@ -37,23 +39,17 @@ CKERROR CreateTTSaveICBehaviorProto(CKBehaviorPrototype **pproto)
     proto->DeclareInParameter("Hierarchy?", CKPGUID_BOOL, "FALSE");
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
-    proto->SetFunction(TTSaveIC);
+    proto->SetFunction(SaveIC);
 
-    proto->SetBehaviorFlags((CK_BEHAVIOR_FLAGS)(CKBEHAVIOR_TARGETABLE));
+    proto->SetBehaviorFlags(CKBEHAVIOR_TARGETABLE);
+
     *pproto = proto;
     return CK_OK;
 }
 
-int TTSaveIC(const CKBehaviorContext& behcontext)
+int SaveIC(const CKBehaviorContext &behcontext)
 {
-    CKBehavior* beh = behcontext.Behavior;
-    // TODO: To be finished.
-    return CKBR_OK;
-}
-
-CKERROR TTSaveICCallBack(const CKBehaviorContext& behcontext)
-{
-    CKBehavior* beh = behcontext.Behavior;
+    CKBehavior *beh = behcontext.Behavior;
     // TODO: To be finished.
     return CKBR_OK;
 }

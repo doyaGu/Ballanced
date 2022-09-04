@@ -5,30 +5,32 @@
 //
 ////////////////////////////////
 ////////////////////////////////
-#include "TT_Toolbox_RT.h"
+#include "CKAll.h"
+#include "ToolboxGuids.h"
 
-CKERROR CreateTTWriteBackBehaviorProto(CKBehaviorPrototype **pproto);
-int TTWriteBack(const CKBehaviorContext& behcontext);
+CKObjectDeclaration *FillBehaviorWriteBackDecl();
+CKERROR CreateWriteBackProto(CKBehaviorPrototype **pproto);
+int WriteBack(const CKBehaviorContext &behcontext);
 
-CKObjectDeclaration *FillBehaviorTTWriteBackDecl()
+CKObjectDeclaration *FillBehaviorWriteBackDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT WriteBack");
     od->SetDescription("Schreibt einen Wert in ein dynamisch ersetzten Parameter.");
     od->SetCategory("TT Toolbox/Advanced");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x78b31127,0xa875030));
+    od->SetGuid(CKGUID(0x78b31127, 0xa875030));
     od->SetAuthorGuid(TERRATOOLS_GUID);
     od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
-    od->SetCreationFunction(CreateTTWriteBackBehaviorProto);
+    od->SetCreationFunction(CreateWriteBackProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
     return od;
 }
 
-CKERROR CreateTTWriteBackBehaviorProto(CKBehaviorPrototype **pproto)
+CKERROR CreateWriteBackProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT WriteBack");
-    if(!proto) return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("On");
 
@@ -38,23 +40,17 @@ CKERROR CreateTTWriteBackBehaviorProto(CKBehaviorPrototype **pproto)
     proto->DeclareInParameter("Value", CKPGUID_INT, "0");
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
-    proto->SetFunction(TTWriteBack);
+    proto->SetFunction(WriteBack);
 
-    proto->SetBehaviorFlags((CK_BEHAVIOR_FLAGS)(CKBEHAVIOR_INTERNALLYCREATEDINPUTPARAMS));
+    proto->SetBehaviorFlags(CKBEHAVIOR_INTERNALLYCREATEDINPUTPARAMS);
+
     *pproto = proto;
     return CK_OK;
 }
 
-int TTWriteBack(const CKBehaviorContext& behcontext)
+int WriteBack(const CKBehaviorContext &behcontext)
 {
-    CKBehavior* beh = behcontext.Behavior;
-    // TODO: To be finished.
-    return CKBR_OK;
-}
-
-CKERROR TTWriteBackCallBack(const CKBehaviorContext& behcontext)
-{
-    CKBehavior* beh = behcontext.Behavior;
+    CKBehavior *beh = behcontext.Behavior;
     // TODO: To be finished.
     return CKBR_OK;
 }

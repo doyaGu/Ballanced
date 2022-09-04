@@ -5,30 +5,33 @@
 //
 //////////////////////////////////
 //////////////////////////////////
-#include "TT_Toolbox_RT.h"
+#include "CKAll.h"
+#include "ToolboxGuids.h"
 
-CKERROR CreateTTPushButton2BehaviorProto(CKBehaviorPrototype **pproto);
-int TTPushButton2(const CKBehaviorContext& behcontext);
+CKObjectDeclaration *FillBehaviorPushButton2Decl();
+CKERROR CreatePushButton2Proto(CKBehaviorPrototype **pproto);
+int PushButton2(const CKBehaviorContext &behcontext);
 
-CKObjectDeclaration *FillBehaviorTTPushButton2Decl()
+CKObjectDeclaration *FillBehaviorPushButton2Decl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT PushButton2");
     od->SetDescription("push button without material changes");
     od->SetCategory("TT Toolbox/Interface");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x14d325d1,0x6748654e));
+    od->SetGuid(CKGUID(0x14d325d1, 0x6748654e));
     od->SetAuthorGuid(TERRATOOLS_GUID);
     od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
-    od->SetCreationFunction(CreateTTPushButton2BehaviorProto);
+    od->SetCreationFunction(CreatePushButton2Proto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
     return od;
 }
 
-CKERROR CreateTTPushButton2BehaviorProto(CKBehaviorPrototype **pproto)
+CKERROR CreatePushButton2Proto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT PushButton2");
-    if(!proto) return CKERR_OUTOFMEMORY;
+    if (!proto)
+        return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("On");
     proto->DeclareInput("Off");
@@ -41,23 +44,17 @@ CKERROR CreateTTPushButton2BehaviorProto(CKBehaviorPrototype **pproto)
     proto->DeclareLocalParameter("", CKPGUID_BOOL, "FALSE");
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
-    proto->SetFunction(TTPushButton2);
+    proto->SetFunction(PushButton2);
 
-    proto->SetBehaviorFlags((CK_BEHAVIOR_FLAGS)(CKBEHAVIOR_TARGETABLE));
+    proto->SetBehaviorFlags(CKBEHAVIOR_TARGETABLE);
+
     *pproto = proto;
     return CK_OK;
 }
 
-int TTPushButton2(const CKBehaviorContext& behcontext)
+int PushButton2(const CKBehaviorContext &behcontext)
 {
-    CKBehavior* beh = behcontext.Behavior;
-    // TODO: To be finished.
-    return CKBR_OK;
-}
-
-CKERROR TTPushButton2CallBack(const CKBehaviorContext& behcontext)
-{
-    CKBehavior* beh = behcontext.Behavior;
+    CKBehavior *beh = behcontext.Behavior;
     // TODO: To be finished.
     return CKBR_OK;
 }

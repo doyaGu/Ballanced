@@ -5,30 +5,32 @@
 //
 /////////////////////////////////
 /////////////////////////////////
-#include "TT_Toolbox_RT.h"
+#include "CKAll.h"
+#include "ToolboxGuids.h"
 
-CKERROR CreateTTCelShadingBehaviorProto(CKBehaviorPrototype **pproto);
-int TTCelShading(const CKBehaviorContext& behcontext);
+CKObjectDeclaration *FillBehaviorCelShadingDecl();
+CKERROR CreateCelShadingProto(CKBehaviorPrototype **pproto);
+int CelShading(const CKBehaviorContext &behcontext);
 
-CKObjectDeclaration *FillBehaviorTTCelShadingDecl()
+CKObjectDeclaration *FillBehaviorCelShadingDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT_CelShading");
     od->SetDescription("Cartoon-Shader");
     od->SetCategory("TT Toolbox/Material");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x2d2d2a64,0x5a0501c7));
+    od->SetGuid(CKGUID(0x2d2d2a64, 0x5a0501c7));
     od->SetAuthorGuid(TERRATOOLS_GUID);
     od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
-    od->SetCreationFunction(CreateTTCelShadingBehaviorProto);
+    od->SetCreationFunction(CreateCelShadingProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
     return od;
 }
 
-CKERROR CreateTTCelShadingBehaviorProto(CKBehaviorPrototype **pproto)
+CKERROR CreateCelShadingProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT_CelShading");
-    if(!proto) return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("On");
     proto->DeclareInput("Off");
@@ -43,23 +45,17 @@ CKERROR CreateTTCelShadingBehaviorProto(CKBehaviorPrototype **pproto)
     proto->DeclareLocalParameter("", CKPGUID_VOIDBUF);
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
-    proto->SetFunction(TTCelShading);
+    proto->SetFunction(CelShading);
 
     proto->SetBehaviorFlags((CK_BEHAVIOR_FLAGS)(CKBEHAVIOR_TARGETABLE | CKBEHAVIOR_INTERNALLYCREATEDINPUTPARAMS));
+
     *pproto = proto;
     return CK_OK;
 }
 
-int TTCelShading(const CKBehaviorContext& behcontext)
+int CelShading(const CKBehaviorContext &behcontext)
 {
-    CKBehavior* beh = behcontext.Behavior;
-    // TODO: To be finished.
-    return CKBR_OK;
-}
-
-CKERROR TTCelShadingCallBack(const CKBehaviorContext& behcontext)
-{
-    CKBehavior* beh = behcontext.Behavior;
+    CKBehavior *beh = behcontext.Behavior;
     // TODO: To be finished.
     return CKBR_OK;
 }

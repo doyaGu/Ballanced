@@ -5,31 +5,33 @@
 //
 /////////////////////////////////////
 /////////////////////////////////////
-#include "TT_Toolbox_RT.h"
+#include "CKAll.h"
+#include "ToolboxGuids.h"
 
-CKERROR CreateTTPMSMeshdeformBehaviorProto(CKBehaviorPrototype **pproto);
-int TTPMSMeshdeform(const CKBehaviorContext& behcontext);
-CKERROR TTPMSMeshdeformCallBack(const CKBehaviorContext& behcontext);
+CKObjectDeclaration *FillBehaviorPMSMeshdeformDecl();
+CKERROR CreatePMSMeshdeformProto(CKBehaviorPrototype **pproto);
+int PMSMeshdeform(const CKBehaviorContext &behcontext);
+CKERROR PMSMeshdeformCallBack(const CKBehaviorContext &behcontext);
 
-CKObjectDeclaration *FillBehaviorTTPMSMeshdeformDecl()
+CKObjectDeclaration *FillBehaviorPMSMeshdeformDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT PMS_Meshdeform");
     od->SetDescription("generiert Wellen �ber Pierson-Moskowitz-Spektrum");
     od->SetCategory("TT Toolbox/Mesh");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x38b87d43,0x149b755b));
+    od->SetGuid(CKGUID(0x38b87d43, 0x149b755b));
     od->SetAuthorGuid(TERRATOOLS_GUID);
     od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
-    od->SetCreationFunction(CreateTTPMSMeshdeformBehaviorProto);
+    od->SetCreationFunction(CreatePMSMeshdeformProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
     return od;
 }
 
-CKERROR CreateTTPMSMeshdeformBehaviorProto(CKBehaviorPrototype **pproto)
+CKERROR CreatePMSMeshdeformProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT PMS_Meshdeform");
-    if(!proto) return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
     proto->DeclareInput("Off");
@@ -54,25 +56,25 @@ CKERROR CreateTTPMSMeshdeformBehaviorProto(CKBehaviorPrototype **pproto)
     proto->DeclareSetting("Wellenanzahl", CKPGUID_INT, "1");
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
-    proto->SetFunction(TTPMSMeshdeform);
+    proto->SetFunction(PMSMeshdeform);
 
-    proto->SetBehaviorFlags((CK_BEHAVIOR_FLAGS)(CKBEHAVIOR_TARGETABLE));
-    proto->SetBehaviorCallbackFct(TTPMSMeshdeformCallBack);
+    proto->SetBehaviorFlags(CKBEHAVIOR_TARGETABLE);
+    proto->SetBehaviorCallbackFct(PMSMeshdeformCallBack);
 
     *pproto = proto;
     return CK_OK;
 }
 
-int TTPMSMeshdeform(const CKBehaviorContext& behcontext)
+int PMSMeshdeform(const CKBehaviorContext &behcontext)
 {
-    CKBehavior* beh = behcontext.Behavior;
+    CKBehavior *beh = behcontext.Behavior;
     // TODO: To be finished.
     return CKBR_OK;
 }
 
-CKERROR TTPMSMeshdeformCallBack(const CKBehaviorContext& behcontext)
+CKERROR PMSMeshdeformCallBack(const CKBehaviorContext &behcontext)
 {
-    CKBehavior* beh = behcontext.Behavior;
+    CKBehavior *beh = behcontext.Behavior;
     // TODO: To be finished.
     return CKBR_OK;
 }

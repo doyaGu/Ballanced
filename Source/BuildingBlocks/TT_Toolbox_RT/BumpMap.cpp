@@ -5,30 +5,32 @@
 //
 //////////////////////////////
 //////////////////////////////
-#include "TT_Toolbox_RT.h"
+#include "CKAll.h"
+#include "ToolboxGuids.h"
 
-CKERROR CreateTTBumpMapBehaviorProto(CKBehaviorPrototype **pproto);
-int TTBumpMap(const CKBehaviorContext& behcontext);
+CKObjectDeclaration *FillBehaviorBumpMapDecl();
+CKERROR CreateBumpMapProto(CKBehaviorPrototype **pproto);
+int BumpMap(const CKBehaviorContext &behcontext);
 
-CKObjectDeclaration *FillBehaviorTTBumpMapDecl()
+CKObjectDeclaration *FillBehaviorBumpMapDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT_BumpMap");
     od->SetDescription("erzeugt lichtabh�ngiges BumpMapping");
     od->SetCategory("TT Toolbox/Mapping");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x630d05f7,0x1dda541f));
+    od->SetGuid(CKGUID(0x630d05f7, 0x1dda541f));
     od->SetAuthorGuid(TERRATOOLS_GUID);
     od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
-    od->SetCreationFunction(CreateTTBumpMapBehaviorProto);
+    od->SetCreationFunction(CreateBumpMapProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
     return od;
 }
 
-CKERROR CreateTTBumpMapBehaviorProto(CKBehaviorPrototype **pproto)
+CKERROR CreateBumpMapProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT_BumpMap");
-    if(!proto) return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("On");
     proto->DeclareInput("Off");
@@ -43,23 +45,17 @@ CKERROR CreateTTBumpMapBehaviorProto(CKBehaviorPrototype **pproto)
     proto->DeclareLocalParameter("", CKPGUID_VOIDBUF);
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
-    proto->SetFunction(TTBumpMap);
+    proto->SetFunction(BumpMap);
 
     proto->SetBehaviorFlags((CK_BEHAVIOR_FLAGS)(CKBEHAVIOR_TARGETABLE | CKBEHAVIOR_INTERNALLYCREATEDINPUTPARAMS));
+
     *pproto = proto;
     return CK_OK;
 }
 
-int TTBumpMap(const CKBehaviorContext& behcontext)
+int BumpMap(const CKBehaviorContext &behcontext)
 {
-    CKBehavior* beh = behcontext.Behavior;
-    // TODO: To be finished.
-    return CKBR_OK;
-}
-
-CKERROR TTBumpMapCallBack(const CKBehaviorContext& behcontext)
-{
-    CKBehavior* beh = behcontext.Behavior;
+    CKBehavior *beh = behcontext.Behavior;
     // TODO: To be finished.
     return CKBR_OK;
 }

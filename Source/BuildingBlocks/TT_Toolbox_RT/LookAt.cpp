@@ -5,30 +5,32 @@
 //
 /////////////////////////////
 /////////////////////////////
-#include "TT_Toolbox_RT.h"
+#include "CKAll.h"
+#include "ToolboxGuids.h"
 
-CKERROR CreateTTLookAtBehaviorProto(CKBehaviorPrototype **pproto);
-int TTLookAt(const CKBehaviorContext& behcontext);
+CKObjectDeclaration *FillBehaviorLookAtDecl();
+CKERROR CreateLookAtProto(CKBehaviorPrototype **pproto);
+int LookAt(const CKBehaviorContext &behcontext);
 
-CKObjectDeclaration *FillBehaviorTTLookAtDecl()
+CKObjectDeclaration *FillBehaviorLookAtDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT LookAt");
     od->SetDescription("Achsenbeschr�nktes Lock at.");
     od->SetCategory("TT Toolbox/Logic");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x3d4861f8,0x2861703d));
+    od->SetGuid(CKGUID(0x3d4861f8, 0x2861703d));
     od->SetAuthorGuid(TERRATOOLS_GUID);
     od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
-    od->SetCreationFunction(CreateTTLookAtBehaviorProto);
+    od->SetCreationFunction(CreateLookAtProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
     return od;
 }
 
-CKERROR CreateTTLookAtBehaviorProto(CKBehaviorPrototype **pproto)
+CKERROR CreateLookAtProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT LookAt");
-    if(!proto) return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
 
@@ -47,23 +49,17 @@ CKERROR CreateTTLookAtBehaviorProto(CKBehaviorPrototype **pproto)
     proto->DeclareSetting("Roll", CKPGUID_ANGLE, "0:0");
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
-    proto->SetFunction(TTLookAt);
+    proto->SetFunction(LookAt);
 
-    proto->SetBehaviorFlags((CK_BEHAVIOR_FLAGS)(CKBEHAVIOR_TARGETABLE));
+    proto->SetBehaviorFlags(CKBEHAVIOR_TARGETABLE);
+
     *pproto = proto;
     return CK_OK;
 }
 
-int TTLookAt(const CKBehaviorContext& behcontext)
+int LookAt(const CKBehaviorContext &behcontext)
 {
-    CKBehavior* beh = behcontext.Behavior;
-    // TODO: To be finished.
-    return CKBR_OK;
-}
-
-CKERROR TTLookAtCallBack(const CKBehaviorContext& behcontext)
-{
-    CKBehavior* beh = behcontext.Behavior;
+    CKBehavior *beh = behcontext.Behavior;
     // TODO: To be finished.
     return CKBR_OK;
 }

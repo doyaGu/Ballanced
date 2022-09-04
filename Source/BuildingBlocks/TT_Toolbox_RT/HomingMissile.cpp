@@ -1,14 +1,15 @@
-/////////////////////////////////////////////////////
-/////////////////////////////////////////////////////
+/////////////////////////////////////
+/////////////////////////////////////
 //
-//		         TT Homing Missile
+//        TT Homing Missile
 //
-/////////////////////////////////////////////////////
-/////////////////////////////////////////////////////
-#include "TT_Toolbox_RT.h"
+/////////////////////////////////////
+/////////////////////////////////////
+#include "CKAll.h"
+#include "ToolboxGuids.h"
 
 CKObjectDeclaration *FillBehaviorHomingMissileDecl();
-CKERROR CreateHomingMissileProto(CKBehaviorPrototype **);
+CKERROR CreateHomingMissileProto(CKBehaviorPrototype **pproto);
 int HomingMissile(const CKBehaviorContext &behcontext);
 
 CKObjectDeclaration *FillBehaviorHomingMissileDecl()
@@ -17,21 +18,19 @@ CKObjectDeclaration *FillBehaviorHomingMissileDecl()
     od->SetDescription("Leads a 3D Entity towards its target.");
     od->SetCategory("TT Toolbox/3D Transformations");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x44D43591, 0x28F91084));
+    od->SetGuid(CKGUID(0x44d43591, 0x28f91084));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("Terratools");
+    od->SetAuthorName("Virtools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateHomingMissileProto);
-    od->SetCompatibleClassId(CKCID_3DENTITY);
-    od->NeedManager(COLLISION_MANAGER_GUID);
+    od->SetCompatibleClassId(CKCID_BEOBJECT);
     return od;
 }
 
 CKERROR CreateHomingMissileProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT Homing Missile");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
     proto->DeclareInput("Loop In");
@@ -42,12 +41,13 @@ CKERROR CreateHomingMissileProto(CKBehaviorPrototype **pproto)
     proto->DeclareInParameter("Destination", CKPGUID_3DENTITY);
     proto->DeclareInParameter("Missilespeed", CKPGUID_FLOAT, "1");
     proto->DeclareInParameter("Adaptationspeed", CKPGUID_FLOAT, "0.5");
-    proto->DeclareInParameter("Current Velocity", CKPGUID_VECTOR);
+
+    proto->DeclareOutParameter("Current Velocity", CKPGUID_VECTOR);
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
     proto->SetFunction(HomingMissile);
 
-    proto->SetBehaviorFlags((CK_BEHAVIOR_FLAGS)CKBEHAVIOR_TARGETABLE);
+    proto->SetBehaviorFlags(CKBEHAVIOR_TARGETABLE);
 
     *pproto = proto;
     return CK_OK;
@@ -105,8 +105,8 @@ int HomingMissile(const CKBehaviorContext &behcontext)
     right.Normalize();
 
     up.Set(right.z * dir.y - right.y * dir.z,
-            right.x * dir.z - right.z * dir.x,
-            right.y * dir.x - right.x * dir.y);
+           right.x * dir.z - right.z * dir.x,
+           right.y * dir.x - right.x * dir.y);
     up.Normalize();
 
     targetPos += targetReach;

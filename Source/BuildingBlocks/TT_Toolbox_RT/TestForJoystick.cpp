@@ -5,30 +5,32 @@
 //
 //////////////////////////////////////
 //////////////////////////////////////
-#include "TT_Toolbox_RT.h"
+#include "CKAll.h"
+#include "ToolboxGuids.h"
 
-CKERROR CreateTTTestForJoystickBehaviorProto(CKBehaviorPrototype **pproto);
-int TTTestForJoystick(const CKBehaviorContext& behcontext);
+CKObjectDeclaration *FillBehaviorTestForJoystickDecl();
+CKERROR CreateTestForJoystickProto(CKBehaviorPrototype **pproto);
+int TestForJoystick(const CKBehaviorContext &behcontext);
 
-CKObjectDeclaration *FillBehaviorTTTestForJoystickDecl()
+CKObjectDeclaration *FillBehaviorTestForJoystickDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT_TestForJoystick");
     od->SetDescription("TT_TestForJoystick");
     od->SetCategory("TT Toolbox/Controllers");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x229865eb,0x577619e4));
+    od->SetGuid(CKGUID(0x229865eb, 0x577619e4));
     od->SetAuthorGuid(TERRATOOLS_GUID);
     od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
-    od->SetCreationFunction(CreateTTTestForJoystickBehaviorProto);
+    od->SetCreationFunction(CreateTestForJoystickProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
     return od;
 }
 
-CKERROR CreateTTTestForJoystickBehaviorProto(CKBehaviorPrototype **pproto)
+CKERROR CreateTestForJoystickProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT_TestForJoystick");
-    if(!proto) return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("Do");
 
@@ -38,22 +40,15 @@ CKERROR CreateTTTestForJoystickBehaviorProto(CKBehaviorPrototype **pproto)
     proto->DeclareInParameter("Nr", CKPGUID_INT);
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
-    proto->SetFunction(TTTestForJoystick);
+    proto->SetFunction(TestForJoystick);
 
     *pproto = proto;
     return CK_OK;
 }
 
-int TTTestForJoystick(const CKBehaviorContext& behcontext)
+int TestForJoystick(const CKBehaviorContext &behcontext)
 {
-    CKBehavior* beh = behcontext.Behavior;
-    // TODO: To be finished.
-    return CKBR_OK;
-}
-
-CKERROR TTTestForJoystickCallBack(const CKBehaviorContext& behcontext)
-{
-    CKBehavior* beh = behcontext.Behavior;
+    CKBehavior *beh = behcontext.Behavior;
     // TODO: To be finished.
     return CKBR_OK;
 }

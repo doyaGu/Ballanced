@@ -5,30 +5,32 @@
 //
 /////////////////////////////
 /////////////////////////////
-#include "TT_Toolbox_RT.h"
+#include "CKAll.h"
+#include "ToolboxGuids.h"
 
-CKERROR CreateTTChronoBehaviorProto(CKBehaviorPrototype **pproto);
-int TTChrono(const CKBehaviorContext& behcontext);
+CKObjectDeclaration *FillBehaviorChronoDecl();
+CKERROR CreateChronoProto(CKBehaviorPrototype **pproto);
+int Chrono(const CKBehaviorContext &behcontext);
 
-CKObjectDeclaration *FillBehaviorTTChronoDecl()
+CKObjectDeclaration *FillBehaviorChronoDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT_Chrono");
     od->SetDescription("Chronometer (ON=Start, OFF=Stop).");
     od->SetCategory("TT Toolbox/Logic");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x325d722d,0x3d9e16e9));
+    od->SetGuid(CKGUID(0x325d722d, 0x3d9e16e9));
     od->SetAuthorGuid(TERRATOOLS_GUID);
     od->SetAuthorName("Virtools");
     od->SetVersion(0x00010000);
-    od->SetCreationFunction(CreateTTChronoBehaviorProto);
+    od->SetCreationFunction(CreateChronoProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
     return od;
 }
 
-CKERROR CreateTTChronoBehaviorProto(CKBehaviorPrototype **pproto)
+CKERROR CreateChronoProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT_Chrono");
-    if(!proto) return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("On");
     proto->DeclareInput("Stop");
@@ -41,22 +43,15 @@ CKERROR CreateTTChronoBehaviorProto(CKBehaviorPrototype **pproto)
     proto->DeclareOutParameter("Elapsed Time", CKPGUID_TIME, "0m 0s 0ms");
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
-    proto->SetFunction(TTChrono);
+    proto->SetFunction(Chrono);
 
     *pproto = proto;
     return CK_OK;
 }
 
-int TTChrono(const CKBehaviorContext& behcontext)
+int Chrono(const CKBehaviorContext &behcontext)
 {
-    CKBehavior* beh = behcontext.Behavior;
-    // TODO: To be finished.
-    return CKBR_OK;
-}
-
-CKERROR TTChronoCallBack(const CKBehaviorContext& behcontext)
-{
-    CKBehavior* beh = behcontext.Behavior;
+    CKBehavior *beh = behcontext.Behavior;
     // TODO: To be finished.
     return CKBR_OK;
 }

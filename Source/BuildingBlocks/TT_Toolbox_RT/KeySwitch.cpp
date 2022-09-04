@@ -5,31 +5,33 @@
 //
 ////////////////////////////////
 ////////////////////////////////
-#include "TT_Toolbox_RT.h"
+#include "CKAll.h"
+#include "ToolboxGuids.h"
 
-CKERROR CreateTTKeySwitchBehaviorProto(CKBehaviorPrototype **pproto);
-int TTKeySwitch(const CKBehaviorContext& behcontext);
-CKERROR TTKeySwitchCallBack(const CKBehaviorContext& behcontext);
+CKObjectDeclaration *FillBehaviorKeySwitchDecl();
+CKERROR CreateKeySwitchProto(CKBehaviorPrototype **pproto);
+int KeySwitch(const CKBehaviorContext &behcontext);
+CKERROR KeySwitchCallBack(const CKBehaviorContext &behcontext);
 
-CKObjectDeclaration *FillBehaviorTTKeySwitchDecl()
+CKObjectDeclaration *FillBehaviorKeySwitchDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT_KeySwitch");
     od->SetDescription("Waits for a key to be pressed.");
     od->SetCategory("TT Toolbox/Controllers");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x4fbb3808,0x4a99083c));
+    od->SetGuid(CKGUID(0x4fbb3808, 0x4a99083c));
     od->SetAuthorGuid(TERRATOOLS_GUID);
     od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
-    od->SetCreationFunction(CreateTTKeySwitchBehaviorProto);
+    od->SetCreationFunction(CreateKeySwitchProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
     return od;
 }
 
-CKERROR CreateTTKeySwitchBehaviorProto(CKBehaviorPrototype **pproto)
+CKERROR CreateKeySwitchProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT_KeySwitch");
-    if(!proto) return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("On");
     proto->DeclareInput("Off");
@@ -41,25 +43,25 @@ CKERROR CreateTTKeySwitchBehaviorProto(CKBehaviorPrototype **pproto)
     proto->DeclareInParameter("Key 1", CKPGUID_KEY);
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
-    proto->SetFunction(TTKeySwitch);
+    proto->SetFunction(KeySwitch);
 
-    proto->SetBehaviorFlags((CK_BEHAVIOR_FLAGS)(CKBEHAVIOR_INTERNALLYCREATEDINPUTPARAMS));
-    proto->SetBehaviorCallbackFct(TTKeySwitchCallBack);
+    proto->SetBehaviorFlags(CKBEHAVIOR_INTERNALLYCREATEDINPUTPARAMS);
+    proto->SetBehaviorCallbackFct(KeySwitchCallBack);
 
     *pproto = proto;
     return CK_OK;
 }
 
-int TTKeySwitch(const CKBehaviorContext& behcontext)
+int KeySwitch(const CKBehaviorContext &behcontext)
 {
-    CKBehavior* beh = behcontext.Behavior;
+    CKBehavior *beh = behcontext.Behavior;
     // TODO: To be finished.
     return CKBR_OK;
 }
 
-CKERROR TTKeySwitchCallBack(const CKBehaviorContext& behcontext)
+CKERROR KeySwitchCallBack(const CKBehaviorContext &behcontext)
 {
-    CKBehavior* beh = behcontext.Behavior;
+    CKBehavior *beh = behcontext.Behavior;
     // TODO: To be finished.
     return CKBR_OK;
 }

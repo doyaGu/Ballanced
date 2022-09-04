@@ -1,25 +1,26 @@
-/////////////////////////////////////////////////////
-/////////////////////////////////////////////////////
+///////////////////////////////////
+///////////////////////////////////
 //
-//		            TT GetFullAngle
+//        TT_GetFullAngle
 //
-/////////////////////////////////////////////////////
-/////////////////////////////////////////////////////
-#include "TT_Toolbox_RT.h"
+///////////////////////////////////
+///////////////////////////////////
+#include "CKAll.h"
+#include "ToolboxGuids.h"
 
 CKObjectDeclaration *FillBehaviorGetFullAngleDecl();
-CKERROR CreateGetFullAngleProto(CKBehaviorPrototype **);
+CKERROR CreateGetFullAngleProto(CKBehaviorPrototype **pproto);
 int GetFullAngle(const CKBehaviorContext &behcontext);
 
 CKObjectDeclaration *FillBehaviorGetFullAngleDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT_GetFullAngle");
-    od->SetDescription("Calculates angles from 2 2DVectors");
+    od->SetDescription("berechne Winkel aus 2 2DVektoren");
     od->SetCategory("TT Toolbox/Logic");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x7A18014D, 0x9D2E73));
+    od->SetGuid(CKGUID(0x7a18014d, 0x9d2e73));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("TERRATOOLS");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateGetFullAngleProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
@@ -29,15 +30,15 @@ CKObjectDeclaration *FillBehaviorGetFullAngleDecl()
 CKERROR CreateGetFullAngleProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT_GetFullAngle");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("On");
 
     proto->DeclareOutput("Exit On");
 
-    proto->DeclareInParameter("Vector A", CKPGUID_VECTOR);
-    proto->DeclareInParameter("Vector B", CKPGUID_VECTOR);
+    proto->DeclareInParameter("Vector A", CKPGUID_2DVECTOR);
+    proto->DeclareInParameter("Vector B", CKPGUID_2DVECTOR);
+
     proto->DeclareOutParameter("Angle RAD", CKPGUID_FLOAT);
     proto->DeclareOutParameter("Angle Degree", CKPGUID_FLOAT);
 

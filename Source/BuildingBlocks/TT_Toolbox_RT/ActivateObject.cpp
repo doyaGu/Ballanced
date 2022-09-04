@@ -5,30 +5,32 @@
 //
 //////////////////////////////////////
 //////////////////////////////////////
-#include "TT_Toolbox_RT.h"
+#include "CKAll.h"
+#include "ToolboxGuids.h"
 
-CKERROR CreateTTActivateObjectBehaviorProto(CKBehaviorPrototype **pproto);
-int TTActivateObject(const CKBehaviorContext& behcontext);
+CKObjectDeclaration *FillBehaviorActivateObjectDecl();
+CKERROR CreateActivateObjectProto(CKBehaviorPrototype **pproto);
+int ActivateObject(const CKBehaviorContext &behcontext);
 
-CKObjectDeclaration *FillBehaviorTTActivateObjectDecl()
+CKObjectDeclaration *FillBehaviorActivateObjectDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT Activate Object");
     od->SetDescription("Activates all the scripts of an object, either in the state they were before deactivation or once reset.");
     od->SetCategory("TT Toolbox/Narratives");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x59245fae,0x24a123f3));
+    od->SetGuid(CKGUID(0x59245fae, 0x24a123f3));
     od->SetAuthorGuid(TERRATOOLS_GUID);
     od->SetAuthorName("Virtools");
     od->SetVersion(0x00010000);
-    od->SetCreationFunction(CreateTTActivateObjectBehaviorProto);
+    od->SetCreationFunction(CreateActivateObjectProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
     return od;
 }
 
-CKERROR CreateTTActivateObjectBehaviorProto(CKBehaviorPrototype **pproto)
+CKERROR CreateActivateObjectProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT Activate Object");
-    if(!proto) return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
 
@@ -39,22 +41,15 @@ CKERROR CreateTTActivateObjectBehaviorProto(CKBehaviorPrototype **pproto)
     proto->DeclareInParameter("Activate All Scripts", CKPGUID_BOOL, "FALSE");
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
-    proto->SetFunction(TTActivateObject);
+    proto->SetFunction(ActivateObject);
 
     *pproto = proto;
     return CK_OK;
 }
 
-int TTActivateObject(const CKBehaviorContext& behcontext)
+int ActivateObject(const CKBehaviorContext &behcontext)
 {
-    CKBehavior* beh = behcontext.Behavior;
-    // TODO: To be finished.
-    return CKBR_OK;
-}
-
-CKERROR TTActivateObjectCallBack(const CKBehaviorContext& behcontext)
-{
-    CKBehavior* beh = behcontext.Behavior;
+    CKBehavior *beh = behcontext.Behavior;
     // TODO: To be finished.
     return CKBR_OK;
 }

@@ -5,30 +5,32 @@
 //
 ////////////////////////////////////
 ////////////////////////////////////
-#include "TT_Toolbox_RT.h"
+#include "CKAll.h"
+#include "ToolboxGuids.h"
 
-CKERROR CreateTTGeneratePlaneBehaviorProto(CKBehaviorPrototype **pproto);
-int TTGeneratePlane(const CKBehaviorContext& behcontext);
+CKObjectDeclaration *FillBehaviorGeneratePlaneDecl();
+CKERROR CreateGeneratePlaneProto(CKBehaviorPrototype **pproto);
+int GeneratePlane(const CKBehaviorContext &behcontext);
 
-CKObjectDeclaration *FillBehaviorTTGeneratePlaneDecl()
+CKObjectDeclaration *FillBehaviorGeneratePlaneDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT_GeneratePlane");
     od->SetDescription("generiert Plane");
     od->SetCategory("TT Toolbox/Mesh");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x5ae72f89,0x57eb5413));
+    od->SetGuid(CKGUID(0x5ae72f89, 0x57eb5413));
     od->SetAuthorGuid(TERRATOOLS_GUID);
     od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
-    od->SetCreationFunction(CreateTTGeneratePlaneBehaviorProto);
+    od->SetCreationFunction(CreateGeneratePlaneProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
     return od;
 }
 
-CKERROR CreateTTGeneratePlaneBehaviorProto(CKBehaviorPrototype **pproto)
+CKERROR CreateGeneratePlaneProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT_GeneratePlane");
-    if(!proto) return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
 
@@ -40,22 +42,15 @@ CKERROR CreateTTGeneratePlaneBehaviorProto(CKBehaviorPrototype **pproto)
     proto->DeclareInParameter("Size Y", CKPGUID_INT, "1");
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
-    proto->SetFunction(TTGeneratePlane);
+    proto->SetFunction(GeneratePlane);
 
     *pproto = proto;
     return CK_OK;
 }
 
-int TTGeneratePlane(const CKBehaviorContext& behcontext)
+int GeneratePlane(const CKBehaviorContext &behcontext)
 {
-    CKBehavior* beh = behcontext.Behavior;
-    // TODO: To be finished.
-    return CKBR_OK;
-}
-
-CKERROR TTGeneratePlaneCallBack(const CKBehaviorContext& behcontext)
-{
-    CKBehavior* beh = behcontext.Behavior;
+    CKBehavior *beh = behcontext.Behavior;
     // TODO: To be finished.
     return CKBR_OK;
 }
