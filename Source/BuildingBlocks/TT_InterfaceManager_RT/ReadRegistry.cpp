@@ -54,7 +54,7 @@ CKERROR CreateReadRegistryProto(CKBehaviorPrototype **pproto)
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
     proto->SetFunction(ReadRegistry);
 
-    proto->SetBehaviorFlags((CK_BEHAVIOR_FLAGS)(CKBEHAVIOR_VARIABLEPARAMETEROUTPUTS));
+    proto->SetBehaviorFlags(CKBEHAVIOR_VARIABLEPARAMETEROUTPUTS);
     proto->SetBehaviorCallbackFct(ReadRegistryCallBack);
 
     *pproto = proto;
