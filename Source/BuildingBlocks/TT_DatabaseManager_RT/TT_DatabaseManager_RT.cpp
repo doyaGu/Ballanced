@@ -20,16 +20,15 @@
 
 CKERROR InitInstance(CKContext *context)
 {
-    new CTTDatabaseManager(context);
+    new DatabaseManager(context);
 
     return CK_OK;
 }
 
 CKERROR ExitInstance(CKContext *context)
 {
-    CTTDatabaseManager *man = CTTDatabaseManager::GetManager(context);
-    if (man)
-        delete man;
+    DatabaseManager *man = DatabaseManager::GetManager(context);
+    if (man) delete man;
 
     return CK_OK;
 }

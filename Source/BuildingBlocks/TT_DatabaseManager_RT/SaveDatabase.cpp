@@ -10,7 +10,7 @@
 #include "DatabaseManager.h"
 
 CKObjectDeclaration *FillBehaviorSaveDatabaseDecl();
-CKERROR CreateSaveDatabaseProto(CKBehaviorPrototype **);
+CKERROR CreateSaveDatabaseProto(CKBehaviorPrototype **pproto);
 int SaveDatabase(const CKBehaviorContext &behcontext);
 
 CKObjectDeclaration *FillBehaviorSaveDatabaseDecl()
@@ -19,7 +19,7 @@ CKObjectDeclaration *FillBehaviorSaveDatabaseDecl()
     od->SetDescription("Stores the registered arrays to a database");
     od->SetCategory("TT Database");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x5D303E9D, 0x552C0AF2));
+    od->SetGuid(CKGUID(0x5d303e9d, 0x552c0af2));
     od->SetAuthorGuid(TERRATOOLS_GUID);
     od->SetAuthorName("TERRATOOLS");
     od->SetVersion(0x00010000);
@@ -30,9 +30,8 @@ CKObjectDeclaration *FillBehaviorSaveDatabaseDecl()
 
 CKERROR CreateSaveDatabaseProto(CKBehaviorPrototype **pproto)
 {
-    CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT Save Database");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("Save Database");
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("Save");
 
@@ -53,7 +52,7 @@ int SaveDatabase(const CKBehaviorContext &behcontext)
 
     beh->ActivateInput(0, FALSE);
 
-    CTTDatabaseManager *man = CTTDatabaseManager::GetManager(context);
+    DatabaseManager *man = DatabaseManager::GetManager(context);
     if (!man)
     {
         context->OutputToConsoleExBeep("TT_SaveDatabase: dm==NULL.");

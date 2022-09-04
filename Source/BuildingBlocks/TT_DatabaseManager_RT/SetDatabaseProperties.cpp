@@ -10,7 +10,7 @@
 #include "DatabaseManager.h"
 
 CKObjectDeclaration *FillBehaviorSetDatabasePropertiesDecl();
-CKERROR CreateSetDatabasePropertiesProto(CKBehaviorPrototype **);
+CKERROR CreateSetDatabasePropertiesProto(CKBehaviorPrototype **pproto);
 int SetDatabaseProperties(const CKBehaviorContext &behcontext);
 
 CKObjectDeclaration *FillBehaviorSetDatabasePropertiesDecl()
@@ -19,9 +19,9 @@ CKObjectDeclaration *FillBehaviorSetDatabasePropertiesDecl()
     od->SetDescription("Sets the properties of the database");
     od->SetCategory("TT Database");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x1436624F, 0x34E1290A));
+    od->SetGuid(CKGUID(0x1436624f, 0x34e1290a));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("TERRATOOLS");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateSetDatabasePropertiesProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
@@ -30,9 +30,8 @@ CKObjectDeclaration *FillBehaviorSetDatabasePropertiesDecl()
 
 CKERROR CreateSetDatabasePropertiesProto(CKBehaviorPrototype **pproto)
 {
-    CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT Set Database Properties");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("Set Database Properties");
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("Set");
 
@@ -56,7 +55,7 @@ int SetDatabaseProperties(const CKBehaviorContext &behcontext)
 
     beh->ActivateInput(0, FALSE);
 
-    CTTDatabaseManager *man = CTTDatabaseManager::GetManager(context);
+    DatabaseManager *man = DatabaseManager::GetManager(context);
     if (!man)
     {
         context->OutputToConsoleExBeep("TT_SetDatabaseProperties: dm==NULL.");
@@ -65,7 +64,7 @@ int SetDatabaseProperties(const CKBehaviorContext &behcontext)
     }
 
     CKSTRING filename = (CKSTRING)beh->GetInputParameterReadDataPtr(0);
-    BOOL crypted = (BOOL)beh->GetInputParameterReadDataPtr(1);
+    CKBOOL crypted = (CKBOOL)beh->GetInputParameterReadDataPtr(1);
 
     if (!filename)
     {

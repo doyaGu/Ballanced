@@ -6,11 +6,11 @@
 
 #define TT_DATABASE_MANAGER_GUID CKGUID(0x4DB6188E, 0x287E1410)
 
-class CTTDatabaseManager : public CKBaseManager
+class DatabaseManager : public CKBaseManager
 {
 public:
-    CTTDatabaseManager(CKContext *ctx);
-    ~CTTDatabaseManager();
+    DatabaseManager(CKContext *ctx);
+    ~DatabaseManager();
 
     CKERROR OnCKInit() { return CK_OK; }
     CKERROR OnCKEnd() { return CK_OK; }
@@ -46,9 +46,9 @@ public:
 
     bool SetProperty(CKSTRING filename, CKBOOL crypted);
 
-    static CTTDatabaseManager *GetManager(CKContext *context)
+    static DatabaseManager *GetManager(CKContext *context)
     {
-        return (CTTDatabaseManager *)context->GetManagerByGuid(TT_DATABASE_MANAGER_GUID);
+        return (DatabaseManager *)context->GetManagerByGuid(TT_DATABASE_MANAGER_GUID);
     }
 
 protected:
