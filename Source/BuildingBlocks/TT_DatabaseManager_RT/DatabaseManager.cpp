@@ -27,7 +27,7 @@ struct ArrayHeader
     int keyColumn;
 };
 
-CTTDatabaseManager::CTTDatabaseManager(CKContext *context)
+DatabaseManager::DatabaseManager(CKContext *context)
     : CKBaseManager(context, TT_DATABASE_MANAGER_GUID, "TT Database Manager"),
       m_Context(context),
       field_2C(false),
@@ -38,12 +38,12 @@ CTTDatabaseManager::CTTDatabaseManager(CKContext *context)
     context->RegisterNewManager(this);
 }
 
-CTTDatabaseManager::~CTTDatabaseManager()
+DatabaseManager::~DatabaseManager()
 {
     Clear();
 }
 
-int CTTDatabaseManager::Register(CKSTRING arrayName)
+int DatabaseManager::Register(CKSTRING arrayName)
 {
     if (!arrayName)
         return 0;
@@ -60,7 +60,7 @@ int CTTDatabaseManager::Register(CKSTRING arrayName)
     return 1;
 }
 
-int CTTDatabaseManager::Clear()
+int DatabaseManager::Clear()
 {
     XArray<CKSTRING>::Iterator it = m_ArrayNames.Begin();
     while (it != m_ArrayNames.End())
@@ -71,7 +71,7 @@ int CTTDatabaseManager::Clear()
     return true;
 }
 
-int CTTDatabaseManager::Load(CKContext *context, bool autoRegister, CKSTRING arrayName)
+int DatabaseManager::Load(CKContext *context, bool autoRegister, CKSTRING arrayName)
 {
     int i, c;
 
@@ -224,7 +224,7 @@ int CTTDatabaseManager::Load(CKContext *context, bool autoRegister, CKSTRING arr
     return 1;
 }
 
-int CTTDatabaseManager::Save(CKContext *context)
+int DatabaseManager::Save(CKContext *context)
 {
     int n, i, c;
     int fileSize = 0;
@@ -422,7 +422,7 @@ int CTTDatabaseManager::Save(CKContext *context)
     return 1;
 }
 
-bool CTTDatabaseManager::SetProperty(CKSTRING filename, CKBOOL crypted)
+bool DatabaseManager::SetProperty(CKSTRING filename, CKBOOL crypted)
 {
     if (!filename || filename[0] == '\0')
         return false;

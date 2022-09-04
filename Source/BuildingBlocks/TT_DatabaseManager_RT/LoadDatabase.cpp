@@ -10,7 +10,7 @@
 #include "DatabaseManager.h"
 
 CKObjectDeclaration *FillBehaviorLoadDatabaseDecl();
-CKERROR CreateLoadDatabaseProto(CKBehaviorPrototype **);
+CKERROR CreateLoadDatabaseProto(CKBehaviorPrototype **pproto);
 int LoadDatabase(const CKBehaviorContext &behcontext);
 
 CKObjectDeclaration *FillBehaviorLoadDatabaseDecl()
@@ -19,9 +19,9 @@ CKObjectDeclaration *FillBehaviorLoadDatabaseDecl()
     od->SetDescription("Get arrays from a database");
     od->SetCategory("TT Database");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x5441494, 0x38AC7789));
+    od->SetGuid(CKGUID(0x5441494, 0x38ac7789));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("TERRATOOLS");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateLoadDatabaseProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
@@ -30,9 +30,8 @@ CKObjectDeclaration *FillBehaviorLoadDatabaseDecl()
 
 CKERROR CreateLoadDatabaseProto(CKBehaviorPrototype **pproto)
 {
-    CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT Load Database");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("Load Database");
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("Load");
 
@@ -54,7 +53,7 @@ int LoadDatabase(const CKBehaviorContext &behcontext)
     CKBehavior *beh = behcontext.Behavior;
     CKContext *context = behcontext.Context;
 
-    CTTDatabaseManager *man = CTTDatabaseManager::GetManager(context);
+    DatabaseManager *man = DatabaseManager::GetManager(context);
     if (!man)
     {
         context->OutputToConsoleExBeep("TT_LoadDatabase: dm==NULL.");
@@ -65,7 +64,7 @@ int LoadDatabase(const CKBehaviorContext &behcontext)
     if (beh->IsInputActive(0))
         beh->ActivateInput(0, FALSE);
 
-    BOOL autoRegister;
+    CKBOOL autoRegister;
     beh->GetInputParameterValue(0, &autoRegister);
     CKSTRING arrayName = (CKSTRING)beh->GetInputParameterReadDataPtr(1);
 

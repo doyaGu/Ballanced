@@ -10,7 +10,7 @@
 #include "DatabaseManager.h"
 
 CKObjectDeclaration *FillBehaviorRegisterArrayDecl();
-CKERROR CreateRegisterArrayProto(CKBehaviorPrototype **);
+CKERROR CreateRegisterArrayProto(CKBehaviorPrototype **pproto);
 int RegisterArray(const CKBehaviorContext &behcontext);
 
 CKObjectDeclaration *FillBehaviorRegisterArrayDecl()
@@ -19,9 +19,9 @@ CKObjectDeclaration *FillBehaviorRegisterArrayDecl()
     od->SetDescription("Registers an array for storage in a database");
     od->SetCategory("TT Database");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x348773DC, 0x19AE6322));
+    od->SetGuid(CKGUID(0x348773dc,0x19ae6322));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("TERRATOOLS");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateRegisterArrayProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
@@ -30,9 +30,8 @@ CKObjectDeclaration *FillBehaviorRegisterArrayDecl()
 
 CKERROR CreateRegisterArrayProto(CKBehaviorPrototype **pproto)
 {
-    CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT Register Array");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("Register Array");
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("Register");
     proto->DeclareInput("Clear");
@@ -54,7 +53,7 @@ int RegisterArray(const CKBehaviorContext &behcontext)
     CKBehavior *beh = behcontext.Behavior;
     CKContext *context = behcontext.Context;
 
-    CTTDatabaseManager *man = CTTDatabaseManager::GetManager(context);
+    DatabaseManager *man = DatabaseManager::GetManager(context);
     if (!man)
     {
         context->OutputToConsoleExBeep("TT_RegisterArray: dm==NULL.");
