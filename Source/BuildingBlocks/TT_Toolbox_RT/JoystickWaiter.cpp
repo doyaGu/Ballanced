@@ -25,6 +25,7 @@ CKObjectDeclaration *FillBehaviorJoystickWaiterDecl()
     od->SetVersion(0x00020000);
     od->SetCreationFunction(CreateJoystickWaiterProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
+    od->NeedManager(INPUT_MANAGER_GUID);
     return od;
 }
 

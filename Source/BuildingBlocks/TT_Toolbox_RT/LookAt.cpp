@@ -23,7 +23,7 @@ CKObjectDeclaration *FillBehaviorLookAtDecl()
     od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateLookAtProto);
-    od->SetCompatibleClassId(CKCID_BEOBJECT);
+    od->SetCompatibleClassId(CKCID_3DENTITY);
     return od;
 }
 

@@ -23,7 +23,7 @@ CKObjectDeclaration *FillBehaviorSetMaterialValuesDecl()
 	od->SetAuthorName("Terratools");
 	od->SetVersion(0x00010000);
 	od->SetCreationFunction(CreateSetMaterialValuesProto);
-	od->SetCompatibleClassId(CKCID_BEOBJECT);
+	od->SetCompatibleClassId(CKCID_MATERIAL);
 	return od;
 }
 

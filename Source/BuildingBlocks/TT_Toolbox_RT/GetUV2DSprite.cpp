@@ -23,7 +23,7 @@ CKObjectDeclaration *FillBehaviorGetUV2DSpriteDecl()
     od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateGetUV2DSpriteProto);
-    od->SetCompatibleClassId(CKCID_BEOBJECT);
+    od->SetCompatibleClassId(CKCID_2DENTITY);
     return od;
 }
 

@@ -23,7 +23,7 @@ CKObjectDeclaration *FillBehaviorGetCurvePointDecl()
     od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateGetCurvePointProto);
-    od->SetCompatibleClassId(CKCID_BEOBJECT);
+    od->SetCompatibleClassId(CKCID_CURVE);
     return od;
 }
 

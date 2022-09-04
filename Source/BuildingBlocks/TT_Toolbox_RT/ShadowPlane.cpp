@@ -22,8 +22,8 @@ CKObjectDeclaration *FillBehaviorShadowPlaneDecl()
     od->SetAuthorGuid(TERRATOOLS_GUID);
     od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
-    od->SetCreationFunction(CreateShadowPlaneProto);
-    od->SetCompatibleClassId(CKCID_BEOBJECT);
+    od->SetCompatibleClassId(CKCID_3DENTITY);
+    od->NeedManager(FLOOR_MANAGER_GUID);
     return od;
 }
 
