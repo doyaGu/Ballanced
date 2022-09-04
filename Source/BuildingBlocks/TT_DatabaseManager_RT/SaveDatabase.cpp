@@ -21,7 +21,7 @@ CKObjectDeclaration *FillBehaviorSaveDatabaseDecl()
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
     od->SetGuid(CKGUID(0x5d303e9d, 0x552c0af2));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("TERRATOOLS");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateSaveDatabaseProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
