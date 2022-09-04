@@ -10,7 +10,7 @@
 #include "InterfaceManager.h"
 
 CKObjectDeclaration *FillBehaviorSetIntegerValueToRegistryDecl();
-CKERROR CreateSetIntegerValueToRegistryProto(CKBehaviorPrototype **);
+CKERROR CreateSetIntegerValueToRegistryProto(CKBehaviorPrototype **pproto);
 int SetIntegerValueToRegistry(const CKBehaviorContext &behcontext);
 
 CKObjectDeclaration *FillBehaviorSetIntegerValueToRegistryDecl()
@@ -19,9 +19,9 @@ CKObjectDeclaration *FillBehaviorSetIntegerValueToRegistryDecl()
     od->SetDescription("Writes an integer value to the registry");
     od->SetCategory("TT InterfaceManager/Registry");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x175C07D1, 0x1D235544));
+    od->SetGuid(CKGUID(0x175c07d1, 0x1d235544));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("Virtools");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateSetIntegerValueToRegistryProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
@@ -31,15 +31,14 @@ CKObjectDeclaration *FillBehaviorSetIntegerValueToRegistryDecl()
 CKERROR CreateSetIntegerValueToRegistryProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT Set Integer Value To Registry");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
 
     proto->DeclareOutput("OK");
     proto->DeclareOutput("FAILED");
 
-    proto->DeclareInParameter("Integer Value", CKPGUID_INT);
+    proto->DeclareInParameter("Integer Value ", CKPGUID_INT);
     proto->DeclareInParameter("RegKey  ...\\..\\", CKPGUID_STRING);
     proto->DeclareInParameter("Value Name", CKPGUID_STRING);
 
@@ -60,7 +59,7 @@ int SetIntegerValueToRegistry(const CKBehaviorContext &behcontext)
     CKSTRING regKey = (CKSTRING)beh->GetInputParameterReadDataPtr(1);
     CKSTRING valueName = (CKSTRING)beh->GetInputParameterReadDataPtr(2);
 
-    CTTInterfaceManager *man = CTTInterfaceManager::GetManager(context);
+    InterfaceManager *man = InterfaceManager::GetManager(context);
     if (!man)
     {
         context->OutputToConsoleExBeep("TT_SetIntegerValueToRegistry: im==NULL.");

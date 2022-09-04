@@ -7,11 +7,11 @@
 /////////////////////////////////////////////////////
 #include "TT_InterfaceManager_RT.h"
 
-#include "ErrorProtocol.h"
 #include "InterfaceManager.h"
+#include "ErrorProtocol.h"
 
 CKObjectDeclaration *FillBehaviorSetTaskSwitchHandlerDecl();
-CKERROR CreateSetTaskSwitchHandlerProto(CKBehaviorPrototype **);
+CKERROR CreateSetTaskSwitchHandlerProto(CKBehaviorPrototype **pproto);
 int SetTaskSwitchHandler(const CKBehaviorContext &behcontext);
 
 CKObjectDeclaration *FillBehaviorSetTaskSwitchHandlerDecl()
@@ -20,9 +20,9 @@ CKObjectDeclaration *FillBehaviorSetTaskSwitchHandlerDecl()
 	od->SetDescription("Sends Set TaskSwitchHandler");
 	od->SetCategory("TT InterfaceManager/General");
 	od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-	od->SetGuid(CKGUID(0x10043A79, 0x3BA2461));
+	od->SetGuid(CKGUID(0x10043a79, 0x3ba2461));
 	od->SetAuthorGuid(TERRATOOLS_GUID);
-	od->SetAuthorName("Virtools");
+	od->SetAuthorName("Terratools");
 	od->SetVersion(0x00010000);
 	od->SetCreationFunction(CreateSetTaskSwitchHandlerProto);
 	od->SetCompatibleClassId(CKCID_BEOBJECT);
@@ -53,7 +53,7 @@ int SetTaskSwitchHandler(const CKBehaviorContext &behcontext)
 	CKBehavior *beh = behcontext.Behavior;
 	CKContext *context = behcontext.Context;
 
-	CTTInterfaceManager *man = CTTInterfaceManager::GetManager(context);
+	InterfaceManager *man = InterfaceManager::GetManager(context);
 	if (!man || !man->GetGameInfo())
 	{
 		TT_ERROR("SetTaskSwitchHandler.cpp", "int SetTaskSwitchHandler(...)", " gameInfo == NULL, exit CMO");

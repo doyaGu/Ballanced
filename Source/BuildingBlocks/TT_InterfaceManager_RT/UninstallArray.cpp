@@ -9,22 +9,22 @@
 
 #include <stdio.h>
 
-#include "ErrorProtocol.h"
 #include "InterfaceManager.h"
+#include "ErrorProtocol.h"
 
 CKObjectDeclaration *FillBehaviorUninstallArrayDecl();
-CKERROR CreateUninstallArrayProto(CKBehaviorPrototype **);
+CKERROR CreateUninstallArrayProto(CKBehaviorPrototype **pproto);
 int UninstallArray(const CKBehaviorContext &behcontext);
 
 CKObjectDeclaration *FillBehaviorUninstallArrayDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT Uninstall Array");
-    od->SetDescription("Uninstall Array from Manager");
+    od->SetDescription("Uninstalls Array from Manager");
     od->SetCategory("TT InterfaceManager/General");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x77DD56CF, 0x63DC30B4));
+    od->SetGuid(CKGUID(0x77dd56cf, 0x63dc30b4));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("Virtools");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateUninstallArrayProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
@@ -34,14 +34,13 @@ CKObjectDeclaration *FillBehaviorUninstallArrayDecl()
 CKERROR CreateUninstallArrayProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT Uninstall Array");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
 
     proto->DeclareOutput("Out");
 
-    proto->DeclareInParameter("Array to install", CKPGUID_DATAARRAY);
+    proto->DeclareInParameter("Array to uninstall", CKPGUID_DATAARRAY);
     proto->DeclareInParameter("Filename of current CMO", CKPGUID_STRING);
     proto->DeclareInParameter("Show message: UNINSTALLED", CKPGUID_BOOL);
 
@@ -59,7 +58,7 @@ int UninstallArray(const CKBehaviorContext &behcontext)
 
     beh->ActivateInput(0, FALSE);
 
-    CTTInterfaceManager *man = CTTInterfaceManager::GetManager(context);
+    InterfaceManager *man = InterfaceManager::GetManager(context);
     if (!man)
     {
         ::PostMessageA((HWND)context->GetRenderManager()->GetRenderContext(0)->GetWindowHandle(), TT_MSG_NO_GAMEINFO, 0x1D, 1);
@@ -80,7 +79,7 @@ int UninstallArray(const CKBehaviorContext &behcontext)
         {
             char *msg = new char[256];
             sprintf(msg, " '%s'  from file '%s' uninstalled from manager", array->GetName(), cmo);
-            ::MessageBoxA((HWND)context->GetRenderManager()->GetRenderContext(man->GetDriver())->GetWindowHandle(), msg, "message...", MB_OK);
+            ::MessageBoxA((HWND)context->GetMainWindow(), msg, "message...", MB_OK);
             delete[] msg;
         }
     }

@@ -7,8 +7,8 @@
 /////////////////////////////////////////////////////
 #include "TT_InterfaceManager_RT.h"
 
-#include "ErrorProtocol.h"
 #include "InterfaceManager.h"
+#include "ErrorProtocol.h"
 
 CKObjectDeclaration *FillBehaviorGetLevelDataDecl();
 CKERROR CreateGetLevelDataProto(CKBehaviorPrototype **);
@@ -17,12 +17,12 @@ int GetLevelData(const CKBehaviorContext &behcontext);
 CKObjectDeclaration *FillBehaviorGetLevelDataDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT Get Level Data");
-    od->SetDescription("Gets the level datas");
+    od->SetDescription("Gets the level data");
     od->SetCategory("TT InterfaceManager/LevelInfo Behaviors");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x6BCA40F9, 0x42641A24));
+    od->SetGuid(CKGUID(0x6bca40f9, 0x42641a24));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("Virtools");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateGetLevelDataProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
@@ -32,8 +32,7 @@ CKObjectDeclaration *FillBehaviorGetLevelDataDecl()
 CKERROR CreateGetLevelDataProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT Get Level Data");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
 
@@ -55,7 +54,7 @@ int GetLevelData(const CKBehaviorContext &behcontext)
     CKBehavior *beh = behcontext.Behavior;
     CKContext *context = behcontext.Context;
 
-    CTTInterfaceManager *man = CTTInterfaceManager::GetManager(context);
+    InterfaceManager *man = InterfaceManager::GetManager(context);
     if (!man)
     {
         TT_ERROR("GetLevelData.cpp", "int GetLevelData(...)", " im == NULL");
@@ -65,7 +64,7 @@ int GetLevelData(const CKBehaviorContext &behcontext)
     CGameInfo *gameInfo = man->GetGameInfo();
     if (!gameInfo)
     {
-        ::PostMessageA((HWND)context->GetRenderManager()->GetRenderContext(man->GetDriver())->GetWindowHandle(), TT_MSG_NO_GAMEINFO, 0x0B, 0);
+        ::PostMessageA((HWND)context->GetMainWindow(), TT_MSG_NO_GAMEINFO, 0x0B, 0);
         TT_ERROR("GetLevelData.cpp", "int GetLevelData(...)", " gameInfo not exists");
     }
 

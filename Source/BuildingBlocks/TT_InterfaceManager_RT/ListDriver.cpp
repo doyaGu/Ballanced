@@ -7,33 +7,32 @@
 /////////////////////////////////////////////////////
 #include "TT_InterfaceManager_RT.h"
 
-#include "ErrorProtocol.h"
 #include "InterfaceManager.h"
+#include "ErrorProtocol.h"
 
-CKObjectDeclaration *FillBehaviorListDriversDecl();
-CKERROR CreateListDriversProto(CKBehaviorPrototype **);
-int ListDrivers(const CKBehaviorContext &behcontext);
+CKObjectDeclaration *FillBehaviorListDriverDecl();
+CKERROR CreateListDriverProto(CKBehaviorPrototype **pproto);
+int ListDriver(const CKBehaviorContext &behcontext);
 
-CKObjectDeclaration *FillBehaviorListDriversDecl()
+CKObjectDeclaration *FillBehaviorListDriverDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT List Driver");
     od->SetDescription("List Drivers");
     od->SetCategory("TT InterfaceManager/Display");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x62D00456, 0x30EB4245));
+    od->SetGuid(CKGUID(0x62d00456, 0x30eb4245));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("Virtools");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
-    od->SetCreationFunction(CreateListDriversProto);
+    od->SetCreationFunction(CreateListDriverProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
     return od;
 }
 
-CKERROR CreateListDriversProto(CKBehaviorPrototype **pproto)
+CKERROR CreateListDriverProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT List Driver");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
 
@@ -45,13 +44,13 @@ CKERROR CreateListDriversProto(CKBehaviorPrototype **pproto)
     proto->DeclareOutParameter("Installed Driver", CKPGUID_INT);
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
-    proto->SetFunction(ListDrivers);
+    proto->SetFunction(ListDriver);
 
     *pproto = proto;
     return CK_OK;
 }
 
-int ListDrivers(const CKBehaviorContext &behcontext)
+int ListDriver(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
     CKContext *context = behcontext.Context;
@@ -59,7 +58,7 @@ int ListDrivers(const CKBehaviorContext &behcontext)
     CKDataArray *drivers = (CKDataArray *)beh->GetInputParameterObject(0);
     if (!drivers)
     {
-        context->OutputToConsoleExBeep("ListDrivers: No DataArray Object is found.");
+        context->OutputToConsoleExBeep("ListDriver: No DataArray Object is found.");
         beh->ActivateOutput(1);
         return CKBR_OK;
     }
@@ -69,10 +68,10 @@ int ListDrivers(const CKBehaviorContext &behcontext)
     while (drivers->GetColumnCount() > 0)
         drivers->RemoveColumn(0);
 
-    CTTInterfaceManager *man = CTTInterfaceManager::GetManager(context);
+    InterfaceManager *man = InterfaceManager::GetManager(context);
     if (!man)
     {
-        TT_ERROR("ListDrivers.cpp", "int ListDrivers(...)", " im == NULL");
+        TT_ERROR("ListDriver.cpp", "int ListDriver(...)", " im == NULL");
         beh->ActivateOutput(1);
         return CKBR_OK;
     }

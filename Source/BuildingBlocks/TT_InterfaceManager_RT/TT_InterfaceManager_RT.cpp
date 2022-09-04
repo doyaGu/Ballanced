@@ -2,8 +2,8 @@
 
 #include <stdio.h>
 
-#include "ErrorProtocol.h"
 #include "InterfaceManager.h"
+#include "ErrorProtocol.h"
 
 #define TT_INTERFACE_MANAGER_BEHAVIOR CKGUID(0x1B5171D8, 0x41B60E5F)
 
@@ -25,13 +25,13 @@
 
 CKERROR InitInstance(CKContext *context)
 {
-    new CTTInterfaceManager(context);
+    new InterfaceManager(context);
     return CK_OK;
 }
 
 CKERROR ExitInstance(CKContext *context)
 {
-    CTTInterfaceManager *man = CTTInterfaceManager::GetManager(context);
+    InterfaceManager *man = InterfaceManager::GetManager(context);
     if (man)
     {
         delete man;
@@ -88,9 +88,9 @@ void RegisterBehaviorDeclarations(XObjectDeclarationArray *reg)
     TT_ERROR_OPEN("TT_Player_CMO_Interface", buffer, true);
 
     // Message
-    RegisterBehavior(reg, FillBehaviorSendCMORestartDecl);
-    RegisterBehavior(reg, FillBehaviorSendCMOLoadDecl);
-    RegisterBehavior(reg, FillBehaviorSendExitToSystemDecl);
+    RegisterBehavior(reg, FillBehaviorRestartCMODecl);
+    RegisterBehavior(reg, FillBehaviorLoadCMODecl);
+    RegisterBehavior(reg, FillBehaviorExitToSystemDecl);
 
     // DataArray
     RegisterBehavior(reg, FillBehaviorInstallArrayDecl);
@@ -99,7 +99,7 @@ void RegisterBehaviorDeclarations(XObjectDeclarationArray *reg)
     RegisterBehavior(reg, FillBehaviorUninstallArrayDecl);
 
     // GameInfo
-    RegisterBehavior(reg, FillBehaviorCreateGameInfoDecl);
+    RegisterBehavior(reg, FillBehaviorCreateNewGameInfoDecl);
     RegisterBehavior(reg, FillBehaviorExistsGameInfoDecl);
     RegisterBehavior(reg, FillBehaviorDeleteGameInfoDecl);
 
@@ -107,8 +107,8 @@ void RegisterBehaviorDeclarations(XObjectDeclarationArray *reg)
     RegisterBehavior(reg, FillBehaviorLimitFramerateDecl);
     RegisterBehavior(reg, FillBehaviorChangeScreenModeDecl);
     RegisterBehavior(reg, FillBehaviorListScreenModesDecl);
-    RegisterBehavior(reg, FillBehaviorListDriversDecl);
-    RegisterBehavior(reg, FillBehaviorWindowActivatedDecl);
+    RegisterBehavior(reg, FillBehaviorListDriverDecl);
+    RegisterBehavior(reg, FillBehaviorWindowActivateDecl);
 
     // General
     RegisterBehavior(reg, FillBehaviorPlayerActiveDecl);

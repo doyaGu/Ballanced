@@ -19,9 +19,9 @@ CKObjectDeclaration *FillBehaviorExistsGameInfoDecl()
     od->SetDescription("Checks GameInfo");
     od->SetCategory("TT InterfaceManager/General");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x56173AA5, 0x73FF1A7F));
+    od->SetGuid(CKGUID(0x56173aa5, 0x73ff1a7f));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("Virtools");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateExistsGameInfoProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
@@ -31,8 +31,7 @@ CKObjectDeclaration *FillBehaviorExistsGameInfoDecl()
 CKERROR CreateExistsGameInfoProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT Exists GameInfo ?");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
 
@@ -56,7 +55,7 @@ int ExistsGameInfo(const CKBehaviorContext &behcontext)
     CGameInfo *gameInfo = NULL;
     beh->GetInputParameterValue(0, &gameInfo);
 
-    CTTInterfaceManager *man = CTTInterfaceManager::GetManager(context);
+    InterfaceManager *man = InterfaceManager::GetManager(context);
     if (gameInfo == man->GetGameInfo())
         beh->ActivateOutput(0);
     else

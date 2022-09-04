@@ -13,13 +13,9 @@
 #include "InterfaceManager.h"
 
 CKObjectDeclaration *FillBehaviorWriteRegistryDecl();
-CKERROR CreateWriteRegistryProto(CKBehaviorPrototype **);
+CKERROR CreateWriteRegistryProto(CKBehaviorPrototype **pproto);
 int WriteRegistry(const CKBehaviorContext &behcontext);
 CKERROR WriteRegistryCallBack(const CKBehaviorContext &behcontext);
-
-int WriteIntegerToIni(const char *section, CKBehavior *beh, CKContext *context, int value, const char *key, const char *ini);
-int WriteFloatToIni(const char *section, CKBehavior *beh, CKContext *context, float value, const char *key, const char *ini);
-int WriteStringToIni(const char *section, CKBehavior *beh, CKContext *context, const char *value, const char *key, const char *ini);
 
 CKObjectDeclaration *FillBehaviorWriteRegistryDecl()
 {
@@ -27,9 +23,9 @@ CKObjectDeclaration *FillBehaviorWriteRegistryDecl()
     od->SetDescription("Writes an integer value to the registry");
     od->SetCategory("TT InterfaceManager/Registry");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x7AA8084E, 0x1EE229B7));
+    od->SetGuid(CKGUID(0x7aa8084e, 0x1ee229b7));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("Virtools");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateWriteRegistryProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
@@ -39,8 +35,7 @@ CKObjectDeclaration *FillBehaviorWriteRegistryDecl()
 CKERROR CreateWriteRegistryProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT_WriteRegistry");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
 
@@ -55,13 +50,17 @@ CKERROR CreateWriteRegistryProto(CKBehaviorPrototype **pproto)
     proto->DeclareSetting("SaveArray-Mode", CKPGUID_BOOL);
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
-    proto->SetBehaviorFlags(CKBEHAVIOR_NONE);
     proto->SetFunction(WriteRegistry);
+
     proto->SetBehaviorCallbackFct(WriteRegistryCallBack);
 
     *pproto = proto;
     return CK_OK;
 }
+
+int WriteIntegerToIni(const char *section, CKBehavior *beh, CKContext *context, int value, const char *key, const char *ini);
+int WriteFloatToIni(const char *section, CKBehavior *beh, CKContext *context, float value, const char *key, const char *ini);
+int WriteStringToIni(const char *section, CKBehavior *beh, CKContext *context, const char *value, const char *key, const char *ini);
 
 static const char *SUBKEY = "Software\\Ballance\\";
 
@@ -70,7 +69,7 @@ int WriteRegistry(const CKBehaviorContext &behcontext)
     CKBehavior *beh = behcontext.Behavior;
     CKContext *context = behcontext.Context;
 
-    CTTInterfaceManager *man = CTTInterfaceManager::GetManager(context);
+    InterfaceManager *man = InterfaceManager::GetManager(context);
     if (!man)
     {
         context->OutputToConsoleExBeep("TT_WriteRegistry: im==NULL.");

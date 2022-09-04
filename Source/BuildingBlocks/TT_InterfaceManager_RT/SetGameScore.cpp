@@ -7,11 +7,11 @@
 /////////////////////////////////////////////////////
 #include "TT_InterfaceManager_RT.h"
 
-#include "ErrorProtocol.h"
 #include "InterfaceManager.h"
+#include "ErrorProtocol.h"
 
 CKObjectDeclaration *FillBehaviorSetGameScoreDecl();
-CKERROR CreateSetGameScoreProto(CKBehaviorPrototype **);
+CKERROR CreateSetGameScoreProto(CKBehaviorPrototype **pproto);
 int SetGameScore(const CKBehaviorContext &behcontext);
 
 CKObjectDeclaration *FillBehaviorSetGameScoreDecl()
@@ -20,9 +20,9 @@ CKObjectDeclaration *FillBehaviorSetGameScoreDecl()
     od->SetDescription("Sets game score to manager");
     od->SetCategory("TT InterfaceManager/GameInfo Behaviors");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x2A5A3D0B, 0x4E6466C));
+    od->SetGuid(CKGUID(0x2a5a3d0b, 0x4e6466c));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("Virtools");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateSetGameScoreProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
@@ -32,8 +32,7 @@ CKObjectDeclaration *FillBehaviorSetGameScoreDecl()
 CKERROR CreateSetGameScoreProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT Set Game Score");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
 
@@ -53,7 +52,7 @@ int SetGameScore(const CKBehaviorContext &behcontext)
     CKBehavior *beh = behcontext.Behavior;
     CKContext *context = behcontext.Context;
 
-    CTTInterfaceManager *man = CTTInterfaceManager::GetManager(context);
+    InterfaceManager *man = InterfaceManager::GetManager(context);
     if (!man)
     {
         TT_ERROR("SetGameScore.cpp", "int SetGameScore(...)", " im == NULL");
@@ -63,7 +62,7 @@ int SetGameScore(const CKBehaviorContext &behcontext)
     CGameInfo *gameInfo = man->GetGameInfo();
     if (!gameInfo)
     {
-        ::PostMessageA((HWND)context->GetRenderManager()->GetRenderContext(man->GetDriver())->GetWindowHandle(), TT_MSG_NO_GAMEINFO, 0x09, 0);
+        ::PostMessageA((HWND)context->GetMainWindow(), TT_MSG_NO_GAMEINFO, 0x09, 0);
         TT_ERROR("SetGameScore.cpp", "int SetGameScore(...)", " gameInfo not exists");
     }
 

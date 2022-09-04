@@ -7,22 +7,22 @@
 /////////////////////////////////////////////////////
 #include "TT_InterfaceManager_RT.h"
 
-#include "ErrorProtocol.h"
 #include "InterfaceManager.h"
+#include "ErrorProtocol.h"
 
 CKObjectDeclaration *FillBehaviorGetGameDataDecl();
-CKERROR CreateGetGameDataProto(CKBehaviorPrototype **);
+CKERROR CreateGetGameDataProto(CKBehaviorPrototype **pproto);
 int GetGameData(const CKBehaviorContext &behcontext);
 
 CKObjectDeclaration *FillBehaviorGetGameDataDecl()
 {
-    CKObjectDeclaration *od = CreateCKObjectDeclaration("TT Get Game Data");
+    CKObjectDeclaration *od = CreateCKObjectDeclaration("TT  Get Game Data");
     od->SetDescription("Gets the game datas");
     od->SetCategory("TT InterfaceManager/GameInfo Behaviors");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x16875322, 0x72422C5C));
+    od->SetGuid(CKGUID(0x16875322, 0x72422c5c));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("Virtools");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateGetGameDataProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
@@ -32,14 +32,13 @@ CKObjectDeclaration *FillBehaviorGetGameDataDecl()
 CKERROR CreateGetGameDataProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT Get Game Data");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
 
     proto->DeclareOutput("Out");
 
-    proto->DeclareOutParameter("Game Score", CKPGUID_INT);
+    proto->DeclareOutParameter("Games Score", CKPGUID_INT);
     proto->DeclareOutParameter("Game Bonus", CKPGUID_INT);
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
@@ -54,7 +53,7 @@ int GetGameData(const CKBehaviorContext &behcontext)
     CKBehavior *beh = behcontext.Behavior;
     CKContext *context = behcontext.Context;
 
-    CTTInterfaceManager *man = CTTInterfaceManager::GetManager(context);
+    InterfaceManager *man = InterfaceManager::GetManager(context);
     if (!man)
     {
         TT_ERROR("GetGameData.cpp", "int GetGameData(...)", " im == NULL");
@@ -64,7 +63,7 @@ int GetGameData(const CKBehaviorContext &behcontext)
     CGameInfo *gameInfo = man->GetGameInfo();
     if (!gameInfo)
     {
-        ::PostMessageA((HWND)context->GetRenderManager()->GetRenderContext(man->GetDriver())->GetWindowHandle(), TT_MSG_NO_GAMEINFO, 0x01, 0);
+        ::PostMessageA((HWND)context->GetMainWindow(), TT_MSG_NO_GAMEINFO, 0x01, 0);
         TT_ERROR("GetGameData.cpp", "int GetGameData(...)", " gameInfo not exists");
     }
 

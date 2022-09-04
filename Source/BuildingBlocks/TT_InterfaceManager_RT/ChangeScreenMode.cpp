@@ -7,11 +7,11 @@
 /////////////////////////////////////////////////////
 #include "TT_InterfaceManager_RT.h"
 
-#include "ErrorProtocol.h"
 #include "InterfaceManager.h"
+#include "ErrorProtocol.h"
 
 CKObjectDeclaration *FillBehaviorChangeScreenModeDecl();
-CKERROR CreateChangeScreenModeProto(CKBehaviorPrototype **);
+CKERROR CreateChangeScreenModeProto(CKBehaviorPrototype **pproto);
 int ChangeScreenMode(const CKBehaviorContext &behcontext);
 
 CKObjectDeclaration *FillBehaviorChangeScreenModeDecl()
@@ -20,9 +20,9 @@ CKObjectDeclaration *FillBehaviorChangeScreenModeDecl()
     od->SetDescription("Change Screenmode");
     od->SetCategory("TT InterfaceManager/Display");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x38B84D97, 0x13932F28));
+    od->SetGuid(CKGUID(0x38b84d97, 0x13932f28));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("Virtools");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateChangeScreenModeProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
@@ -32,8 +32,7 @@ CKObjectDeclaration *FillBehaviorChangeScreenModeDecl()
 CKERROR CreateChangeScreenModeProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT Change ScreenMode");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
 
@@ -60,7 +59,7 @@ int ChangeScreenMode(const CKBehaviorContext &behcontext)
     beh->GetInputParameterValue(0, &driverId);
     beh->GetInputParameterValue(1, &screenModeId);
 
-    CTTInterfaceManager *man = CTTInterfaceManager::GetManager(context);
+    InterfaceManager *man = InterfaceManager::GetManager(context);
     if (!man)
     {
         TT_ERROR("ChangeScreenMode.cpp", "int ChangeScreenMode(...)", " im == NULL");
@@ -85,7 +84,7 @@ int ChangeScreenMode(const CKBehaviorContext &behcontext)
         return CKBR_OK;
     }
 
-    if (!::SendMessageA((HWND)context->GetRenderManager()->GetRenderContext(man->GetDriver())->GetWindowHandle(), TT_MSG_SCREEN_MODE_CHG, screenModeId, driverId))
+    if (!::SendMessageA((HWND)context->GetMainWindow(), TT_MSG_SCREEN_MODE_CHG, screenModeId, driverId))
     {
         beh->ActivateOutput(1);
         return CKBR_OK;

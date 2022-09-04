@@ -4,7 +4,7 @@
 
 #include <string.h>
 
-CTTInterfaceManager::CTTInterfaceManager(CKContext *context)
+InterfaceManager::InterfaceManager(CKContext *context)
     : CKBaseManager(context, TT_INTERFACE_MANAGER_GUID, "TT Interface Manager"),
       m_ScreenMode(0),
       m_Driver(0),
@@ -19,4 +19,4 @@ CTTInterfaceManager::CTTInterfaceManager(CKContext *context)
     memset(m_IniName, 0, sizeof(m_IniName));
 }
 
-CTTInterfaceManager::~CTTInterfaceManager() {}
+InterfaceManager::~InterfaceManager() {}

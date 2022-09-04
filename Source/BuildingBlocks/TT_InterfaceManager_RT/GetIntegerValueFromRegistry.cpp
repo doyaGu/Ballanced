@@ -10,7 +10,7 @@
 #include "InterfaceManager.h"
 
 CKObjectDeclaration *FillBehaviorGetIntegerValueFromRegistryDecl();
-CKERROR CreateGetIntegerValueFromRegistryProto(CKBehaviorPrototype **);
+CKERROR CreateGetIntegerValueFromRegistryProto(CKBehaviorPrototype **pproto);
 int GetIntegerValueFromRegistry(const CKBehaviorContext &behcontext);
 
 CKObjectDeclaration *FillBehaviorGetIntegerValueFromRegistryDecl()
@@ -19,9 +19,9 @@ CKObjectDeclaration *FillBehaviorGetIntegerValueFromRegistryDecl()
     od->SetDescription("Reads an integer value from the registry");
     od->SetCategory("TT InterfaceManager/Registry");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x50C02B30, 0x2E5A2EDA));
+    od->SetGuid(CKGUID(0x50c02b30, 0x2e5a2eda));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("Virtools");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateGetIntegerValueFromRegistryProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
@@ -31,8 +31,7 @@ CKObjectDeclaration *FillBehaviorGetIntegerValueFromRegistryDecl()
 CKERROR CreateGetIntegerValueFromRegistryProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT Get Integer Value From Registry");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
 
@@ -42,7 +41,7 @@ CKERROR CreateGetIntegerValueFromRegistryProto(CKBehaviorPrototype **pproto)
     proto->DeclareInParameter("RegKey  ...\\..\\", CKPGUID_STRING);
     proto->DeclareInParameter("Value Name", CKPGUID_STRING);
 
-    proto->DeclareOutParameter("Integer Value", CKPGUID_INT);
+    proto->DeclareOutParameter("Integer Value ", CKPGUID_INT);
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
     proto->SetFunction(GetIntegerValueFromRegistry);
@@ -62,7 +61,7 @@ int GetIntegerValueFromRegistry(const CKBehaviorContext &behcontext)
     beh->GetInputParameterValue(0, regKey);
     beh->GetInputParameterValue(1, valueName);
 
-    CTTInterfaceManager *man = CTTInterfaceManager::GetManager(context);
+    InterfaceManager *man = InterfaceManager::GetManager(context);
     if (!man)
     {
         context->OutputToConsoleExBeep("TT_GetIntegerValueFromRegistry: im==NULL.");

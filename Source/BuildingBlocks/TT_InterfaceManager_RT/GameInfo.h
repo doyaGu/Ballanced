@@ -1,25 +1,27 @@
 #ifndef BUILDINGBLOCKS_GAMEINFO_H
 #define BUILDINGBLOCKS_GAMEINFO_H
 
+#include <string.h>
+
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
-#include <string.h>
 #include <windows.h>
 
-class CGameInfo
+struct CGameInfo
 {
 public:
-    CGameInfo() : next(NULL),
-                  hkRoot(HKEY_CURRENT_USER),
-                  gameScore(0),
-                  levelScore(0),
-                  type(0),
-                  gameID(0),
-                  levelID(0),
-                  gameBonus(0),
-                  levelBonus(0),
-                  levelReached(0)
+    CGameInfo()
+        : next(NULL),
+          hkRoot(HKEY_CURRENT_USER),
+          gameScore(0),
+          levelScore(0),
+          type(0),
+          gameID(0),
+          levelID(0),
+          gameBonus(0),
+          levelBonus(0),
+          levelReached(0)
     {
         memset(gameName, 0, sizeof(gameName));
         memset(levelName, 0, sizeof(levelName));
@@ -28,18 +30,15 @@ public:
         strcpy(regSubkey, "Software\\Terratools\\WorldMap\\Powerball");
     }
 
-    CGameInfo(const char *path,
-              int type,
-              HKEY hkRoot,
-              const char *regSubKey,
-              const char *filename) : next(NULL),
-                                      gameScore(0),
-                                      levelScore(0),
-                                      gameID(0),
-                                      levelID(0),
-                                      gameBonus(0),
-                                      levelBonus(0),
-                                      levelReached(0)
+    CGameInfo(const char *path, int type, HKEY hkRoot, const char *regSubKey, const char *filename)
+        : next(NULL),
+          gameScore(0),
+          levelScore(0),
+          gameID(0),
+          levelID(0),
+          gameBonus(0),
+          levelBonus(0),
+          levelReached(0)
     {
         memset(gameName, 0, sizeof(gameName));
         memset(levelName, 0, sizeof(levelName));

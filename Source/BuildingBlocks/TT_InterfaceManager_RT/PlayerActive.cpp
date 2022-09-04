@@ -10,7 +10,7 @@
 #include "InterfaceManager.h"
 
 CKObjectDeclaration *FillBehaviorPlayerActiveDecl();
-CKERROR CreatePlayerActiveProto(CKBehaviorPrototype **);
+CKERROR CreatePlayerActiveProto(CKBehaviorPrototype **pproto);
 int PlayerActive(const CKBehaviorContext &behcontext);
 
 CKObjectDeclaration *FillBehaviorPlayerActiveDecl()
@@ -19,9 +19,9 @@ CKObjectDeclaration *FillBehaviorPlayerActiveDecl()
     od->SetDescription("Check PlayerActive");
     od->SetCategory("TT InterfaceManager/General");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x694658D, 0x7FFD236F));
+    od->SetGuid(CKGUID(0x694658d, 0x7ffd236f));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("Virtools");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreatePlayerActiveProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
@@ -31,8 +31,7 @@ CKObjectDeclaration *FillBehaviorPlayerActiveDecl()
 CKERROR CreatePlayerActiveProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT Player Active");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
 

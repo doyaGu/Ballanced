@@ -10,7 +10,7 @@
 #include "InterfaceManager.h"
 
 CKObjectDeclaration *FillBehaviorSetStringValueToRegistryDecl();
-CKERROR CreateSetStringValueToRegistryProto(CKBehaviorPrototype **);
+CKERROR CreateSetStringValueToRegistryProto(CKBehaviorPrototype **pproto);
 int SetStringValueToRegistry(const CKBehaviorContext &behcontext);
 
 CKObjectDeclaration *FillBehaviorSetStringValueToRegistryDecl()
@@ -19,9 +19,9 @@ CKObjectDeclaration *FillBehaviorSetStringValueToRegistryDecl()
     od->SetDescription("Writes a string value to the registry");
     od->SetCategory("TT InterfaceManager/Registry");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x74A35F75, 0x3AD00FAA));
+    od->SetGuid(CKGUID(0x74a35f75, 0x3ad00faa));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("Virtools");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateSetStringValueToRegistryProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
@@ -31,8 +31,7 @@ CKObjectDeclaration *FillBehaviorSetStringValueToRegistryDecl()
 CKERROR CreateSetStringValueToRegistryProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT Set String Value To Registry");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
 
@@ -62,7 +61,7 @@ int SetStringValueToRegistry(const CKBehaviorContext &behcontext)
     beh->GetInputParameterValue(1, regKey);
     beh->GetInputParameterValue(2, valueName);
 
-    CTTInterfaceManager *man = CTTInterfaceManager::GetManager(context);
+    InterfaceManager *man = InterfaceManager::GetManager(context);
     if (!man)
     {
         context->OutputToConsoleExBeep("TT_SetStringValueToRegistry: im==NULL.");

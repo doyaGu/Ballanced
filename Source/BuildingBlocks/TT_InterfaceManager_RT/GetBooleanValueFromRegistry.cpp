@@ -10,18 +10,18 @@
 #include "InterfaceManager.h"
 
 CKObjectDeclaration *FillBehaviorGetBooleanValueFromRegistryDecl();
-CKERROR CreateGetBooleanValueFromRegistryProto(CKBehaviorPrototype **);
+CKERROR CreateGetBooleanValueFromRegistryProto(CKBehaviorPrototype **pproto);
 int GetBooleanValueFromRegistry(const CKBehaviorContext &behcontext);
 
 CKObjectDeclaration *FillBehaviorGetBooleanValueFromRegistryDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT Get Boolean Value From Registry");
-    od->SetDescription("Reads a boolean value from the registry");
+    od->SetDescription("Reads a Boolean value from the registry");
     od->SetCategory("TT InterfaceManager/Registry");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x5ACE7E01, 0x199B76FD));
+    od->SetGuid(CKGUID(0x5ace7e01, 0x199b76fd));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("Virtools");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateGetBooleanValueFromRegistryProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
@@ -31,15 +31,14 @@ CKObjectDeclaration *FillBehaviorGetBooleanValueFromRegistryDecl()
 CKERROR CreateGetBooleanValueFromRegistryProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT Get Boolean Value From Registry");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
 
     proto->DeclareOutput("OK");
     proto->DeclareOutput("FAILED");
 
-    proto->DeclareInParameter("RegKey  ...\\..\\", CKPGUID_STRING);
+    proto->DeclareInParameter("RegKey  ..\\...\\", CKPGUID_STRING);
     proto->DeclareInParameter("Value Name", CKPGUID_STRING);
 
     proto->DeclareOutParameter("Integer Value ", CKPGUID_BOOL);
@@ -62,7 +61,7 @@ int GetBooleanValueFromRegistry(const CKBehaviorContext &behcontext)
     beh->GetInputParameterValue(0, regKey);
     beh->GetInputParameterValue(1, valueName);
 
-    CTTInterfaceManager *man = CTTInterfaceManager::GetManager(context);
+    InterfaceManager *man = InterfaceManager::GetManager(context);
     if (!man)
     {
         context->OutputToConsoleExBeep("TT_GetBooleanValueFromRegistry: im==NULL.");

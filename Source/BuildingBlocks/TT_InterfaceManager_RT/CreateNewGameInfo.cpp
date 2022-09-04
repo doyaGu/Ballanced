@@ -9,26 +9,26 @@
 
 #include "InterfaceManager.h"
 
-CKObjectDeclaration *FillBehaviorCreateGameInfoDecl();
-CKERROR CreateCreateGameInfoProto(CKBehaviorPrototype **);
-int CreateGameInfo(const CKBehaviorContext &behcontext);
+CKObjectDeclaration *FillBehaviorCreateNewGameInfoDecl();
+CKERROR CreateCreateNewGameInfoProto(CKBehaviorPrototype **pproto);
+int CreateNewGameInfo(const CKBehaviorContext &behcontext);
 
-CKObjectDeclaration *FillBehaviorCreateGameInfoDecl()
+CKObjectDeclaration *FillBehaviorCreateNewGameInfoDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT Create new GameInfo");
     od->SetDescription("Creates new GameInfo");
     od->SetCategory("TT InterfaceManager/General");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x0A8B6C27, 0x402B43B4));
+    od->SetGuid(CKGUID(0xa8b6c27, 0x402b43b4));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("Virtools");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
-    od->SetCreationFunction(CreateCreateGameInfoProto);
+    od->SetCreationFunction(CreateCreateNewGameInfoProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
     return od;
 }
 
-CKERROR CreateCreateGameInfoProto(CKBehaviorPrototype **pproto)
+CKERROR CreateCreateNewGameInfoProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT Create new GameInfo");
     if (!proto)
@@ -43,20 +43,20 @@ CKERROR CreateCreateGameInfoProto(CKBehaviorPrototype **pproto)
     proto->DeclareOutParameter("Address of GameInfo (hex)", CKPGUID_INT);
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
-    proto->SetFunction(CreateGameInfo);
+    proto->SetFunction(CreateNewGameInfo);
 
     *pproto = proto;
     return CK_OK;
 }
 
-int CreateGameInfo(const CKBehaviorContext &behcontext)
+int CreateNewGameInfo(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
     CKContext *context = behcontext.Context;
 
     CKSTRING path = (CKSTRING)beh->GetInputParameterReadDataPtr(0);
 
-    CTTInterfaceManager *man = CTTInterfaceManager::GetManager(context);
+    InterfaceManager *man = InterfaceManager::GetManager(context);
     if (!man || !man->GetGameInfo())
     {
         CGameInfo *gameInfo = new CGameInfo;

@@ -98,7 +98,7 @@ SOURCE=.\ChangeScreenMode.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\CreateGameInfo.cpp
+SOURCE=.\CreateNewGameInfo.cpp
 # End Source File
 # Begin Source File
 
@@ -111,6 +111,10 @@ SOURCE=.\ErrorProtocol.cpp
 # Begin Source File
 
 SOURCE=.\ExistsGameInfo.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\ExitToSystem.cpp
 # End Source File
 # Begin Source File
 
@@ -190,11 +194,15 @@ SOURCE=.\LimitFramerate.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\ListDrivers.cpp
+SOURCE=.\ListDriver.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=.\ListScreenModes.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\LoadCMO.cpp
 # End Source File
 # Begin Source File
 
@@ -214,15 +222,7 @@ SOURCE=.\ReadRegistry.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\SendCMOLoad.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\SendCMORestart.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\SendExitToSystem.cpp
+SOURCE=.\RestartCMO.cpp
 # End Source File
 # Begin Source File
 
@@ -302,7 +302,7 @@ SOURCE=.\UninstallArray.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\WindowActivated.cpp
+SOURCE=.\WindowActivate.cpp
 # End Source File
 # Begin Source File
 

@@ -22,11 +22,11 @@ enum TT_MSG
     TT_MSG_STOP_FULLSCREEN = 0x679,
 };
 
-class CTTInterfaceManager : public CKBaseManager
+class InterfaceManager : public CKBaseManager
 {
 public:
-    CTTInterfaceManager(CKContext *ctx);
-    ~CTTInterfaceManager();
+    InterfaceManager(CKContext *ctx);
+    ~InterfaceManager();
 
     CKERROR OnCKInit() { return CK_OK; }
     CKERROR OnCKEnd() { return CK_OK; }
@@ -131,9 +131,9 @@ public:
         return &m_ArrayList;
     }
 
-    static CTTInterfaceManager *GetManager(CKContext *context)
+    static InterfaceManager *GetManager(CKContext *context)
     {
-        return (CTTInterfaceManager *)context->GetManagerByGuid(TT_INTERFACE_MANAGER_GUID);
+        return (InterfaceManager *)context->GetManagerByGuid(TT_INTERFACE_MANAGER_GUID);
     }
 
 protected:
