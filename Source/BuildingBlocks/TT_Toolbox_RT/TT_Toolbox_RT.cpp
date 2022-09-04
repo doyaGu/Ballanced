@@ -112,7 +112,7 @@ void RegisterBehaviorDeclarations(XObjectDeclarationArray *reg)
     RegisterBehavior(reg, FillBehaviorFollowCameraDecl);
 
     RegisterBehavior(reg, FillBehaviorGetCurvePointDecl);
-    RegisterBehavior(reg, FillBehaviorIsBoundingSphereIntersectedDecl);
+    RegisterBehavior(reg, FillBehaviorBoundingSphereIntersectionDecl);
     RegisterBehavior(reg, FillBehaviorCheckCurveCollisionDecl);
 
     RegisterBehavior(reg, FillBehaviorBitmapFontDecl);
@@ -122,7 +122,7 @@ void RegisterBehaviorDeclarations(XObjectDeclarationArray *reg)
     RegisterBehavior(reg, FillBehaviorSceneStencilShadowDecl);
     RegisterBehavior(reg, FillBehaviorShadowMappingDecl);
     RegisterBehavior(reg, FillBehaviorShadowPlaneDecl);
-    RegisterBehavior(reg, FillBehaviorSwitchOnLayerDecl);
+    RegisterBehavior(reg, FillBehaviorSwitchonLayerDecl);
     RegisterBehavior(reg, FillBehaviorConvertBoxDecl);
     RegisterBehavior(reg, FillBehaviorFindSubStringDecl);
     RegisterBehavior(reg, FillBehaviorGetFullAngleDecl);
@@ -208,7 +208,7 @@ void RegisterBehaviorDeclarations(XObjectDeclarationArray *reg)
     RegisterBehavior(reg, FillBehaviorDebugOFFDecl);
     RegisterBehavior(reg, FillBehaviorDebugDecl);
 
-    RegisterBehavior(reg, FillBehaviorSet2DSpriteOldDecl);
+    RegisterBehavior(reg, FillBehaviorSet2DSpriteoldDecl);
     RegisterBehavior(reg, FillBehaviorSet2DSpriteDecl);
     RegisterBehavior(reg, FillBehaviorSet3DSpriteDecl);
     RegisterBehavior(reg, FillBehaviorGetUV2DSpriteDecl);
