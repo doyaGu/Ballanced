@@ -8,7 +8,7 @@
 #include "TT_Gravity_RT.h"
 
 CKObjectDeclaration *FillBehaviorSimpleShadowDecl();
-CKERROR CreateSimpleShadowProto(CKBehaviorPrototype **);
+CKERROR CreateSimpleShadowProto(CKBehaviorPrototype **pproto);
 int SimpleShadow(const CKBehaviorContext &behcontext);
 CKERROR SimpleShadowCallBack(const CKBehaviorContext &behcontext);
 
@@ -18,9 +18,9 @@ CKObjectDeclaration *FillBehaviorSimpleShadowDecl()
     od->SetDescription("Display a little soft shadow on floors beneath the object.");
     od->SetCategory("TT Gravity");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x7F0517C2, 0x52CC76BB));
+    od->SetGuid(CKGUID(0x7f0517c2, 0x52cc76bb));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("TERRATOOLS");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateSimpleShadowProto);
     od->SetCompatibleClassId(CKCID_3DOBJECT);
@@ -31,8 +31,7 @@ CKObjectDeclaration *FillBehaviorSimpleShadowDecl()
 CKERROR CreateSimpleShadowProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT Simple Shadow");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("On");
     proto->DeclareInput("Off");
@@ -49,7 +48,7 @@ CKERROR CreateSimpleShadowProto(CKBehaviorPrototype **pproto)
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
     proto->SetFunction(SimpleShadow);
 
-    proto->SetBehaviorFlags((CK_BEHAVIOR_FLAGS)CKBEHAVIOR_TARGETABLE);
+    proto->SetBehaviorFlags(CKBEHAVIOR_TARGETABLE);
     proto->SetBehaviorCallbackFct(SimpleShadowCallBack);
 
     *pproto = proto;

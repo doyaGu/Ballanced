@@ -8,19 +8,19 @@
 #include "TT_Gravity_RT.h"
 
 CKObjectDeclaration *FillBehaviorSkyDecl();
-CKERROR CreateSkyProto(CKBehaviorPrototype **);
+CKERROR CreateSkyProto(CKBehaviorPrototype **pproto);
 int Sky(const CKBehaviorContext &behcontext);
 CKERROR SkyCallBack(const CKBehaviorContext &behcontext);
 
 CKObjectDeclaration *FillBehaviorSkyDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT Sky");
-    od->SetDescription("Creates a sky object with any number of faces and material transparency.");
+    od->SetDescription("erstellt ein Skyobjekt mit beliebig vielen Seitenfl�chen und ver�nderbaren Materialtransparenz");
     od->SetCategory("TT Gravity");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x36691920, 0x3B261630));
+    od->SetGuid(CKGUID(0x36691920, 0x3b261630));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("TERRATOOLS");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateSkyProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
@@ -30,8 +30,7 @@ CKObjectDeclaration *FillBehaviorSkyDecl()
 CKERROR CreateSkyProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT Sky");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("On");
     proto->DeclareInput("Off");
@@ -41,17 +40,17 @@ CKERROR CreateSkyProto(CKBehaviorPrototype **pproto)
 
     proto->DeclareInParameter("Distortion", CKPGUID_PERCENTAGE, "30");
     proto->DeclareInParameter("Vertex Color", CKPGUID_COLOR, "1, 1, 1, 0");
-
     proto->DeclareInParameter("Orientation Object", CKPGUID_3DENTITY);
     proto->DeclareInParameter("Radius", CKPGUID_FLOAT, "70.0f");
     proto->DeclareInParameter("Quadratic SideFaces?", CKPGUID_BOOL, "TRUE");
-    proto->DeclareInParameter("SideFace-Heigth", CKPGUID_FLOAT, "10");
+    proto->DeclareInParameter("or SideFace-Heigth", CKPGUID_FLOAT, "10");
     proto->DeclareInParameter("Y-Position of Sky", CKPGUID_FLOAT, "0");
 
-    proto->DeclareSetting("Side Materials", CKPGUID_INT, "4");
-    proto->DeclareSetting("Top Materials", CKPGUID_BOOL, "True");
-    proto->DeclareSetting("Bottom Materials", CKPGUID_BOOL, "True");
     proto->DeclareLocalParameter("Skyaround", CKPGUID_VOIDBUF);
+
+    proto->DeclareSetting("Side Materials", CKPGUID_INT, "4");
+    proto->DeclareSetting("Top Material", CKPGUID_BOOL, "True");
+    proto->DeclareSetting("Bottom Material", CKPGUID_BOOL, "True");
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
     proto->SetFunction(Sky);

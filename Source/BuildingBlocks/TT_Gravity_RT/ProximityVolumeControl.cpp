@@ -8,7 +8,7 @@
 #include "TT_Gravity_RT.h"
 
 CKObjectDeclaration *FillBehaviorProximityVolumeControlDecl();
-CKERROR CreateProximityVolumeControlProto(CKBehaviorPrototype **);
+CKERROR CreateProximityVolumeControlProto(CKBehaviorPrototype **pproto);
 int ProximityVolumeControl(const CKBehaviorContext &behcontext);
 
 CKObjectDeclaration *FillBehaviorProximityVolumeControlDecl()
@@ -17,9 +17,9 @@ CKObjectDeclaration *FillBehaviorProximityVolumeControlDecl()
     od->SetDescription("Sets the volume of a sound dependend to a distance.");
     od->SetCategory("TT Gravity");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x38571B61, 0x64CD2174));
+    od->SetGuid(CKGUID(0x38571b61, 0x64cd2174));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("TERRATOOLS");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateProximityVolumeControlProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
@@ -29,8 +29,7 @@ CKObjectDeclaration *FillBehaviorProximityVolumeControlDecl()
 CKERROR CreateProximityVolumeControlProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT ProximityVolumeControl");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("On");
     proto->DeclareInput("Off");

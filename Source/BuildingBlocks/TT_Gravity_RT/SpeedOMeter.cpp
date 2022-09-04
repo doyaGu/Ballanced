@@ -8,7 +8,7 @@
 #include "TT_Gravity_RT.h"
 
 CKObjectDeclaration *FillBehaviorSpeedOMeterDecl();
-CKERROR CreateSpeedOMeterProto(CKBehaviorPrototype **);
+CKERROR CreateSpeedOMeterProto(CKBehaviorPrototype **pproto);
 int SpeedOMeter(const CKBehaviorContext &behcontext);
 CKERROR SpeedOMeterCallBack(const CKBehaviorContext &behcontext);
 
@@ -18,9 +18,9 @@ CKObjectDeclaration *FillBehaviorSpeedOMeterDecl()
     od->SetDescription("Calculates the speed of an 3DEntity.");
     od->SetCategory("TT Gravity");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x51BD5521, 0x672C67BF));
+    od->SetGuid(CKGUID(0x51bd5521, 0x672c67bf));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("TERRATOOLS");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateSpeedOMeterProto);
     od->SetCompatibleClassId(CKCID_3DENTITY);
@@ -30,23 +30,23 @@ CKObjectDeclaration *FillBehaviorSpeedOMeterDecl()
 CKERROR CreateSpeedOMeterProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT SpeedOMeter");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
 
     proto->DeclareOutput("Out");
 
-    proto->DeclareInParameter("Absolute Speed", CKPGUID_FLOAT, "0.0");
+    proto->DeclareOutParameter("Absolute Speed", CKPGUID_FLOAT, "0.0");
 
     proto->DeclareLocalParameter("Last Position", CKPGUID_VECTOR);
+
     proto->DeclareSetting("Calculate relative speed?", CKPGUID_BOOL, "0");
     proto->DeclareSetting("Loop-Framedelay?", CKPGUID_INT, "1");
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
     proto->SetFunction(SpeedOMeter);
 
-    proto->SetBehaviorFlags((CK_BEHAVIOR_FLAGS)CKBEHAVIOR_TARGETABLE);
+    proto->SetBehaviorFlags(CKBEHAVIOR_TARGETABLE);
     proto->SetBehaviorCallbackFct(SpeedOMeterCallBack);
 
     *pproto = proto;

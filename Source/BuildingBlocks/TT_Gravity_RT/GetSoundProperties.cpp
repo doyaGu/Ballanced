@@ -8,18 +8,18 @@
 #include "TT_Gravity_RT.h"
 
 CKObjectDeclaration *FillBehaviorGetSoundPropertiesDecl();
-CKERROR CreateGetSoundPropertiesProto(CKBehaviorPrototype **);
+CKERROR CreateGetSoundPropertiesProto(CKBehaviorPrototype **pproto);
 int GetSoundProperties(const CKBehaviorContext &behcontext);
 
 CKObjectDeclaration *FillBehaviorGetSoundPropertiesDecl()
 {
-    CKObjectDeclaration *od = CreateCKObjectDeclaration("TT GetSoundProperties");
+    CKObjectDeclaration *od = CreateCKObjectDeclaration("TT_GetSoundProperties");
     od->SetDescription("Get Gain, Pitch and Pan.");
     od->SetCategory("TT Gravity");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x30FA6A70, 0x3B3F728A));
+    od->SetGuid(CKGUID(0x30fa6a70, 0x3b3f728a));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("Mirco Nierenz");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateGetSoundPropertiesProto);
     od->SetCompatibleClassId(CKCID_WAVESOUND);
@@ -28,9 +28,8 @@ CKObjectDeclaration *FillBehaviorGetSoundPropertiesDecl()
 
 CKERROR CreateGetSoundPropertiesProto(CKBehaviorPrototype **pproto)
 {
-    CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT GetSoundProperties");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT_GetSoundProperties");
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
 
@@ -43,7 +42,7 @@ CKERROR CreateGetSoundPropertiesProto(CKBehaviorPrototype **pproto)
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
     proto->SetFunction(GetSoundProperties);
 
-    proto->SetBehaviorFlags((CK_BEHAVIOR_FLAGS)CKBEHAVIOR_TARGETABLE);
+    proto->SetBehaviorFlags(CKBEHAVIOR_TARGETABLE);
 
     *pproto = proto;
     return CK_OK;
