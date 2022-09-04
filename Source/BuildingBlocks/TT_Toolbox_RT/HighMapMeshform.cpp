@@ -5,31 +5,33 @@
 //
 //////////////////////////////////////
 //////////////////////////////////////
-#include "TT_Toolbox_RT.h"
+#include "CKAll.h"
+#include "ToolboxGuids.h"
 
-CKERROR CreateTTHighMapMeshformBehaviorProto(CKBehaviorPrototype **pproto);
-int TTHighMapMeshform(const CKBehaviorContext& behcontext);
-CKERROR TTHighMapMeshformCallBack(const CKBehaviorContext& behcontext);
+CKObjectDeclaration *FillBehaviorHighMapMeshformDecl();
+CKERROR CreateHighMapMeshformProto(CKBehaviorPrototype **pproto);
+int HighMapMeshform(const CKBehaviorContext &behcontext);
+CKERROR HighMapMeshformCallBack(const CKBehaviorContext &behcontext);
 
-CKObjectDeclaration *FillBehaviorTTHighMapMeshformDecl()
+CKObjectDeclaration *FillBehaviorHighMapMeshformDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT_HighMapMeshform");
     od->SetDescription("verformt das Mesh aufgrund der Texturdaten");
     od->SetCategory("TT Toolbox/Mesh");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x2e3c2d7e,0x7be7234e));
+    od->SetGuid(CKGUID(0x2e3c2d7e, 0x7be7234e));
     od->SetAuthorGuid(TERRATOOLS_GUID);
     od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
-    od->SetCreationFunction(CreateTTHighMapMeshformBehaviorProto);
+    od->SetCreationFunction(CreateHighMapMeshformProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
     return od;
 }
 
-CKERROR CreateTTHighMapMeshformBehaviorProto(CKBehaviorPrototype **pproto)
+CKERROR CreateHighMapMeshformProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT_HighMapMeshform");
-    if(!proto) return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
 
@@ -41,25 +43,25 @@ CKERROR CreateTTHighMapMeshformBehaviorProto(CKBehaviorPrototype **pproto)
     proto->DeclareLocalParameter("Vertex Array", CKPGUID_VOIDBUF);
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
-    proto->SetFunction(TTHighMapMeshform);
+    proto->SetFunction(HighMapMeshform);
 
-    proto->SetBehaviorFlags((CK_BEHAVIOR_FLAGS)(CKBEHAVIOR_TARGETABLE));
-    proto->SetBehaviorCallbackFct(TTHighMapMeshformCallBack);
+    proto->SetBehaviorFlags(CKBEHAVIOR_TARGETABLE);
+    proto->SetBehaviorCallbackFct(HighMapMeshformCallBack);
 
     *pproto = proto;
     return CK_OK;
 }
 
-int TTHighMapMeshform(const CKBehaviorContext& behcontext)
+int HighMapMeshform(const CKBehaviorContext &behcontext)
 {
-    CKBehavior* beh = behcontext.Behavior;
+    CKBehavior *beh = behcontext.Behavior;
     // TODO: To be finished.
     return CKBR_OK;
 }
 
-CKERROR TTHighMapMeshformCallBack(const CKBehaviorContext& behcontext)
+CKERROR HighMapMeshformCallBack(const CKBehaviorContext &behcontext)
 {
-    CKBehavior* beh = behcontext.Behavior;
+    CKBehavior *beh = behcontext.Behavior;
     // TODO: To be finished.
     return CKBR_OK;
 }

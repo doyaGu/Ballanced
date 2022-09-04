@@ -5,30 +5,32 @@
 //
 ///////////////////////////////////////////
 ///////////////////////////////////////////
-#include "TT_Toolbox_RT.h"
+#include "CKAll.h"
+#include "ToolboxGuids.h"
 
-CKERROR CreateTTConvertPixelHomogenBehaviorProto(CKBehaviorPrototype **pproto);
-int TTConvertPixelHomogen(const CKBehaviorContext& behcontext);
+CKObjectDeclaration *FillBehaviorConvertPixelHomogenDecl();
+CKERROR CreateConvertPixelHomogenProto(CKBehaviorPrototype **pproto);
+int ConvertPixelHomogen(const CKBehaviorContext &behcontext);
 
-CKObjectDeclaration *FillBehaviorTTConvertPixelHomogenDecl()
+CKObjectDeclaration *FillBehaviorConvertPixelHomogenDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT ConvertPixel-Homogen");
     od->SetDescription("konvertiert Pixelkoordinaten in homogene Koordinaten und umgekehrt");
     od->SetCategory("TT Toolbox/Logic");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x18f96977,0x18e20f83));
+    od->SetGuid(CKGUID(0x18f96977, 0x18e20f83));
     od->SetAuthorGuid(TERRATOOLS_GUID);
     od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
-    od->SetCreationFunction(CreateTTConvertPixelHomogenBehaviorProto);
+    od->SetCreationFunction(CreateConvertPixelHomogenProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
     return od;
 }
 
-CKERROR CreateTTConvertPixelHomogenBehaviorProto(CKBehaviorPrototype **pproto)
+CKERROR CreateConvertPixelHomogenProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT ConvertPixel-Homogen");
-    if(!proto) return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("On");
 
@@ -43,22 +45,15 @@ CKERROR CreateTTConvertPixelHomogenBehaviorProto(CKBehaviorPrototype **pproto)
     proto->DeclareSetting("Pixel to homogen?:", CKPGUID_BOOL, "true");
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
-    proto->SetFunction(TTConvertPixelHomogen);
+    proto->SetFunction(ConvertPixelHomogen);
 
     *pproto = proto;
     return CK_OK;
 }
 
-int TTConvertPixelHomogen(const CKBehaviorContext& behcontext)
+int ConvertPixelHomogen(const CKBehaviorContext &behcontext)
 {
-    CKBehavior* beh = behcontext.Behavior;
-    // TODO: To be finished.
-    return CKBR_OK;
-}
-
-CKERROR TTConvertPixelHomogenCallBack(const CKBehaviorContext& behcontext)
-{
-    CKBehavior* beh = behcontext.Behavior;
+    CKBehavior *beh = behcontext.Behavior;
     // TODO: To be finished.
     return CKBR_OK;
 }

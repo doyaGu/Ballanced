@@ -5,30 +5,32 @@
 //
 //////////////////////////////////////
 //////////////////////////////////////
-#include "TT_Toolbox_RT.h"
+#include "CKAll.h"
+#include "ToolboxGuids.h"
 
-CKERROR CreateTTPreloadTexturesBehaviorProto(CKBehaviorPrototype **pproto);
-int TTPreloadTextures(const CKBehaviorContext& behcontext);
+CKObjectDeclaration *FillBehaviorPreloadTexturesDecl();
+CKERROR CreatePreloadTexturesProto(CKBehaviorPrototype **pproto);
+int PreloadTextures(const CKBehaviorContext &behcontext);
 
-CKObjectDeclaration *FillBehaviorTTPreloadTexturesDecl()
+CKObjectDeclaration *FillBehaviorPreloadTexturesDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT_PreloadTextures");
     od->SetDescription("Copies all textures of the current scene to the video memory of the graphics card");
     od->SetCategory("TT Toolbox/Material");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x416b4f0e,0x192d339a));
+    od->SetGuid(CKGUID(0x416b4f0e, 0x192d339a));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("TERRATOOLS");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
-    od->SetCreationFunction(CreateTTPreloadTexturesBehaviorProto);
+    od->SetCreationFunction(CreatePreloadTexturesProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
     return od;
 }
 
-CKERROR CreateTTPreloadTexturesBehaviorProto(CKBehaviorPrototype **pproto)
+CKERROR CreatePreloadTexturesProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT_PreloadTextures");
-    if(!proto) return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
 
@@ -37,22 +39,15 @@ CKERROR CreateTTPreloadTexturesBehaviorProto(CKBehaviorPrototype **pproto)
     proto->DeclareOutParameter("NumberOfTextures", CKPGUID_INT);
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
-    proto->SetFunction(TTPreloadTextures);
+    proto->SetFunction(PreloadTextures);
 
     *pproto = proto;
     return CK_OK;
 }
 
-int TTPreloadTextures(const CKBehaviorContext& behcontext)
+int PreloadTextures(const CKBehaviorContext &behcontext)
 {
-    CKBehavior* beh = behcontext.Behavior;
-    // TODO: To be finished.
-    return CKBR_OK;
-}
-
-CKERROR TTPreloadTexturesCallBack(const CKBehaviorContext& behcontext)
-{
-    CKBehavior* beh = behcontext.Behavior;
+    CKBehavior *beh = behcontext.Behavior;
     // TODO: To be finished.
     return CKBR_OK;
 }

@@ -5,30 +5,32 @@
 //
 /////////////////////////////////
 /////////////////////////////////
-#include "TT_Toolbox_RT.h"
+#include "CKAll.h"
+#include "ToolboxGuids.h"
 
-CKERROR CreateTTShowVectorBehaviorProto(CKBehaviorPrototype **pproto);
-int TTShowVector(const CKBehaviorContext& behcontext);
+CKObjectDeclaration *FillBehaviorShowVectorDecl();
+CKERROR CreateShowVectorProto(CKBehaviorPrototype **pproto);
+int ShowVector(const CKBehaviorContext &behcontext);
 
-CKObjectDeclaration *FillBehaviorTTShowVectorDecl()
+CKObjectDeclaration *FillBehaviorShowVectorDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT_ShowVector");
     od->SetDescription("zeigt Vektor �ber 2 gegebene Punkte an");
     od->SetCategory("TT Toolbox/Logic");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x2fca6b65,0x73b31ebd));
+    od->SetGuid(CKGUID(0x2fca6b65, 0x73b31ebd));
     od->SetAuthorGuid(TERRATOOLS_GUID);
     od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
-    od->SetCreationFunction(CreateTTShowVectorBehaviorProto);
+    od->SetCreationFunction(CreateShowVectorProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
     return od;
 }
 
-CKERROR CreateTTShowVectorBehaviorProto(CKBehaviorPrototype **pproto)
+CKERROR CreateShowVectorProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT_ShowVector");
-    if(!proto) return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("On");
 
@@ -39,22 +41,15 @@ CKERROR CreateTTShowVectorBehaviorProto(CKBehaviorPrototype **pproto)
     proto->DeclareInParameter("Curve", CKPGUID_CURVE);
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
-    proto->SetFunction(TTShowVector);
+    proto->SetFunction(ShowVector);
 
     *pproto = proto;
     return CK_OK;
 }
 
-int TTShowVector(const CKBehaviorContext& behcontext)
+int ShowVector(const CKBehaviorContext &behcontext)
 {
-    CKBehavior* beh = behcontext.Behavior;
-    // TODO: To be finished.
-    return CKBR_OK;
-}
-
-CKERROR TTShowVectorCallBack(const CKBehaviorContext& behcontext)
-{
-    CKBehavior* beh = behcontext.Behavior;
+    CKBehavior *beh = behcontext.Behavior;
     // TODO: To be finished.
     return CKBR_OK;
 }

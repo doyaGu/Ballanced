@@ -5,31 +5,33 @@
 //
 ///////////////////////////////////
 ///////////////////////////////////
-#include "TT_Toolbox_RT.h"
+#include "CKAll.h"
+#include "ToolboxGuids.h"
 
-CKERROR CreateTTSet2DSpriteBehaviorProto(CKBehaviorPrototype **pproto);
-int TTSet2DSprite(const CKBehaviorContext& behcontext);
-CKERROR TTSet2DSpriteCallBack(const CKBehaviorContext& behcontext);
+CKObjectDeclaration *FillBehaviorSet2DSpriteDecl();
+CKERROR CreateSet2DSpriteProto(CKBehaviorPrototype **pproto);
+int Set2DSprite(const CKBehaviorContext &behcontext);
+CKERROR Set2DSpriteCallBack(const CKBehaviorContext &behcontext);
 
-CKObjectDeclaration *FillBehaviorTTSet2DSpriteDecl()
+CKObjectDeclaration *FillBehaviorSet2DSpriteDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT Set_2DSprite");
     od->SetDescription("stellt Position, Groesse und UV-Mapping f�r Sprite ein");
     od->SetCategory("TT Toolbox/Sprite");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x3c392558,0x419d2680));
+    od->SetGuid(CKGUID(0x3c392558, 0x419d2680));
     od->SetAuthorGuid(TERRATOOLS_GUID);
     od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
-    od->SetCreationFunction(CreateTTSet2DSpriteBehaviorProto);
+    od->SetCreationFunction(CreateSet2DSpriteProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
     return od;
 }
 
-CKERROR CreateTTSet2DSpriteBehaviorProto(CKBehaviorPrototype **pproto)
+CKERROR CreateSet2DSpriteProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT Set_2DSprite");
-    if(!proto) return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("On");
 
@@ -39,28 +41,28 @@ CKERROR CreateTTSet2DSpriteBehaviorProto(CKBehaviorPrototype **pproto)
     proto->DeclareInParameter("Size", CKPGUID_2DVECTOR, "0.1,0.1");
     proto->DeclareInParameter("UV-Rect", CKPGUID_RECT, "0,0,1,1");
 
-    proto->DeclareSetting("Add Input:", , "Position,Size,UV-Mapping");
+    proto->DeclareSetting("Add Input:", CKPGUID_2DSPRITEINPUT, "Position,Size,UV-Mapping");
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
-    proto->SetFunction(TTSet2DSprite);
+    proto->SetFunction(Set2DSprite);
 
-    proto->SetBehaviorFlags((CK_BEHAVIOR_FLAGS)(CKBEHAVIOR_TARGETABLE));
-    proto->SetBehaviorCallbackFct(TTSet2DSpriteCallBack);
+    proto->SetBehaviorFlags(CKBEHAVIOR_TARGETABLE);
+    proto->SetBehaviorCallbackFct(Set2DSpriteCallBack);
 
     *pproto = proto;
     return CK_OK;
 }
 
-int TTSet2DSprite(const CKBehaviorContext& behcontext)
+int Set2DSprite(const CKBehaviorContext &behcontext)
 {
-    CKBehavior* beh = behcontext.Behavior;
+    CKBehavior *beh = behcontext.Behavior;
     // TODO: To be finished.
     return CKBR_OK;
 }
 
-CKERROR TTSet2DSpriteCallBack(const CKBehaviorContext& behcontext)
+CKERROR Set2DSpriteCallBack(const CKBehaviorContext &behcontext)
 {
-    CKBehavior* beh = behcontext.Behavior;
+    CKBehavior *beh = behcontext.Behavior;
     // TODO: To be finished.
     return CKBR_OK;
 }

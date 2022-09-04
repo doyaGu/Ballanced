@@ -5,30 +5,32 @@
 //
 //////////////////////////////
 //////////////////////////////
-#include "TT_Toolbox_RT.h"
+#include "CKAll.h"
+#include "ToolboxGuids.h"
 
-CKERROR CreateTTCounterBehaviorProto(CKBehaviorPrototype **pproto);
-int TTCounter(const CKBehaviorContext& behcontext);
+CKObjectDeclaration *FillBehaviorCounterDecl();
+CKERROR CreateCounterProto(CKBehaviorPrototype **pproto);
+int Counter(const CKBehaviorContext &behcontext);
 
-CKObjectDeclaration *FillBehaviorTTCounterDecl()
+CKObjectDeclaration *FillBehaviorCounterDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT_Counter");
     od->SetDescription("Counts forward and backward with loop");
     od->SetCategory("TT Toolbox/Logic");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x750f20fc,0x3741186d));
+    od->SetGuid(CKGUID(0x750f20fc, 0x3741186d));
     od->SetAuthorGuid(TERRATOOLS_GUID);
     od->SetAuthorName("Klaus");
     od->SetVersion(0x00010000);
-    od->SetCreationFunction(CreateTTCounterBehaviorProto);
+    od->SetCreationFunction(CreateCounterProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
     return od;
 }
 
-CKERROR CreateTTCounterBehaviorProto(CKBehaviorPrototype **pproto)
+CKERROR CreateCounterProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT_Counter");
-    if(!proto) return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("Initialize");
     proto->DeclareInput("Count Up");
@@ -47,22 +49,15 @@ CKERROR CreateTTCounterBehaviorProto(CKBehaviorPrototype **pproto)
     proto->DeclareLocalParameter("Count", CKPGUID_INT, "0");
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
-    proto->SetFunction(TTCounter);
+    proto->SetFunction(Counter);
 
     *pproto = proto;
     return CK_OK;
 }
 
-int TTCounter(const CKBehaviorContext& behcontext)
+int Counter(const CKBehaviorContext &behcontext)
 {
-    CKBehavior* beh = behcontext.Behavior;
-    // TODO: To be finished.
-    return CKBR_OK;
-}
-
-CKERROR TTCounterCallBack(const CKBehaviorContext& behcontext)
-{
-    CKBehavior* beh = behcontext.Behavior;
+    CKBehavior *beh = behcontext.Behavior;
     // TODO: To be finished.
     return CKBR_OK;
 }

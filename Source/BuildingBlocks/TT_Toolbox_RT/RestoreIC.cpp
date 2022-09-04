@@ -5,30 +5,32 @@
 //
 /////////////////////////////////
 /////////////////////////////////
-#include "TT_Toolbox_RT.h"
+#include "CKAll.h"
+#include "ToolboxGuids.h"
 
-CKERROR CreateTTRestoreICBehaviorProto(CKBehaviorPrototype **pproto);
-int TTRestoreIC(const CKBehaviorContext& behcontext);
+CKObjectDeclaration *FillBehaviorRestoreICDecl();
+CKERROR CreateRestoreICProto(CKBehaviorPrototype **pproto);
+int RestoreIC(const CKBehaviorContext &behcontext);
 
-CKObjectDeclaration *FillBehaviorTTRestoreICDecl()
+CKObjectDeclaration *FillBehaviorRestoreICDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT Restore IC");
     od->SetDescription("Restores an object's Initial Condition for the scene being played.");
     od->SetCategory("TT Toolbox/Narratives");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x7e0f2f58,0x232d3109));
+    od->SetGuid(CKGUID(0x7e0f2f58, 0x232d3109));
     od->SetAuthorGuid(TERRATOOLS_GUID);
     od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
-    od->SetCreationFunction(CreateTTRestoreICBehaviorProto);
+    od->SetCreationFunction(CreateRestoreICProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
     return od;
 }
 
-CKERROR CreateTTRestoreICBehaviorProto(CKBehaviorPrototype **pproto)
+CKERROR CreateRestoreICProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT Restore IC");
-    if(!proto) return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
 
@@ -37,23 +39,17 @@ CKERROR CreateTTRestoreICBehaviorProto(CKBehaviorPrototype **pproto)
     proto->DeclareInParameter("Hierarchy?", CKPGUID_BOOL, "FALSE");
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
-    proto->SetFunction(TTRestoreIC);
+    proto->SetFunction(RestoreIC);
 
-    proto->SetBehaviorFlags((CK_BEHAVIOR_FLAGS)(CKBEHAVIOR_TARGETABLE));
+    proto->SetBehaviorFlags(CKBEHAVIOR_TARGETABLE);
+
     *pproto = proto;
     return CK_OK;
 }
 
-int TTRestoreIC(const CKBehaviorContext& behcontext)
+int RestoreIC(const CKBehaviorContext &behcontext)
 {
-    CKBehavior* beh = behcontext.Behavior;
-    // TODO: To be finished.
-    return CKBR_OK;
-}
-
-CKERROR TTRestoreICCallBack(const CKBehaviorContext& behcontext)
-{
-    CKBehavior* beh = behcontext.Behavior;
+    CKBehavior *beh = behcontext.Behavior;
     // TODO: To be finished.
     return CKBR_OK;
 }

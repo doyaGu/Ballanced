@@ -1,36 +1,36 @@
-/////////////////////////////////////////////////////
-/////////////////////////////////////////////////////
+////////////////////////////////
+////////////////////////////////
 //
-//		            TT GetZOrder
+//        TT_GetZOrder
 //
-/////////////////////////////////////////////////////
-/////////////////////////////////////////////////////
-#include "TT_Toolbox_RT.h"
+////////////////////////////////
+////////////////////////////////
+#include "CKAll.h"
+#include "ToolboxGuids.h"
 
 CKObjectDeclaration *FillBehaviorGetZOrderDecl();
-CKERROR CreateGetZOrderProto(CKBehaviorPrototype **);
+CKERROR CreateGetZOrderProto(CKBehaviorPrototype **pproto);
 int GetZOrder(const CKBehaviorContext &behcontext);
 
 CKObjectDeclaration *FillBehaviorGetZOrderDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT_GetZOrder");
-    od->SetDescription("Modify the mapping and create PlanarMapping");
+    od->SetDescription("�ndern des Mappings und erzeugen von PlanarMapping");
     od->SetCategory("TT Toolbox/Logic");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x9163112, 0x1D2B4454));
+    od->SetGuid(CKGUID(0x9163112, 0x1d2b4454));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("TERRATOOLS");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateGetZOrderProto);
-    od->SetCompatibleClassId(CKCID_3DOBJECT);
+    od->SetCompatibleClassId(CKCID_BEOBJECT);
     return od;
 }
 
 CKERROR CreateGetZOrderProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT_GetZOrder");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
 
@@ -41,7 +41,7 @@ CKERROR CreateGetZOrderProto(CKBehaviorPrototype **pproto)
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
     proto->SetFunction(GetZOrder);
 
-    proto->SetBehaviorFlags((CK_BEHAVIOR_FLAGS)(CKBEHAVIOR_INTERNALLYCREATEDINPUTPARAMS | CKBEHAVIOR_TARGETABLE));
+    proto->SetBehaviorFlags((CK_BEHAVIOR_FLAGS)(CKBEHAVIOR_TARGETABLE | CKBEHAVIOR_INTERNALLYCREATEDINPUTPARAMS));
 
     *pproto = proto;
     return CK_OK;
@@ -53,7 +53,7 @@ int GetZOrder(const CKBehaviorContext &behcontext)
     if (!beh)
         return CKBR_OK;
 
-   CK3dObject *target = (CK3dObject *)beh->GetTarget();
+    CK3dObject *target = (CK3dObject *)beh->GetTarget();
     if (!target)
         return CKBR_OWNERERROR;
 

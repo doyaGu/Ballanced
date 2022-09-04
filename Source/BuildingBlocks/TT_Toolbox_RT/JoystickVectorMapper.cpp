@@ -5,30 +5,32 @@
 //
 ///////////////////////////////////////////
 ///////////////////////////////////////////
-#include "TT_Toolbox_RT.h"
+#include "CKAll.h"
+#include "ToolboxGuids.h"
 
-CKERROR CreateTTJoystickVectorMapperBehaviorProto(CKBehaviorPrototype **pproto);
-int TTJoystickVectorMapper(const CKBehaviorContext& behcontext);
+CKObjectDeclaration *FillBehaviorJoystickVectorMapperDecl();
+CKERROR CreateJoystickVectorMapperProto(CKBehaviorPrototype **pproto);
+int JoystickVectorMapper(const CKBehaviorContext &behcontext);
 
-CKObjectDeclaration *FillBehaviorTTJoystickVectorMapperDecl()
+CKObjectDeclaration *FillBehaviorJoystickVectorMapperDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT_JoystickVectorMapper");
     od->SetDescription("TT_JoystickVectorMapper");
     od->SetCategory("TT Toolbox/Controllers");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x4f80efd,0x76b47b33));
+    od->SetGuid(CKGUID(0x4f80efd, 0x76b47b33));
     od->SetAuthorGuid(TERRATOOLS_GUID);
     od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
-    od->SetCreationFunction(CreateTTJoystickVectorMapperBehaviorProto);
+    od->SetCreationFunction(CreateJoystickVectorMapperProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
     return od;
 }
 
-CKERROR CreateTTJoystickVectorMapperBehaviorProto(CKBehaviorPrototype **pproto)
+CKERROR CreateJoystickVectorMapperProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT_JoystickVectorMapper");
-    if(!proto) return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("Do");
 
@@ -43,22 +45,15 @@ CKERROR CreateTTJoystickVectorMapperBehaviorProto(CKBehaviorPrototype **pproto)
     proto->DeclareOutParameter("OutVector", CKPGUID_VECTOR);
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
-    proto->SetFunction(TTJoystickVectorMapper);
+    proto->SetFunction(JoystickVectorMapper);
 
     *pproto = proto;
     return CK_OK;
 }
 
-int TTJoystickVectorMapper(const CKBehaviorContext& behcontext)
+int JoystickVectorMapper(const CKBehaviorContext &behcontext)
 {
-    CKBehavior* beh = behcontext.Behavior;
-    // TODO: To be finished.
-    return CKBR_OK;
-}
-
-CKERROR TTJoystickVectorMapperCallBack(const CKBehaviorContext& behcontext)
-{
-    CKBehavior* beh = behcontext.Behavior;
+    CKBehavior *beh = behcontext.Behavior;
     // TODO: To be finished.
     return CKBR_OK;
 }

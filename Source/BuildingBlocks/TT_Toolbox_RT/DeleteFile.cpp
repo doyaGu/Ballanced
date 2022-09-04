@@ -5,30 +5,32 @@
 //
 /////////////////////////////////
 /////////////////////////////////
-#include "TT_Toolbox_RT.h"
+#include "CKAll.h"
+#include "ToolboxGuids.h"
 
-CKERROR CreateTTDeleteFileBehaviorProto(CKBehaviorPrototype **pproto);
-int TTDeleteFile(const CKBehaviorContext& behcontext);
+CKObjectDeclaration *FillBehaviorDeleteFileDecl();
+CKERROR CreateDeleteFileProto(CKBehaviorPrototype **pproto);
+int DeleteFile(const CKBehaviorContext &behcontext);
 
-CKObjectDeclaration *FillBehaviorTTDeleteFileDecl()
+CKObjectDeclaration *FillBehaviorDeleteFileDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT_DeleteFile");
     od->SetDescription("Delete a File");
     od->SetCategory("TT Toolbox/File");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x562f6aab,0x7ea0f0b));
+    od->SetGuid(CKGUID(0x562f6aab, 0x7ea0f0b));
     od->SetAuthorGuid(TERRATOOLS_GUID);
     od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
-    od->SetCreationFunction(CreateTTDeleteFileBehaviorProto);
+    od->SetCreationFunction(CreateDeleteFileProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
     return od;
 }
 
-CKERROR CreateTTDeleteFileBehaviorProto(CKBehaviorPrototype **pproto)
+CKERROR CreateDeleteFileProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT_DeleteFile");
-    if(!proto) return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("IN");
 
@@ -38,22 +40,15 @@ CKERROR CreateTTDeleteFileBehaviorProto(CKBehaviorPrototype **pproto)
     proto->DeclareInParameter("File", CKPGUID_STRING);
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
-    proto->SetFunction(TTDeleteFile);
+    proto->SetFunction(DeleteFile);
 
     *pproto = proto;
     return CK_OK;
 }
 
-int TTDeleteFile(const CKBehaviorContext& behcontext)
+int DeleteFile(const CKBehaviorContext &behcontext)
 {
-    CKBehavior* beh = behcontext.Behavior;
-    // TODO: To be finished.
-    return CKBR_OK;
-}
-
-CKERROR TTDeleteFileCallBack(const CKBehaviorContext& behcontext)
-{
-    CKBehavior* beh = behcontext.Behavior;
+    CKBehavior *beh = behcontext.Behavior;
     // TODO: To be finished.
     return CKBR_OK;
 }

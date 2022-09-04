@@ -5,30 +5,32 @@
 //
 ///////////////////////////////////
 ///////////////////////////////////
-#include "TT_Toolbox_RT.h"
+#include "CKAll.h"
+#include "ToolboxGuids.h"
 
-CKERROR CreateTTCreateFontExBehaviorProto(CKBehaviorPrototype **pproto);
-int TTCreateFontEx(const CKBehaviorContext& behcontext);
+CKObjectDeclaration *FillBehaviorCreateFontExDecl();
+CKERROR CreateCreateFontExProto(CKBehaviorPrototype **pproto);
+int CreateFontEx(const CKBehaviorContext &behcontext);
 
-CKObjectDeclaration *FillBehaviorTTCreateFontExDecl()
+CKObjectDeclaration *FillBehaviorCreateFontExDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT_CreateFontEx");
     od->SetDescription("Creates a font from a provided texture.");
     od->SetCategory("TT Toolbox/Font");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x260e4eb0,0xe256b90));
+    od->SetGuid(CKGUID(0x260e4eb0, 0xe256b90));
     od->SetAuthorGuid(TERRATOOLS_GUID);
     od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
-    od->SetCreationFunction(CreateTTCreateFontExBehaviorProto);
+    od->SetCreationFunction(CreateCreateFontExProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
     return od;
 }
 
-CKERROR CreateTTCreateFontExBehaviorProto(CKBehaviorPrototype **pproto)
+CKERROR CreateCreateFontExProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT CreateFontEx");
-    if(!proto) return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
 
@@ -42,26 +44,20 @@ CKERROR CreateTTCreateFontExBehaviorProto(CKBehaviorPrototype **pproto)
     proto->DeclareInParameter("First Character", CKPGUID_INT, "0");
     proto->DeclareInParameter("FontCoordinatesData", CKPGUID_DATAARRAY);
 
-    proto->DeclareOutParameter("Font", );
+    proto->DeclareOutParameter("Font", CKPGUID_FONT);
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
-    proto->SetFunction(TTCreateFontEx);
+    proto->SetFunction(CreateFontEx);
 
-    proto->SetBehaviorFlags((CK_BEHAVIOR_FLAGS)(CKBEHAVIOR_INTERNALLYCREATEDINPUTPARAMS));
+    proto->SetBehaviorFlags(CKBEHAVIOR_INTERNALLYCREATEDINPUTPARAMS);
+
     *pproto = proto;
     return CK_OK;
 }
 
-int TTCreateFontEx(const CKBehaviorContext& behcontext)
+int CreateFontEx(const CKBehaviorContext &behcontext)
 {
-    CKBehavior* beh = behcontext.Behavior;
-    // TODO: To be finished.
-    return CKBR_OK;
-}
-
-CKERROR TTCreateFontExCallBack(const CKBehaviorContext& behcontext)
-{
-    CKBehavior* beh = behcontext.Behavior;
+    CKBehavior *beh = behcontext.Behavior;
     // TODO: To be finished.
     return CKBR_OK;
 }

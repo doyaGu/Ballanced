@@ -5,30 +5,32 @@
 //
 ////////////////////////////////
 ////////////////////////////////
-#include "TT_Toolbox_RT.h"
+#include "CKAll.h"
+#include "ToolboxGuids.h"
 
-CKERROR CreateTTExistFileBehaviorProto(CKBehaviorPrototype **pproto);
-int TTExistFile(const CKBehaviorContext& behcontext);
+CKObjectDeclaration *FillBehaviorExistFileDecl();
+CKERROR CreateExistFileProto(CKBehaviorPrototype **pproto);
+int ExistFile(const CKBehaviorContext &behcontext);
 
-CKObjectDeclaration *FillBehaviorTTExistFileDecl()
+CKObjectDeclaration *FillBehaviorExistFileDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT_ExistFile");
     od->SetDescription("Checks for existing of a File");
     od->SetCategory("TT Toolbox/File");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x53ba46bc,0x31782f60));
+    od->SetGuid(CKGUID(0x53ba46bc, 0x31782f60));
     od->SetAuthorGuid(TERRATOOLS_GUID);
     od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
-    od->SetCreationFunction(CreateTTExistFileBehaviorProto);
+    od->SetCreationFunction(CreateExistFileProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
     return od;
 }
 
-CKERROR CreateTTExistFileBehaviorProto(CKBehaviorPrototype **pproto)
+CKERROR CreateExistFileProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT_ExistFile");
-    if(!proto) return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("IN");
 
@@ -38,22 +40,15 @@ CKERROR CreateTTExistFileBehaviorProto(CKBehaviorPrototype **pproto)
     proto->DeclareInParameter("File", CKPGUID_STRING);
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
-    proto->SetFunction(TTExistFile);
+    proto->SetFunction(ExistFile);
 
     *pproto = proto;
     return CK_OK;
 }
 
-int TTExistFile(const CKBehaviorContext& behcontext)
+int ExistFile(const CKBehaviorContext &behcontext)
 {
-    CKBehavior* beh = behcontext.Behavior;
-    // TODO: To be finished.
-    return CKBR_OK;
-}
-
-CKERROR TTExistFileCallBack(const CKBehaviorContext& behcontext)
-{
-    CKBehavior* beh = behcontext.Behavior;
+    CKBehavior *beh = behcontext.Behavior;
     // TODO: To be finished.
     return CKBR_OK;
 }

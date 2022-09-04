@@ -5,31 +5,33 @@
 //
 /////////////////////////////////////
 /////////////////////////////////////
-#include "TT_Toolbox_RT.h"
+#include "CKAll.h"
+#include "ToolboxGuids.h"
 
-CKERROR CreateTTMagnetMeshFormBehaviorProto(CKBehaviorPrototype **pproto);
-int TTMagnetMeshForm(const CKBehaviorContext& behcontext);
-CKERROR TTMagnetMeshFormCallBack(const CKBehaviorContext& behcontext);
+CKObjectDeclaration *FillBehaviorMagnetMeshFormDecl();
+CKERROR CreateMagnetMeshFormProto(CKBehaviorPrototype **pproto);
+int MagnetMeshForm(const CKBehaviorContext &behcontext);
+CKERROR MagnetMeshFormCallBack(const CKBehaviorContext &behcontext);
 
-CKObjectDeclaration *FillBehaviorTTMagnetMeshFormDecl()
+CKObjectDeclaration *FillBehaviorMagnetMeshFormDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT MagnetMeshForm");
     od->SetDescription("Objekt wird magnetisch von eimem anderen angezogen");
     od->SetCategory("TT Toolbox/Mesh");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x8e53929,0x4c9c5205));
+    od->SetGuid(CKGUID(0x8e53929, 0x4c9c5205));
     od->SetAuthorGuid(TERRATOOLS_GUID);
     od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
-    od->SetCreationFunction(CreateTTMagnetMeshFormBehaviorProto);
+    od->SetCreationFunction(CreateMagnetMeshFormProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
     return od;
 }
 
-CKERROR CreateTTMagnetMeshFormBehaviorProto(CKBehaviorPrototype **pproto)
+CKERROR CreateMagnetMeshFormProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT MagnetMeshForm");
-    if(!proto) return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("On");
     proto->DeclareInput("Off");
@@ -48,25 +50,25 @@ CKERROR CreateTTMagnetMeshFormBehaviorProto(CKBehaviorPrototype **pproto)
     proto->DeclareSetting("Sinus-Deform?", CKPGUID_BOOL, "false");
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
-    proto->SetFunction(TTMagnetMeshForm);
+    proto->SetFunction(MagnetMeshForm);
 
-    proto->SetBehaviorFlags((CK_BEHAVIOR_FLAGS)(CKBEHAVIOR_TARGETABLE));
-    proto->SetBehaviorCallbackFct(TTMagnetMeshFormCallBack);
+    proto->SetBehaviorFlags(CKBEHAVIOR_TARGETABLE);
+    proto->SetBehaviorCallbackFct(MagnetMeshFormCallBack);
 
     *pproto = proto;
     return CK_OK;
 }
 
-int TTMagnetMeshForm(const CKBehaviorContext& behcontext)
+int MagnetMeshForm(const CKBehaviorContext &behcontext)
 {
-    CKBehavior* beh = behcontext.Behavior;
+    CKBehavior *beh = behcontext.Behavior;
     // TODO: To be finished.
     return CKBR_OK;
 }
 
-CKERROR TTMagnetMeshFormCallBack(const CKBehaviorContext& behcontext)
+CKERROR MagnetMeshFormCallBack(const CKBehaviorContext &behcontext)
 {
-    CKBehavior* beh = behcontext.Behavior;
+    CKBehavior *beh = behcontext.Behavior;
     // TODO: To be finished.
     return CKBR_OK;
 }

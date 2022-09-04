@@ -1,25 +1,26 @@
-/////////////////////////////////////////////////////
-/////////////////////////////////////////////////////
+/////////////////////////////////
+/////////////////////////////////
 //
-//		            TT ConvertBox
+//        TT_ConvertBox
 //
-/////////////////////////////////////////////////////
-/////////////////////////////////////////////////////
-#include "TT_Toolbox_RT.h"
+/////////////////////////////////
+/////////////////////////////////
+#include "CKAll.h"
+#include "ToolboxGuids.h"
 
 CKObjectDeclaration *FillBehaviorConvertBoxDecl();
-CKERROR CreateConvertBoxProto(CKBehaviorPrototype **);
+CKERROR CreateConvertBoxProto(CKBehaviorPrototype **pproto);
 int ConvertBox(const CKBehaviorContext &behcontext);
 
 CKObjectDeclaration *FillBehaviorConvertBoxDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT_ConvertBox");
-    od->SetDescription("Generates a bounding box from 2 vectors");
+    od->SetDescription("generiert aus 2 Vektoren eine BoundingBox");
     od->SetCategory("TT Toolbox/Logic");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x694867FF, 0x7DB16D1F));
+    od->SetGuid(CKGUID(0x694867ff, 0x7db16d1f));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("TERRATOOLS");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateConvertBoxProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
@@ -29,15 +30,15 @@ CKObjectDeclaration *FillBehaviorConvertBoxDecl()
 CKERROR CreateConvertBoxProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT_ConvertBox");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("On");
-    
+
     proto->DeclareOutput("Exit On");
 
     proto->DeclareInParameter("Vector Min", CKPGUID_VECTOR);
     proto->DeclareInParameter("Vector Max", CKPGUID_VECTOR);
+
     proto->DeclareOutParameter("BBox", CKPGUID_BOX);
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);

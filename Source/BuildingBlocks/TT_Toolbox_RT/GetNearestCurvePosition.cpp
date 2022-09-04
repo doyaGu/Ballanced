@@ -1,14 +1,15 @@
-/////////////////////////////////////////////////////
-/////////////////////////////////////////////////////
+//////////////////////////////////////////////
+//////////////////////////////////////////////
 //
-//		            TT GetNearestCurvePosition
+//        TT GetNearestCurvePosition
 //
-/////////////////////////////////////////////////////
-/////////////////////////////////////////////////////
-#include "TT_Toolbox_RT.h"
+//////////////////////////////////////////////
+//////////////////////////////////////////////
+#include "CKAll.h"
+#include "ToolboxGuids.h"
 
 CKObjectDeclaration *FillBehaviorGetNearestCurvePositionDecl();
-CKERROR CreateGetNearestCurvePositionProto(CKBehaviorPrototype **);
+CKERROR CreateGetNearestCurvePositionProto(CKBehaviorPrototype **pproto);
 int GetNearestCurvePosition(const CKBehaviorContext &behcontext);
 CKERROR GetNearestCurvePositionCallBack(const CKBehaviorContext &behcontext);
 
@@ -18,20 +19,19 @@ CKObjectDeclaration *FillBehaviorGetNearestCurvePositionDecl()
     od->SetDescription("");
     od->SetCategory("TT Toolbox/Logic");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x4DB6E14, 0x2C151F73));
+    od->SetGuid(CKGUID(0x4db6e14, 0x2c151f73));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("TERRATOOLS");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateGetNearestCurvePositionProto);
-    od->SetCompatibleClassId(CKCID_CAMERA);
+    od->SetCompatibleClassId(CKCID_BEOBJECT);
     return od;
 }
 
 CKERROR CreateGetNearestCurvePositionProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT GetNearestCurvePosition");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
 
@@ -48,7 +48,7 @@ CKERROR CreateGetNearestCurvePositionProto(CKBehaviorPrototype **pproto)
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
     proto->SetFunction(GetNearestCurvePosition);
 
-    proto->SetBehaviorFlags((CK_BEHAVIOR_FLAGS)CKBEHAVIOR_TARGETABLE);
+    proto->SetBehaviorFlags(CKBEHAVIOR_TARGETABLE);
     proto->SetBehaviorCallbackFct(GetNearestCurvePositionCallBack);
 
     *pproto = proto;
@@ -58,15 +58,13 @@ CKERROR CreateGetNearestCurvePositionProto(CKBehaviorPrototype **pproto)
 int GetNearestCurvePosition(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
-    CKContext *context = behcontext.Context;
-
-    // TODO
-
-    beh->ActivateOutput(0);
+    // TODO: To be finished.
     return CKBR_OK;
 }
 
 CKERROR GetNearestCurvePositionCallBack(const CKBehaviorContext &behcontext)
 {
+    CKBehavior *beh = behcontext.Behavior;
+    // TODO: To be finished.
     return CKBR_OK;
 }

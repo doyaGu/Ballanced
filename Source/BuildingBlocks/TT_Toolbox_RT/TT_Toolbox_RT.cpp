@@ -1,5 +1,5 @@
-#include "TT_Toolbox_RT.h"
-
+#include "CKAll.h"
+#include "ToolboxGuids.h"
 #include "DXManager.h"
 #include "DebugManager.h"
 #include "TimeManager.h"
@@ -23,23 +23,19 @@
 CKERROR InitInstance(CKContext *context)
 {
     CKParameterManager *pm = context->GetParameterManager();
-    pm->RegisterNewFlags(CKGUID(0x4A820522, 0x260C34A9), "Proximity", "InRange=1,OutRange=2,EnterRange=4,ExitRange=8");
-    pm->RegisterNewFlags(CKGUID(0x56D95DA6, 0x9CE65AF), "Check Axis?", "X=1,Y=2,Z=4");
-    pm->RegisterNewFlags(CKGUID(0x5EA45694, 0x71FA6627), "Set", "Position=4,Size=2,UV-Mapping=1");
-    pm->RegisterNewFlags(CKGUID(0x2CF773D, 0x425A4084), "Set", "Position=8,Size=4, Offset= 2, UV-Mapping=1");
+    pm->RegisterNewFlags(CKPGUID_PROXIMITY, "Proximity", "InRange=1,OutRange=2,EnterRange=4,ExitRange=8");
+    pm->RegisterNewFlags(CKPGUID_CHECKAXIS, "Check Axis?", "X=1,Y=2,Z=4");
+    pm->RegisterNewFlags(CKPGUID_2DSPRITEINPUT, "Set", "Position=4,Size=2,UV-Mapping=1");
+    pm->RegisterNewFlags(CKPGUID_3DSPRITEINPUT, "Set", "Position=8,Size=4,Offset= 2,UV-Mapping=1");
 
-    pm->RegisterNewEnum(CKGUID(0x2EF660C2, 0x207766D5), "Axis", "X=1,Y=2,Z=4,XY=3,XZ=5,YZ=6,XYZ=7");
-    pm->RegisterNewEnum(CKGUID(0x5848550B, 0xABF5EA5), "Mapping", "Conic=1,Radial=2");
+    pm->RegisterNewEnum(CKPGUID_TTAXIS, "Axis", "X=1,Y=2,Z=4,XY=3,XZ=5,YZ=6,XYZ=7");
+    pm->RegisterNewEnum(CKPGUID_MAPPING, "Mapping", "Conic=1,Radial=2");
 
-    pm->RegisterNewStructure(CKGUID(0x1C0138D7, 0x1A1609EF), "SShadow", "Mesh-ID,Static, Shadow-Length, SelfShadow",
-                             CKPGUID_INT,
-                             CKPGUID_BOOL,
-                             CKPGUID_FLOAT,
-                             CKPGUID_BOOL);
+    pm->RegisterNewStructure(CKPGUID_SSHADOW, "SShadow", "Mesh-ID,Static, Shadow-Length, SelfShadow", CKPGUID_INT, CKPGUID_BOOL, CKPGUID_FLOAT, CKPGUID_BOOL);
 
-    new CTTTimeManager(context);
-    new CTTDebugManager(context);
-    new CTTDXManager(context);
+    new TimeManager(context);
+    new DebugManager(context);
+    new DXManager(context);
 
     return CK_OK;
 }
@@ -47,10 +43,10 @@ CKERROR InitInstance(CKContext *context)
 CKERROR ExitInstance(CKContext *context)
 {
     CKParameterManager *pm = context->GetParameterManager();
-    pm->UnRegisterParameterType(CKGUID(0x4A820522, 0x260C34A9));
-    pm->UnRegisterParameterType(CKGUID(0x2EF660C2, 0x207766D5));
-    pm->UnRegisterParameterType(CKGUID(0x5848550B, 0xABF5EA5));
-    pm->UnRegisterParameterType(CKGUID(0x1C0138D7, 0x1A1609EF));
+    pm->UnRegisterParameterType(CKPGUID_PROXIMITY);
+    pm->UnRegisterParameterType(CKPGUID_TTAXIS);
+    pm->UnRegisterParameterType(CKPGUID_MAPPING);
+    pm->UnRegisterParameterType(CKPGUID_SSHADOW);
 
     return CK_OK;
 }

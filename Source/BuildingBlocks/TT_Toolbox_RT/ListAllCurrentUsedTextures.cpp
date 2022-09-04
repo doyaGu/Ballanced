@@ -5,30 +5,32 @@
 //
 /////////////////////////////////////////////////
 /////////////////////////////////////////////////
-#include "TT_Toolbox_RT.h"
+#include "CKAll.h"
+#include "ToolboxGuids.h"
 
-CKERROR CreateTTListAllCurrentUsedTexturesBehaviorProto(CKBehaviorPrototype **pproto);
-int TTListAllCurrentUsedTextures(const CKBehaviorContext& behcontext);
+CKObjectDeclaration *FillBehaviorListAllCurrentUsedTexturesDecl();
+CKERROR CreateListAllCurrentUsedTexturesProto(CKBehaviorPrototype **pproto);
+int ListAllCurrentUsedTextures(const CKBehaviorContext &behcontext);
 
-CKObjectDeclaration *FillBehaviorTTListAllCurrentUsedTexturesDecl()
+CKObjectDeclaration *FillBehaviorListAllCurrentUsedTexturesDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT_ListAllCurrentUsedTextures");
     od->SetDescription("List All Current Used Textures in a DataArray");
     od->SetCategory("TT Toolbox/Material");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x6b6d781e,0x4b531860));
+    od->SetGuid(CKGUID(0x6b6d781e, 0x4b531860));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("TERRATOOLS");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
-    od->SetCreationFunction(CreateTTListAllCurrentUsedTexturesBehaviorProto);
+    od->SetCreationFunction(CreateListAllCurrentUsedTexturesProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
     return od;
 }
 
-CKERROR CreateTTListAllCurrentUsedTexturesBehaviorProto(CKBehaviorPrototype **pproto)
+CKERROR CreateListAllCurrentUsedTexturesProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT_ListAllCurrentUsedTextures");
-    if(!proto) return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
 
@@ -39,22 +41,15 @@ CKERROR CreateTTListAllCurrentUsedTexturesBehaviorProto(CKBehaviorPrototype **pp
     proto->DeclareSetting("OnInVideoMemory", CKPGUID_BOOL, "TRUE");
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
-    proto->SetFunction(TTListAllCurrentUsedTextures);
+    proto->SetFunction(ListAllCurrentUsedTextures);
 
     *pproto = proto;
     return CK_OK;
 }
 
-int TTListAllCurrentUsedTextures(const CKBehaviorContext& behcontext)
+int ListAllCurrentUsedTextures(const CKBehaviorContext &behcontext)
 {
-    CKBehavior* beh = behcontext.Behavior;
-    // TODO: To be finished.
-    return CKBR_OK;
-}
-
-CKERROR TTListAllCurrentUsedTexturesCallBack(const CKBehaviorContext& behcontext)
-{
-    CKBehavior* beh = behcontext.Behavior;
+    CKBehavior *beh = behcontext.Behavior;
     // TODO: To be finished.
     return CKBR_OK;
 }

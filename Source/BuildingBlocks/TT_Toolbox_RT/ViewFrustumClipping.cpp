@@ -5,31 +5,33 @@
 //
 //////////////////////////////////////////
 //////////////////////////////////////////
-#include "TT_Toolbox_RT.h"
+#include "CKAll.h"
+#include "ToolboxGuids.h"
 
-CKERROR CreateTTViewFrustumClippingBehaviorProto(CKBehaviorPrototype **pproto);
-int TTViewFrustumClipping(const CKBehaviorContext& behcontext);
-CKERROR TTViewFrustumClippingCallBack(const CKBehaviorContext& behcontext);
+CKObjectDeclaration *FillBehaviorViewFrustumClippingDecl();
+CKERROR CreateViewFrustumClippingProto(CKBehaviorPrototype **pproto);
+int ViewFrustumClipping(const CKBehaviorContext &behcontext);
+CKERROR ViewFrustumClippingCallBack(const CKBehaviorContext &behcontext);
 
-CKObjectDeclaration *FillBehaviorTTViewFrustumClippingDecl()
+CKObjectDeclaration *FillBehaviorViewFrustumClippingDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT_ViewFrustumClipping");
     od->SetDescription("erzeugt lichtabh�ngiges BumpMapping");
     od->SetCategory("TT Toolbox/Logic");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x412e4cd0,0x6f860de3));
+    od->SetGuid(CKGUID(0x412e4cd0, 0x6f860de3));
     od->SetAuthorGuid(TERRATOOLS_GUID);
     od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
-    od->SetCreationFunction(CreateTTViewFrustumClippingBehaviorProto);
+    od->SetCreationFunction(CreateViewFrustumClippingProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
     return od;
 }
 
-CKERROR CreateTTViewFrustumClippingBehaviorProto(CKBehaviorPrototype **pproto)
+CKERROR CreateViewFrustumClippingProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT_ViewFrustumClipping");
-    if(!proto) return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
 
@@ -41,25 +43,25 @@ CKERROR CreateTTViewFrustumClippingBehaviorProto(CKBehaviorPrototype **pproto)
     proto->DeclareLocalParameter("", CKPGUID_VOIDBUF);
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
-    proto->SetFunction(TTViewFrustumClipping);
+    proto->SetFunction(ViewFrustumClipping);
 
     proto->SetBehaviorFlags((CK_BEHAVIOR_FLAGS)(CKBEHAVIOR_TARGETABLE | CKBEHAVIOR_INTERNALLYCREATEDINPUTPARAMS));
-    proto->SetBehaviorCallbackFct(TTViewFrustumClippingCallBack);
+    proto->SetBehaviorCallbackFct(ViewFrustumClippingCallBack);
 
     *pproto = proto;
     return CK_OK;
 }
 
-int TTViewFrustumClipping(const CKBehaviorContext& behcontext)
+int ViewFrustumClipping(const CKBehaviorContext &behcontext)
 {
-    CKBehavior* beh = behcontext.Behavior;
+    CKBehavior *beh = behcontext.Behavior;
     // TODO: To be finished.
     return CKBR_OK;
 }
 
-CKERROR TTViewFrustumClippingCallBack(const CKBehaviorContext& behcontext)
+CKERROR ViewFrustumClippingCallBack(const CKBehaviorContext &behcontext)
 {
-    CKBehavior* beh = behcontext.Behavior;
+    CKBehavior *beh = behcontext.Behavior;
     // TODO: To be finished.
     return CKBR_OK;
 }

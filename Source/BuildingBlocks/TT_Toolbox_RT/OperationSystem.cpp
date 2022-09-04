@@ -5,30 +5,32 @@
 //
 //////////////////////////////////////
 //////////////////////////////////////
-#include "TT_Toolbox_RT.h"
+#include "CKAll.h"
+#include "ToolboxGuids.h"
 
-CKERROR CreateTTOperationSystemBehaviorProto(CKBehaviorPrototype **pproto);
-int TTOperationSystem(const CKBehaviorContext& behcontext);
+CKObjectDeclaration *FillBehaviorOperationSystemDecl();
+CKERROR CreateOperationSystemProto(CKBehaviorPrototype **pproto);
+int OperationSystem(const CKBehaviorContext &behcontext);
 
-CKObjectDeclaration *FillBehaviorTTOperationSystemDecl()
+CKObjectDeclaration *FillBehaviorOperationSystemDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT OperationSystem");
     od->SetDescription("reads operation system");
     od->SetCategory("TT Toolbox/System");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x4c94621d,0x24fe2cf3));
+    od->SetGuid(CKGUID(0x4c94621d, 0x24fe2cf3));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("Virtools");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
-    od->SetCreationFunction(CreateTTOperationSystemBehaviorProto);
+    od->SetCreationFunction(CreateOperationSystemProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
     return od;
 }
 
-CKERROR CreateTTOperationSystemBehaviorProto(CKBehaviorPrototype **pproto)
+CKERROR CreateOperationSystemProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT OperationSystem");
-    if(!proto) return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
 
@@ -39,22 +41,15 @@ CKERROR CreateTTOperationSystemBehaviorProto(CKBehaviorPrototype **pproto)
     proto->DeclareOutParameter("MajorVersion", CKPGUID_INT);
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
-    proto->SetFunction(TTOperationSystem);
+    proto->SetFunction(OperationSystem);
 
     *pproto = proto;
     return CK_OK;
 }
 
-int TTOperationSystem(const CKBehaviorContext& behcontext)
+int OperationSystem(const CKBehaviorContext &behcontext)
 {
-    CKBehavior* beh = behcontext.Behavior;
-    // TODO: To be finished.
-    return CKBR_OK;
-}
-
-CKERROR TTOperationSystemCallBack(const CKBehaviorContext& behcontext)
-{
-    CKBehavior* beh = behcontext.Behavior;
+    CKBehavior *beh = behcontext.Behavior;
     // TODO: To be finished.
     return CKBR_OK;
 }

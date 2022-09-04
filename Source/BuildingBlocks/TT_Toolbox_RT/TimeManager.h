@@ -6,11 +6,11 @@
 
 #define TT_TIME_MANAGER_GUID CKGUID(0x60632E28, 0x7D3B3C7D)
 
-class CTTTimeManager : public CKBaseManager
+class TimeManager : public CKBaseManager
 {
 public:
-    CTTTimeManager(CKContext *ctx);
-    ~CTTTimeManager();
+    TimeManager(CKContext *ctx);
+    ~TimeManager();
 
     CKERROR OnCKInit() { return CK_OK; }
     CKERROR OnCKEnd() { return CK_OK; }
@@ -30,9 +30,9 @@ public:
                CKMANAGER_FUNC_OnCKReset;
     }
 
-    static CTTTimeManager *GetManager(CKContext *context)
+    static TimeManager *GetManager(CKContext *context)
     {
-        return (CTTTimeManager *)context->GetManagerByGuid(TT_TIME_MANAGER_GUID);
+        return (TimeManager *)context->GetManagerByGuid(TT_TIME_MANAGER_GUID);
     }
 
 protected:

@@ -8,11 +8,11 @@
 
 #define TT_DEBUG_MANAGER_GUID CKGUID(0x47510373, 0x711473D7)
 
-class CTTDebugManager : public CKBaseManager
+class DebugManager : public CKBaseManager
 {
 public:
-    CTTDebugManager(CKContext *ctx);
-    ~CTTDebugManager();
+    DebugManager(CKContext *ctx);
+    ~DebugManager();
 
     CKERROR OnCKInit() { return CK_OK; }
     CKERROR OnCKEnd() { return CK_OK; }
@@ -32,9 +32,9 @@ public:
                CKMANAGER_FUNC_OnCKReset;
     }
 
-    static CTTDebugManager *GetManager(CKContext *context)
+    static DebugManager *GetManager(CKContext *context)
     {
-        return (CTTDebugManager *)context->GetManagerByGuid(TT_DEBUG_MANAGER_GUID);
+        return (DebugManager *)context->GetManagerByGuid(TT_DEBUG_MANAGER_GUID);
     }
 
 protected:

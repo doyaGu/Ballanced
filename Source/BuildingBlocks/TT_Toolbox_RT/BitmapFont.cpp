@@ -1,26 +1,27 @@
-/////////////////////////////////////////////////////
-/////////////////////////////////////////////////////
+/////////////////////////////////
+/////////////////////////////////
 //
-//		            TT_BitmapFont
+//        TT_BitmapFont
 //
-/////////////////////////////////////////////////////
-/////////////////////////////////////////////////////
-#include "TT_Toolbox_RT.h"
+/////////////////////////////////
+/////////////////////////////////
+#include "CKAll.h"
+#include "ToolboxGuids.h"
 
 CKObjectDeclaration *FillBehaviorBitmapFontDecl();
-CKERROR CreateBitmapFontProto(CKBehaviorPrototype **);
+CKERROR CreateBitmapFontProto(CKBehaviorPrototype **pproto);
 int BitmapFont(const CKBehaviorContext &behcontext);
 CKERROR BitmapFontCallBack(const CKBehaviorContext &behcontext);
 
 CKObjectDeclaration *FillBehaviorBitmapFontDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT_BitmapFont");
-    od->SetDescription("Creates an object text from a texture");
+    od->SetDescription("erzeugt aus einer Textur ein Objekt-Text");
     od->SetCategory("TT Toolbox/FX");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x173E60FF, 0x4DB14BCC));
+    od->SetGuid(CKGUID(0x173e60ff, 0x4db14bcc));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("TERRATOOLS");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateBitmapFontProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
@@ -30,8 +31,7 @@ CKObjectDeclaration *FillBehaviorBitmapFontDecl()
 CKERROR CreateBitmapFontProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT_BitmapFont");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("On");
     proto->DeclareInput("Off");
@@ -48,7 +48,7 @@ CKERROR CreateBitmapFontProto(CKBehaviorPrototype **pproto)
     proto->DeclareInParameter("Dest Blend", CKPGUID_BLENDFACTOR);
     proto->DeclareInParameter("Color", CKPGUID_COLOR, "255,255,255,255");
 
-    proto->DeclareLocalParameter(NULL, CKPGUID_VOIDBUF);
+    proto->DeclareLocalParameter("", CKPGUID_VOIDBUF);
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
     proto->SetFunction(BitmapFont);
@@ -62,18 +62,13 @@ CKERROR CreateBitmapFontProto(CKBehaviorPrototype **pproto)
 int BitmapFont(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
-    CKContext *context = behcontext.Context;
+    // TODO: To be finished.
+    return CKBR_OK;
 }
 
 CKERROR BitmapFontCallBack(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
-
-    switch (behcontext.CallbackMessage)
-    {
-    default:
-        break;
-    }
-
+    // TODO: To be finished.
     return CKBR_OK;
 }

@@ -5,30 +5,32 @@
 //
 ////////////////////////////////
 ////////////////////////////////
-#include "TT_Toolbox_RT.h"
+#include "CKAll.h"
+#include "ToolboxGuids.h"
 
-CKERROR CreateTTSaveAlphaBehaviorProto(CKBehaviorPrototype **pproto);
-int TTSaveAlpha(const CKBehaviorContext& behcontext);
+CKObjectDeclaration *FillBehaviorSaveAlphaDecl();
+CKERROR CreateSaveAlphaProto(CKBehaviorPrototype **pproto);
+int SaveAlpha(const CKBehaviorContext &behcontext);
 
-CKObjectDeclaration *FillBehaviorTTSaveAlphaDecl()
+CKObjectDeclaration *FillBehaviorSaveAlphaDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT_SaveAlpha");
     od->SetDescription("Kopiert den Alpha-Kanal in die RGB-Werte der Texture und speichert diese in eine TGA-Datei");
     od->SetCategory("TT Toolbox/Material");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x5ca62d31,0x5d2031b8));
+    od->SetGuid(CKGUID(0x5ca62d31, 0x5d2031b8));
     od->SetAuthorGuid(TERRATOOLS_GUID);
     od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
-    od->SetCreationFunction(CreateTTSaveAlphaBehaviorProto);
+    od->SetCreationFunction(CreateSaveAlphaProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
     return od;
 }
 
-CKERROR CreateTTSaveAlphaBehaviorProto(CKBehaviorPrototype **pproto)
+CKERROR CreateSaveAlphaProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT_SaveAlpha");
-    if(!proto) return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
 
@@ -37,23 +39,17 @@ CKERROR CreateTTSaveAlphaBehaviorProto(CKBehaviorPrototype **pproto)
     proto->DeclareInParameter("Filename", CKPGUID_STRING);
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
-    proto->SetFunction(TTSaveAlpha);
+    proto->SetFunction(SaveAlpha);
 
-    proto->SetBehaviorFlags((CK_BEHAVIOR_FLAGS)(CKBEHAVIOR_TARGETABLE));
+    proto->SetBehaviorFlags(CKBEHAVIOR_TARGETABLE);
+
     *pproto = proto;
     return CK_OK;
 }
 
-int TTSaveAlpha(const CKBehaviorContext& behcontext)
+int SaveAlpha(const CKBehaviorContext &behcontext)
 {
-    CKBehavior* beh = behcontext.Behavior;
-    // TODO: To be finished.
-    return CKBR_OK;
-}
-
-CKERROR TTSaveAlphaCallBack(const CKBehaviorContext& behcontext)
-{
-    CKBehavior* beh = behcontext.Behavior;
+    CKBehavior *beh = behcontext.Behavior;
     // TODO: To be finished.
     return CKBR_OK;
 }
