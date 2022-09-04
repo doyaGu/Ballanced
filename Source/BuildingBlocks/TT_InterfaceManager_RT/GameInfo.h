@@ -8,7 +8,7 @@
 #endif
 #include <windows.h>
 
-struct CGameInfo
+class CGameInfo
 {
 public:
     CGameInfo()
