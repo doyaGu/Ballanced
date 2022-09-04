@@ -53,4 +53,5 @@ int GetCurvePoint(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
     CKContext *context = behcontext.Context;
+	return CK_OK;
 }

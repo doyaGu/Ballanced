@@ -32,7 +32,7 @@ typedef struct
     float effect;     // Distortion Effect
     VxMatrix projmat; // Projection Matrix
     CK3dEntity *cube; // Entity of the Sky-Cube
-    BOOL is_on;
+    CKBOOL is_on;
 } Effect_ProjMat;
 
 CKObjectDeclaration *FillBehaviorSkyAroundDecl()
@@ -147,12 +147,12 @@ int SkyAround(const CKBehaviorContext &behcontext)
     CKDWORD dspeccol = RGBAFTOCOLOR(col.r, col.g, col.b, col.a);
 
     CKDWORD cStride, sStride;
-    BYTE *colp = (BYTE *)mesh->GetColorsPtr(&cStride);
-    BYTE *spcp = (BYTE *)mesh->GetSpecularColorsPtr(&sStride);
+    CKBYTE *colp = (CKBYTE *)mesh->GetColorsPtr(&cStride);
+    CKBYTE *spcp = (CKBYTE *)mesh->GetSpecularColorsPtr(&sStride);
     for (int a = 0; a < 24; a++, colp += cStride, spcp += sStride)
     {
-        *(DWORD *)colp = dcol;     // the vertex color is multiplied by the texture
-        *(DWORD *)spcp = dspeccol; // the spec. is added to the global color
+        *(CKDWORD *)colp = dcol;     // the vertex color is multiplied by the texture
+        *(CKDWORD *)spcp = dspeccol; // the spec. is added to the global color
     }
     mesh->ColorChanged();
 
