@@ -16,12 +16,12 @@ int GetFloatValueFromRegistry(const CKBehaviorContext &behcontext);
 CKObjectDeclaration *FillBehaviorGetFloatValueFromRegistryDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT Get Float Value From Registry");
-    od->SetDescription("Reads a float value from the registry");
+    od->SetDescription("Reads a Float value from the registry");
     od->SetCategory("TT InterfaceManager/Registry");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0xFE6FE4, 0x12A66150));
+    od->SetGuid(CKGUID(0xfe6fe4, 0x12a66150));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("Virtools");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateGetFloatValueFromRegistryProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
@@ -31,8 +31,7 @@ CKObjectDeclaration *FillBehaviorGetFloatValueFromRegistryDecl()
 CKERROR CreateGetFloatValueFromRegistryProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT Get Float Value From Registry");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
 
@@ -42,7 +41,7 @@ CKERROR CreateGetFloatValueFromRegistryProto(CKBehaviorPrototype **pproto)
     proto->DeclareInParameter("RegKey  ...\\..\\", CKPGUID_STRING);
     proto->DeclareInParameter("Value Name", CKPGUID_STRING);
 
-    proto->DeclareOutParameter("Float Value", CKPGUID_FLOAT);
+    proto->DeclareOutParameter("Float Value ", CKPGUID_FLOAT);
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
     proto->SetFunction(GetFloatValueFromRegistry);
@@ -62,7 +61,7 @@ int GetFloatValueFromRegistry(const CKBehaviorContext &behcontext)
     beh->GetInputParameterValue(0, regKey);
     beh->GetInputParameterValue(1, valueName);
 
-    CTTInterfaceManager *man = CTTInterfaceManager::GetManager(context);
+    InterfaceManager *man = InterfaceManager::GetManager(context);
     if (!man)
     {
         context->OutputToConsoleExBeep("TT_GetFloatValueFromRegistry: im==NULL.");

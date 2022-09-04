@@ -10,18 +10,18 @@
 #include "InterfaceManager.h"
 
 CKObjectDeclaration *FillBehaviorSetBooleanValueToRegistryDecl();
-CKERROR CreateSetBooleanValueToRegistryProto(CKBehaviorPrototype **);
+CKERROR CreateSetBooleanValueToRegistryProto(CKBehaviorPrototype **pproto);
 int SetBooleanValueToRegistry(const CKBehaviorContext &behcontext);
 
 CKObjectDeclaration *FillBehaviorSetBooleanValueToRegistryDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT Set Boolean Value To Registry");
-    od->SetDescription("Writes a boolean value to the registry");
+    od->SetDescription("Writes a Boolean value to the registry");
     od->SetCategory("TT InterfaceManager/Registry");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x69FB3783, 0x50262517));
+    od->SetGuid(CKGUID(0x69fb3783, 0x50262517));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("Virtools");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateSetBooleanValueToRegistryProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
@@ -31,8 +31,7 @@ CKObjectDeclaration *FillBehaviorSetBooleanValueToRegistryDecl()
 CKERROR CreateSetBooleanValueToRegistryProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT Set Boolean Value To Registry");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
 
@@ -62,7 +61,7 @@ int SetBooleanValueToRegistry(const CKBehaviorContext &behcontext)
     beh->GetInputParameterValue(1, regKey);
     beh->GetInputParameterValue(2, valueName);
 
-    CTTInterfaceManager *man = CTTInterfaceManager::GetManager(context);
+    InterfaceManager *man = InterfaceManager::GetManager(context);
     if (!man)
     {
         context->OutputToConsoleExBeep("TT_SetBooleanValueToRegistry: im==NULL.");

@@ -7,88 +7,87 @@
 /////////////////////////////////////////////////////
 #include "TT_InterfaceManager_RT.h"
 
-#include "ErrorProtocol.h"
 #include "InterfaceManager.h"
+#include "ErrorProtocol.h"
 
 CKObjectDeclaration *FillBehaviorListScreenModesDecl();
-CKERROR CreateListScreenModesProto(CKBehaviorPrototype **);
+CKERROR CreateListScreenModesProto(CKBehaviorPrototype **pproto);
 int ListScreenModes(const CKBehaviorContext &behcontext);
 
 CKObjectDeclaration *FillBehaviorListScreenModesDecl()
 {
-	CKObjectDeclaration *od = CreateCKObjectDeclaration("TT List ScreenModes");
-	od->SetDescription("List Screenmodes");
-	od->SetCategory("TT InterfaceManager/Display");
-	od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-	od->SetGuid(CKGUID(0x4E7A0194, 0x40328FD));
-	od->SetAuthorGuid(TERRATOOLS_GUID);
-	od->SetAuthorName("Virtools");
-	od->SetVersion(0x00010000);
-	od->SetCreationFunction(CreateListScreenModesProto);
-	od->SetCompatibleClassId(CKCID_BEOBJECT);
-	return od;
+    CKObjectDeclaration *od = CreateCKObjectDeclaration("TT List ScreenModes");
+    od->SetDescription("List Screenmodes");
+    od->SetCategory("TT InterfaceManager/Display");
+    od->SetType(CKDLL_BEHAVIORPROTOTYPE);
+    od->SetGuid(CKGUID(0x4e7a0194, 0x40328fd));
+    od->SetAuthorGuid(TERRATOOLS_GUID);
+    od->SetAuthorName("Terratools");
+    od->SetVersion(0x00010000);
+    od->SetCreationFunction(CreateListScreenModesProto);
+    od->SetCompatibleClassId(CKCID_BEOBJECT);
+    return od;
 }
 
 CKERROR CreateListScreenModesProto(CKBehaviorPrototype **pproto)
 {
-	CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT List ScreenModes");
-	if (!proto)
-		return CKERR_OUTOFMEMORY;
+    CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT List ScreenModes");
+    if (!proto) return CKERR_OUTOFMEMORY;
 
-	proto->DeclareInput("In");
+    proto->DeclareInput("In");
 
-	proto->DeclareOutput("OK");
-	proto->DeclareOutput("Error");
+    proto->DeclareOutput("OK");
+    proto->DeclareOutput("Error");
 
-	proto->DeclareInParameter("Driver ID", CKPGUID_INT);
-	proto->DeclareInParameter("Return: Modes", CKPGUID_DATAARRAY);
+    proto->DeclareInParameter("Driver ID", CKPGUID_INT);
+    proto->DeclareInParameter("Return: Modes", CKPGUID_DATAARRAY);
 
-	proto->DeclareOutParameter("Install Mode", CKPGUID_INT);
+    proto->DeclareOutParameter("Installed Mode", CKPGUID_INT);
 
-	proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
-	proto->SetFunction(ListScreenModes);
+    proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
+    proto->SetFunction(ListScreenModes);
 
-	*pproto = proto;
-	return CK_OK;
+    *pproto = proto;
+    return CK_OK;
 }
 
 int ListScreenModes(const CKBehaviorContext &behcontext)
 {
-	CKBehavior *beh = behcontext.Behavior;
-	CKContext *context = behcontext.Context;
+    CKBehavior *beh = behcontext.Behavior;
+    CKContext *context = behcontext.Context;
 
-	int driverId = 0;
-	beh->GetInputParameterValue(0, &driverId);
+    int driverId = 0;
+    beh->GetInputParameterValue(0, &driverId);
 
-	CKDataArray *screenModes = (CKDataArray *)beh->GetInputParameterObject(1);
-	if (!screenModes)
-	{
-		context->OutputToConsoleExBeep("ListScreenModes: No DataArray Object is found.");
-		beh->ActivateOutput(1);
-		return CKBR_OK;
-	}
+    CKDataArray *screenModes = (CKDataArray *)beh->GetInputParameterObject(1);
+    if (!screenModes)
+    {
+        context->OutputToConsoleExBeep("ListScreenModes: No DataArray Object is found.");
+        beh->ActivateOutput(1);
+        return CKBR_OK;
+    }
 
-	screenModes->GetColumnCount();
-	screenModes->Clear();
-	while (screenModes->GetColumnCount() > 0)
-		screenModes->RemoveColumn(0);
+    screenModes->GetColumnCount();
+    screenModes->Clear();
+    while (screenModes->GetColumnCount() > 0)
+        screenModes->RemoveColumn(0);
 
-	screenModes->InsertColumn(-1, CKARRAYTYPE_INT, "Bpp");
-	screenModes->InsertColumn(0, CKARRAYTYPE_INT, "Mode");
-	screenModes->InsertColumn(1, CKARRAYTYPE_INT, "Width");
-	screenModes->InsertColumn(2, CKARRAYTYPE_INT, "Height");
+    screenModes->InsertColumn(-1, CKARRAYTYPE_INT, "Bpp");
+    screenModes->InsertColumn(0, CKARRAYTYPE_INT, "Mode");
+    screenModes->InsertColumn(1, CKARRAYTYPE_INT, "Width");
+    screenModes->InsertColumn(2, CKARRAYTYPE_INT, "Height");
 
-	VxDriverDesc *drDesc = context->GetRenderManager()->GetRenderDriverDescription(driverId);
-	if (!drDesc)
-	{
-		context->OutputToConsoleExBeep("ListScreenModes: No Driver Description for Driver-ID '%d' is found", driverId);
-		beh->ActivateOutput(1);
-		return CKBR_OK;
-	}
+    VxDriverDesc *drDesc = context->GetRenderManager()->GetRenderDriverDescription(driverId);
+    if (!drDesc)
+    {
+        context->OutputToConsoleExBeep("ListScreenModes: No Driver Description for Driver-ID '%d' is found", driverId);
+        beh->ActivateOutput(1);
+        return CKBR_OK;
+    }
 
-	if (drDesc->DisplayModeCount > 0)
-	{
-		VxDisplayMode *dm = drDesc->DisplayModes;
+    if (drDesc->DisplayModeCount > 0)
+    {
+        VxDisplayMode *dm = drDesc->DisplayModes;
         const int dmCount = drDesc->DisplayModeCount;
 
         int i;
@@ -101,7 +100,7 @@ int ListScreenModes(const CKBehaviorContext &behcontext)
                 break;
         }
 
-		int j = 0;
+        int j = 0;
         int width = 0, height = 0;
         for (i = 0; i < dmCount; ++i)
         {
@@ -118,18 +117,18 @@ int ListScreenModes(const CKBehaviorContext &behcontext)
                 height = dm[i].Height;
             }
         }
-	}
+    }
 
-	CTTInterfaceManager *man = CTTInterfaceManager::GetManager(context);
-	if (!man)
-	{
-		TT_ERROR("ListScreenModes.cpp", "int ListScreenModes(...)", " im == NULL");
-		beh->ActivateOutput(1);
-		return CKBR_OK;
-	}
+    InterfaceManager *man = InterfaceManager::GetManager(context);
+    if (!man)
+    {
+        TT_ERROR("ListScreenModes.cpp", "int ListScreenModes(...)", " im == NULL");
+        beh->ActivateOutput(1);
+        return CKBR_OK;
+    }
 
-	int screenMode = man->GetScreenMode();
-	beh->SetOutputParameterValue(0, &screenMode, sizeof(int));
-	beh->ActivateOutput(0);
-	return CKBR_OK;
+    int screenMode = man->GetScreenMode();
+    beh->SetOutputParameterValue(0, &screenMode, sizeof(int));
+    beh->ActivateOutput(0);
+    return CKBR_OK;
 }

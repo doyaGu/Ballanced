@@ -9,30 +9,29 @@
 
 #include "InterfaceManager.h"
 
-CKObjectDeclaration *FillBehaviorWindowActivatedDecl();
-CKERROR CreateWindowActivatedProto(CKBehaviorPrototype **);
-int WindowActivated(const CKBehaviorContext &behcontext);
+CKObjectDeclaration *FillBehaviorWindowActivateDecl();
+CKERROR CreateWindowActivateProto(CKBehaviorPrototype **pproto);
+int WindowActivate(const CKBehaviorContext &behcontext);
 
-CKObjectDeclaration *FillBehaviorWindowActivatedDecl()
+CKObjectDeclaration *FillBehaviorWindowActivateDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT Window Activate?");
     od->SetDescription("TT Window Activate?");
     od->SetCategory("TT InterfaceManager/Display");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x70936783, 0x7FEE4A3B));
+    od->SetGuid(CKGUID(0x70936783, 0x7fee4a3b));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("Virtools");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
-    od->SetCreationFunction(CreateWindowActivatedProto);
+    od->SetCreationFunction(CreateWindowActivateProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
     return od;
 }
 
-CKERROR CreateWindowActivatedProto(CKBehaviorPrototype **pproto)
+CKERROR CreateWindowActivateProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT Window Activate?");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
 
@@ -40,18 +39,18 @@ CKERROR CreateWindowActivatedProto(CKBehaviorPrototype **pproto)
     proto->DeclareOutput("else");
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
-    proto->SetFunction(WindowActivated);
+    proto->SetFunction(WindowActivate);
 
     *pproto = proto;
     return CK_OK;
 }
 
-int WindowActivated(const CKBehaviorContext &behcontext)
+int WindowActivate(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
     CKContext *context = behcontext.Context;
 
-    CTTInterfaceManager *man = CTTInterfaceManager::GetManager(context);
+    InterfaceManager *man = InterfaceManager::GetManager(context);
     if (man && man->IsWindowActivated())
     {
         man->SetWindowActivated(false);

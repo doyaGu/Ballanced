@@ -10,18 +10,18 @@
 #include "InterfaceManager.h"
 
 CKObjectDeclaration *FillBehaviorSetFloatValueToRegistryDecl();
-CKERROR CreateSetFloatValueToRegistryProto(CKBehaviorPrototype **);
+CKERROR CreateSetFloatValueToRegistryProto(CKBehaviorPrototype **pproto);
 int SetFloatValueToRegistry(const CKBehaviorContext &behcontext);
 
 CKObjectDeclaration *FillBehaviorSetFloatValueToRegistryDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT Set Float Value To Registry");
-    od->SetDescription("Writes a float value to the registry");
+    od->SetDescription("Writes a Float value to the registry");
     od->SetCategory("TT InterfaceManager/Registry");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x60522F, 0x41D4C1F));
+    od->SetGuid(CKGUID(0x60522f, 0x41d4c1f));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("Virtools");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateSetFloatValueToRegistryProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
@@ -31,15 +31,14 @@ CKObjectDeclaration *FillBehaviorSetFloatValueToRegistryDecl()
 CKERROR CreateSetFloatValueToRegistryProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT Set Float Value To Registry");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
 
     proto->DeclareOutput("OK");
     proto->DeclareOutput("FAILED");
 
-    proto->DeclareInParameter("Float Value", CKPGUID_FLOAT);
+    proto->DeclareInParameter("Float Value ", CKPGUID_FLOAT);
     proto->DeclareInParameter("RegKey  ...\\..\\", CKPGUID_STRING);
     proto->DeclareInParameter("Value Name", CKPGUID_STRING);
 
@@ -62,7 +61,7 @@ int SetFloatValueToRegistry(const CKBehaviorContext &behcontext)
     beh->GetInputParameterValue(1, regKey);
     beh->GetInputParameterValue(2, valueName);
 
-    CTTInterfaceManager *man = CTTInterfaceManager::GetManager(context);
+    InterfaceManager *man = InterfaceManager::GetManager(context);
     if (!man)
     {
         context->OutputToConsoleExBeep("TT_SetFloatValueToRegistry: im==NULL.");

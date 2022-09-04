@@ -9,8 +9,8 @@
 
 #include <stdio.h>
 
-#include "ErrorProtocol.h"
 #include "InterfaceManager.h"
+#include "ErrorProtocol.h"
 
 CKObjectDeclaration *FillBehaviorInstallArrayDecl();
 CKERROR CreateInstallArrayProto(CKBehaviorPrototype **);
@@ -22,9 +22,9 @@ CKObjectDeclaration *FillBehaviorInstallArrayDecl()
     od->SetDescription("Install Array to Manager");
     od->SetCategory("TT InterfaceManager/General");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x41F47EC4, 0x69470BBD));
+    od->SetGuid(CKGUID(0x41f47ec4, 0x69470bbd));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("Virtools");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateInstallArrayProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
@@ -34,8 +34,7 @@ CKObjectDeclaration *FillBehaviorInstallArrayDecl()
 CKERROR CreateInstallArrayProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT Install Array");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
 
@@ -59,7 +58,7 @@ int InstallArray(const CKBehaviorContext &behcontext)
 
     beh->ActivateInput(0, FALSE);
 
-    CTTInterfaceManager *man = CTTInterfaceManager::GetManager(context);
+    InterfaceManager *man = InterfaceManager::GetManager(context);
     if (!man)
     {
         ::PostMessageA((HWND)context->GetRenderManager()->GetRenderContext(0)->GetWindowHandle(), TT_MSG_NO_GAMEINFO, 0x1A, 1);
@@ -80,7 +79,7 @@ int InstallArray(const CKBehaviorContext &behcontext)
         {
             char *msg = new char[256];
             sprintf(msg, " '%s'  from file '%s' installed to manager", array->GetName(), cmo);
-            ::MessageBoxA((HWND)context->GetRenderManager()->GetRenderContext(man->GetDriver())->GetWindowHandle(), msg, "message...", MB_OK);
+            ::MessageBoxA((HWND)context->GetMainWindow(), msg, "message...", MB_OK);
             delete[] msg;
         }
     }

@@ -7,55 +7,54 @@
 /////////////////////////////////////////////////////
 #include "TT_InterfaceManager_RT.h"
 
-#include "ErrorProtocol.h"
 #include "InterfaceManager.h"
+#include "ErrorProtocol.h"
 
-CKObjectDeclaration *FillBehaviorSendCMORestartDecl();
-CKERROR CreateSendCMORestartProto(CKBehaviorPrototype **);
-int SendCMORestart(const CKBehaviorContext &behcontext);
+CKObjectDeclaration *FillBehaviorRestartCMODecl();
+CKERROR CreateRestartCMOProto(CKBehaviorPrototype **pproto);
+int RestartCMO(const CKBehaviorContext &behcontext);
 
-CKObjectDeclaration *FillBehaviorSendCMORestartDecl()
+CKObjectDeclaration *FillBehaviorRestartCMODecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT Restart CMO");
     od->SetDescription("Restarts CMO");
     od->SetCategory("TT InterfaceManager/General");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0xB585F6F, 0x46253C21));
+    od->SetGuid(CKGUID(0xb585f6f, 0x46253c21));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("Virtools");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
-    od->SetCreationFunction(CreateSendCMORestartProto);
+    od->SetCreationFunction(CreateRestartCMOProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
     return od;
 }
 
-CKERROR CreateSendCMORestartProto(CKBehaviorPrototype **pproto)
+CKERROR CreateRestartCMOProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT Restart CMO");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
 
     proto->DeclareOutput("Out");
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
-    proto->SetFunction(SendCMORestart);
+    proto->SetFunction(RestartCMO);
 
     *pproto = proto;
     return CK_OK;
 }
 
-int SendCMORestart(const CKBehaviorContext &behcontext)
+int RestartCMO(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
     CKContext *context = behcontext.Context;
 
-    CTTInterfaceManager *man = CTTInterfaceManager::GetManager(context);
+    InterfaceManager *man = InterfaceManager::GetManager(context);
     if (!man || !man->GetGameInfo())
-        TT_ERROR("SendCMORestart.cpp", "int SendCMORestart(...)", " gameInfo == NULL, exit CMO");
+        TT_ERROR("RestartCMO.cpp", "int RestartCMO(...)", " gameInfo == NULL, exit CMO");
 
-    ::PostMessageA((HWND)context->GetRenderManager()->GetRenderContext(man->GetDriver())->GetWindowHandle(), TT_MSG_CMO_RESTART, 0, 0);
+    ::PostMessageA((HWND)context->GetMainWindow(), TT_MSG_CMO_RESTART, 0, 0);
     beh->ActivateOutput(0);
 
     return CKBR_OK;

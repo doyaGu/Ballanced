@@ -7,11 +7,11 @@
 /////////////////////////////////////////////////////
 #include "TT_InterfaceManager_RT.h"
 
-#include "ErrorProtocol.h"
 #include "InterfaceManager.h"
+#include "ErrorProtocol.h"
 
 CKObjectDeclaration *FillBehaviorSetLevelIDDecl();
-CKERROR CreateSetLevelIDProto(CKBehaviorPrototype **);
+CKERROR CreateSetLevelIDProto(CKBehaviorPrototype **pproto);
 int SetLevelID(const CKBehaviorContext &behcontext);
 
 CKObjectDeclaration *FillBehaviorSetLevelIDDecl()
@@ -20,9 +20,9 @@ CKObjectDeclaration *FillBehaviorSetLevelIDDecl()
     od->SetDescription("Sets level ID to manager");
     od->SetCategory("TT InterfaceManager/LevelInfo Behaviors");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x20B86A4C, 0x3C62472A));
+    od->SetGuid(CKGUID(0x20b86a4c, 0x3c62472a));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("Virtools");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateSetLevelIDProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
@@ -32,8 +32,7 @@ CKObjectDeclaration *FillBehaviorSetLevelIDDecl()
 CKERROR CreateSetLevelIDProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT Set Level ID");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
 
@@ -53,7 +52,7 @@ int SetLevelID(const CKBehaviorContext &behcontext)
     CKBehavior *beh = behcontext.Behavior;
     CKContext *context = behcontext.Context;
 
-    CTTInterfaceManager *man = CTTInterfaceManager::GetManager(context);
+    InterfaceManager *man = InterfaceManager::GetManager(context);
     if (!man)
     {
         TT_ERROR("SetLevelID.cpp", "int SetLevelID(...)", " im == NULL");
@@ -63,7 +62,7 @@ int SetLevelID(const CKBehaviorContext &behcontext)
     CGameInfo *gameInfo = man->GetGameInfo();
     if (!gameInfo)
     {
-        ::PostMessageA((HWND)context->GetRenderManager()->GetRenderContext(man->GetDriver())->GetWindowHandle(), TT_MSG_NO_GAMEINFO, 0x12, 0);
+        ::PostMessageA((HWND)context->GetMainWindow(), TT_MSG_NO_GAMEINFO, 0x12, 0);
         TT_ERROR("SetLevelID.cpp", "int SetLevelID(...)", " gameInfo not exists");
     }
 

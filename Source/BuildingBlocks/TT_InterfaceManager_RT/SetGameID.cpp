@@ -7,11 +7,11 @@
 /////////////////////////////////////////////////////
 #include "TT_InterfaceManager_RT.h"
 
-#include "ErrorProtocol.h"
 #include "InterfaceManager.h"
+#include "ErrorProtocol.h"
 
 CKObjectDeclaration *FillBehaviorSetGameIDDecl();
-CKERROR CreateSetGameIDProto(CKBehaviorPrototype **);
+CKERROR CreateSetGameIDProto(CKBehaviorPrototype **pproto);
 int SetGameID(const CKBehaviorContext &behcontext);
 
 CKObjectDeclaration *FillBehaviorSetGameIDDecl()
@@ -20,9 +20,9 @@ CKObjectDeclaration *FillBehaviorSetGameIDDecl()
     od->SetDescription("Sets game ID to manager");
     od->SetCategory("TT InterfaceManager/GameInfo Behaviors");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x36AF3944, 0x67C75AA7));
+    od->SetGuid(CKGUID(0x36af3944, 0x67c75aa7));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("Virtools");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateSetGameIDProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
@@ -32,8 +32,7 @@ CKObjectDeclaration *FillBehaviorSetGameIDDecl()
 CKERROR CreateSetGameIDProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT Set Game ID");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
 
@@ -53,7 +52,7 @@ int SetGameID(const CKBehaviorContext &behcontext)
     CKBehavior *beh = behcontext.Behavior;
     CKContext *context = behcontext.Context;
 
-    CTTInterfaceManager *man = CTTInterfaceManager::GetManager(context);
+    InterfaceManager *man = InterfaceManager::GetManager(context);
     if (!man)
     {
         TT_ERROR("SetGameID.cpp", "int SetGameID(...)", " im == NULL");
@@ -63,7 +62,7 @@ int SetGameID(const CKBehaviorContext &behcontext)
     CGameInfo *gameInfo = man->GetGameInfo();
     if (!gameInfo)
     {
-        ::PostMessageA((HWND)context->GetRenderManager()->GetRenderContext(man->GetDriver())->GetWindowHandle(), TT_MSG_NO_GAMEINFO, 0x07, 0);
+        ::PostMessageA((HWND)context->GetMainWindow(), TT_MSG_NO_GAMEINFO, 0x07, 0);
         TT_ERROR("SetGameID.cpp", "int SetGameID(...)", " gameInfo not exists");
     }
 

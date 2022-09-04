@@ -7,11 +7,11 @@
 /////////////////////////////////////////////////////
 #include "TT_InterfaceManager_RT.h"
 
-#include "ErrorProtocol.h"
 #include "InterfaceManager.h"
+#include "ErrorProtocol.h"
 
 CKObjectDeclaration *FillBehaviorSetGameBonusDecl();
-CKERROR CreateSetGameBonusProto(CKBehaviorPrototype **);
+CKERROR CreateSetGameBonusProto(CKBehaviorPrototype **pproto);
 int SetGameBonus(const CKBehaviorContext &behcontext);
 
 CKObjectDeclaration *FillBehaviorSetGameBonusDecl()
@@ -20,9 +20,9 @@ CKObjectDeclaration *FillBehaviorSetGameBonusDecl()
     od->SetDescription("Sets game bonus to manager");
     od->SetCategory("TT InterfaceManager/GameInfo Behaviors");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x78587CF6, 0xDDB1BB0));
+    od->SetGuid(CKGUID(0x78587cf6, 0xddb1bb0));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("Virtools");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateSetGameBonusProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
@@ -32,8 +32,7 @@ CKObjectDeclaration *FillBehaviorSetGameBonusDecl()
 CKERROR CreateSetGameBonusProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT Set Game Bonus");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
 
@@ -53,7 +52,7 @@ int SetGameBonus(const CKBehaviorContext &behcontext)
     CKBehavior *beh = behcontext.Behavior;
     CKContext *context = behcontext.Context;
 
-    CTTInterfaceManager *man = CTTInterfaceManager::GetManager(context);
+    InterfaceManager *man = InterfaceManager::GetManager(context);
     if (!man)
     {
         TT_ERROR("SetGameBonus.cpp", "int SetGameBonus(...)", " im == NULL");
@@ -63,7 +62,7 @@ int SetGameBonus(const CKBehaviorContext &behcontext)
     CGameInfo *gameInfo = man->GetGameInfo();
     if (!gameInfo)
     {
-        ::PostMessageA((HWND)context->GetRenderManager()->GetRenderContext(man->GetDriver())->GetWindowHandle(), TT_MSG_NO_GAMEINFO, 0x05, 0);
+        ::PostMessageA((HWND)context->GetMainWindow(), TT_MSG_NO_GAMEINFO, 0x05, 0);
         TT_ERROR("SetGameBonus.cpp", "int SetGameBonus(...)", " gameInfo not exists");
     }
 

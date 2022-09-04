@@ -9,22 +9,22 @@
 
 #include <stdio.h>
 
-#include "ErrorProtocol.h"
 #include "InterfaceManager.h"
+#include "ErrorProtocol.h"
 
 CKObjectDeclaration *FillBehaviorWriteArrayDecl();
-CKERROR CreateWriteArrayProto(CKBehaviorPrototype **);
+CKERROR CreateWriteArrayProto(CKBehaviorPrototype **pproto);
 int WriteArray(const CKBehaviorContext &behcontext);
 
 CKObjectDeclaration *FillBehaviorWriteArrayDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT Write Array");
-    od->SetDescription("Writes arrays to manager");
+    od->SetDescription("Writes Arrays to manager");
     od->SetCategory("TT InterfaceManager/General");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x7414AF4, 0x505E52EE));
+    od->SetGuid(CKGUID(0x7414af4, 0x505e52ee));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("Virtools");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateWriteArrayProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
@@ -34,8 +34,7 @@ CKObjectDeclaration *FillBehaviorWriteArrayDecl()
 CKERROR CreateWriteArrayProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT Write Array");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
 
@@ -43,7 +42,7 @@ CKERROR CreateWriteArrayProto(CKBehaviorPrototype **pproto)
 
     proto->DeclareInParameter("Name of Array", CKPGUID_DATAARRAY);
     proto->DeclareInParameter("Filename of CMO", CKPGUID_STRING);
-    proto->DeclareInParameter("Show message: Wrote Array", CKPGUID_BOOL);
+    proto->DeclareInParameter("Show message: 'wrote array'", CKPGUID_BOOL);
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
     proto->SetFunction(WriteArray);
@@ -59,7 +58,7 @@ int WriteArray(const CKBehaviorContext &behcontext)
 
     beh->ActivateInput(0, FALSE);
 
-    CTTInterfaceManager *man = CTTInterfaceManager::GetManager(context);
+    InterfaceManager *man = InterfaceManager::GetManager(context);
     if (!man)
     {
         ::PostMessageA((HWND)context->GetRenderManager()->GetRenderContext(0)->GetWindowHandle(), TT_MSG_NO_GAMEINFO, 0x1E, 1);
@@ -81,7 +80,7 @@ int WriteArray(const CKBehaviorContext &behcontext)
         {
             char *msg = new char[256];
             sprintf(msg, " '%s'  from file '%s' written to manager", array->GetName(), cmo);
-            ::MessageBoxA((HWND)context->GetRenderManager()->GetRenderContext(man->GetDriver())->GetWindowHandle(), msg, "message...", MB_OK);
+            ::MessageBoxA((HWND)context->GetMainWindow(), msg, "message...", MB_OK);
             delete[] msg;
         }
     }

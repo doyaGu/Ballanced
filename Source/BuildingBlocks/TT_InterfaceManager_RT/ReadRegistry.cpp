@@ -7,31 +7,25 @@
 /////////////////////////////////////////////////////
 #include "TT_InterfaceManager_RT.h"
 
-#include <string>
-
 #include <stdlib.h>
 #include <string.h>
 
 #include "InterfaceManager.h"
 
 CKObjectDeclaration *FillBehaviorReadRegistryDecl();
-CKERROR CreateReadRegistryProto(CKBehaviorPrototype **);
+CKERROR CreateReadRegistryProto(CKBehaviorPrototype **pproto);
 int ReadRegistry(const CKBehaviorContext &behcontext);
 CKERROR ReadRegistryCallBack(const CKBehaviorContext &behcontext);
-
-int ReadIntegerFromIni(const char *section, CKBehavior *beh, CKContext *context, const char *key, const char *ini);
-float ReadFloatFromIni(const char *section, CKBehavior *beh, CKContext *context, const char *key, const char *ini);
-char *ReadStringFromIni(const char *section, CKBehavior *beh, CKContext *context, const char *key, const char *ini);
 
 CKObjectDeclaration *FillBehaviorReadRegistryDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT_ReadRegistry");
-    od->SetDescription("Reads an integer value to the registry");
+    od->SetDescription("Writes an integer value to the registry");
     od->SetCategory("TT InterfaceManager/Registry");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x460044B5, 0x6E927B66));
+    od->SetGuid(CKGUID(0x460044b5, 0x6e927b66));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("Virtools");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateReadRegistryProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
@@ -41,8 +35,7 @@ CKObjectDeclaration *FillBehaviorReadRegistryDecl()
 CKERROR CreateReadRegistryProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT_ReadRegistry");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
 
@@ -59,13 +52,18 @@ CKERROR CreateReadRegistryProto(CKBehaviorPrototype **pproto)
     proto->DeclareSetting("SaveArray-Mode", CKPGUID_BOOL);
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
-    proto->SetBehaviorFlags(CKBEHAVIOR_NONE);
     proto->SetFunction(ReadRegistry);
+
+    proto->SetBehaviorFlags((CK_BEHAVIOR_FLAGS)(CKBEHAVIOR_VARIABLEPARAMETEROUTPUTS));
     proto->SetBehaviorCallbackFct(ReadRegistryCallBack);
 
     *pproto = proto;
     return CK_OK;
 }
+
+int ReadIntegerFromIni(const char *section, CKBehavior *beh, CKContext *context, const char *key, const char *ini);
+float ReadFloatFromIni(const char *section, CKBehavior *beh, CKContext *context, const char *key, const char *ini);
+char *ReadStringFromIni(const char *section, CKBehavior *beh, CKContext *context, const char *key, const char *ini);
 
 static const char *SUBKEY = "Software\\Ballance\\";
 
@@ -74,7 +72,7 @@ int ReadRegistry(const CKBehaviorContext &behcontext)
     CKBehavior *beh = behcontext.Behavior;
     CKContext *context = behcontext.Context;
 
-    CTTInterfaceManager *man = CTTInterfaceManager::GetManager(context);
+    InterfaceManager *man = InterfaceManager::GetManager(context);
     if (!man)
     {
         context->OutputToConsoleExBeep("TT_ReadRegistry: im==NULL.");

@@ -10,18 +10,18 @@
 #include "InterfaceManager.h"
 
 CKObjectDeclaration *FillBehaviorIsRookieDecl();
-CKERROR CreateIsRookieProto(CKBehaviorPrototype **);
+CKERROR CreateIsRookieProto(CKBehaviorPrototype **pproto);
 int IsRookie(const CKBehaviorContext &behcontext);
 
 CKObjectDeclaration *FillBehaviorIsRookieDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT Is Rookie");
-    od->SetDescription("Gets rookie mode");
+    od->SetDescription("Check PlayerRookie");
     od->SetCategory("TT InterfaceManager/General");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x6DC06ABB, 0x44451DE5));
+    od->SetGuid(CKGUID(0x6dc06abb, 0x44451de5));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("Virtools");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateIsRookieProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
@@ -31,8 +31,7 @@ CKObjectDeclaration *FillBehaviorIsRookieDecl()
 CKERROR CreateIsRookieProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT Is Rookie");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
 
@@ -52,7 +51,7 @@ int IsRookie(const CKBehaviorContext &behcontext)
     CKBehavior *beh = behcontext.Behavior;
     CKContext *context = behcontext.Context;
 
-    CTTInterfaceManager *man = CTTInterfaceManager::GetManager(context);
+    InterfaceManager *man = InterfaceManager::GetManager(context);
     if (!man)
     {
         beh->ActivateOutput(2);

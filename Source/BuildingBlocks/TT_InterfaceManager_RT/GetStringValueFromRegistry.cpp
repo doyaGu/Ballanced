@@ -10,7 +10,7 @@
 #include "InterfaceManager.h"
 
 CKObjectDeclaration *FillBehaviorGetStringValueFromRegistryDecl();
-CKERROR CreateGetStringValueFromRegistryProto(CKBehaviorPrototype **);
+CKERROR CreateGetStringValueFromRegistryProto(CKBehaviorPrototype **pproto);
 int GetStringValueFromRegistry(const CKBehaviorContext &behcontext);
 
 CKObjectDeclaration *FillBehaviorGetStringValueFromRegistryDecl()
@@ -19,9 +19,9 @@ CKObjectDeclaration *FillBehaviorGetStringValueFromRegistryDecl()
     od->SetDescription("Reads a string value from the registry");
     od->SetCategory("TT InterfaceManager/Registry");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x75FF55A7, 0x378205D0));
+    od->SetGuid(CKGUID(0x75ff55a7, 0x378205d0));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("Virtools");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateGetStringValueFromRegistryProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
@@ -31,8 +31,7 @@ CKObjectDeclaration *FillBehaviorGetStringValueFromRegistryDecl()
 CKERROR CreateGetStringValueFromRegistryProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT Get String Value From Registry");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
 
@@ -42,7 +41,7 @@ CKERROR CreateGetStringValueFromRegistryProto(CKBehaviorPrototype **pproto)
     proto->DeclareInParameter("RegKey  ...\\..\\", CKPGUID_STRING);
     proto->DeclareInParameter("Value Name", CKPGUID_STRING);
 
-    proto->DeclareOutParameter("String Value", CKPGUID_STRING);
+    proto->DeclareOutParameter("String Value ", CKPGUID_STRING);
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
     proto->SetFunction(GetStringValueFromRegistry);
@@ -62,7 +61,7 @@ int GetStringValueFromRegistry(const CKBehaviorContext &behcontext)
     beh->GetInputParameterValue(0, regKey);
     beh->GetInputParameterValue(1, valueName);
 
-    CTTInterfaceManager *man = CTTInterfaceManager::GetManager(context);
+    InterfaceManager *man = InterfaceManager::GetManager(context);
     if (!man)
     {
         context->OutputToConsoleExBeep("TT_GetStringValueFromRegistry: im==NULL.");

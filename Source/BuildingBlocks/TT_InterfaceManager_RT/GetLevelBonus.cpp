@@ -7,8 +7,8 @@
 /////////////////////////////////////////////////////
 #include "TT_InterfaceManager_RT.h"
 
-#include "ErrorProtocol.h"
 #include "InterfaceManager.h"
+#include "ErrorProtocol.h"
 
 CKObjectDeclaration *FillBehaviorGetLevelBonusDecl();
 CKERROR CreateGetLevelBonusProto(CKBehaviorPrototype **);
@@ -20,9 +20,9 @@ CKObjectDeclaration *FillBehaviorGetLevelBonusDecl()
     od->SetDescription("Gets level bonus from manager");
     od->SetCategory("TT InterfaceManager/LevelInfo Behaviors");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x573705FA, 0x1710468E));
+    od->SetGuid(CKGUID(0x573705fa, 0x1710468e));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("Virtools");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateGetLevelBonusProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
@@ -32,8 +32,7 @@ CKObjectDeclaration *FillBehaviorGetLevelBonusDecl()
 CKERROR CreateGetLevelBonusProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT Get Level Bonus");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
 
@@ -53,17 +52,17 @@ int GetLevelBonus(const CKBehaviorContext &behcontext)
     CKBehavior *beh = behcontext.Behavior;
     CKContext *context = behcontext.Context;
 
-    CTTInterfaceManager *man = CTTInterfaceManager::GetManager(context);
-	if (!man)
-	{
-		TT_ERROR("GetLevelBonus.cpp", "int GetLevelBonus(...)", " im == NULL");
-		return CKBR_OK;
-	}
+    InterfaceManager *man = InterfaceManager::GetManager(context);
+    if (!man)
+    {
+        TT_ERROR("GetLevelBonus.cpp", "int GetLevelBonus(...)", " im == NULL");
+        return CKBR_OK;
+    }
 
     CGameInfo *gameInfo = man->GetGameInfo();
     if (!gameInfo)
     {
-        ::PostMessageA((HWND)context->GetRenderManager()->GetRenderContext(man->GetDriver())->GetWindowHandle(), TT_MSG_NO_GAMEINFO, 0x0A, 0);
+        ::PostMessageA((HWND)context->GetMainWindow(), TT_MSG_NO_GAMEINFO, 0x0A, 0);
         TT_ERROR("GetLevelBonus.cpp", "int GetLevelBonus(...)", " gameInfo not exists");
     }
 
