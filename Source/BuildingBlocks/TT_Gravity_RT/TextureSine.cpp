@@ -8,19 +8,19 @@
 #include "TT_Gravity_RT.h"
 
 CKObjectDeclaration *FillBehaviorTextureSineDecl();
-CKERROR CreateTextureSineProto(CKBehaviorPrototype **);
+CKERROR CreateTextureSineProto(CKBehaviorPrototype **pproto);
 int TextureSine(const CKBehaviorContext &behcontext);
 CKERROR TextureSineCallBack(const CKBehaviorContext &behcontext);
 
 CKObjectDeclaration *FillBehaviorTextureSineDecl()
 {
-    CKObjectDeclaration *od = CreateCKObjectDeclaration("TT TextureSine");
+    CKObjectDeclaration *od = CreateCKObjectDeclaration("TT_TextureSine");
     od->SetDescription("Produces a sinusoidal displacement on the UV coords of a mesh's material (or one of its channel).");
     od->SetCategory("TT Gravity");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x9C1208, 0x3A8D779E));
+    od->SetGuid(CKGUID(0x9c1208, 0x3a8d779e));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("TERRATOOLS");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateTextureSineProto);
     od->SetCompatibleClassId(CKCID_MESH);
@@ -29,9 +29,8 @@ CKObjectDeclaration *FillBehaviorTextureSineDecl()
 
 CKERROR CreateTextureSineProto(CKBehaviorPrototype **pproto)
 {
-    CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT TextureSine");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT_TextureSine");
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
 
@@ -42,12 +41,13 @@ CKERROR CreateTextureSineProto(CKBehaviorPrototype **pproto)
     proto->DeclareInParameter("Velocity", CKPGUID_FLOAT, "1");
     proto->DeclareInParameter("Channel", CKPGUID_INT, "-1");
 
-    proto->DeclareLocalParameter(NULL, CKPGUID_VOIDBUF);      // Data
-    proto->DeclareLocalParameter(NULL, CKPGUID_FLOAT, "0.0"); // Time
+    proto->DeclareLocalParameter("", CKPGUID_VOIDBUF);
+    proto->DeclareLocalParameter("", CKPGUID_FLOAT, "0.0");
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
     proto->SetFunction(TextureSine);
 
+    proto->SetBehaviorFlags(CKBEHAVIOR_TARGETABLE);
     proto->SetBehaviorCallbackFct(TextureSineCallBack);
 
     *pproto = proto;

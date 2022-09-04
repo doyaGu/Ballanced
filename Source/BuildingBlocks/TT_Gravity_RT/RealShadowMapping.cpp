@@ -8,19 +8,19 @@
 #include "TT_Gravity_RT.h"
 
 CKObjectDeclaration *FillBehaviorRealShadowMappingDecl();
-CKERROR CreateRealShadowMappingProto(CKBehaviorPrototype **);
+CKERROR CreateRealShadowMappingProto(CKBehaviorPrototype **pproto);
 int RealShadowMapping(const CKBehaviorContext &behcontext);
 CKERROR RealShadowMappingCallBack(const CKBehaviorContext &behcontext);
 
 CKObjectDeclaration *FillBehaviorRealShadowMappingDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT RealShadowMapping");
-    od->SetDescription("Calculate the real position of shadow.");
+    od->SetDescription("calculate the real postion of shadow");
     od->SetCategory("TT Gravity");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x452816AF, 0x681A3A81));
+    od->SetGuid(CKGUID(0x452816af, 0x681a3a81));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("TERRATOOLS");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateRealShadowMappingProto);
     od->SetCompatibleClassId(CKCID_3DOBJECT);
@@ -30,8 +30,7 @@ CKObjectDeclaration *FillBehaviorRealShadowMappingDecl()
 CKERROR CreateRealShadowMappingProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT RealShadowMapping");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("On");
     proto->DeclareInput("Off");
@@ -44,19 +43,20 @@ CKERROR CreateRealShadowMappingProto(CKBehaviorPrototype **pproto)
     proto->DeclareInParameter("Size", CKPGUID_2DVECTOR, "1,1");
     proto->DeclareInParameter("SourceBlend", CKPGUID_BLENDFACTOR, "Zero");
     proto->DeclareInParameter("DestBlend", CKPGUID_BLENDFACTOR, "Source Color");
-    proto->DeclareInParameter("Eckpunkt1", CKPGUID_VECTOR);
-    proto->DeclareInParameter("Eckpunkt2", CKPGUID_VECTOR);
-    proto->DeclareInParameter("Eckpunkt3", CKPGUID_VECTOR);
-    proto->DeclareInParameter("Eckpunkt4", CKPGUID_VECTOR);
-    proto->DeclareInParameter("Mittelpunkt", CKPGUID_VECTOR);
 
-    proto->DeclareLocalParameter("Data", CKPGUID_POINTER);
+    proto->DeclareOutParameter("Eckpunkt1", CKPGUID_VECTOR);
+    proto->DeclareOutParameter("Eckpunkt2", CKPGUID_VECTOR);
+    proto->DeclareOutParameter("Eckpunkt3", CKPGUID_VECTOR);
+    proto->DeclareOutParameter("Eckpunkt4", CKPGUID_VECTOR);
+    proto->DeclareOutParameter("Mittelpunkt", CKPGUID_VECTOR);
+
+    proto->DeclareLocalParameter("Data", CKPGUID_VOIDBUF);
     proto->DeclareLocalParameter("Active", CKPGUID_BOOL);
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
     proto->SetFunction(RealShadowMapping);
 
-    proto->SetBehaviorFlags((CK_BEHAVIOR_FLAGS)CKBEHAVIOR_TARGETABLE);
+    proto->SetBehaviorFlags(CKBEHAVIOR_TARGETABLE);
     proto->SetBehaviorCallbackFct(RealShadowMappingCallBack);
 
     *pproto = proto;

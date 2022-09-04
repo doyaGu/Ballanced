@@ -8,7 +8,7 @@
 #include "TT_Gravity_RT.h"
 
 CKObjectDeclaration *FillBehaviorExtraDecl();
-CKERROR CreateExtraProto(CKBehaviorPrototype **);
+CKERROR CreateExtraProto(CKBehaviorPrototype **pproto);
 int Extra(const CKBehaviorContext &behcontext);
 CKERROR ExtraCallBack(const CKBehaviorContext &behcontext);
 
@@ -18,9 +18,9 @@ CKObjectDeclaration *FillBehaviorExtraDecl()
     od->SetDescription("Manages the Powerballextras.");
     od->SetCategory("TT Gravity");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x36106BD9, 0x51813906));
+    od->SetGuid(CKGUID(0x36106bd9, 0x51813906));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("TERRATOOLS");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateExtraProto);
     od->SetCompatibleClassId(CKCID_3DENTITY);
@@ -30,8 +30,7 @@ CKObjectDeclaration *FillBehaviorExtraDecl()
 CKERROR CreateExtraProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT Extra");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("On");
     proto->DeclareInput("Off");
@@ -55,7 +54,8 @@ CKERROR CreateExtraProto(CKBehaviorPrototype **pproto)
     proto->DeclareInParameter("Hitframegroup", CKPGUID_GROUP);
     proto->DeclareInParameter("Flying Extra?", CKPGUID_BOOL, "FALSE");
     proto->DeclareInParameter("Exactness Framedelay", CKPGUID_INT, "2");
-    proto->DeclareInParameter("Current Hits", CKPGUID_INT, "0");
+
+    proto->DeclareOutParameter("Current Hits", CKPGUID_INT, "0");
 
     proto->DeclareLocalParameter("Activationstatus", CKPGUID_BOOL, "FALSE");
     proto->DeclareLocalParameter("Smallballlist", CKPGUID_POINTER);
@@ -68,12 +68,13 @@ CKERROR CreateExtraProto(CKBehaviorPrototype **pproto)
     proto->DeclareLocalParameter("Timevalue", CKPGUID_FLOAT, "0");
     proto->DeclareLocalParameter("Next Check", CKPGUID_INT, "0");
     proto->DeclareLocalParameter("Away Positionsave", CKPGUID_VECTOR);
+
     proto->DeclareSetting("Exactness?", CKPGUID_BOOL, "TRUE");
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
     proto->SetFunction(Extra);
 
-    proto->SetBehaviorFlags((CK_BEHAVIOR_FLAGS)CKBEHAVIOR_TARGETABLE);
+    proto->SetBehaviorFlags(CKBEHAVIOR_TARGETABLE);
     proto->SetBehaviorCallbackFct(ExtraCallBack);
 
     *pproto = proto;
