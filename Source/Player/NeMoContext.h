@@ -9,7 +9,7 @@
 #include "CKAll.h"
 
 class CWinContext;
-class CTTInterfaceManager;
+class InterfaceManager;
 
 class CNeMoContext
 {
@@ -165,7 +165,7 @@ public:
         return m_RenderManager;
     }
 
-    CTTInterfaceManager *GetInterfaceManager()
+    InterfaceManager *GetInterfaceManager()
     {
         return m_InterfaceManager;
     }
@@ -224,7 +224,7 @@ private:
     CKSoundManager *m_SoundManager;
     CKInputManager *m_InputManager;
     CKCollisionManager *m_CollisionManager;
-    CTTInterfaceManager *m_InterfaceManager;
+    InterfaceManager *m_InterfaceManager;
     CKRenderContext *m_RenderContext;
     CKDebugContext *m_DebugContext;
     CWinContext *m_WinContext;

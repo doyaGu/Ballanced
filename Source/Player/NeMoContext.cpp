@@ -82,7 +82,7 @@ CKERROR CNeMoContext::Init()
     m_SoundManager = (CKSoundManager *)m_CKContext->GetManagerByGuid(SOUND_MANAGER_GUID);
     m_InputManager = (CKInputManager *)m_CKContext->GetManagerByGuid(INPUT_MANAGER_GUID);
     m_CollisionManager = (CKCollisionManager *)m_CKContext->GetManagerByGuid(COLLISION_MANAGER_GUID);
-    m_InterfaceManager = (CTTInterfaceManager *)m_CKContext->GetManagerByGuid(TT_INTERFACE_MANAGER_GUID);
+    m_InterfaceManager = (InterfaceManager *)m_CKContext->GetManagerByGuid(TT_INTERFACE_MANAGER_GUID);
     if (!m_InterfaceManager)
     {
         TT_ERROR("NemoContext.cpp", "Init()", "No InterfaceManager");
