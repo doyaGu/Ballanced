@@ -10,7 +10,7 @@
 #include "CKIpionManager.h"
 
 CKObjectDeclaration *FillBehaviorSetPhysicsSpringDecl();
-CKERROR CreateSetPhysicsSpringProto(CKBehaviorPrototype **);
+CKERROR CreateSetPhysicsSpringProto(CKBehaviorPrototype **pproto);
 int SetPhysicsSpring(const CKBehaviorContext &behcontext);
 CKERROR SetPhysicsSpringCallBack(const CKBehaviorContext &behcontext);
 
@@ -20,9 +20,9 @@ CKObjectDeclaration *FillBehaviorSetPhysicsSpringDecl()
     od->SetDescription("Set a Physics Springs...");
     od->SetCategory("Physics");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x24A06A3A, 0x7100FCE));
+    od->SetGuid(CKGUID(0x24a06a3a, 0x7100fce));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("TERRATOOLS");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010001);
     od->SetCreationFunction(CreateSetPhysicsSpringProto);
     od->SetCompatibleClassId(CKCID_3DENTITY);
@@ -32,16 +32,13 @@ CKObjectDeclaration *FillBehaviorSetPhysicsSpringDecl()
 CKERROR CreateSetPhysicsSpringProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("Set Physics Spring");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("Create");
     proto->DeclareInput("Destroy");
 
     proto->DeclareOutput("Out1");
     proto->DeclareOutput("Out2");
-
-    proto->DeclareLocalParameter("IVP_Handle", CKPGUID_POINTER);
 
     proto->DeclareInParameter("Object2", CKPGUID_3DENTITY);
     proto->DeclareInParameter("Position 1", CKPGUID_VECTOR, "0,0,0");
@@ -53,10 +50,12 @@ CKERROR CreateSetPhysicsSpringProto(CKBehaviorPrototype **pproto)
     proto->DeclareInParameter("Linear Dampening", CKPGUID_FLOAT, "0.1");
     proto->DeclareInParameter("Global Dampening", CKPGUID_FLOAT, "0.1");
 
+    proto->DeclareLocalParameter("IVP_Handle", CKPGUID_POINTER);
+
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
     proto->SetFunction(SetPhysicsSpring);
 
-    proto->SetBehaviorFlags((CK_BEHAVIOR_FLAGS)CKBEHAVIOR_TARGETABLE);
+    proto->SetBehaviorFlags(CKBEHAVIOR_TARGETABLE);
     proto->SetBehaviorCallbackFct(SetPhysicsSpringCallBack);
 
     *pproto = proto;

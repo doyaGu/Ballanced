@@ -10,7 +10,7 @@
 #include "CKIpionManager.h"
 
 CKObjectDeclaration *FillBehaviorPhysicsForceDecl();
-CKERROR CreatePhysicsForceProto(CKBehaviorPrototype **);
+CKERROR CreatePhysicsForceProto(CKBehaviorPrototype **pproto);
 int PhysicsForce(const CKBehaviorContext &behcontext);
 CKERROR PhysicsForceCallBack(const CKBehaviorContext &behcontext);
 
@@ -20,9 +20,9 @@ CKObjectDeclaration *FillBehaviorPhysicsForceDecl()
     od->SetDescription("Physics Force");
     od->SetCategory("Physics");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x56E20C57, 0xB926068));
+    od->SetGuid(CKGUID(0x56e20c57, 0xb926068));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("TERRATOOLS");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreatePhysicsForceProto);
     od->SetCompatibleClassId(CKCID_3DENTITY);
@@ -31,9 +31,8 @@ CKObjectDeclaration *FillBehaviorPhysicsForceDecl()
 
 CKERROR CreatePhysicsForceProto(CKBehaviorPrototype **pproto)
 {
-    CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("Physics Force");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("SetPhysicsForce");
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("Create");
     proto->DeclareInput("Destroy");
@@ -41,18 +40,18 @@ CKERROR CreatePhysicsForceProto(CKBehaviorPrototype **pproto)
     proto->DeclareOutput("Out1");
     proto->DeclareOutput("Out2");
 
-    proto->DeclareLocalParameter("IVP_Handle", CKPGUID_POINTER);
-
     proto->DeclareInParameter("Position", CKPGUID_VECTOR, "0,0,0");
-    proto->DeclareInParameter("Referential", CKPGUID_3DENTITY);
+    proto->DeclareInParameter("Pos Referential", CKPGUID_3DENTITY);
     proto->DeclareInParameter("Direction", CKPGUID_VECTOR, "0,0,1");
     proto->DeclareInParameter("Direction Ref", CKPGUID_3DENTITY);
     proto->DeclareInParameter("Force Value", CKPGUID_FLOAT, "10");
 
+    proto->DeclareLocalParameter("IVP_Handle", CKPGUID_POINTER);
+
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
     proto->SetFunction(PhysicsForce);
 
-    proto->SetBehaviorFlags((CK_BEHAVIOR_FLAGS)CKBEHAVIOR_TARGETABLE);
+    proto->SetBehaviorFlags(CKBEHAVIOR_TARGETABLE);
     proto->SetBehaviorCallbackFct(PhysicsForceCallBack);
 
     *pproto = proto;

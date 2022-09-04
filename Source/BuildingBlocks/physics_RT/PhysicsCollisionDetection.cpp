@@ -10,19 +10,19 @@
 #include "CKIpionManager.h"
 
 CKObjectDeclaration *FillBehaviorPhysicsCollDetectionDecl();
-CKERROR CreatePhysicsCollDetectionProto(CKBehaviorPrototype **);
+CKERROR CreatePhysicsCollDetectionProto(CKBehaviorPrototype **pproto);
 int PhysicsCollDetection(const CKBehaviorContext &behcontext);
 CKERROR PhysicsCollDetectionCallBack(const CKBehaviorContext &behcontext);
 
 CKObjectDeclaration *FillBehaviorPhysicsCollDetectionDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("PhysicsCollDetection");
-    od->SetDescription("Physics Collision Detection");
+    od->SetDescription("PhysicsCollDetection");
     od->SetCategory("Physics");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x7435488D, 0x201D1188));
+    od->SetGuid(CKGUID(0x7435488d, 0x201d1188));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("TERRATOOLS");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010001);
     od->SetCreationFunction(CreatePhysicsCollDetectionProto);
     od->SetCompatibleClassId(CKCID_3DENTITY);
@@ -32,15 +32,12 @@ CKObjectDeclaration *FillBehaviorPhysicsCollDetectionDecl()
 CKERROR CreatePhysicsCollDetectionProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("PhysicsCollDetection");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("Create");
     proto->DeclareInput("Stop");
 
     proto->DeclareOutput("Collision");
-
-    proto->DeclareLocalParameter("IVP_Handle", CKPGUID_POINTER);
 
     proto->DeclareInParameter("Min Speed m/s", CKPGUID_FLOAT, "0.3");
     proto->DeclareInParameter("Max Speed m/s", CKPGUID_FLOAT, "10.0");
@@ -52,12 +49,14 @@ CKERROR CreatePhysicsCollDetectionProto(CKBehaviorPrototype **pproto)
     proto->DeclareOutParameter("Collision Normal World", CKPGUID_VECTOR);
     proto->DeclareOutParameter("Position World", CKPGUID_VECTOR);
 
+    proto->DeclareLocalParameter("IVP_Handle", CKPGUID_POINTER);
+
     proto->DeclareSetting("Use Collision ID", CKPGUID_BOOL, "FALSE");
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
     proto->SetFunction(PhysicsCollDetection);
 
-    proto->SetBehaviorFlags((CK_BEHAVIOR_FLAGS)CKBEHAVIOR_TARGETABLE);
+    proto->SetBehaviorFlags(CKBEHAVIOR_TARGETABLE);
     proto->SetBehaviorCallbackFct(PhysicsCollDetectionCallBack);
 
     *pproto = proto;

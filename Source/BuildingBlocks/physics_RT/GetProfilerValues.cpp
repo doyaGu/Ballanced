@@ -10,7 +10,7 @@
 #include "CKIpionManager.h"
 
 CKObjectDeclaration *FillBehaviorGetProfilerValuesDecl();
-CKERROR CreateGetProfilerValuesProto(CKBehaviorPrototype **);
+CKERROR CreateGetProfilerValuesProto(CKBehaviorPrototype **pproto);
 int GetProfilerValues(const CKBehaviorContext &behcontext);
 
 CKObjectDeclaration *FillBehaviorGetProfilerValuesDecl()
@@ -19,9 +19,9 @@ CKObjectDeclaration *FillBehaviorGetProfilerValuesDecl()
     od->SetDescription("Get Profiler Values");
     od->SetCategory("Physics");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x1C8E61D1, 0x32723C6F));
+    od->SetGuid(CKGUID(0x1c8e61d1, 0x32723c6f));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("TERRATOOLS");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateGetProfilerValuesProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
@@ -31,8 +31,7 @@ CKObjectDeclaration *FillBehaviorGetProfilerValuesDecl()
 CKERROR CreateGetProfilerValuesProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("Get Profiler Values");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("Start");
     proto->DeclareInput("Reset");
@@ -48,8 +47,8 @@ CKERROR CreateGetProfilerValuesProto(CKBehaviorPrototype **pproto)
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
     proto->SetFunction(GetProfilerValues);
-    
-    proto->SetBehaviorFlags((CK_BEHAVIOR_FLAGS)CKBEHAVIOR_TARGETABLE);
+
+    proto->SetBehaviorFlags(CKBEHAVIOR_TARGETABLE);
 
     *pproto = proto;
     return CK_OK;

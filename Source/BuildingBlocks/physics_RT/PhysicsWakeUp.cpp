@@ -10,7 +10,7 @@
 #include "CKIpionManager.h"
 
 CKObjectDeclaration *FillBehaviorPhysicsWakeUpDecl();
-CKERROR CreatePhysicsWakeUpProto(CKBehaviorPrototype **);
+CKERROR CreatePhysicsWakeUpProto(CKBehaviorPrototype **pproto);
 int PhysicsWakeUp(const CKBehaviorContext &behcontext);
 
 CKObjectDeclaration *FillBehaviorPhysicsWakeUpDecl()
@@ -19,9 +19,9 @@ CKObjectDeclaration *FillBehaviorPhysicsWakeUpDecl()
     od->SetDescription("Wake Up Object for Simulation");
     od->SetCategory("Physics");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x38B851B5, 0x72CA74AC));
+    od->SetGuid(CKGUID(0x38b851b5, 0x72ca74ac));
     od->SetAuthorGuid(TERRATOOLS_GUID);
-    od->SetAuthorName("TERRATOOLS");
+    od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreatePhysicsWakeUpProto);
     od->SetCompatibleClassId(CKCID_3DENTITY);
@@ -31,8 +31,7 @@ CKObjectDeclaration *FillBehaviorPhysicsWakeUpDecl()
 CKERROR CreatePhysicsWakeUpProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("Physics WakeUp");
-    if (!proto)
-        return CKERR_OUTOFMEMORY;
+    if (!proto) return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
 
@@ -40,7 +39,8 @@ CKERROR CreatePhysicsWakeUpProto(CKBehaviorPrototype **pproto)
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
     proto->SetFunction(PhysicsWakeUp);
-    proto->SetBehaviorFlags((CK_BEHAVIOR_FLAGS)CKBEHAVIOR_TARGETABLE);
+
+    proto->SetBehaviorFlags(CKBEHAVIOR_TARGETABLE);
 
     *pproto = proto;
     return CK_OK;

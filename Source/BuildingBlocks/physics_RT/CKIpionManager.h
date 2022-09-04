@@ -1,10 +1,15 @@
 #ifndef BUILDINGBLOCKS_PHYSICSMANAGER_H
 #define BUILDINGBLOCKS_PHYSICSMANAGER_H
 
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include <windows.h>
+
 #include "CKBaseManager.h"
 #include "CKContext.h"
-
 #include "XNHashTable.h"
+
 #include "ivp_physics.hxx"
 #include "ivp_material.hxx"
 #include "ivp_collision_filter.hxx"
