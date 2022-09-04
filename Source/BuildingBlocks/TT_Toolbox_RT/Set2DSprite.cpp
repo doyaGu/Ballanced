@@ -24,7 +24,7 @@ CKObjectDeclaration *FillBehaviorSet2DSpriteDecl()
     od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateSet2DSpriteProto);
-    od->SetCompatibleClassId(CKCID_BEOBJECT);
+    od->SetCompatibleClassId(CKCID_2DENTITY);
     return od;
 }
 

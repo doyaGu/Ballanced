@@ -25,6 +25,7 @@ CKObjectDeclaration *FillBehaviorMotorSoundDecl()
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateMotorSoundProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
+    od->NeedManager(SOUND_MANAGER_GUID);
     return od;
 }
 

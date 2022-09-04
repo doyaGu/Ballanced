@@ -25,6 +25,7 @@ CKObjectDeclaration *FillBehaviorKeyWaiterDecl()
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateKeyWaiterProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
+    od->NeedManager(INPUT_MANAGER_GUID);
     return od;
 }
 

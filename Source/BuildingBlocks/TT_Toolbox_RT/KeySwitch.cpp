@@ -25,6 +25,7 @@ CKObjectDeclaration *FillBehaviorKeySwitchDecl()
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateKeySwitchProto);
     od->SetCompatibleClassId(CKCID_BEOBJECT);
+    od->NeedManager(INPUT_MANAGER_GUID);
     return od;
 }
 

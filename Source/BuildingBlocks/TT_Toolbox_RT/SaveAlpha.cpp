@@ -23,7 +23,7 @@ CKObjectDeclaration *FillBehaviorSaveAlphaDecl()
     od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateSaveAlphaProto);
-    od->SetCompatibleClassId(CKCID_BEOBJECT);
+    od->SetCompatibleClassId(CKCID_TEXTURE);
     return od;
 }
 

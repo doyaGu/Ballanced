@@ -23,7 +23,8 @@ CKObjectDeclaration *FillBehaviorHomingMissileDecl()
     od->SetAuthorName("Virtools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateHomingMissileProto);
-    od->SetCompatibleClassId(CKCID_BEOBJECT);
+    od->SetCompatibleClassId(CKCID_3DENTITY);
+    od->NeedManager(COLLISION_MANAGER_GUID);
     return od;
 }
 

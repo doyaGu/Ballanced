@@ -23,7 +23,7 @@ CKObjectDeclaration *FillBehaviorSearchRowDecl()
     od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateSearchRowProto);
-    od->SetCompatibleClassId(CKCID_BEOBJECT);
+    od->SetCompatibleClassId(CKCID_DATAARRAY);
     return od;
 }
 

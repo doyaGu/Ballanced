@@ -23,7 +23,7 @@ CKObjectDeclaration *FillBehaviorCounterDecl()
     od->SetAuthorName("Klaus");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateCounterProto);
-    od->SetCompatibleClassId(CKCID_BEOBJECT);
+    od->SetCompatibleClassId(CKCID_OBJECT);
     return od;
 }
 

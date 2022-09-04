@@ -23,7 +23,7 @@ CKObjectDeclaration *FillBehaviorChildrenIteratorDecl()
     od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateChildrenIteratorProto);
-    od->SetCompatibleClassId(CKCID_BEOBJECT);
+    od->SetCompatibleClassId(CKCID_3DENTITY);
     return od;
 }
 

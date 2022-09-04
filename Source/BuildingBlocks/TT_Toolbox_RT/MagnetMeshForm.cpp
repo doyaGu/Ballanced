@@ -24,7 +24,7 @@ CKObjectDeclaration *FillBehaviorMagnetMeshFormDecl()
     od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateMagnetMeshFormProto);
-    od->SetCompatibleClassId(CKCID_BEOBJECT);
+    od->SetCompatibleClassId(CKCID_3DOBJECT);
     return od;
 }
 

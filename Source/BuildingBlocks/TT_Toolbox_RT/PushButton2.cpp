@@ -23,7 +23,7 @@ CKObjectDeclaration *FillBehaviorPushButton2Decl()
     od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreatePushButton2Proto);
-    od->SetCompatibleClassId(CKCID_BEOBJECT);
+    od->SetCompatibleClassId(CKCID_2DENTITY);
     return od;
 }
 

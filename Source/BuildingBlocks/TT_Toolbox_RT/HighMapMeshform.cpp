@@ -24,7 +24,7 @@ CKObjectDeclaration *FillBehaviorHighMapMeshformDecl()
     od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateHighMapMeshformProto);
-    od->SetCompatibleClassId(CKCID_BEOBJECT);
+    od->SetCompatibleClassId(CKCID_3DOBJECT);
     return od;
 }
 
