@@ -121,11 +121,11 @@ int Physicalize(const CKBehaviorContext &behcontext)
         float mass;
         beh->GetInputParameterValue(MASS, &mass);
         CKSTRING collisionGroup = (CKSTRING)beh->GetInputParameterReadDataPtr(COLLISION_GROUP);
-        CKBOOLBOOL startFrozen;
+        CKBOOL startFrozen;
         beh->GetInputParameterValue(START_FROZEN, &startFrozen);
-        CKBOOLBOOL enableCollision;
+        CKBOOL enableCollision;
         beh->GetInputParameterValue(ENABLE_COLLISION, &enableCollision);
-        CKBOOLBOOL autoCalcMassCenter;
+        CKBOOL autoCalcMassCenter;
         beh->GetInputParameterValue(AUTOMATIC_CALCULATE_MASS_CENTER, &autoCalcMassCenter);
         float linearSpeedDampening;
         beh->GetInputParameterValue(LINEAR_SPEED_DAMPENING, &linearSpeedDampening);
