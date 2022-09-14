@@ -10,7 +10,7 @@
 static CSplash gSplash;
 static HPALETTE hPalette = NULL;
 
-LRESULT CALLBACK CSplash::SplashWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK SplashWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     HDC hDc;
     PAINTSTRUCT ps;
@@ -89,7 +89,7 @@ LRESULT CALLBACK CSplash::SplashWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPA
 
 CSplash::CSplash() : m_Data(NULL), m_hWnd(NULL), m_hInstance(NULL) {}
 
-CSplash::CSplash(HINSTANCE hInstance) : m_hInstance(hInstance) {}
+CSplash::CSplash(HINSTANCE hInstance) : m_Data(NULL), m_hWnd(NULL), m_hInstance(hInstance) {}
 
 CSplash::~CSplash()
 {
