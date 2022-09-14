@@ -8,7 +8,6 @@
 #include "TT_InterfaceManager_RT.h"
 
 #include "InterfaceManager.h"
-#include "ErrorProtocol.h"
 
 CKObjectDeclaration *FillBehaviorSetGameNameDecl();
 CKERROR CreateSetGameNameProto(CKBehaviorPrototype **pproto);
@@ -55,7 +54,7 @@ int SetGameName(const CKBehaviorContext &behcontext)
     InterfaceManager *man = InterfaceManager::GetManager(context);
     if (!man)
     {
-        TT_ERROR("SetGameName.cpp", "int SetGameName(...)", " im == NULL");
+        context->OutputToConsoleExBeep("SetGameName: im == NULL");
         return CKBR_OK;
     }
 
@@ -63,7 +62,7 @@ int SetGameName(const CKBehaviorContext &behcontext)
     if (!gameInfo)
     {
         ::PostMessageA((HWND)context->GetMainWindow(), TT_MSG_NO_GAMEINFO, 0x08, 0);
-        TT_ERROR("SetGameName.cpp", "int SetGameName(...)", " gameInfo not exists");
+        context->OutputToConsoleExBeep("SetGameName: gameInfo not exists");
     }
 
     beh->GetInputParameterValue(0, gameInfo->gameName);

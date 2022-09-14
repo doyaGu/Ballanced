@@ -8,7 +8,6 @@
 #include "TT_InterfaceManager_RT.h"
 
 #include "InterfaceManager.h"
-#include "ErrorProtocol.h"
 
 CKObjectDeclaration *FillBehaviorGetLevelBonusDecl();
 CKERROR CreateGetLevelBonusProto(CKBehaviorPrototype **);
@@ -55,7 +54,7 @@ int GetLevelBonus(const CKBehaviorContext &behcontext)
     InterfaceManager *man = InterfaceManager::GetManager(context);
     if (!man)
     {
-        TT_ERROR("GetLevelBonus.cpp", "int GetLevelBonus(...)", " im == NULL");
+        context->OutputToConsoleExBeep("GetLevelBonus: im == NULL");
         return CKBR_OK;
     }
 
@@ -63,7 +62,7 @@ int GetLevelBonus(const CKBehaviorContext &behcontext)
     if (!gameInfo)
     {
         ::PostMessageA((HWND)context->GetMainWindow(), TT_MSG_NO_GAMEINFO, 0x0A, 0);
-        TT_ERROR("GetLevelBonus.cpp", "int GetLevelBonus(...)", " gameInfo not exists");
+        context->OutputToConsoleExBeep("GetLevelBonus: gameInfo not exists");
     }
 
     beh->SetOutputParameterValue(0, &gameInfo->levelBonus);

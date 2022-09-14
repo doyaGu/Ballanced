@@ -8,7 +8,6 @@
 #include "TT_InterfaceManager_RT.h"
 
 #include "InterfaceManager.h"
-#include "ErrorProtocol.h"
 
 CKObjectDeclaration *FillBehaviorListScreenModesDecl();
 CKERROR CreateListScreenModesProto(CKBehaviorPrototype **pproto);
@@ -87,8 +86,8 @@ int ListScreenModes(const CKBehaviorContext &behcontext)
 
     if (drDesc->DisplayModeCount > 0)
     {
-        VxDisplayMode *dm = drDesc->DisplayModes;
-        const int dmCount = drDesc->DisplayModeCount;
+    VxDisplayMode *dm = drDesc->DisplayModes;
+    const int dmCount = drDesc->DisplayModeCount;
 
         int i;
         int maxRefreshRate = 0;
@@ -122,7 +121,7 @@ int ListScreenModes(const CKBehaviorContext &behcontext)
     InterfaceManager *man = InterfaceManager::GetManager(context);
     if (!man)
     {
-        TT_ERROR("ListScreenModes.cpp", "int ListScreenModes(...)", " im == NULL");
+        context->OutputToConsoleExBeep("ListScreenModes: im == NULL");
         beh->ActivateOutput(1);
         return CKBR_OK;
     }

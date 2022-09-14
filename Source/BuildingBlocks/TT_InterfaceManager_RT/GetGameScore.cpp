@@ -8,7 +8,6 @@
 #include "TT_InterfaceManager_RT.h"
 
 #include "InterfaceManager.h"
-#include "ErrorProtocol.h"
 
 CKObjectDeclaration *FillBehaviorGetGameScoreDecl();
 CKERROR CreateGetGameScoreProto(CKBehaviorPrototype **pproto);
@@ -55,7 +54,7 @@ int GetGameScore(const CKBehaviorContext &behcontext)
     InterfaceManager *man = InterfaceManager::GetManager(context);
     if (!man)
     {
-        TT_ERROR("GetGameScore.cpp", "int GetGameScore(...)", " im == NULL");
+        context->OutputToConsoleExBeep("GetGameScore: im == NULL");
         return CKBR_OK;
     }
 
@@ -63,7 +62,7 @@ int GetGameScore(const CKBehaviorContext &behcontext)
     if (!gameInfo)
     {
         ::PostMessageA((HWND)context->GetMainWindow(), TT_MSG_NO_GAMEINFO, 0x04, 0);
-        TT_ERROR("GetGameScore.cpp", "int GetGameScore(...)", " gameInfo not exists");
+        context->OutputToConsoleExBeep("GetGameScore: gameInfo not exists");
     }
 
     beh->SetOutputParameterValue(0, &gameInfo->gameScore);

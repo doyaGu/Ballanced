@@ -8,7 +8,6 @@
 #include "TT_InterfaceManager_RT.h"
 
 #include "InterfaceManager.h"
-#include "ErrorProtocol.h"
 
 CKObjectDeclaration *FillBehaviorGetGameBonusDecl();
 CKERROR CreateGetGameBonusProto(CKBehaviorPrototype **pproto);
@@ -55,7 +54,7 @@ int GetGameBonus(const CKBehaviorContext &behcontext)
     InterfaceManager *man = InterfaceManager::GetManager(context);
     if (!man)
     {
-        TT_ERROR("GetGameBonus.cpp", "int GetGameBonus(...)", " im == NULL");
+        context->OutputToConsoleExBeep("GetGameBonus: im == NULL");
         return CKBR_OK;
     }
 
@@ -63,7 +62,7 @@ int GetGameBonus(const CKBehaviorContext &behcontext)
     if (!gameInfo)
     {
         ::PostMessageA((HWND)context->GetMainWindow(), TT_MSG_NO_GAMEINFO, 0x00, 0);
-        TT_ERROR("GetGameBonus.cpp", "int GetGameBonus(...)", " gameInfo not exists");
+        context->OutputToConsoleExBeep("GetGameBonus: gameInfo not exists");
     }
 
     beh->GetInputParameterValue(0, &gameInfo->gameBonus);

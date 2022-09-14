@@ -10,7 +10,6 @@
 #include <stdio.h>
 
 #include "InterfaceManager.h"
-#include "ErrorProtocol.h"
 
 CKObjectDeclaration *FillBehaviorReadArrayDecl();
 CKERROR CreateReadArrayProto(CKBehaviorPrototype **pproto);
@@ -62,7 +61,7 @@ int ReadArray(const CKBehaviorContext &behcontext)
     if (!man)
     {
         ::PostMessageA((HWND)context->GetRenderManager()->GetRenderContext(0)->GetWindowHandle(), TT_MSG_NO_GAMEINFO, 0x19, 1);
-        TT_ERROR("ReadArray.cpp", "int ReadArray(...)", " gameInfo not exists");
+        context->OutputToConsoleExBeep("ReadArray: gameInfo not exists");
     }
 
     CKDataArray *array = (CKDataArray *)beh->GetInputParameterObject(0);

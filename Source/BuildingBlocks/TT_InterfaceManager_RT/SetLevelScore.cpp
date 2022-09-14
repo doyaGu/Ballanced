@@ -8,7 +8,6 @@
 #include "TT_InterfaceManager_RT.h"
 
 #include "InterfaceManager.h"
-#include "ErrorProtocol.h"
 
 CKObjectDeclaration *FillBehaviorSetLevelScoreDecl();
 CKERROR CreateSetLevelScoreProto(CKBehaviorPrototype **pproto);
@@ -55,7 +54,7 @@ int SetLevelScore(const CKBehaviorContext &behcontext)
     InterfaceManager *man = InterfaceManager::GetManager(context);
     if (!man)
     {
-        TT_ERROR("SetLevelScore.cpp", "int SetLevelScore(...)", " im == NULL");
+        context->OutputToConsoleExBeep("SetLevelScore: im == NULL");
         return CKBR_OK;
     }
 
@@ -63,7 +62,7 @@ int SetLevelScore(const CKBehaviorContext &behcontext)
     if (!gameInfo)
     {
         ::PostMessageA((HWND)context->GetMainWindow(), TT_MSG_NO_GAMEINFO, 0x14, 0);
-        TT_ERROR("SetLevelScore.cpp", "int SetLevelScore(...)", " gameInfo not exists");
+        context->OutputToConsoleExBeep("SetLevelScore: gameInfo not exists");
     }
 
     beh->GetInputParameterValue(0, &gameInfo->levelScore);

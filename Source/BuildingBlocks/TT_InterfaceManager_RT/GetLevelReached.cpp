@@ -8,7 +8,6 @@
 #include "TT_InterfaceManager_RT.h"
 
 #include "InterfaceManager.h"
-#include "ErrorProtocol.h"
 
 CKObjectDeclaration *FillBehaviorGetLevelReachedDecl();
 CKERROR CreateGetLevelReachedProto(CKBehaviorPrototype **pproto);
@@ -55,7 +54,7 @@ int GetLevelReached(const CKBehaviorContext &behcontext)
     InterfaceManager *man = InterfaceManager::GetManager(context);
     if (!man)
     {
-        TT_ERROR("GetLevelReached.cpp", "int GetLevelReached(...)", " im == NULL");
+        context->OutputToConsoleExBeep("GetLevelReached: im == NULL");
         return CKBR_OK;
     }
 
@@ -63,7 +62,7 @@ int GetLevelReached(const CKBehaviorContext &behcontext)
     if (!gameInfo)
     {
         ::PostMessageA((HWND)context->GetMainWindow(), TT_MSG_NO_GAMEINFO, 0x0F, 0);
-        TT_ERROR("GetLevelReached.cpp", "int GetLevelReached(...)", " gameInfo not exists");
+        context->OutputToConsoleExBeep("GetLevelReached: gameInfo not exists");
     }
 
     beh->SetOutputParameterValue(0, &gameInfo->levelReached);

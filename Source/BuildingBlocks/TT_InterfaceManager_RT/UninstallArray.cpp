@@ -10,7 +10,6 @@
 #include <stdio.h>
 
 #include "InterfaceManager.h"
-#include "ErrorProtocol.h"
 
 CKObjectDeclaration *FillBehaviorUninstallArrayDecl();
 CKERROR CreateUninstallArrayProto(CKBehaviorPrototype **pproto);
@@ -62,7 +61,7 @@ int UninstallArray(const CKBehaviorContext &behcontext)
     if (!man)
     {
         ::PostMessageA((HWND)context->GetRenderManager()->GetRenderContext(0)->GetWindowHandle(), TT_MSG_NO_GAMEINFO, 0x1D, 1);
-        TT_ERROR("UninstallArray.cpp", "int UninstallArray(...)", " gameInfo not exists");
+        context->OutputToConsoleExBeep("UninstallArray: gameInfo not exists");
     }
 
     CKDataArray *array = (CKDataArray *)beh->GetInputParameterObject(0);

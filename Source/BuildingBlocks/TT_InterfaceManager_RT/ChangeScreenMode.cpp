@@ -8,7 +8,6 @@
 #include "TT_InterfaceManager_RT.h"
 
 #include "InterfaceManager.h"
-#include "ErrorProtocol.h"
 
 CKObjectDeclaration *FillBehaviorChangeScreenModeDecl();
 CKERROR CreateChangeScreenModeProto(CKBehaviorPrototype **pproto);
@@ -62,7 +61,7 @@ int ChangeScreenMode(const CKBehaviorContext &behcontext)
     InterfaceManager *man = InterfaceManager::GetManager(context);
     if (!man)
     {
-        TT_ERROR("ChangeScreenMode.cpp", "int ChangeScreenMode(...)", " im == NULL");
+        context->OutputToConsoleExBeep("Change Screen Mode: im == NULL");
         beh->ActivateOutput(1);
         return CKBR_OK;
     }
