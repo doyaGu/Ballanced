@@ -1,7 +1,6 @@
-#include "TT_InterfaceManager_RT.h"
-
 #include "InterfaceManager.h"
 
+#include <stdio.h>
 #include <string.h>
 
 InterfaceManager::InterfaceManager(CKContext *context)
@@ -17,6 +16,14 @@ InterfaceManager::InterfaceManager(CKContext *context)
     context->RegisterNewManager(this);
     memset(m_CmoName, 0, sizeof(m_CmoName));
     memset(m_IniName, 0, sizeof(m_IniName));
+
+    char path[MAX_PATH];
+    char drive[4];
+    char dir[MAX_PATH];
+    char filename[MAX_PATH];
+    ::GetModuleFileNameA(NULL, path, MAX_PATH);
+    _splitpath(path, drive, dir, filename, NULL);
+    sprintf(m_IniName, "%s%s%s.ini", drive, dir, filename);
 }
 
 InterfaceManager::~InterfaceManager() {}
