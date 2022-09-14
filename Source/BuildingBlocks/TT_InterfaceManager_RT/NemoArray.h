@@ -1,11 +1,11 @@
-#ifndef BUILDINGBLOCKS_NEMOARRAY_H
-#define BUILDINGBLOCKS_NEMOARRAY_H
+#ifndef PLAYER_NEMOARRAY_H
+#define PLAYER_NEMOARRAY_H
 
-#include "XArray.h"
+#include "XClassArray.h"
+#include "CKDataArray.h"
 
 class CNemoElement
 {
-
 public:
     CNemoElement();
     CNemoElement(void *value, CK_ARRAYTYPE type);
@@ -62,7 +62,7 @@ private:
     char m_CmoName[125];
     char m_ArrayName[125];
     bool m_Flag;
-    XArray<CNemoElement> m_Elements;
+    XClassArray<CNemoElement> m_Elements;
 };
 
 class CNemoArrayList
@@ -84,7 +84,7 @@ public:
 
     bool IsEmpty() const
     {
-        return m_Arrays.IsEmpty();
+        return m_Arrays.Size() == 0;
     }
 
 private:
@@ -92,7 +92,7 @@ private:
     CNemoArrayList &operator=(const CNemoArrayList &rhs);
 
     bool m_Flag;
-    XArray<CNemoArray> m_Arrays;
+    XClassArray<CNemoArray> m_Arrays;
 };
 
-#endif // BUILDINGBLOCKS_NEMOARRAY_H
+#endif // PLAYER_NEMOARRAY_H
