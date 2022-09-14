@@ -1,9 +1,9 @@
-#include "TT_InterfaceManager_RT.h"
-
 #include "NemoArray.h"
 
 #include <math.h>
 #include <string.h>
+
+#include "CKAll.h"
 
 CNemoElement::CNemoElement()
 {
@@ -437,7 +437,7 @@ void CNemoArrayList::Remove(const char *cmoName, CKDataArray *array)
 
 CNemoArray *CNemoArrayList::Search(const char *cmoName, CKDataArray *array)
 {
-    if (m_Arrays.IsEmpty())
+    if (m_Arrays.Size() == 0)
         return NULL;
     return Find(cmoName, array);
 }
