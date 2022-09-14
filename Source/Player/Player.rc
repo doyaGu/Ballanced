@@ -9,7 +9,6 @@
 
 IDR_ACCEL ACCELERATORS MOVEABLE PURE 
 BEGIN
-    "?",            ID_ACCEL_HELP,          ASCII,  ALT
     "/",            ID_ACCEL_HELP,          ASCII,  ALT
 END
 
@@ -18,7 +17,7 @@ END
 // Icon
 //
 
-// Icon with lowest ID value placed first to ensure application icon
+// Icon with lower ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDI_PLAYER              ICON    DISCARDABLE     "Player.ico"
 
@@ -27,28 +26,29 @@ IDI_PLAYER              ICON    DISCARDABLE     "Player.ico"
 // Dialog
 //
 
-IDD_FULLSCREEN_SETUP DIALOGEX 0, 0, 386, 194
+IDD_FULLSCREEN_SETUP DIALOGEX 0, 0, 400, 200
 STYLE DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION
 CAPTION "FullScreen Setup"
 FONT 8, "MS Sans Serif"
 BEGIN
-    DEFPUSHBUTTON   "OK",1,93,142,77,14
-    LTEXT           "Driver :",-1,7,5,25,8
-    LTEXT           "Display Size",-1,263,5,50,8
-    LISTBOX         IDC_LB_SCREEN_MODE,263,14,117,165,LBS_SORT | 
+    DEFPUSHBUTTON   "OK",1,100,144,80,16
+    LTEXT           "Screen Mode",-1,10,10,48,8
+    LTEXT           "Driver",-1,270,10,24,8
+    LISTBOX         IDC_LB_SCREEN_MODE,10,20,250,120,LBS_SORT |
                     LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
-    LISTBOX         IDC_LB_DRIVER,7,14,250,119,LBS_SORT | 
+    LISTBOX         IDC_LB_DRIVER,270,20,120,160,LBS_SORT |
                     LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
-    PUSHBUTTON      "Cancel",2,93,163,76,14
+    PUSHBUTTON      "Cancel",2,100,164,80,16
 END
 
-IDD_DIALOG DIALOGEX 0, 0, 186, 95
+IDD_ABOUT DIALOGEX 0, 0, 150, 60
 STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Dialog"
+CAPTION "About"
 FONT 8, "MS Sans Serif"
 BEGIN
-    DEFPUSHBUTTON   "OK",1,129,7,50,14
-    PUSHBUTTON      "Cancel",2,129,24,50,14
+    CTEXT           "The Brand New Ballance Player",-1,0,10,150,8
+    CTEXT           "By Kakuty",-1,0,20,150,8
+    DEFPUSHBUTTON   "OK",IDOK,60,35,30,15,WS_GROUP
 END
 
 /////////////////////////////////////////////////////////////////////////////
@@ -57,8 +57,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,1,9,0
- PRODUCTVERSION 0,1,9,0
+ FILEVERSION 0,2,0,0
+ PRODUCTVERSION 0,2,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -76,14 +76,14 @@ BEGIN
             VALUE "Comments", "\0"
             VALUE "CompanyName", "Kakuty\0"
             VALUE "FileDescription", "Ballance Player\0"
-            VALUE "FileVersion", "0.1.9.0\0"
+            VALUE "FileVersion", "0.2.0.0\0"
             VALUE "InternalName", "Player\0"
             VALUE "LegalCopyright", "Copyright (C) 2022\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "Player.exe\0"
             VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "Ballance Player\0"
-            VALUE "ProductVersion", "0.1.9.0\0"
+            VALUE "ProductVersion", "0.2.0.0\0"
             VALUE "SpecialBuild", "\0"
         END
     END

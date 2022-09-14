@@ -16,30 +16,26 @@ configure_file(Player.rc.in "${CMAKE_CURRENT_SOURCE_DIR}/Player.rc")
 set(PLAYER_HEADERS
         Game.h
         GameConfig.h
-        GameStack.h
         GamePlayer.h
-        PlayerRegistry.h
         NeMoContext.h
         WinContext.h
         Splash.h
         CmdlineParser.h
-        ErrorProtocol.h
-        LogProtocol.h
+        Logger.h
+        Utils.h
         )
 
 set(PLAYER_SOURCES
         Player.cpp
         Game.cpp
         GameConfig.cpp
-        GameStack.cpp
         GamePlayer.cpp
-        PlayerRegistry.cpp
         NeMoContext.cpp
         WinContext.cpp
         Splash.cpp
         CmdlineParser.cpp
-        ErrorProtocol.cpp
-        LogProtocol.cpp
+        Logger.cpp
+        Utils.cpp
         Player.rc
         )
 
@@ -54,6 +50,11 @@ target_include_directories(Player PRIVATE
         ${BUILDING_BLOCKS_SOURCE_DIR}
         )
 
-target_link_libraries(Player PRIVATE CK2 VxMath)
+target_link_libraries(Player PRIVATE CK2 VxMath delayimp.lib)
+
+target_link_options(Player PRIVATE
+        /DELAYLOAD:CK2.dll
+        /DELAYLOAD:VxMath.dll
+        )
 
 install(TARGETS Player RUNTIME DESTINATION Bin)

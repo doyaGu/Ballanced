@@ -4,7 +4,10 @@
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
-#include "Windows.h"
+#include <Windows.h>
+#ifdef WIN32_LEAN_AND_MEAN
+#undef WIN32_LEAN_AND_MEAN
+#endif
 
 typedef LRESULT(CALLBACK *LPFNWNDPROC)(HWND, UINT, WPARAM, LPARAM);
 
@@ -14,19 +17,22 @@ public:
     CWinContext();
     ~CWinContext() {}
 
-    bool Init(HINSTANCE hInstance, LPFNWNDPROC lpfnWndProc, bool fullscreen = false, bool borderless = false, bool resizable = false);
+    bool Init(HINSTANCE hInstance, LPFNWNDPROC lpfnWndProc);
 
-    void LoadWindowNames();
-    bool RegisterWindowClasses(LPFNWNDPROC lpfnWndProc, int width, int height);
-    bool CreateWindows();
+    bool Process();
+
     void UpdateWindows();
 
-    void ShowWindows();
-    void RestoreWindow();
-    void MinimizeWindow();
+    void ShowMainWindow(bool show = true);
+    void ShowRenderWindow(bool show = true);
+
+    void MinimizeMainWindow();
+    void MinimizeRenderWindow();
 
     void FocusMainWindow();
     void FocusRenderWindow();
+
+    void AdjustMainStyle(bool fullscreen);
 
     HINSTANCE GetAppInstance() const
     {
@@ -51,12 +57,19 @@ public:
     void GetPosition(int &x, int &y);
     void SetPosition(int x, int y);
 
-    void GetResolution(int &width, int &height);
-    void SetResolution(int width, int height);
+    void GetMainSize(int &width, int &height);
+    void GetRenderSize(int &width, int &height);
+
+    void SetMainSize(int width, int height);
+    void SetRenderSize(int width, int height);
 
 private:
     CWinContext(const CWinContext &);
     CWinContext &operator=(const CWinContext &);
+
+    void LoadWindowNames();
+    bool RegisterWindowClasses(LPFNWNDPROC lpfnWndProc);
+    bool CreateWindows();
 
     HWND m_MainWindow;
     HWND m_RenderWindow;
@@ -64,17 +77,12 @@ private:
     HACCEL m_hAccelTable;
     WNDCLASSEXA m_MainWndClass;
     WNDCLASSA m_RenderWndClass;
-    char m_MainWndName[100];
-    char m_RenderWndName[100];
-    char m_MainWndClassName[100];
-    char m_RenderWndClassName[100];
+    char m_MainWndName[128];
+    char m_RenderWndName[128];
+    char m_MainWndClassName[128];
+    char m_RenderWndClassName[128];
     DWORD m_MainWndStyle;
     DWORD m_RenderWndStyle;
-    int m_Height;
-    int m_Width;
-    bool m_Fullscreen;
-    bool m_Borderless;
-    bool m_Resizable;
 };
 
 #endif /* PLAYER_WINCONTEXT_H */
