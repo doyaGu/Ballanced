@@ -55,7 +55,7 @@ int GetBooleanValueFromRegistry(const CKBehaviorContext &behcontext)
     CKBehavior *beh = behcontext.Behavior;
     CKContext *context = behcontext.Context;
 
-    BOOL value = FALSE;
+    CKBOOL value = FALSE;
     char regKey[512] = {0};
     char valueName[128] = {0};
     beh->GetInputParameterValue(0, regKey);
@@ -87,7 +87,7 @@ int GetBooleanValueFromRegistry(const CKBehaviorContext &behcontext)
         return CKBR_OK;
     }
 
-    beh->SetOutputParameterValue(0, &value, sizeof(BOOL));
+    beh->SetOutputParameterValue(0, &value, sizeof(CKBOOL));
     beh->ActivateOutput(0);
     return CKBR_OK;
 }
