@@ -49,7 +49,7 @@ int ExitToSystem(const CKBehaviorContext &behcontext)
     CKBehavior *beh = behcontext.Behavior;
     CKContext *context = behcontext.Context;
 
-    ::PostMessageA((HWND)context->GetRenderManager()->GetRenderContext(0)->GetWindowHandle(), TT_MSG_EXIT_TO_SYS, 0, 0);
+    ::PostMessageA((HWND)context->GetMainWindow(), TT_MSG_EXIT_TO_SYS, 0, 0);
 
     beh->ActivateOutput(0);
     return CKBR_OK;
