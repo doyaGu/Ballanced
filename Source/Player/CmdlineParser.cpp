@@ -126,28 +126,19 @@ bool CmdlineParser::Next(CmdlineArg &arg, const char *longopt, char opt, int max
 
     if (!match)
     {
-        optLen = strlen(longopt);
+        if (!longopt) return false;
 
-        bool valid = false;
+        optLen = strlen(longopt);
         if (optLen > 0)
         {
-            valid = true;
             for (size_t l = 0; l < optLen; ++l)
-            {
                 if (!isalnum(longopt[l]) && longopt[l] != '-' && longopt[l] != '_')
-                {
-                    valid = false;
-                    break;
-                }
-            }
+                    return false;
         }
 
-        if (valid && strncmp(s.c_str(), longopt, optLen) == 0)
-            match = true;
+        if (strncmp(s.c_str(), longopt, optLen) != 0)
+            return false;
     }
-
-    if (!match)
-        return false;
 
     if (maxValueCount != 0)
     {
