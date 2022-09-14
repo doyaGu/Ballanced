@@ -13,7 +13,7 @@ class CSplash
 {
 public:
     CSplash();
-    CSplash(HINSTANCE hInstance);
+    explicit CSplash(HINSTANCE hInstance);
     ~CSplash();
 
     bool Show();
@@ -38,8 +38,6 @@ private:
     BYTE *m_Data;
     HWND m_hWnd;
     HINSTANCE m_hInstance;
-
-    static LRESULT CALLBACK SplashWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 };
 
 #endif /* PLAYER_SPLASH_H */
