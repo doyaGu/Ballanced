@@ -54,10 +54,10 @@ int ChangeScreenMode(const CKBehaviorContext &behcontext)
     CKBehavior *beh = behcontext.Behavior;
     CKContext *context = behcontext.Context;
 
-    int driverId = 0;
-    int screenModeId = 0;
-    beh->GetInputParameterValue(0, &driverId);
-    beh->GetInputParameterValue(1, &screenModeId);
+    int driver = 0;
+    int screenMode = 0;
+    beh->GetInputParameterValue(0, &driver);
+    beh->GetInputParameterValue(1, &screenMode);
 
     InterfaceManager *man = InterfaceManager::GetManager(context);
     if (!man)
@@ -67,24 +67,23 @@ int ChangeScreenMode(const CKBehaviorContext &behcontext)
         return CKBR_OK;
     }
 
-    VxDriverDesc *drDesc = context->GetRenderManager()->GetRenderDriverDescription(driverId);
+    VxDriverDesc *drDesc = context->GetRenderManager()->GetRenderDriverDescription(driver);
     if (!drDesc)
     {
-        context->OutputToConsoleExBeep("Change Screen Mode: No Driver Description for Driver-ID '%d' is found", driverId);
+        context->OutputToConsoleExBeep("Change Screen Mode: No Driver Description for Driver-ID '%d' is found", driver);
         beh->ActivateOutput(1);
         return CKBR_OK;
     }
 
-    if (screenModeId >= drDesc->DisplayModeCount ||
-        (screenModeId & 0x80000000) != 0 ||
-        drDesc->DisplayModes[screenModeId].Bpp < 16)
+    if (screenMode < 0 || screenMode >= drDesc->DisplayModeCount ||
+        drDesc->DisplayModes[screenMode].Bpp < 16)
     {
         context->OutputToConsoleExBeep("Change Screen Mode: ScreenMode is not exist");
         beh->ActivateOutput(1);
         return CKBR_OK;
     }
 
-    if (!::SendMessageA((HWND)context->GetMainWindow(), TT_MSG_SCREEN_MODE_CHG, screenModeId, driverId))
+    if (!::SendMessageA((HWND)context->GetMainWindow(), TT_MSG_SCREEN_MODE_CHG, screenMode, driver))
     {
         beh->ActivateOutput(1);
         return CKBR_OK;
