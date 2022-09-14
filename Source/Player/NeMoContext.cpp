@@ -15,6 +15,7 @@ CNeMoContext::CNeMoContext()
     : m_CKContext(NULL),
       m_RenderManager(NULL),
       m_AttributeManager(NULL),
+      m_PathManager(NULL),
       m_MessageManager(NULL),
       m_TimeManager(NULL),
       m_PluginManager(NULL),
