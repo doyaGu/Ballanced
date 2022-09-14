@@ -575,7 +575,7 @@ int CGamePlayer::OnCommand(UINT id, UINT code)
 {
     switch (id)
     {
-    case ID_ACCEL_HELP:
+    case IDM_APP_ABOUT:
         Pause();
         ::DialogBoxParamA(m_WinContext.GetAppInstance(), MAKEINTRESOURCE(IDD_ABOUT), NULL, AboutProc, 0);
         Play();

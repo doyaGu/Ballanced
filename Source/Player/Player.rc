@@ -9,7 +9,7 @@
 
 IDR_ACCEL ACCELERATORS MOVEABLE PURE 
 BEGIN
-    "/",            ID_ACCEL_HELP,          ASCII,  ALT
+    "/",            IDM_APP_ABOUT,          ASCII,  ALT
 END
 
 /////////////////////////////////////////////////////////////////////////////
@@ -100,8 +100,8 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    IDS_MAIN_WND_NAME       "Ballance"
-    IDS_RENDER_WND_NAME     "Ballance Render"
-    IDS_MAIN_WND_CLASS_NAME "Ballance"
+    IDS_MAIN_WND_NAME         "Ballance"
+    IDS_RENDER_WND_NAME       "Ballance Render"
+    IDS_MAIN_WND_CLASS_NAME   "Ballance"
     IDS_RENDER_WND_CLASS_NAME "Ballance Render"
 END
