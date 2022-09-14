@@ -113,7 +113,7 @@ namespace utils
     bool BrowsePath(const char *title, char *path)
     {
         BROWSEINFOA bInfo = {0};
-        bInfo.hwndOwner = GetForegroundWindow();
+        bInfo.hwndOwner = ::GetForegroundWindow();
         bInfo.lpszTitle = title;
         bInfo.ulFlags = BIF_RETURNONLYFSDIRS | BIF_USENEWUI | BIF_UAHINT | BIF_NONEWFOLDERBUTTON;
 
@@ -155,11 +155,11 @@ namespace utils
 
     int CharToWchar(LPCSTR pCharStr, LPWSTR pWCharStr, INT iSize)
     {
-        return MultiByteToWideChar(CP_ACP, 0, pCharStr, -1, pWCharStr, iSize);
+        return ::MultiByteToWideChar(CP_ACP, 0, pCharStr, -1, pWCharStr, iSize);
     }
 
     int WcharToChar(LPCWSTR pWCharStr, LPSTR pCharStr, INT iSize)
     {
-        return WideCharToMultiByte(CP_ACP, 0, pWCharStr, -1, pCharStr, iSize, NULL, NULL);
+        return ::WideCharToMultiByte(CP_ACP, 0, pWCharStr, -1, pCharStr, iSize, NULL, NULL);
     }
 }
