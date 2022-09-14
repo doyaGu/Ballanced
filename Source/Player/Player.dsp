@@ -54,7 +54,8 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /machine:I386
-# ADD LINK32 CK2.lib VxMath.lib kernel32.lib user32.lib gdi32.lib /nologo /subsystem:windows /machine:I386 /out:"../../Bin/Player.exe"
+# ADD LINK32 CK2.lib VxMath.lib kernel32.lib user32.lib gdi32.lib delayimp.lib /nologo /subsystem:windows /machine:I386 /out:"../../Bin/Player.exe" /delayload:CK2.dll /delayload:VxMath.dll
+# SUBTRACT LINK32 /pdb:none
 
 !ELSEIF  "$(CFG)" == "Player - Win32 Debug"
 
@@ -81,7 +82,8 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 CK2.lib VxMath.lib kernel32.lib user32.lib gdi32.lib /nologo /subsystem:windows /debug /machine:I386 /out:"../../Bin/Player.exe" /pdbtype:sept
+# ADD LINK32 CK2.lib VxMath.lib kernel32.lib user32.lib gdi32.lib delayimp.lib /nologo /subsystem:windows /debug /machine:I386 /out:"../../Bin/Player.exe" /pdbtype:sept /delayload:CK2.dll /delayload:VxMath.dll
+# SUBTRACT LINK32 /pdb:none
 
 !ENDIF 
 
@@ -98,10 +100,6 @@ SOURCE=.\CmdlineParser.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\ErrorProtocol.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\Game.cpp
 # End Source File
 # Begin Source File
@@ -114,11 +112,7 @@ SOURCE=.\GamePlayer.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\GameStack.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\LogProtocol.cpp
+SOURCE=.\Logger.cpp
 # End Source File
 # Begin Source File
 
@@ -130,11 +124,11 @@ SOURCE=.\Player.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\PlayerRegistry.cpp
+SOURCE=.\Splash.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\Splash.cpp
+SOURCE=.\Utils.cpp
 # End Source File
 # Begin Source File
 
@@ -154,10 +148,6 @@ SOURCE=.\config.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\ErrorProtocol.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\Game.h
 # End Source File
 # Begin Source File
@@ -166,23 +156,23 @@ SOURCE=.\GameConfig.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\GameInfo.h
+# End Source File
+# Begin Source File
+
 SOURCE=.\GamePlayer.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\GameStack.h
+SOURCE=.\InterfaceManager.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\LogProtocol.h
+SOURCE=.\Logger.h
 # End Source File
 # Begin Source File
 
 SOURCE=.\NeMoContext.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\PlayerRegistry.h
 # End Source File
 # Begin Source File
 
@@ -191,6 +181,10 @@ SOURCE=.\resource.h
 # Begin Source File
 
 SOURCE=.\Splash.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\Utils.h
 # End Source File
 # Begin Source File
 

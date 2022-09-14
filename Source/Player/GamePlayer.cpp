@@ -2,425 +2,460 @@
 
 #include <io.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
-#include "ErrorProtocol.h"
-#include "LogProtocol.h"
+#include "GameConfig.h"
 #include "Splash.h"
-
-#include "TT_InterfaceManager_RT/InterfaceManager.h"
-
-#include "config.h"
+#include "Logger.h"
+#include "InterfaceManager.h"
 #include "resource.h"
 
-static bool CheckPrerequisite()
+static CKERROR LogRedirect(CKUICallbackStruct &cbStruct, void *)
 {
-    char buffer[80];
-
+    if (cbStruct.Reason == CKUIM_OUTTOCONSOLE ||
+        cbStruct.Reason == CKUIM_OUTTOINFOBAR ||
+        cbStruct.Reason == CKUIM_DEBUGMESSAGESEND)
     {
-        SYSTEM_INFO sysinfo;
-        ::GetSystemInfo(&sysinfo);
-
-        TT_LOG("ProcessorCheck ... ");
-
-        if (sysinfo.wProcessorArchitecture)
+        static XString text = "";
+        if (text.Compare(cbStruct.ConsoleString))
         {
-            TT_LOG("No Intel architecture ... failed");
-            ::MessageBoxA(NULL, "This program requires a PC with an Intel compatible processor!", "Error", MB_ICONERROR);
-            return false;
+            CLogger::Get().Info(cbStruct.ConsoleString);
+            text = cbStruct.ConsoleString;
         }
-        if (sysinfo.dwProcessorType != PROCESSOR_INTEL_PENTIUM)
-        {
-            TT_LOG("No Intel processor ... failed");
-            ::MessageBoxA(NULL, "This program requires a PC with an Intel Pentium compatible (or higher) processor!", "Error", MB_ICONERROR);
-            return false;
-        }
+    }
+    return CK_OK;
+}
 
-        TT_LOG("Intel CPU found ... OK");
+static bool ClipMouse(bool enable)
+{
+    CNeMoContext *context = CNeMoContext::GetInstance();
+    CKRenderContext *rc = context->GetRenderContext();
+    if (!rc)
+        return false;
+
+    if (!enable)
+        return ClipCursor(NULL) == TRUE; // Disable the clipping
+
+    // Retrieve the render window rectangle
+    VxRect r;
+    rc->GetWindowRect(r, TRUE);
+
+    RECT rect;
+    rect.top = (LONG)r.top;
+    rect.left = (LONG)r.left;
+    rect.bottom = (LONG)r.bottom;
+    rect.right = (LONG)r.right;
+
+    // To clip the mouse in it.
+    return ClipCursor(&rect) == TRUE;
+}
+
+static BOOL FillScreenModeList(HWND hWnd)
+{
+    char buffer[256];
+
+    CNeMoContext *context = CNeMoContext::GetInstance();
+    CKRenderManager *rm = context->GetRenderManager();
+    if (!rm)
+        return FALSE;
+
+    VxDriverDesc *drDesc = rm->GetRenderDriverDescription(context->GetDriver());
+    VxDisplayMode *dm = drDesc->DisplayModes;
+    const int dmCount = drDesc->DisplayModeCount;
+    int i = 0;
+    while (i < dmCount)
+    {
+        int width = dm[i].Width;
+        int height = dm[i].Height;
+        while (dm[i].Width == width && dm[i].Height == height && i < dmCount)
+        {
+            if (dm[i].Bpp > 8)
+            {
+                sprintf(buffer, "%d x %d x %d x %dHz", dm[i].Width, dm[i].Height, dm[i].Bpp, dm[i].RefreshRate);
+                int index = SendDlgItemMessageA(hWnd, IDC_LB_SCREEN_MODE, LB_ADDSTRING, 0, (LPARAM)buffer);
+                SendDlgItemMessageA(hWnd, IDC_LB_SCREEN_MODE, LB_SETITEMDATA, index, i);
+                if (i == context->GetScreenMode())
+                {
+                    SendDlgItemMessageA(hWnd, IDC_LB_SCREEN_MODE, LB_SETCURSEL, index, 0);
+                    SendDlgItemMessageA(hWnd, IDC_LB_SCREEN_MODE, LB_SETTOPINDEX, index, 0);
+                }
+            }
+            ++i;
+        }
     }
 
-    {
-        OSVERSIONINFOA osvi;
-        ::ZeroMemory(&osvi, sizeof(OSVERSIONINFOA));
-        osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOA);
-        ::GetVersionExA(&osvi);
-
-        TT_LOG("OS Check ... ");
-
-        if (osvi.dwMajorVersion < 4)
-        {
-            TT_LOG("No supported OS ... failed");
-            return false;
-        }
-
-        TT_LOG("Windows95/98 found ... OK");
-    }
-
-    {
-        TT_LOG("Checking available memory ... ");
-
-        MEMORYSTATUSEX statex;
-        statex.dwLength = sizeof(statex);
-        ::GlobalMemoryStatusEx(&statex);
-
-        sprintf(buffer, "memory usage: %ld percent\n", statex.dwMemoryLoad);
-        TT_LOG(buffer);
-        sprintf(buffer, "%llu total %sbytes of physical memory.\n", statex.ullTotalPhys / (1024 * 1024), "M");
-        TT_LOG(buffer);
-        sprintf(buffer, "%llu free %sbytes of physical memory.\n", statex.ullAvailPhys / (1024 * 1024), "M");
-        TT_LOG(buffer);
-        sprintf(buffer, "%llu total %sbytes of paging file.\n", statex.ullTotalPageFile / (1024 * 1024), "M");
-        TT_LOG(buffer);
-        sprintf(buffer, "%llu free %sbytes of paging file.\n", statex.ullAvailPageFile / (1024 * 1024), "M");
-        TT_LOG(buffer);
-        sprintf(buffer, "%llu total %sbytes of virtual memory.\n", statex.ullTotalVirtual / (1024 * 1024), "M");
-        TT_LOG(buffer);
-        sprintf(buffer, "%llu free %sbytes of virtual memory.\n", statex.ullAvailVirtual / (1024 * 1024), "M");
-        TT_LOG(buffer);
-
-        if (statex.ullAvailVirtual < 64000000)
-        {
-            TT_LOG("Memory check failed (below 64MB)!");
-            ::MessageBoxA(NULL, "This program requires a PC with at least 64 MB RAM!", "Error", MB_ICONERROR);
-            return false;
-        }
-
-        TT_LOG("Memory check successful!");
-    }
-
-    return true;
+    return TRUE;
 }
 
 static void OnInitDialog(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    char buffer[256];
-    UINT lbStrId;
-    int drCount;
-    VxDriverDesc *drDesc;
-    VxDisplayMode *displayMode;
+    if (!FillScreenModeList(hWnd))
+        EndDialog(hWnd, IDCANCEL);
 
     CNeMoContext *context = CNeMoContext::GetInstance();
-
-    drCount = context->GetRenderManager()->GetRenderDriverCount();
-    if (drCount > 0)
+    CKRenderManager *rm = context->GetRenderManager();
+    const int drCount = rm->GetRenderDriverCount();
+    for (int i = 0; i < drCount; ++i)
     {
-        for (int i = 0; i < drCount; ++i)
-        {
-            drDesc = context->GetRenderManager()->GetRenderDriverDescription(i);
-            if (drDesc->IsHardware)
-            {
-                lbStrId = ::SendDlgItemMessageA(hWnd, IDC_LB_SCREEN_MODE, LB_ADDSTRING, 0, (LPARAM)drDesc->DriverName);
-                ::SendDlgItemMessageA(hWnd, IDC_LB_SCREEN_MODE, LB_SETITEMDATA, lbStrId, i);
-                if (i == context->GetDriver())
-                    ::SendDlgItemMessageA(hWnd, IDC_LB_SCREEN_MODE, LB_SETCURSEL, lbStrId, 0);
-            }
-        }
-    }
-
-    drDesc = context->GetRenderManager()->GetRenderDriverDescription(context->GetDriver());
-    for (int i = 0, j = 0; i < drDesc->DisplayModeCount; ++i, ++j)
-    {
-        displayMode = drDesc->DisplayModes;
-        if (displayMode[i].Bpp > 8)
-        {
-            if (j == 0)
-            {
-                sprintf(buffer, "%d x %d x %d", displayMode[j].Width, displayMode[j].Height, displayMode[j].Bpp);
-                lbStrId = SendDlgItemMessageA(hWnd, IDC_LB_DRIVER, LB_ADDSTRING, 0, (LPARAM)buffer);
-                SendDlgItemMessageA(hWnd, IDC_LB_DRIVER, LB_SETITEMDATA, lbStrId, i);
-                if (i == context->GetScreenMode())
-                {
-                    SendDlgItemMessageA(hWnd, IDC_LB_DRIVER, LB_SETCURSEL, lbStrId, 0);
-                    SendDlgItemMessageA(hWnd, IDC_LB_DRIVER, LB_SETTOPINDEX, lbStrId, 0);
-                }
-            }
-
-            int k = 0;
-            for (VxDisplayMode *displayModeNext = displayMode + 1;
-                 displayMode[j].Width != displayModeNext->Width ||
-                 displayMode[j].Height != displayModeNext->Height ||
-                 displayMode[j].Bpp != displayModeNext->Bpp;
-                 ++displayModeNext)
-            {
-                if (++k >= i)
-                {
-                    sprintf(buffer, "%d x %d x %d", displayMode[j].Width, displayMode[j].Height, displayMode[j].Bpp);
-                    lbStrId = ::SendDlgItemMessageA(hWnd, IDC_LB_DRIVER, LB_ADDSTRING, 0, (LPARAM)buffer);
-                    ::SendDlgItemMessageA(hWnd, IDC_LB_DRIVER, LB_SETITEMDATA, lbStrId, i);
-                    if (i == context->GetScreenMode())
-                    {
-                        ::SendDlgItemMessageA(hWnd, IDC_LB_DRIVER, LB_SETCURSEL, lbStrId, 0);
-                        ::SendDlgItemMessageA(hWnd, IDC_LB_DRIVER, LB_SETTOPINDEX, lbStrId, 0);
-                    }
-                }
-            }
-        }
+        VxDriverDesc *drDesc = rm->GetRenderDriverDescription(i);
+        int index = ::SendDlgItemMessageA(hWnd, IDC_LB_DRIVER, LB_ADDSTRING, 0, (LPARAM)drDesc->DriverName);
+        ::SendDlgItemMessageA(hWnd, IDC_LB_DRIVER, LB_SETITEMDATA, index, i);
+        if (i == context->GetDriver())
+            ::SendDlgItemMessageA(hWnd, IDC_LB_DRIVER, LB_SETCURSEL, index, 0);
     }
 }
 
-static BOOL CALLBACK FullscreenSetup(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+static BOOL CALLBACK FullscreenSetupProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+    WORD wNotifyCode = HIWORD(wParam);
+    int wID = LOWORD(wParam);
+
     switch (uMsg)
     {
     case WM_INITDIALOG:
         OnInitDialog(hWnd, uMsg, wParam, lParam);
         return TRUE;
-
     case WM_COMMAND:
-        switch (LOWORD(wParam))
+    {
+        CNeMoContext *context = CNeMoContext::GetInstance();
+        if (wNotifyCode == LBN_SELCHANGE && wID == IDC_LB_DRIVER)
         {
-        case IDOK:
-        {
-            BOOL fError = wParam;
-            CNeMoContext *context = CNeMoContext::GetInstance();
+            int index = ::SendDlgItemMessageA(hWnd, IDC_LB_DRIVER, LB_GETCURSEL, 0, 0);
+            int driver = ::SendDlgItemMessageA(hWnd, IDC_LB_DRIVER, LB_GETITEMDATA, index, 0);
+            context->SetDriver(driver);
 
-            int curIdx = ::SendDlgItemMessageA(hWnd, IDC_LB_SCREEN_MODE, LB_GETCURSEL, 0, 0);
-            if (curIdx >= 0)
-                context->SetDriver(SendDlgItemMessageA(hWnd, IDC_LB_SCREEN_MODE, LB_GETITEMDATA, curIdx, 0));
-
-            curIdx = ::SendDlgItemMessageA(hWnd, IDC_LB_DRIVER, LB_GETCURSEL, 0, 0);
-            if (curIdx >= 0)
-                fError = context->ApplyScreenMode(SendDlgItemMessageA(hWnd, IDC_LB_DRIVER, LB_GETITEMDATA, curIdx, 0));
-
-            InterfaceManager *im = context->GetInterfaceManager();
-            im->SetDriver(context->GetDriver());
-            im->SetScreenMode(context->GetScreenMode());
-
-            if (fError)
-                EndDialog(hWnd, 1);
-
+            ::SendDlgItemMessageA(hWnd, IDC_LB_SCREEN_MODE, LB_RESETCONTENT, 0, 0);
+            if (!FillScreenModeList(hWnd))
+                EndDialog(hWnd, FALSE);
             return TRUE;
         }
-        case IDCANCEL:
-            EndDialog(hWnd, 2);
-            break;
+        else if (wID == IDOK || wID == IDCANCEL)
+        {
+            int index = ::SendDlgItemMessageA(hWnd, IDC_LB_SCREEN_MODE, LB_GETCURSEL, 0, 0);
+            int screenMode = SendDlgItemMessageA(hWnd, IDC_LB_SCREEN_MODE, LB_GETITEMDATA, index, 0);
+            context->SetScreenMode(screenMode);
+
+            EndDialog(hWnd, wID);
+            return TRUE;
         }
+    }
+    break;
+    }
+    return FALSE;
+}
+
+static BOOL CALLBACK AboutProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    switch (uMsg)
+    {
+    case WM_INITDIALOG:
+        return TRUE;
+
+    case WM_COMMAND:
+        if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
+        {
+            EndDialog(hWnd, LOWORD(wParam));
+            return TRUE;
+        }
+        break;
+    default:
         break;
     }
     return FALSE;
 }
 
-CGamePlayer::CGamePlayer(CGameInfo *gameInfo, int n, HANDLE hMutex)
-    : m_State(eInitial),
-      m_hMutex(hMutex),
-      m_Cleared(false),
-      m_DataManager(),
-      m_NeMoContext(),
-      m_WinContext(),
-      m_Stack(),
-      m_Config(),
-      m_Game()
+LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    memset(m_RenderPath, 0, sizeof(m_RenderPath));
-    memset(m_PluginPath, 0, sizeof(m_PluginPath));
-    memset(m_ManagerPath, 0, sizeof(m_ManagerPath));
-    memset(m_BehaviorPath, 0, sizeof(m_BehaviorPath));
-    memset(m_Path, 0, sizeof(m_Path));
-    memset(m_IniPath, 0, sizeof(m_IniPath));
+    CGamePlayer &player = CGamePlayer::GetInstance();
 
-    Construct();
+    switch (uMsg)
+    {
+    case WM_DESTROY:
+        player.OnDestroy();
+        break;
 
-    for (int i = 0; i < n; i++)
-        m_DataManager.Save(&gameInfo[i]);
+    case WM_MOVE:
+        player.OnMove();
+        break;
+
+    case WM_SIZE:
+        player.OnSized();
+        break;
+
+    case WM_PAINT:
+        player.OnPaint();
+        break;
+
+    case WM_CLOSE:
+        player.OnClose();
+        return 0;
+
+    case WM_ACTIVATEAPP:
+        player.OnActivateApp(hWnd, uMsg, wParam, lParam);
+        break;
+
+    case WM_SETCURSOR:
+        player.OnSetCursor();
+        break;
+
+    case WM_GETMINMAXINFO:
+        player.OnGetMinMaxInfo((LPMINMAXINFO)lParam);
+        break;
+
+    case WM_KEYDOWN:
+        return player.OnKeyDown(wParam);
+
+    case WM_SYSKEYDOWN:
+        return player.OnSysKeyDown(wParam);
+
+    case WM_COMMAND:
+        return player.OnCommand(LOWORD(wParam), HIWORD(wParam));
+
+    case TT_MSG_NO_GAMEINFO:
+        player.OnExceptionCMO(wParam, lParam);
+        break;
+
+    case TT_MSG_CMO_RESTART:
+        player.OnReturn(wParam, lParam);
+        break;
+
+    case TT_MSG_CMO_LOAD:
+        player.OnLoadCMO(wParam, lParam);
+        break;
+
+    case TT_MSG_EXIT_TO_SYS:
+        player.OnExitToSystem(wParam, lParam);
+        break;
+
+    case TT_MSG_EXIT_TO_TITLE:
+        player.OnExitToTitle(wParam, lParam);
+        break;
+
+    case TT_MSG_SCREEN_MODE_CHG:
+        return player.OnChangeScreenMode(wParam, lParam);
+
+    case TT_MSG_GO_FULLSCREEN:
+        player.OnGoFullscreen();
+        break;
+
+    case TT_MSG_STOP_FULLSCREEN:
+        player.OnStopFullscreen();
+        return 1;
+
+    default:
+        break;
+    }
+
+    return ::DefWindowProcA(hWnd, uMsg, wParam, lParam);
+}
+
+CGamePlayer &CGamePlayer::GetInstance()
+{
+    static CGamePlayer player;
+    return player;
 }
 
 CGamePlayer::~CGamePlayer()
 {
 }
 
-void CGamePlayer::Init(HINSTANCE hInstance, LPFNWNDPROC lpfnWndProc)
+bool CGamePlayer::Init(HINSTANCE hInstance)
 {
-    m_State = eInitial;
+    CGameConfig &config = CGameConfig::Get();
 
-    if (!CheckPrerequisite())
-        return;
+    if (!config.HasPath(eRootPath))
+    {
+        CLogger::Get().Error("Root path is not specified");
+        return false;
+    }
+
+    {
+        const char *dirs[] = {
+            "Plugins",
+            "RenderEngines",
+            "Managers",
+            "BuildingBlocks",
+            "Sounds",
+            "Textures",
+            ""};
+        const char *rootPath = config.GetPath(eRootPath);
+        char szPath[MAX_PATH];
+        for (int p = ePluginPath; p < ePathCategoryCount; ++p)
+        {
+            if (!config.HasPath((PathCategory)p))
+            {
+                _snprintf(szPath, MAX_PATH, "%s%s", rootPath, dirs[p - ePluginPath]);
+                config.SetPath((PathCategory)p, szPath);
+            }
+        }
+    }
+
+    // Save the last position firstly.
+    int x = config.posX;
+    int y = config.posY;
+
+    if (!m_WinContext.Init(hInstance, WndProc))
+    {
+        CLogger::Get().Error("WinContext Initialization Failed");
+        return false;
+    }
 
     CNeMoContext::RegisterInstance(&m_NeMoContext);
-    m_Game.SetNeMoContext(&m_NeMoContext);
-
-    int x = m_Config.posX;
-    int y = m_Config.posY;
-
-    if (!m_WinContext.Init(hInstance, lpfnWndProc, m_Config.fullscreen, m_Config.borderless, m_Config.resizable))
-    {
-        TT_ERROR("GamePlayer.cpp", "CGamePlayer::Init()", "WinContext Initialization Failed");
-        return;
-    }
+    m_NeMoContext.SetProgPath(config.GetPath(eRootPath));
 
     switch (InitEngine())
     {
     case CK_OK:
+        RedirectLog();
         break;
     case CKERR_NODLLFOUND:
         ::MessageBoxA(NULL, "Necessary dll is not found", "Error", MB_OK);
-        return;
+        return false;
     case CKERR_NORENDERENGINE:
         ::MessageBoxA(NULL, "No RenderEngine", "Error", MB_OK);
-        return;
+        return false;
     case CKERR_INVALIDPARAMETER:
     {
-        m_NeMoContext.SetDriver(0);
-        m_NeMoContext.SetBPP(DEFAULT_BPP);
-        m_NeMoContext.SetResolution(DEFAULT_WIDTH, DEFAULT_HEIGHT);
+        if (::DialogBoxParamA(m_WinContext.GetAppInstance(), MAKEINTRESOURCE(IDD_FULLSCREEN_SETUP), NULL, FullscreenSetupProc, 0) != IDOK)
+            return false;
+        if (!m_NeMoContext.ApplyScreenMode())
+            return false;
+
+        config.bpp = m_NeMoContext.GetBPP();
+        config.driver = m_NeMoContext.GetDriver();
+        config.width = m_NeMoContext.GetWidth();
+        config.height = m_NeMoContext.GetHeight();
+        m_WinContext.SetMainSize(config.width, config.height);
+        m_WinContext.SetRenderSize(config.width, config.height);
 
         if (!ReInitEngine())
-        {
-            if (::DialogBoxParamA(m_WinContext.GetAppInstance(), (LPCSTR)IDD_FULLSCREEN_SETUP, NULL, FullscreenSetup, 0) != 1)
-                return;
-            if (!ReInitEngine())
-                return;
-        }
-
-        m_Config.bpp = m_NeMoContext.GetBPP();
-        m_Config.driver = m_NeMoContext.GetDriver();
-        m_Config.width = m_NeMoContext.GetWidth();
-        m_Config.height = m_NeMoContext.GetHeight();
+            return false;
     }
     break;
     default:
-        return;
+        return false;
     }
 
     InterfaceManager *im = m_NeMoContext.GetInterfaceManager();
     im->SetDriver(m_NeMoContext.GetDriver());
     im->SetScreenMode(m_NeMoContext.GetScreenMode());
-    im->SetIniName(m_IniPath);
-    im->SetRookie(m_Config.rookie);
-    im->SetTaskSwitchEnabled(m_Config.taskSwitchEnabled);
+    im->SetRookie(config.rookie);
+    im->SetTaskSwitchEnabled(true);
 
-    if (!m_Config.fullscreen)
+    if (!config.fullscreen && x != 2147483647 && y != 2147483647)
         m_WinContext.SetPosition(x, y);
 
-    m_WinContext.ShowWindows();
     m_WinContext.UpdateWindows();
+    m_WinContext.ShowMainWindow();
+    m_WinContext.ShowRenderWindow();
 
-    m_NeMoContext.Refresh();
+    m_NeMoContext.RefreshScreen();
 
     ::SendMessageA(m_WinContext.GetMainWindow(), TT_MSG_EXIT_TO_TITLE, NULL, NULL);
     m_WinContext.FocusMainWindow();
 
-    m_State = eInitialized;
+    return true;
 }
 
 void CGamePlayer::Run()
 {
-    while (Step())
+    while (Process())
         continue;
 }
 
-bool CGamePlayer::Step()
+bool CGamePlayer::Process()
 {
-    MSG msg;
-    if (::PeekMessageA(&msg, NULL, 0, 0, PM_REMOVE))
-    {
-        if (msg.message == WM_QUIT)
-            return false;
-
-        if (!::TranslateAcceleratorA(msg.hwnd, m_WinContext.GetAccelTable(), &msg))
-        {
-            ::TranslateMessage(&msg);
-            ::DispatchMessageA(&msg);
-        }
-    }
-
-    m_NeMoContext.Update();
-
-    return true;
-}
-
-void CGamePlayer::Done()
-{
-    m_Config.SaveToIni(m_IniPath);
-
-    if (m_hMutex)
-    {
-        ::ReleaseMutex(m_hMutex);
-        m_hMutex = NULL;
-    }
-
-    if (!m_Cleared)
-    {
-        m_NeMoContext.Cleanup();
-        if (m_NeMoContext.RestoreWindow())
-            m_NeMoContext.Refresh();
-
-        m_NeMoContext.Shutdown();
-
-        CGameInfo *gameInfo = m_Game.GetGameInfo();
-        if (gameInfo && gameInfo->fileName)
-        {
-            if (!m_Stack.GetGameInfo(gameInfo->fileName))
-                delete gameInfo;
-            m_Game.SetGameInfo(NULL);
-        }
-        m_Stack.ClearAll();
-    }
-
-    m_Cleared = true;
-}
-
-bool CGamePlayer::LoadCMO(const char *filename)
-{
-    m_NeMoContext.Refresh();
-
-    CGameInfo *gameInfoNow = m_Game.GetGameInfo();
-    CGameInfo *gameInfo = m_Stack.GetGameInfo(filename);
-    if (gameInfo)
-    {
-        m_Game.SetGameInfo(gameInfo);
-    }
-    else
-    {
-        gameInfo = m_Game.NewGameInfo();
-        m_DataManager.Load(gameInfo, filename);
-        if (gameInfoNow)
-        {
-            switch (gameInfoNow->type)
-            {
-            case 1:
-                gameInfo->next = gameInfoNow;
-                break;
-            case 2:
-                gameInfo->next = gameInfoNow->next;
-                break;
-            default:
-                gameInfo->next = NULL;
-                break;
-            }
-        }
-        else
-        {
-            gameInfo->next = NULL;
-        }
-    }
-
-    if (gameInfoNow && !m_Stack.GetGameInfo(gameInfoNow->fileName))
-        m_Stack.Push(gameInfoNow);
-
-    RegisterGameInfo();
-    if (!m_Game.Load(m_Config))
+    if (!m_WinContext.Process())
         return false;
 
-    ::SetCursor(::LoadCursorA(NULL, (LPCSTR)IDC_ARROW));
-
-    m_Game.Play();
-    m_WinContext.FocusMainWindow();
+    m_NeMoContext.Process();
 
     return true;
+}
+
+void CGamePlayer::Terminate()
+{
+    if (m_State != eInitial)
+    {
+        Pause();
+        m_NeMoContext.Cleanup();
+        if (m_NeMoContext.RestoreWindow())
+            m_NeMoContext.RefreshScreen();
+        m_NeMoContext.Shutdown();
+    }
+
+    m_State = eInitial;
+}
+
+bool CGamePlayer::Load(const char *filename)
+{
+    CGameConfig &config = CGameConfig::Get();
+    if (_access(config.GetPath(eSoundPath), 0) == -1)
+    {
+        CLogger::Get().Error("No Sounds directory");
+        return false;
+    }
+    m_NeMoContext.AddSoundPath(config.GetPath(eSoundPath));
+
+    if (_access(config.GetPath(eBitmapPath), 0) == -1)
+    {
+        CLogger::Get().Error("No Textures directory");
+        return false;
+    }
+    m_NeMoContext.AddBitmapPath(config.GetPath(eBitmapPath));
+
+    m_NeMoContext.AddDataPath(config.GetPath(eDataPath));
+
+    CGameInfo *gameInfo = m_Game.NewGameInfo();
+    strcpy(gameInfo->path, ".");
+    strcpy(gameInfo->fileName, filename);
+
+    InterfaceManager *im = m_NeMoContext.GetInterfaceManager();
+    im->SetGameInfo(m_Game.GetGameInfo());
+
+    Pause();
+    if (!m_Game.Load())
+        return false;
+    Play();
+
+    return true;
+}
+
+void CGamePlayer::Play()
+{
+    m_State = ePlaying;
+    m_NeMoContext.Play();
+}
+
+void CGamePlayer::Pause()
+{
+    m_State = ePaused;
+    m_NeMoContext.Pause();
+}
+
+void CGamePlayer::Reset()
+{
+    m_State = ePlaying;
+    m_NeMoContext.Reset();
+    m_NeMoContext.Play();
 }
 
 void CGamePlayer::OnDestroy()
 {
-    m_WinContext.GetPosition(m_Config.posX, m_Config.posY);
     m_NeMoContext.BroadcastCloseMessage();
     ::PostQuitMessage(0);
+}
+
+void CGamePlayer::OnMove()
+{
+    CGameConfig &config = CGameConfig::Get();
+    m_WinContext.GetPosition(config.posX, config.posY);
 }
 
 void CGamePlayer::OnSized()
 {
     CKRenderContext *renderContext = m_NeMoContext.GetRenderContext();
-    if (renderContext && !renderContext->IsFullScreen())
+    if (renderContext)
         m_NeMoContext.ResizeWindow();
 }
 
@@ -432,17 +467,19 @@ void CGamePlayer::OnPaint()
 
 void CGamePlayer::OnClose()
 {
+    ::PostMessageA(m_WinContext.GetMainWindow(), TT_MSG_EXIT_TO_SYS, 0, 0);
 }
 
-LRESULT CGamePlayer::OnActivateApp(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+void CGamePlayer::OnActivateApp(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     static bool wasPlaying = false;
     static bool wasFullscreen = false;
     static bool firstDeActivate = true;
 
-    InterfaceManager *im = m_NeMoContext.GetInterfaceManager();
-    if (im && !im->IsTaskSwitchEnabled())
-        return ::DefWindowProcA(hWnd, uMsg, wParam, lParam);
+    if (m_State == eInitial)
+        return;
+
+    CGameConfig &config = CGameConfig::Get();
 
     if (wParam != WA_ACTIVE)
     {
@@ -451,8 +488,13 @@ LRESULT CGamePlayer::OnActivateApp(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
             if (firstDeActivate)
                 wasPlaying = m_NeMoContext.IsPlaying();
 
-            if (m_Config.pauseOnTaskSwitch)
-                m_NeMoContext.Pause();
+            if (config.pauseOnDeactivated)
+                Pause();
+            else if (!config.alwaysHandleInput)
+                m_NeMoContext.GetInputManager()->Pause(TRUE);
+
+            if (config.clipMouse)
+                ClipMouse(false);
 
             if (m_NeMoContext.GetRenderContext() && m_NeMoContext.IsRenderFullscreen())
             {
@@ -467,25 +509,31 @@ LRESULT CGamePlayer::OnActivateApp(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM l
             }
         }
         firstDeActivate = false;
-        return DefWindowProcA(hWnd, WM_ACTIVATEAPP, 0, lParam);
+        m_State = eFocusLost;
     }
     else
     {
-        if (wasPlaying)
-            m_NeMoContext.Play();
-
         if (wasFullscreen && !firstDeActivate)
             m_NeMoContext.GoFullscreen();
 
+        if (config.clipMouse)
+            ClipMouse(true);
+
+        if (!config.alwaysHandleInput)
+            m_NeMoContext.GetInputManager()->Pause(FALSE);
+
+        if (wasPlaying)
+            Play();
+
         firstDeActivate = true;
-        return DefWindowProcA(hWnd, WM_ACTIVATEAPP, wParam, lParam);
+        m_State = ePlaying;
     }
 }
 
 void CGamePlayer::OnSetCursor()
 {
-    if (IsInitialized() && !m_NeMoContext.IsPlaying())
-        ::SetCursor(::LoadCursorA(NULL, (LPCSTR)IDC_ARROW));
+    if (m_State == ePaused)
+        ::SetCursor(::LoadCursorA(NULL, IDC_ARROW));
 }
 
 void CGamePlayer::OnGetMinMaxInfo(LPMINMAXINFO lpmmi)
@@ -509,45 +557,57 @@ int CGamePlayer::OnSysKeyDown(UINT uKey)
     {
     case VK_RETURN:
         // ALT + ENTER -> SwitchFullscreen
-        m_NeMoContext.SwitchFullscreen();
-        m_Config.fullscreen = m_NeMoContext.IsFullscreen();
-        if (!m_Config.fullscreen)
-            m_WinContext.SetPosition(m_Config.posX, m_Config.posY);
+        OnSwitchFullscreen();
         break;
 
     case VK_F4:
         // ALT + F4 -> Quit the application
-        OnDestroy();
+        OnClose();
         return 1;
+
+    default:
+        break;
     }
     return 0;
 }
 
-void CGamePlayer::OnCommand(UINT id, UINT code)
+int CGamePlayer::OnCommand(UINT id, UINT code)
 {
+    switch (id)
+    {
+    case ID_ACCEL_HELP:
+        Pause();
+        ::DialogBoxParamA(m_WinContext.GetAppInstance(), MAKEINTRESOURCE(IDD_ABOUT), NULL, AboutProc, 0);
+        Play();
+        break;
+
+    default:
+        break;
+    }
+    return 0;
 }
 
 void CGamePlayer::OnExceptionCMO(WPARAM wParam, LPARAM lParam)
 {
     m_NeMoContext.RestoreWindow();
     m_NeMoContext.Cleanup();
-    TT_ERROR("GamePlayer.cpp", "CGamePlayer::OnExceptionCMO()", "Exception in the CMO - Abort");
+    CLogger::Get().Error("Exception in the CMO - Abort");
     OnDestroy();
 }
 
 void CGamePlayer::OnReturn(WPARAM wParam, LPARAM lParam)
 {
-    RegisterGameInfo();
-    if (!m_Game.Load(m_Config))
-        OnDestroy();
-    m_Game.Play();
+    InterfaceManager *im = m_NeMoContext.GetInterfaceManager();
+    im->SetGameInfo(m_Game.GetGameInfo());
 
-    m_WinContext.SetResolution(m_NeMoContext.GetWidth(), m_NeMoContext.GetHeight());
+    if (!m_Game.Load())
+        OnDestroy();
+    Play();
 }
 
 bool CGamePlayer::OnLoadCMO(WPARAM wParam, LPARAM lParam)
 {
-    return LoadCMO((const char *)wParam);
+    return Load((const char *)wParam);
 }
 
 void CGamePlayer::OnExitToSystem(WPARAM wParam, LPARAM lParam)
@@ -559,264 +619,187 @@ void CGamePlayer::OnExitToTitle(WPARAM wParam, LPARAM lParam)
 {
 }
 
-LRESULT CGamePlayer::OnChangeScreenMode(WPARAM wParam, LPARAM lParam)
+int CGamePlayer::OnChangeScreenMode(WPARAM wParam, LPARAM lParam)
 {
     if (!m_NeMoContext.ChangeScreenMode(lParam, wParam))
+    {
+        CLogger::Get().Error("Failed to change screen mode");
         return 0;
+    }
+
+    m_Game.SyncCamerasWithScreen();
 
     InterfaceManager *im = m_NeMoContext.GetInterfaceManager();
-    if (!im)
-    {
-        TT_ERROR("GamePlayer.cpp", "WndProc()", "No InterfaceManager");
-        return 1;
-    }
     im->SetDriver(m_NeMoContext.GetDriver());
     im->SetScreenMode(m_NeMoContext.GetScreenMode());
 
-    m_Config.bpp = m_NeMoContext.GetBPP();
-    m_Config.driver = m_NeMoContext.GetDriver();
-    m_Config.width = m_NeMoContext.GetWidth();
-    m_Config.height = m_NeMoContext.GetHeight();
+    CGameConfig &config = CGameConfig::Get();
+    config.bpp = m_NeMoContext.GetBPP();
+    config.driver = m_NeMoContext.GetDriver();
+    config.width = m_NeMoContext.GetWidth();
+    config.height = m_NeMoContext.GetHeight();
 
-    m_WinContext.FocusMainWindow();
+    if (config.clipMouse)
+        ClipMouse(true);
 
     return 1;
 }
 
 void CGamePlayer::OnGoFullscreen()
 {
-    if (!m_NeMoContext.IsRenderFullscreen())
-    {
-        m_Config.fullscreen = true;
-        m_NeMoContext.GoFullscreen();
-        m_WinContext.FocusMainWindow();
-        m_NeMoContext.Play();
-        m_WinContext.FocusMainWindow();
-    }
+    Pause();
+    m_NeMoContext.GoFullscreen();
+    Play();
+    CGameConfig::Get().fullscreen = true;
 }
 
 void CGamePlayer::OnStopFullscreen()
 {
-    if (m_NeMoContext.IsFullscreen() && m_NeMoContext.GetRenderContext()->IsFullScreen())
-    {
-        m_Config.fullscreen = false;
-        m_NeMoContext.GetRenderContext()->StopFullScreen();
-        m_WinContext.MinimizeWindow();
-    }
+    Pause();
+    m_NeMoContext.StopFullscreen();
+    Play();
+    CGameConfig::Get().fullscreen = false;
 }
 
-LRESULT CGamePlayer::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+void CGamePlayer::OnSwitchFullscreen()
 {
-    switch (uMsg)
+    if (m_State == eInitial)
+        return;
+
+    Pause();
+
+    CGameConfig &config = CGameConfig::Get();
+    static int x = config.posX;
+    static int y = config.posY;
+    if (!m_NeMoContext.IsRenderFullscreen())
     {
-    case WM_DESTROY:
-        OnDestroy();
-        break;
-
-    case WM_SIZE:
-        OnSized();
-        break;
-
-    case WM_PAINT:
-        OnPaint();
-        break;
-
-    case WM_CLOSE:
-        OnClose();
-        break;
-
-    case WM_ACTIVATEAPP:
-        return OnActivateApp(hWnd, uMsg, wParam, lParam);
-
-    case WM_SETCURSOR:
-        OnSetCursor();
-        break;
-
-    case WM_GETMINMAXINFO:
-        OnGetMinMaxInfo((LPMINMAXINFO)lParam);
-        break;
-
-    case WM_KEYDOWN:
-        return OnKeyDown(wParam);
-
-    case WM_SYSKEYDOWN:
-        return OnSysKeyDown(wParam);
-
-    case WM_COMMAND:
-        OnCommand(LOWORD(wParam), HIWORD(wParam));
-        break;
-
-    case TT_MSG_NO_GAMEINFO:
-        OnExceptionCMO(wParam, lParam);
-        break;
-
-    case TT_MSG_CMO_RESTART:
-        OnReturn(wParam, lParam);
-        break;
-
-    case TT_MSG_CMO_LOAD:
-        OnLoadCMO(wParam, lParam);
-        break;
-
-    case TT_MSG_EXIT_TO_SYS:
-        OnExitToSystem(wParam, lParam);
-        break;
-
-    case TT_MSG_EXIT_TO_TITLE:
-        OnExitToTitle(wParam, lParam);
-        break;
-
-    case TT_MSG_SCREEN_MODE_CHG:
-        return OnChangeScreenMode(wParam, lParam);
-
-    case TT_MSG_GO_FULLSCREEN:
-        OnGoFullscreen();
-        break;
-
-    case TT_MSG_STOP_FULLSCREEN:
-        OnStopFullscreen();
-        return 1;
-
-    default:
-        break;
+        m_NeMoContext.GoFullscreen();
+        config.fullscreen = true;
+        if (config.clipMouse)
+            ClipMouse(false);
+    }
+    else
+    {
+        m_NeMoContext.RestoreWindow();
+        config.fullscreen = false;
+        m_WinContext.SetPosition(x, y);
+        if (config.clipMouse)
+            ClipMouse(true);
     }
 
-    return ::DefWindowProcA(hWnd, uMsg, wParam, lParam);
-}
-
-void CGamePlayer::Construct()
-{
-    char fullPath[MAX_PATH];
-    char drive[4];
-    char dir[MAX_PATH];
-    char filename[MAX_PATH];
-    char rootPath[512];
-
-    ::GetModuleFileNameA(NULL, fullPath, MAX_PATH);
-    _splitpath(fullPath, drive, dir, filename, NULL);
-    strcpy(m_Path, "..\\");
-    sprintf(m_IniPath, "%s%s%s.ini", drive, dir, filename);
-    sprintf(rootPath, "%s%s%s", drive, dir, m_Path);
-
-    TT_ERROR_OPEN(filename, rootPath, true);
-    TT_LOG_OPEN(filename, rootPath, false);
-
-    m_Config.langId = 1;
-    m_Config.posX = 2147483647;
-    m_Config.posY = 2147483647;
-    m_Config.width = DEFAULT_WIDTH;
-    m_Config.height = DEFAULT_HEIGHT;
-    m_Config.bpp = DEFAULT_BPP;
-    m_Config.driver = 0;
-    m_Config.fullscreen = false;
-    m_Config.borderless = false;
-    m_Config.resizable = false;
-    m_Config.unlockFramerate = false;
-    m_Config.taskSwitchEnabled = true;
-    m_Config.pauseOnTaskSwitch = false;
-    m_Config.playerActive = false;
-    m_Config.godmode = false;
-    m_Config.debug = false;
-    m_Config.rookie = false;
-
-    m_Config.LoadFromIni(m_IniPath);
-    m_Config.LoadFromCmdline(__argc, __argv);
-
-    m_NeMoContext.SetScreen(&m_WinContext, m_Config.fullscreen, m_Config.driver, m_Config.bpp, m_Config.width, m_Config.height);
-    m_WinContext.SetResolution(m_Config.width, m_Config.height);
-
-    m_State = eInitialized;
+    Play();
 }
 
 int CGamePlayer::InitEngine()
 {
-    char drive[4];
-    char fullpath[512];
-    char buffer[MAX_PATH];
-    char dir[MAX_PATH];
-
     {
         CSplash splash(m_WinContext.GetAppInstance());
         splash.Show();
     }
 
+    CGameConfig &config = CGameConfig::Get();
+
+    m_WinContext.SetMainSize(config.width, config.height);
+    m_WinContext.SetRenderSize(config.width, config.height);
+
+    m_NeMoContext.SetScreen(&m_WinContext, config.fullscreen, config.driver, config.bpp, config.width, config.height);
+
     if (!m_NeMoContext.StartUp())
         return CKERR_INVALIDPARAMETER;
 
-    ::GetModuleFileNameA(NULL, buffer, MAX_PATH);
-    _splitpath(buffer, drive, dir, NULL, NULL);
-    sprintf(fullpath, "%s%s%s", drive, dir, m_Path);
-    if (strcmp(fullpath, "") == 0)
+    if (!LoadRenderEngine())
+        return CKERR_INVALIDPARAMETER;
+
+    if (!LoadPlugins())
+        return CKERR_INVALIDPARAMETER;
+
+    CKERROR err = m_NeMoContext.CreateContext();
+    if (err != CK_OK)
+        return err;
+
+    CKRenderManager *rm = m_NeMoContext.GetRenderManager();
+    rm->SetRenderOptions("DisableFilter", config.disableFilter);
+    rm->SetRenderOptions("DisableDithering", config.disableDithering);
+    rm->SetRenderOptions("Antialias", config.antialias);
+    rm->SetRenderOptions("DisableMipmap", config.disableMipmap);
+    rm->SetRenderOptions("DisableSpecular", config.disableSpecular);
+
+    if (!m_NeMoContext.FindScreenMode())
     {
-        TT_ERROR("GamePlayer.cpp", "CGamePlayer::InitEngine()", "Unable to set ProgPath");
+        CLogger::Get().Error("Found no capable screen mode");
         return CKERR_INVALIDPARAMETER;
     }
-    m_NeMoContext.SetProgPath(fullpath);
 
-    sprintf(m_PluginPath, "%s%s%s%s", drive, dir, m_Path, "Plugins");
-    sprintf(m_RenderPath, "%s%s%s%s", drive, dir, m_Path, "RenderEngines");
-    sprintf(m_ManagerPath, "%s%s%s%s", drive, dir, m_Path, "Managers");
-    sprintf(m_BehaviorPath, "%s%s%s%s", drive, dir, m_Path, "BuildingBlocks");
-
-    if (!LoadEngineDLL())
+    if (!m_NeMoContext.CreateRenderContext())
+    {
+        CLogger::Get().Error("Failed to create render context");
         return CKERR_INVALIDPARAMETER;
-    if (!LoadStdDLL())
-        return CKERR_INVALIDPARAMETER;
+    }
 
-    return m_NeMoContext.Init();
+    m_NeMoContext.AddCloseMessage();
+
+    return CK_OK;
 }
 
 bool CGamePlayer::ReInitEngine()
 {
-    m_State = eInitial;
-
-    if (!m_NeMoContext.ReInit())
+    if (!m_NeMoContext.CreateRenderContext())
     {
-        TT_ERROR("GamePlayer.cpp", "CGamePlayer::ReInitEngine()", "ReInit NemoContext");
+        CLogger::Get().Error("Cannot recreate render context");
         return false;
     }
-
-    m_State = eInitialized;
+    m_WinContext.UpdateWindows();
+    m_WinContext.ShowMainWindow();
+    m_WinContext.ShowRenderWindow();
     return true;
 }
 
-bool CGamePlayer::LoadEngineDLL()
+bool CGamePlayer::LoadRenderEngine()
 {
-
-    if (!m_NeMoContext.ParsePlugins(m_RenderPath) || _access(m_RenderPath, 0) == -1)
+    CGameConfig &config = CGameConfig::Get();
+    const char *path = config.GetPath(eRenderEnginePath);
+    if (_access(path, 0) == -1 || !m_NeMoContext.ParsePlugins(path))
+    {
+        CLogger::Get().Error("Render engine parse error");
         return false;
+    }
+    return true;
+}
+
+bool CGamePlayer::LoadPlugins()
+{
+    CGameConfig &config = CGameConfig::Get();
+    const char *path = config.GetPath(eManagerPath);
+    if (_access(path, 0) == -1 || !m_NeMoContext.ParsePlugins(path))
+    {
+        CLogger::Get().Error("Managers parse error");
+        return false;
+    }
+
+    path = config.GetPath(eBuildingBlockPath);
+    if (_access(path, 0) == -1 || !m_NeMoContext.ParsePlugins(path))
+    {
+        CLogger::Get().Error("Behaviors parse error");
+        return false;
+    }
+
+    path = config.GetPath(ePluginPath);
+    if (_access(path, 0) == -1 || !m_NeMoContext.ParsePlugins(path))
+    {
+        CLogger::Get().Error("Plugins parse error");
+        return false;
+    }
 
     return true;
 }
 
-bool CGamePlayer::LoadStdDLL()
+void CGamePlayer::RedirectLog()
 {
-    if (_access(m_ManagerPath, 0) == -1 || !m_NeMoContext.ParsePlugins(m_ManagerPath))
-    {
-        m_NeMoContext.RestoreWindow();
-        TT_ERROR("GamePlayer.cpp", "CGamePlayer::LoadStdDLL()", "manager parse error");
-        return false;
-    }
-
-    if (_access(m_BehaviorPath, 0) == -1 || !m_NeMoContext.ParsePlugins(m_BehaviorPath))
-    {
-        m_NeMoContext.RestoreWindow();
-        TT_ERROR("GamePlayer.cpp", "CGamePlayer::LoadStdDLL()", "behavior parse error");
-        return false;
-    }
-
-    if (_access(m_PluginPath, 0) == -1 || !m_NeMoContext.ParsePlugins(m_PluginPath))
-    {
-        m_NeMoContext.RestoreWindow();
-        TT_ERROR("GamePlayer.cpp", "CGamePlayer::LoadStdDLL()", "plugin parse error");
-        return false;
-    }
-
-    return true;
+    m_NeMoContext.GetCKContext()->SetInterfaceMode(FALSE, LogRedirect, NULL);
 }
 
-void CGamePlayer::RegisterGameInfo()
-{
-    InterfaceManager *im = m_NeMoContext.GetInterfaceManager();
-    im->SetGameInfo(m_Game.GetGameInfo());
-}
+CGamePlayer::CGamePlayer()
+    : m_State(eInitial),
+      m_NeMoContext(),
+      m_WinContext(),
+      m_Game() {}

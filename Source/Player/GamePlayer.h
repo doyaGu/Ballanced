@@ -1,20 +1,9 @@
 #ifndef PLAYER_GAMEPLAYER_H
 #define PLAYER_GAMEPLAYER_H
 
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-#include "Windows.h"
-
 #include "Game.h"
-#include "GameConfig.h"
-#include "GameStack.h"
 #include "NeMoContext.h"
 #include "WinContext.h"
-
-#include "config.h"
-
-class CPlayerRegistry;
 
 class CGamePlayer
 {
@@ -22,70 +11,68 @@ public:
     enum PlayerState
     {
         eInitial = 0,
-        eInitialized = 1,
+        ePlaying = 1,
+        ePaused = 2,
+        eFocusLost = 3
     };
 
-    CGamePlayer(CGameInfo *gameInfo, int n, HANDLE hMutex);
+    static CGamePlayer &GetInstance();
+
     ~CGamePlayer();
 
-    void Init(HINSTANCE hInstance, LPFNWNDPROC lpfnWndProc);
+    bool Init(HINSTANCE hInstance);
     void Run();
-    bool Step();
-    void Done();
-    bool LoadCMO(const char *filename);
-    bool IsInitialized() const
+    bool Process();
+    void Terminate();
+
+    bool Load(const char *filename);
+
+    void Play();
+    void Pause();
+    void Reset();
+
+    int GetState() const
     {
-        return m_State == eInitialized;
+        return m_State;
     }
 
     void OnDestroy();
+    void OnMove();
     void OnSized();
     void OnPaint();
     void OnClose();
-    LRESULT OnActivateApp(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+    void OnActivateApp(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
     void OnSetCursor();
     void OnGetMinMaxInfo(LPMINMAXINFO lpmmi);
     int OnKeyDown(UINT uKey);
     int OnSysKeyDown(UINT uKey);
-    void OnCommand(UINT id, UINT code);
+    int OnCommand(UINT id, UINT code);
     void OnExceptionCMO(WPARAM wParam, LPARAM lParam);
     void OnReturn(WPARAM wParam, LPARAM lParam);
     bool OnLoadCMO(WPARAM wParam, LPARAM lParam);
     void OnExitToSystem(WPARAM wParam, LPARAM lParam);
     void OnExitToTitle(WPARAM wParam, LPARAM lParam);
-    LRESULT OnChangeScreenMode(WPARAM wParam, LPARAM lParam);
+    int OnChangeScreenMode(WPARAM wParam, LPARAM lParam);
     void OnGoFullscreen();
     void OnStopFullscreen();
+    void OnSwitchFullscreen();
 
-    LRESULT WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-
-private:
-    CGamePlayer(const CGamePlayer &);
-    CGamePlayer &operator=(const CGamePlayer &);
-
-    void Construct();
+protected:
     int InitEngine();
     bool ReInitEngine();
-    bool LoadEngineDLL();
-    bool LoadStdDLL();
-
-    void RegisterGameInfo();
+    bool LoadRenderEngine();
+    bool LoadPlugins();
+    void RedirectLog();
 
     int m_State;
-    HANDLE m_hMutex;
-    bool m_Cleared;
-    char m_RenderPath[512];
-    char m_PluginPath[512];
-    char m_ManagerPath[512];
-    char m_BehaviorPath[512];
-    char m_Path[512];
-    char m_IniPath[512];
-    CGameDataManager m_DataManager;
     CNeMoContext m_NeMoContext;
     CWinContext m_WinContext;
-    CGameStack m_Stack;
-    CGameConfig m_Config;
     CGame m_Game;
+
+private:
+    CGamePlayer();
+    CGamePlayer(const CGamePlayer &);
+    CGamePlayer &operator=(const CGamePlayer &);
 };
 
 #endif /* PLAYER_GAMEPLAYER_H */

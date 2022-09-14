@@ -1,13 +1,17 @@
 #include "GameConfig.h"
 
+#include <io.h>
+#include <stdio.h>
+
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
 #include "Windows.h"
 
 #include "CmdlineParser.h"
+#include "Utils.h"
 
-static void ParseCmdline(CmdlineParser &parser, CGameConfig &config)
+static void ParseConfigsFromCmdline(CmdlineParser &parser, CGameConfig &config)
 {
     CmdlineArg arg;
     long value = 0;
@@ -20,16 +24,36 @@ static void ParseCmdline(CmdlineParser &parser, CGameConfig &config)
                 config.langId = value;
             continue;
         }
-        if (parser.Next(arg, "--position-x", 'x', 1))
+        if (parser.Next(arg, "--adaptive-camera", '\0'))
         {
-            if (arg.GetValue(0, value))
-                config.posX = value;
+            config.adaptiveCamera = true;
             continue;
         }
-        if (parser.Next(arg, "--position-y", 'y', 1))
+        if (parser.Next(arg, "--unlock-widescreen", '\0'))
+        {
+            config.unlockWidescreen = true;
+            continue;
+        }
+        if (parser.Next(arg, "--unlock-high-resolution", '\0'))
+        {
+            config.unlockHighResolution = true;
+            continue;
+        }
+        if (parser.Next(arg, "--skip-opening", '\0'))
+        {
+            config.skipOpening = true;
+            continue;
+        }
+        if (parser.Next(arg, "--video-driver", 'v', 1))
         {
             if (arg.GetValue(0, value))
-                config.posY = value;
+                config.driver = value;
+            continue;
+        }
+        if (parser.Next(arg, "--bpp", 'b', 1))
+        {
+            if (arg.GetValue(0, value))
+                config.bpp = value;
             continue;
         }
         if (parser.Next(arg, "--width", 'w', 1))
@@ -44,21 +68,52 @@ static void ParseCmdline(CmdlineParser &parser, CGameConfig &config)
                 config.height = value;
             continue;
         }
-        if (parser.Next(arg, "--bpp", 'b', 1))
-        {
-            if (arg.GetValue(0, value))
-                config.bpp = value;
-            continue;
-        }
-        if (parser.Next(arg, "--videodriver", 'v', 1))
-        {
-            if (arg.GetValue(0, value))
-                config.driver = value;
-            continue;
-        }
         if (parser.Next(arg, "--fullscreen", 'f'))
         {
             config.fullscreen = true;
+            continue;
+        }
+        if (parser.Next(arg, "--unlock-framerate", 'u'))
+        {
+            config.unlockFramerate = true;
+            continue;
+        }
+        if (parser.Next(arg, "--disable-filter", '\0'))
+        {
+            config.disableFilter = true;
+            continue;
+        }
+        if (parser.Next(arg, "--disable-dithering", '\0'))
+        {
+            config.disableDithering = true;
+            continue;
+        }
+        if (parser.Next(arg, "--antialias", '\0', 1))
+        {
+            if (arg.GetValue(0, value))
+                config.antialias = value;
+            continue;
+        }
+        if (parser.Next(arg, "--disable-mipmap", '\0'))
+        {
+            config.disableMipmap = true;
+            continue;
+        }
+        if (parser.Next(arg, "--disable-specular", '\0'))
+        {
+            config.disableSpecular = true;
+            continue;
+        }
+        if (parser.Next(arg, "--position-x", 'x', 1))
+        {
+            if (arg.GetValue(0, value))
+                config.posX = value;
+            continue;
+        }
+        if (parser.Next(arg, "--position-y", 'y', 1))
+        {
+            if (arg.GetValue(0, value))
+                config.posY = value;
             continue;
         }
         if (parser.Next(arg, "--borderless", 'c'))
@@ -71,35 +126,19 @@ static void ParseCmdline(CmdlineParser &parser, CGameConfig &config)
             config.resizable = true;
             continue;
         }
-        if (parser.Next(arg, "--unlock-framerate", 'u'))
+        if (parser.Next(arg, "--clip-mouse", '\0'))
         {
-            config.unlockFramerate = true;
+            config.clipMouse = true;
             continue;
         }
-        if (parser.Next(arg, "--disable-task-switch", 'e'))
+        if (parser.Next(arg, "--always-handle-input", '\0'))
         {
-            config.taskSwitchEnabled = false;
+            config.alwaysHandleInput = true;
             continue;
         }
-        if (parser.Next(arg, "--pause-on-task-switch", 'p'))
+        if (parser.Next(arg, "--pause-on-deactivated", 'p'))
         {
-            config.taskSwitchEnabled = true;
-            config.pauseOnTaskSwitch = true;
-            continue;
-        }
-        if (parser.Next(arg, "--player-active", 'a'))
-        {
-            config.playerActive = true;
-            continue;
-        }
-        if (parser.Next(arg, "--god-mode", 'g'))
-        {
-            config.godmode = true;
-            continue;
-        }
-        if (parser.Next(arg, "--debug", 'd'))
-        {
-            config.debug = true;
+            config.pauseOnDeactivated = true;
             continue;
         }
         if (parser.Next(arg, "--rookie", 'r'))
@@ -109,16 +148,12 @@ static void ParseCmdline(CmdlineParser &parser, CGameConfig &config)
         }
         parser.Skip();
     }
+    parser.Reset();
 }
 
-static bool IniGetString(const char *section, const char *name, std::string &str, const char *filename)
+static bool IniGetString(const char *section, const char *name, char *str, int size, const char *filename)
 {
-    char buf[512];
-    ::GetPrivateProfileStringA(section, name, "", buf, 512, filename);
-    if (strcmp(buf, "") == 0)
-        return false;
-    str = buf;
-    return true;
+    return ::GetPrivateProfileStringA(section, name, "", str, size, filename) != 0;
 }
 
 static bool IniGetInteger(const char *section, const char *name, int &value, const char *filename)
@@ -143,26 +178,6 @@ static bool IniGetBoolean(const char *section, const char *name, bool &value, co
     return true;
 }
 
-static bool IniGetResolution(int &width, int &height, const char *filename)
-{
-    int videoMode = 0;
-    if (!IniGetInteger("Settings", "VideoMode", videoMode, filename))
-        return false;
-    width = HIWORD(videoMode);
-    height = LOWORD(videoMode);
-    return true;
-}
-
-static bool IniGetBppAndDriver(int &bpp, int &driver, const char *filename)
-{
-    int videoDriver = 0;
-    if (!IniGetInteger("Settings", "VideoDriver", videoDriver, filename))
-        return false;
-    bpp = (videoDriver & 1) != 0 ? 32 : 16;
-    driver = videoDriver >> 16;
-    return true;
-}
-
 static bool IniSetString(const char *section, const char *name, const char *str, const char *filename)
 {
     return ::WritePrivateProfileStringA(section, name, str, filename) != 0;
@@ -181,64 +196,229 @@ static bool IniSetBoolean(const char *section, const char *name, bool value, con
     return ::WritePrivateProfileStringA(section, name, buf, filename) != 0;
 }
 
-static bool IniSetResolution(int width, int height, const char *filename)
+CGameConfig &CGameConfig::Get()
 {
-    return IniSetInteger("Settings", "VideoMode", (width << 16) | height, filename);
+    static CGameConfig config;
+    return config;
 }
 
-static bool IniSetBppAndDriver(int bpp, int driver, const char *filename)
+void CGameConfig::SetPath(PathCategory category, const char *path)
 {
-    int videoDriver = 0;
-    if (bpp == 32)
-        videoDriver = (driver << 16) | 1;
-    else if (bpp == 16)
-        videoDriver = (driver << 16) | 0;
-    return IniSetInteger("Settings", "VideoDriver", videoDriver, filename);
+    if (category < 0 || category >= ePathCategoryCount || !path)
+        return;
+    strncpy(m_Paths[category], path, MAX_PATH);
 }
 
-void CGameConfig::LoadFromCmdline(int argc, char **argv)
+const char *CGameConfig::GetPath(PathCategory category) const
 {
-    CmdlineParser parser(argc, argv);
-    ParseCmdline(parser, *this);
+    if (category < 0 || category >= ePathCategoryCount)
+        return NULL;
+    return m_Paths[category];
+}
+
+bool CGameConfig::HasPath(PathCategory category) const
+{
+    if (category < 0 || category >= ePathCategoryCount)
+        return NULL;
+    return strcmp(m_Paths[category], "") != 0;
+}
+
+void CGameConfig::LoadFromCmdline(CmdlineParser &parser)
+{
+    ParseConfigsFromCmdline(parser, *this);
+}
+
+void CGameConfig::LoadIniPathFromCmdline(CmdlineParser &parser)
+{
+    CmdlineArg arg;
+    std::string path;
+    while (!parser.Done())
+    {
+        if (parser.Next(arg, "--config", '\0', 1))
+        {
+            if (arg.GetValue(0, path))
+                utils::GetAbsolutePath(path.c_str(), m_Paths[eConfigPath], sizeof(m_Paths[eConfigPath]));
+            break;
+        }
+        parser.Skip();
+    }
+    parser.Reset();
+}
+
+void CGameConfig::LoadPathsFromCmdline(CmdlineParser &parser)
+{
+    CmdlineArg arg;
+    std::string path;
+    while (!parser.Done())
+    {
+        if (parser.Next(arg, "--root-path", '\0', 1))
+        {
+            if (arg.GetValue(0, path))
+                utils::GetAbsolutePath(path.c_str(), m_Paths[eRootPath], sizeof(m_Paths[eRootPath]));
+            continue;
+        }
+        if (parser.Next(arg, "--plugins-path", '\0', 1))
+        {
+            if (arg.GetValue(0, path))
+                utils::GetAbsolutePath(path.c_str(), m_Paths[ePluginPath], sizeof(m_Paths[ePluginPath]));
+            continue;
+        }
+        if (parser.Next(arg, "--render-engines-path", '\0', 1))
+        {
+            if (arg.GetValue(0, path))
+                utils::GetAbsolutePath(path.c_str(), m_Paths[eRenderEnginePath], sizeof(m_Paths[eRenderEnginePath]));
+            continue;
+        }
+        if (parser.Next(arg, "--managers-path", '\0', 1))
+        {
+            if (arg.GetValue(0, path))
+                utils::GetAbsolutePath(path.c_str(), m_Paths[eManagerPath], sizeof(m_Paths[eManagerPath]));
+            continue;
+        }
+        if (parser.Next(arg, "--building-blocks-path", '\0', 1))
+        {
+            if (arg.GetValue(0, path))
+                utils::GetAbsolutePath(path.c_str(), m_Paths[eBuildingBlockPath], sizeof(m_Paths[eBuildingBlockPath]));
+            continue;
+        }
+        if (parser.Next(arg, "--sound-path", '\0', 1))
+        {
+            if (arg.GetValue(0, path))
+                utils::GetAbsolutePath(path.c_str(), m_Paths[eSoundPath], sizeof(m_Paths[eSoundPath]));
+            continue;
+        }
+        if (parser.Next(arg, "--bitmap-path", '\0', 1))
+        {
+            if (arg.GetValue(0, path))
+                utils::GetAbsolutePath(path.c_str(), m_Paths[eBitmapPath], sizeof(m_Paths[eBitmapPath]));
+            continue;
+        }
+        if (parser.Next(arg, "--data-path", '\0', 1))
+        {
+            if (arg.GetValue(0, path))
+                utils::GetAbsolutePath(path.c_str(), m_Paths[eDataPath], sizeof(m_Paths[eDataPath]));
+            continue;
+        }
+        parser.Skip();
+    }
+    parser.Reset();
 }
 
 void CGameConfig::LoadFromIni(const char *filename)
 {
-    IniGetInteger("Settings", "Language", langId, filename);
-    IniGetInteger("Settings", "X", posX, filename);
-    IniGetInteger("Settings", "Y", posY, filename);
-    IniGetResolution(width, height, filename);
-    IniGetBppAndDriver(bpp, driver, filename);
-    IniGetBoolean("Settings", "FullScreen", fullscreen, filename);
-    IniGetBoolean("Settings", "Borderless", borderless, filename);
-    IniGetBoolean("Settings", "Resizable", resizable, filename);
-    IniGetBoolean("Settings", "UnlockFramerate", unlockFramerate, filename);
-    IniGetBoolean("Settings", "TaskSwitchEnabled", taskSwitchEnabled, filename);
-    IniGetBoolean("Settings", "PauseOnTaskSwitch", pauseOnTaskSwitch, filename);
-    if (pauseOnTaskSwitch) taskSwitchEnabled = true;
-    IniGetBoolean("Settings", "PlayerActive", playerActive, filename);
-    IniGetBoolean("Settings", "GodMode", godmode, filename);
-    IniGetBoolean("Settings", "Debug", debug, filename);
-    IniGetBoolean("Settings", "Rookie", rookie, filename);
+    if (!filename)
+        return;
+    if (strcmp(filename, "") == 0)
+    {
+        if (strcmp(m_Paths[eConfigPath], "") != 0 && _access(m_Paths[eConfigPath], 0) != -1)
+            filename = m_Paths[eConfigPath];
+        else
+            return;
+    }
+
+    IniGetInteger("Startup", "Language", langId, filename);
+    IniGetBoolean("Startup", "AdaptiveCamera", adaptiveCamera, filename);
+    IniGetBoolean("Startup", "UnlockWidescreen", unlockWidescreen, filename);
+    IniGetBoolean("Startup", "UnlockHighResolution", unlockHighResolution, filename);
+    IniGetBoolean("Startup", "SkipOpening", skipOpening, filename);
+
+    IniGetInteger("Graphics", "Driver", driver, filename);
+    IniGetInteger("Graphics", "BitsPerPixel", bpp, filename);
+    IniGetInteger("Graphics", "Width", width, filename);
+    IniGetInteger("Graphics", "Height", height, filename);
+    IniGetBoolean("Graphics", "FullScreen", fullscreen, filename);
+    IniGetBoolean("Graphics", "UnlockFramerate", unlockFramerate, filename);
+    IniGetBoolean("Graphics", "DisableFilter", disableFilter, filename);
+    IniGetBoolean("Graphics", "DisableDithering", disableDithering, filename);
+    IniGetInteger("Graphics", "Antialias", antialias, filename);
+    IniGetBoolean("Graphics", "DisableMipmap", disableMipmap, filename);
+    IniGetBoolean("Graphics", "DisableSpecular", disableSpecular, filename);
+
+    IniGetInteger("Window", "X", posX, filename);
+    IniGetInteger("Window", "Y", posY, filename);
+    IniGetBoolean("Window", "Borderless", borderless, filename);
+    IniGetBoolean("Window", "Resizable", resizable, filename);
+    IniGetBoolean("Window", "ClipMouse", clipMouse, filename);
+    IniGetBoolean("Window", "AlwaysHandleInput", alwaysHandleInput, filename);
+    IniGetBoolean("Window", "PauseOnDeactivated", pauseOnDeactivated, filename);
+
+    IniGetBoolean("Game", "Rookie", rookie, filename);
+}
+
+void CGameConfig::LoadPathsFromIni(const char *filename)
+{
+    if (!filename)
+        return;
+    if (strcmp(filename, "") == 0)
+    {
+        if (strcmp(m_Paths[eConfigPath], "") != 0 && _access(m_Paths[eConfigPath], 0) != -1)
+            filename = m_Paths[eConfigPath];
+        else
+            return;
+    }
+
+    IniGetString("Path", "RootPath", m_Paths[eRootPath], MAX_PATH, filename);
+    IniGetString("Path", "PluginPath", m_Paths[ePluginPath], MAX_PATH, filename);
+    IniGetString("Path", "RenderEnginePath", m_Paths[eRenderEnginePath], MAX_PATH, filename);
+    IniGetString("Path", "ManagerPath", m_Paths[eManagerPath], MAX_PATH, filename);
+    IniGetString("Path", "BuildingBlockPath", m_Paths[eBuildingBlockPath], MAX_PATH, filename);
+    IniGetString("Path", "SoundPath", m_Paths[eSoundPath], MAX_PATH, filename);
+    IniGetString("Path", "BitmapPath", m_Paths[eBitmapPath], MAX_PATH, filename);
+    IniGetString("Path", "DataPath", m_Paths[eDataPath], MAX_PATH, filename);
 }
 
 void CGameConfig::SaveToIni(const char *filename)
 {
-    IniSetInteger("Settings", "Language", langId, filename);
-    if (!fullscreen) {
-        IniSetInteger("Settings", "X", posX, filename);
-        IniSetInteger("Settings", "Y", posY, filename);
+    if (!filename)
+        return;
+    if (strcmp(filename, "") == 0)
+    {
+        if (strcmp(m_Paths[eConfigPath], "") != 0 && _access(m_Paths[eConfigPath], 0) != -1)
+            filename = m_Paths[eConfigPath];
+        else
+            return;
     }
-    IniSetResolution(width, height, filename);
-    IniSetBppAndDriver(bpp, driver, filename);
-    IniSetBoolean("Settings", "FullScreen", fullscreen, filename);
-    IniSetBoolean("Settings", "Borderless", borderless, filename);
-    IniSetBoolean("Settings", "Resizable", resizable, filename);
-    IniSetBoolean("Settings", "UnlockFramerate", unlockFramerate, filename);
-    IniSetBoolean("Settings", "TaskSwitchEnabled", taskSwitchEnabled, filename);
-    IniSetBoolean("Settings", "PauseOnTaskSwitch", pauseOnTaskSwitch, filename);
-    // IniSetBoolean("Settings", "PlayerActive", playerActive, filename);
-    // IniSetBoolean("Settings", "GodMode", godmode, filename);
-    // IniSetBoolean("Settings", "Debug", debug, filename);
-    // IniSetBoolean("Settings", "Rookie", rookie, filename);
+
+    IniSetInteger("Startup", "Language", langId, filename);
+    IniSetBoolean("Startup", "AdaptiveCamera", adaptiveCamera, filename);
+    IniSetBoolean("Startup", "UnlockWidescreen", unlockWidescreen, filename);
+    IniSetBoolean("Startup", "UnlockHighResolution", unlockHighResolution, filename);
+    IniSetBoolean("Startup", "SkipOpening", skipOpening, filename);
+
+    IniSetInteger("Graphics", "Driver", driver, filename);
+    IniSetInteger("Graphics", "BitsPerPixel", bpp, filename);
+    IniSetInteger("Graphics", "Width", width, filename);
+    IniSetInteger("Graphics", "Height", height, filename);
+    IniSetBoolean("Graphics", "FullScreen", fullscreen, filename);
+    IniSetBoolean("Graphics", "UnlockFramerate", unlockFramerate, filename);
+    IniSetBoolean("Graphics", "DisableFilter", disableFilter, filename);
+    IniSetBoolean("Graphics", "DisableDithering", disableDithering, filename);
+    IniSetInteger("Graphics", "Antialias", antialias, filename);
+    IniSetBoolean("Graphics", "DisableMipmap", disableMipmap, filename);
+    IniSetBoolean("Graphics", "DisableSpecular", disableSpecular, filename);
+
+    IniSetInteger("Window", "X", posX, filename);
+    IniSetInteger("Window", "Y", posY, filename);
+    IniSetBoolean("Window", "Borderless", borderless, filename);
+    IniSetBoolean("Window", "Resizable", resizable, filename);
+    IniSetBoolean("Window", "ClipMouse", clipMouse, filename);
+    IniSetBoolean("Window", "AlwaysHandleInput", alwaysHandleInput, filename);
+    IniSetBoolean("Window", "PauseOnDeactivated", pauseOnDeactivated, filename);
+
+    if (HasPath(eRootPath))
+        IniSetString("Path", "RootPath", m_Paths[eRootPath], filename);
+    if (HasPath(ePluginPath))
+        IniSetString("Path", "PluginPath", m_Paths[ePluginPath], filename);
+    if (HasPath(eRenderEnginePath))
+        IniSetString("Path", "RenderEnginePath", m_Paths[eRenderEnginePath], filename);
+    if (HasPath(eManagerPath))
+        IniSetString("Path", "ManagerPath", m_Paths[eManagerPath], filename);
+    if (HasPath(eBuildingBlockPath))
+        IniSetString("Path", "BuildingBlockPath", m_Paths[eBuildingBlockPath], filename);
+    if (HasPath(eSoundPath))
+        IniSetString("Path", "SoundPath", m_Paths[eSoundPath], filename);
+    if (HasPath(eBitmapPath))
+        IniSetString("Path", "BitmapPath", m_Paths[eBitmapPath], filename);
+    if (HasPath(eDataPath))
+        IniSetString("Path", "DataPath", m_Paths[eDataPath], filename);
 }

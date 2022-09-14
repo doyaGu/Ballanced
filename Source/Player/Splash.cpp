@@ -99,14 +99,10 @@ CSplash::~CSplash()
 
 bool CSplash::Show()
 {
-    char drive[20] = "";
-    char filename[1024] = "";
-    char buffer[1024] = "";
-    char dir[1024] = "";
-    WNDCLASSA wndclass;
-
     m_Data = NULL;
 
+    WNDCLASSA wndclass;
+    memset(&wndclass, 0, sizeof(WNDCLASSA));
     wndclass.style = CS_HREDRAW | CS_VREDRAW;
     wndclass.lpfnWndProc = SplashWndProc;
     wndclass.cbClsExtra = 0;
@@ -122,10 +118,14 @@ bool CSplash::Show()
     if (!::RegisterClassA(&wndclass))
         return false;
 
+    char buffer[MAX_PATH];
+    char drive[4];
+    char dir[MAX_PATH];
+    char filename[MAX_PATH];
     ::GetModuleFileNameA(NULL, buffer, 1024);
     _splitpath(buffer, drive, dir, filename, NULL);
-    sprintf(filename, "%s%ssplash.bmp", drive, dir);
-    if (!gSplash.LoadBMP(filename))
+    _snprintf(buffer, MAX_PATH, "%s%ssplash.bmp", drive, dir);
+    if (!gSplash.LoadBMP(buffer))
         return false;
 
     int width = gSplash.GetWidth();
@@ -174,25 +174,22 @@ bool CSplash::Show()
 
 bool CSplash::LoadBMP(LPCSTR lpFileName)
 {
-    HANDLE hFile;
-    DWORD dwBytesRead, dwBytesToRead;
-    char buffer[16];
-
     if (m_Data)
         delete[] m_Data;
 
-    hFile = ::CreateFileA(lpFileName,
-                          GENERIC_READ,
-                          1,
-                          NULL,
-                          OPEN_EXISTING,
-                          FILE_FLAG_SEQUENTIAL_SCAN,
-                          NULL);
+    HANDLE hFile = ::CreateFileA(lpFileName,
+                                 GENERIC_READ,
+                                 1,
+                                 NULL,
+                                 OPEN_EXISTING,
+                                 FILE_FLAG_SEQUENTIAL_SCAN,
+                                 NULL);
     if (hFile == (HANDLE)-1)
         return false;
 
-    if (!::ReadFile(hFile, buffer, 14, &dwBytesRead, NULL) ||
-        dwBytesRead != 14 ||
+    DWORD dwBytesRead, dwBytesToRead;
+    char buffer[16];
+    if (!::ReadFile(hFile, buffer, 14, &dwBytesRead, NULL) || dwBytesRead != 14 ||
         (buffer[0] != 'B' || buffer[1] != 'M'))
     {
         ::CloseHandle(hFile);
@@ -297,13 +294,11 @@ BYTE *CSplash::GetBitmapData() const
 
 HPALETTE CSplash::GetPalette() const
 {
-    HPALETTE hPal;
-    LPLOGPALETTE lpLogPalette = NULL;
     WORD palNumEntries = (WORD)GetPaletteNumEntries();
     if (palNumEntries == 0)
         return NULL;
 
-    lpLogPalette = (LPLOGPALETTE)malloc(32 * (palNumEntries + 0x7FFFFFF));
+    LPLOGPALETTE lpLogPalette = (LPLOGPALETTE)malloc(sizeof(LOGPALETTE) + palNumEntries * sizeof(PALETTEENTRY));
     if (!lpLogPalette)
         return NULL;
     lpLogPalette->palVersion = PALVERSION;
@@ -321,7 +316,7 @@ HPALETTE CSplash::GetPalette() const
         ++lpPalEntry;
     }
 
-    hPal = ::CreatePalette(lpLogPalette);
+    HPALETTE hPal = ::CreatePalette(lpLogPalette);
     free(lpLogPalette);
     return hPal;
 }

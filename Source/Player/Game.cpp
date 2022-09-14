@@ -1,209 +1,268 @@
 #include "Game.h"
 
-#include <io.h>
 #include <stdio.h>
 #include <string.h>
 
-#include "ErrorProtocol.h"
 #include "GameConfig.h"
 #include "NeMoContext.h"
+#include "Logger.h"
+#include "InterfaceManager.h"
 
-#include "TT_InterfaceManager_RT/GameInfo.h"
-
-#define MAX_GAMEDATA 100
-
-static CGameData g_GameData[MAX_GAMEDATA] = {
-    CGameData("Clock.cmo", "Powerball", "Software\\Terratools\\Powerball\\Data"),
-    CGameData("WM.cmo", "WM", "Software\\Terratools\\WorldMap"),
-    CGameData("PBC.cmo", "Powerball", "Software\\Terratools\\Powerball\\Data"),
-    CGameData("PB_L0.cmo", "Powerball", "Software\\Terratools\\Powerball\\Data"),
-    CGameData("PB_L1.cmo", "Powerball", "Software\\Terratools\\Powerball\\Data"),
-    CGameData("PB_L2.cmo", "Powerball", "Software\\Terratools\\Powerball\\Data"),
-    CGameData("PB_L3.cmo", "Powerball", "Software\\Terratools\\Powerball\\Data"),
-    CGameData("PB_L4.cmo", "Powerball", "Software\\Terratools\\Powerball\\Data"),
-    CGameData("SP_INTRO.cmo", "Superpuck", "Software\\Terratools\\Superpuck\\Data"),
-    CGameData("SPC.cmo", "Superpuck", "Software\\Terratools\\Superpuck\\Data"),
-    CGameData("SP_L1.cmo", "Superpuck", "Software\\Terratools\\Superpuck\\Data"),
-    CGameData("SP_L2.cmo", "Superpuck", "Software\\Terratools\\Superpuck\\Data"),
-    CGameData("SP_L3.cmo", "Superpuck", "Software\\Terratools\\Superpuck\\Data"),
-    CGameData("SP_L4.cmo", "Superpuck", "Software\\Terratools\\Superpuck\\Data"),
-};
-
-CGame::CGame() : m_NeMoContext(NULL), m_GameInfo(NULL)
+static bool EditDefaultLevelScript()
 {
-    memset(&m_CKFileInfo, 0, sizeof(CKFileInfo));
-    memset(m_ProgPath, 0, sizeof(m_ProgPath));
-    memset(m_FileName, 0, sizeof(m_FileName));
-}
-
-CGame::~CGame()
-{
-    if (GetGameInfo() != NULL)
-    {
-        delete m_GameInfo;
-    }
-    m_GameInfo = NULL;
-    SetNeMoContext(NULL);
-}
-
-bool CGame::Load(const CGameConfig &config)
-{
-    char cmoPath[MAX_PATH] = "";
-    char dir[MAX_PATH] = "";
-
-    if (!m_GameInfo)
-    {
-        TT_ERROR("Game.cpp", "Load", "gameInfo is NULL: CMO is not loaded");
+    CNeMoContext *nc = CNeMoContext::GetInstance();
+    if (!nc)
         return false;
-    }
 
-    strcpy(m_FileName, m_GameInfo->fileName);
-    sprintf(m_ProgPath, "%s%s\\", m_NeMoContext->GetProgPath(), m_GameInfo->path);
-    sprintf(cmoPath, "%s%s", m_ProgPath, m_GameInfo->fileName);
-    FILE *fp = fopen(cmoPath, "r");
-    if (!fp)
-    {
-        TT_ERROR("Game.cpp", "Load", "Failed to open the cmo file");
-        return false;
-    }
-    fclose(fp);
+    const CGameConfig &config = CGameConfig::Get();
 
-    m_NeMoContext->Cleanup();
-
-    if (m_NeMoContext->Render(CK_RENDER_BACKGROUNDSPRITES) != CK_OK)
-    {
-        TT_ERROR("Game.cpp", "Load", "Exception on Render() before CKLoad()");
-        return false;
-    }
-
-    sprintf(dir, "%s%s\\", m_NeMoContext->GetProgPath(), "Sounds");
-    if (_access(dir, 0) == -1)
-    {
-        TT_ERROR("Game.cpp", "Load", "No Sounds directory");
-        return false;
-    }
-    m_NeMoContext->AddSoundPath(dir);
-
-    sprintf(dir, "%s%s\\", m_NeMoContext->GetProgPath(), "Textures");
-    if (_access(dir, 0) == -1)
-    {
-        TT_ERROR("Game.cpp", "Load", "No Textures directory");
-        return false;
-    }
-    m_NeMoContext->AddBitmapPath(dir);
-
-    sprintf(dir, "%s%s\\", m_NeMoContext->GetProgPath(), m_GameInfo->path);
-    m_NeMoContext->AddDataPath(dir);
-
-    CKObjectArray *array = CreateCKObjectArray();
-    if (!array)
-    {
-        TT_ERROR("Game.cpp", "Load", "CreateCKObjectArray() Failed");
-        return false;
-    }
-
-    // Loads the file and fills the array with loaded objects
-    if (m_NeMoContext->LoadFile(cmoPath, array) != CK_OK)
-    {
-        TT_ERROR("Game.cpp", "Load", "LoadFile() Failed");
-        return false;
-    }
-
-    CKLevel *level = m_NeMoContext->GetCurrentLevel();
+    CKLevel *level = nc->GetCurrentLevel();
     if (!level)
-    {
-        TT_ERROR("Game.cpp", "Load", "GetCurrentLevel() Failed");
         return false;
+
+    CKBehavior *script = nc->GetBehavior(level->ComputeObjectList(CKCID_BEHAVIOR), "Default Level");
+    if (!script)
+        return false;
+
+    CKBehavior *sl = nc->GetBehavior(script, "Set Language");
+    if (!sl)
+        return false;
+
+    // Bypass "Set Language" script and set our language id
+    {
+        CKBehavior *rr = nc->GetBehavior(sl, "TT_ReadRegistry");
+
+        CKBehaviorLink *linkOpRr = nc->RemoveBehaviorLink(sl, "Op", rr, 0, 0);
+        if (!linkOpRr)
+            return false;
+        CKBehavior *op1 = linkOpRr->GetInBehaviorIO()->GetOwner();
+        nc->DestroyObject(linkOpRr);
+
+        CKBehaviorLink *linkRrOp = nc->RemoveBehaviorLink(sl, rr, "Op", 0, 0);
+        if (!linkRrOp)
+            return false;
+        CKBehavior *op2 = linkRrOp->GetOutBehaviorIO()->GetOwner();
+        *(int *)op2->GetInputParameterReadDataPtr(0) = config.langId;
+        nc->DestroyObject(linkRrOp);
+
+        nc->CreateBehaviorLink(sl, op1, op2, 0, 0);
     }
 
     int i;
-    int sceneCount = level->GetSceneCount();
-    for (i = 0; i < sceneCount; ++i)
-        level->GetScene(i)->SetBackgroundColor(0);
 
-    CKRenderContext *renderContext = m_NeMoContext->GetRenderContext();
-    level->AddRenderContext(renderContext, TRUE);
-    array->Clear();
+    CKBehavior *sm = nc->GetBehavior(script, "Screen Modes");
+    if (!sm)
+        return false;
 
-    // Take the first camera we found and attach the viewpoint to it
-    CK_ID *cameraIds = m_NeMoContext->GetObjectsListByClassID(CKCID_CAMERA);
-    if (cameraIds || (cameraIds = m_NeMoContext->GetObjectsListByClassID(CKCID_TARGETCAMERA)))
+    CKBehavior *filters[3] = {NULL, NULL, NULL};
+    for (i = 0; i < sm->GetSubBehaviorCount(); ++i)
     {
-        CKCamera *camera = (CKCamera *)m_NeMoContext->GetObject(cameraIds[0]);
-        if (camera)
-            renderContext->AttachViewpointToCamera(camera);
-    }
-
-    m_NeMoContext->Refresh();
-
-    // Hide curves ?
-    int curveCount = m_NeMoContext->GetObjectsCountByClassID(CKCID_CURVE);
-    CK_ID *curveIds = m_NeMoContext->GetObjectsListByClassID(CKCID_CURVE);
-    for (i = 0; i < curveCount; ++i)
-    {
-        CKMesh *mesh = ((CKCurve *)m_NeMoContext->GetObject(curveIds[i]))->GetCurrentMesh();
-        if (mesh)
-            mesh->Show(CKHIDE);
-    }
-
-    // Correct the bbp filter
-    for (CKBehavior *rri = (CKBehavior *)m_NeMoContext->GetObjectByNameAndClass("Remove Row If", CKCID_BEHAVIOR);
-         rri != NULL;
-         rri = (CKBehavior *)m_NeMoContext->GetObjectByNameAndClass("Remove Row If", CKCID_BEHAVIOR, rri))
-    {
-        if (rri->GetTarget() && strcmp(rri->GetTarget()->GetName(), "ScreenModes") == 0)
+        CKBehavior *beh = sm->GetSubBehavior(i);
+        if (strcmp(beh->GetName(), "Remove Row If") == 0)
         {
-            int column = -1;
-            rri->GetInputParameterValue(0, &column);
-            int *value = (int *)rri->GetInputParameterReadDataPtr(2);
-
-            if (column == 3) // ScreenModes.Bpp
+            int val = *(int *)beh->GetInputParameterReadDataPtr(2);
+            switch (val)
             {
-                *value = m_NeMoContext->GetBPP();
+            case 640: // Minimum width
+                filters[0] = beh;
+                break;
+            case 1600: // Maximum width
+                filters[1] = beh;
+                break;
+            case 16: // BBP filter
+                filters[2] = beh;
+                break;
+            default:
                 break;
             }
         }
     }
+    for (i = 0; i < 3; ++i)
+        if (!filters[i])
+            return false;
+
+    // Correct the bbp filter
+    int *bpp = (int *)filters[2]->GetInputParameterReadDataPtr(2);
+    *bpp = nc->GetBPP();
+
+    // Unlock widescreen (Not 4:3)
+    if (config.unlockWidescreen)
+    {
+        CKBehavior *ic = nc->GetBehavior(sm, "Insert Column", "ScreenModes");
+        if (!ic)
+            return false;
+
+        CKBehaviorLink *linkScIc = nc->RemoveBehaviorLink(sm, "Set Cell", ic, 0, 0);
+        if (!linkScIc)
+            return false;
+        CKBehavior *sc = linkScIc->GetInBehaviorIO()->GetOwner();
+        sm->RemoveSubBehaviorLink(linkScIc);
+        nc->DestroyObject(linkScIc);
+
+        nc->RemoveBehaviorLink(sm, "Remove Column", filters[0], 0, 0, true);
+
+        nc->CreateBehaviorLink(sm, sc, filters[0], 0, 0);
+    }
+
+    // Unlock high resolution
+    if (config.unlockHighResolution)
+    {
+        const char *inBehName = (config.unlockWidescreen) ? "Set Cell" : "Remove Column";
+        CKBehaviorLink *linkRri = nc->RemoveBehaviorLink(sm, inBehName, filters[0], 0, 0);
+        if (!linkRri)
+            return false;
+        CKBehavior *inBeh = linkRri->GetInBehaviorIO()->GetOwner();
+        nc->DestroyObject(linkRri);
+
+        nc->RemoveBehaviorLink(sm, filters[1], filters[2], 0, 0, true);
+
+        nc->CreateBehaviorLink(sm, inBeh, filters[2], 0, 0);
+    }
+
+    CKBehavior *sts = nc->GetBehavior(script, "Synch to Screen");
+    if (!sts)
+        return false;
 
     // Unlock frame rate limitation
     if (config.unlockFramerate)
     {
-        for (CKBehavior *timeSettings = (CKBehavior *)m_NeMoContext->GetObjectByNameAndClass("Time Settings", CKCID_BEHAVIOR);
-             timeSettings != NULL;
-             timeSettings = (CKBehavior *)m_NeMoContext->GetObjectByNameAndClass("Time Settings", CKCID_BEHAVIOR, timeSettings))
+        for (i = 0; i < sts->GetSubBehaviorCount(); ++i)
         {
-            DWORD *frameRate = (DWORD *)timeSettings->GetInputParameterReadDataPtr(0);
-            if (*frameRate == 3) // Frame Rate == Limit
+            CKBehavior *beh = sts->GetSubBehavior(i);
+            if (strcmp(beh->GetName(), "Time Settings") == 0)
             {
-                *frameRate = 1; // Frame Rate = Free
-                break;
+                CKDWORD *frameRate = (CKDWORD *)beh->GetInputParameterReadDataPtr(0);
+                if (*frameRate == 3) // Frame Rate == Limit
+                {
+                    *frameRate = 1; // Frame Rate = Free
+                    break;
+                }
             }
         }
     }
 
-    // Modify game settings according to initialization configurations
-    CKDataArray *gameSettings = (CKDataArray *)m_NeMoContext->GetObjectByNameAndClass("GameSettings", CKCID_DATAARRAY);
-    if (config.playerActive)
-        gameSettings->SetElementStringValue(0, 5, "TRUE");
-    if (config.godmode)
-        gameSettings->SetElementStringValue(0, 6, "TRUE");
-    if (config.debug)
-        gameSettings->SetElementStringValue(0, 7, "TRUE");
+    // Make it not to test 640x480 resolution
+    {
+        CKBehavior *ii = nc->GetBehavior(sts, "Iterator If", "ScreenModes");
+        CKBehavior *delayer = nc->GetBehavior(sts, "Delayer");
+        if (!ii || !delayer)
+            return false;
 
-    // Set the initial conditions for the level
-    level->LaunchScene(NULL);
+        nc->RemoveBehaviorLink(sts, ii, "TT Change ScreenMode", 1, 0, true);
+        nc->RemoveBehaviorLink(sts, "Show Mouse Cursor", delayer, 0, 0, true);
+        nc->CreateBehaviorLink(sts, ii, delayer, 1, 0);
+    }
 
-    for (i = 0; i < sceneCount; ++i)
-        level->GetScene(i)->SetBackgroundColor(0);
+    // Skip Opening Animation
+    if (config.skipOpening)
+    {
+        CKBehavior *is = nc->GetBehavior(script, "Intro Start");
+        CKBehavior *ie = nc->GetBehavior(script, "Intro Ende");
+        CKBehavior *ml = nc->GetBehavior(script, "Main Loading");
+        CKBehavior *ps = nc->GetBehavior(script, "Preload Sound");
+        if (!is || !ie || !ml || !ps)
+            return false;
 
-    DeleteCKObjectArray(array);
+        CKBehaviorLink *linkStsIs = nc->GetBehaviorLink(script, sts, is, 0, 0);
+        if (!linkStsIs)
+            return false;
+        linkStsIs->SetOutBehaviorIO(ml->GetInput(0));
+
+        CKBehaviorLink *linkIeAs = nc->GetBehaviorLink(script, ie, "Activate Script", 0, 0);
+        if (!linkIeAs)
+            return false;
+        CKBehaviorLink *linkPsWfa = nc->GetBehaviorLink(script, ps, "Wait For All", 0, 0);
+        if (!linkPsWfa)
+            return false;
+        linkPsWfa->SetOutBehaviorIO(linkIeAs->GetOutBehaviorIO());
+    }
 
     return true;
 }
 
-void CGame::Play()
+static int SetAsActiveCamera(const CKBehaviorContext &behcontext)
 {
-    m_NeMoContext->Play();
+    CKBehavior *beh = behcontext.Behavior;
+
+    CKCamera *cam = (CKCamera *)beh->GetTarget();
+    if (!cam)
+        return CKBR_OWNERERROR;
+
+    if (strcmp(cam->GetName(), "Cam_MenuLevel") == 0 ||
+        strcmp(cam->GetName(), "InGameCam") == 0)
+    {
+        const int w = behcontext.CurrentRenderContext->GetWidth();
+        const int h = behcontext.CurrentRenderContext->GetHeight();
+        cam->SetAspectRatio(w, h);
+        cam->SetFov((float)(0.75 * w / h));
+        behcontext.CurrentScene->SetObjectInitialValue(cam, CKSaveObjectState(cam));
+    }
+
+    // Set IO states
+    beh->ActivateInput(0, FALSE);
+    beh->ActivateOutput(0);
+    if (behcontext.CurrentRenderContext)
+        behcontext.CurrentRenderContext->AttachViewpointToCamera(cam);
+
+    return CKBR_OK;
+}
+
+CGame::CGame() : m_GameInfo(NULL) {}
+
+CGame::~CGame()
+{
+    if (m_GameInfo)
+        delete m_GameInfo;
+    m_GameInfo = NULL;
+}
+
+bool CGame::Load()
+{
+    CNeMoContext *nc = CNeMoContext::GetInstance();
+    if (!nc)
+        return false;
+
+    if (!m_GameInfo)
+    {
+        CLogger::Get().Error("gameInfo is NULL: CMO is not loaded");
+        return false;
+    }
+
+    char cmoPath[MAX_PATH];
+    _snprintf(cmoPath, MAX_PATH, "%s%s\\%s", nc->GetProgPath(), m_GameInfo->path, m_GameInfo->fileName);
+    FILE *fp = fopen(cmoPath, "r");
+    if (!fp)
+    {
+        CLogger::Get().Error("Failed to open the cmo file");
+        return false;
+    }
+    fclose(fp);
+
+    nc->Cleanup();
+
+    if (nc->Render(CK_RENDER_BACKGROUNDSPRITES) != CK_OK)
+    {
+        CLogger::Get().Error("Exception on Render() before CKLoad()");
+        return false;
+    }
+
+    CKObjectArray *array = CreateCKObjectArray();
+    if (!array)
+    {
+        CLogger::Get().Error("CreateCKObjectArray() Failed");
+        return false;
+    }
+
+    // Load the file and fills the array with loaded objects
+    if (nc->LoadFile(cmoPath, array) != CK_OK)
+    {
+        CLogger::Get().Error("LoadFile() Failed");
+        return false;
+    }
+
+    DeleteCKObjectArray(array);
+
+    return FinishLoad();
 }
 
 CGameInfo *CGame::NewGameInfo()
@@ -212,7 +271,7 @@ CGameInfo *CGame::NewGameInfo()
     return m_GameInfo;
 }
 
-CGameInfo *CGame::GetGameInfo()
+CGameInfo *CGame::GetGameInfo() const
 {
     return m_GameInfo;
 }
@@ -222,76 +281,71 @@ void CGame::SetGameInfo(CGameInfo *gameInfo)
     m_GameInfo = gameInfo;
 }
 
-CNeMoContext *CGame::GetNeMoContext() const
+bool CGame::FinishLoad()
 {
-    return m_NeMoContext;
-}
+    CNeMoContext *nc = CNeMoContext::GetInstance();
+    if (!nc)
+        return false;
 
-void CGame::SetNeMoContext(CNeMoContext *nemoContext)
-{
-    m_NeMoContext = nemoContext;
-}
+    const CGameConfig &config = CGameConfig::Get();
 
-CGameData::CGameData() : type(0), hkRoot(HKEY_CURRENT_USER)
-{
-    memset(fileName, 0, sizeof(fileName));
-    memset(path, 0, sizeof(path));
-    memset(regSubkey, 0, sizeof(regSubkey));
-}
-
-CGameData::CGameData(const char *filename, const char *path, const char *subkey, HKEY root) : type(0), hkRoot(root)
-{
-    strcpy(this->fileName, filename);
-    strcpy(this->path, path);
-    strcpy(this->regSubkey, subkey);
-}
-
-CGameData::CGameData(const CGameData &rhs) : type(0), hkRoot(rhs.hkRoot)
-{
-    strcpy(fileName, rhs.fileName);
-    strcpy(path, rhs.path);
-    strcpy(regSubkey, rhs.regSubkey);
-}
-
-CGameData &CGameData::operator=(const CGameData &rhs)
-{
-    strcpy(fileName, rhs.fileName);
-    strcpy(path, rhs.path);
-    type = rhs.type;
-    hkRoot = rhs.hkRoot;
-    strcpy(regSubkey, rhs.regSubkey);
-
-    return *this;
-}
-
-CGameDataManager::CGameDataManager() : m_Count(14) {}
-
-void CGameDataManager::Save(CGameInfo *gameInfo)
-{
-    if (m_Count >= 100)
-        return;
-
-    strcpy(g_GameData[m_Count].fileName, gameInfo->fileName);
-    strcpy(g_GameData[m_Count].path, gameInfo->path);
-    g_GameData[m_Count].hkRoot = gameInfo->hkRoot;
-    g_GameData[m_Count].type = gameInfo->type;
-    strcpy(g_GameData[m_Count].regSubkey, gameInfo->regSubkey);
-    ++m_Count;
-}
-
-void CGameDataManager::Load(CGameInfo *gameInfo, const char *filename)
-{
-    if (m_Count <= 0)
-        return;
+    // Retrieve the level
+    CKLevel *level = nc->GetCurrentLevel();
+    if (!level)
+    {
+        CLogger::Get().Error("GetCurrentLevel() Failed");
+        return false;
+    }
 
     int i;
-    for (i = 0; strcmp(g_GameData[i].fileName, filename) != 0; ++i)
-        if (++i >= m_Count)
+    const int sceneCount = level->GetSceneCount();
+    for (i = 0; i < sceneCount; ++i)
+        level->GetScene(i)->SetBackgroundColor(0);
+
+    CKRenderContext *rc = nc->GetRenderContext();
+    level->AddRenderContext(rc, TRUE);
+
+    nc->RefreshScreen();
+
+    EditDefaultLevelScript();
+
+    if (config.adaptiveCamera)
+    {
+        CKBehaviorPrototype *setAsActiveCameraProto = CKGetPrototypeFromGuid(CKGUID(0x368f0ab1, 0x2d8957e4));
+        setAsActiveCameraProto->SetFunction(&SetAsActiveCamera);
+    }
+
+    // Set the initial conditions for the level
+    level->LaunchScene(NULL);
+
+    // Render the first frame
+    rc->Render();
+
+    return true;
+}
+
+void CGame::SyncCamerasWithScreen()
+{
+    if (CGameConfig::Get().adaptiveCamera)
+    {
+        CNeMoContext *nc = CNeMoContext::GetInstance();
+        if (!nc)
+            return;
+        CKRenderContext *rc = nc->GetRenderContext();
+        if (!rc)
             return;
 
-    strcpy(gameInfo->fileName, g_GameData[i].fileName);
-    strcpy(gameInfo->path, g_GameData[i].path);
-    gameInfo->hkRoot = g_GameData[i].hkRoot;
-    gameInfo->type = g_GameData[i].type;
-    strcpy(gameInfo->regSubkey, g_GameData[i].regSubkey);
+        CKCamera *cams[2] = {
+            (CKCamera *)nc->GetObjectByNameAndClass("Cam_MenuLevel", CKCID_TARGETCAMERA),
+            (CKCamera *)nc->GetObjectByNameAndClass("InGameCam", CKCID_TARGETCAMERA)};
+        for (int i = 0; i < 2; ++i)
+        {
+            if (cams[i])
+            {
+                cams[i]->SetAspectRatio(rc->GetWidth(), rc->GetHeight());
+                cams[i]->SetFov((float)(0.75 * rc->GetWidth() / rc->GetHeight()));
+                nc->GetCurrentScene()->SetObjectInitialValue(cams[i], CKSaveObjectState(cams[i]));
+            }
+        }
+    }
 }
