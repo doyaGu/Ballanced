@@ -10,7 +10,6 @@
 #include <stdio.h>
 
 #include "InterfaceManager.h"
-#include "ErrorProtocol.h"
 
 CKObjectDeclaration *FillBehaviorInstallArrayDecl();
 CKERROR CreateInstallArrayProto(CKBehaviorPrototype **);
@@ -62,7 +61,7 @@ int InstallArray(const CKBehaviorContext &behcontext)
     if (!man)
     {
         ::PostMessageA((HWND)context->GetRenderManager()->GetRenderContext(0)->GetWindowHandle(), TT_MSG_NO_GAMEINFO, 0x1A, 1);
-        TT_ERROR("InstallArray.cpp", "int InstallArray(...)", " gameInfo not exists");
+        context->OutputToConsoleExBeep("InstallArray: gameInfo not exists");
     }
 
     CKDataArray *array = (CKDataArray *)beh->GetInputParameterObject(0);

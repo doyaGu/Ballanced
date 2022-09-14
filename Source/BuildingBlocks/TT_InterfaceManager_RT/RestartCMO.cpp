@@ -8,7 +8,6 @@
 #include "TT_InterfaceManager_RT.h"
 
 #include "InterfaceManager.h"
-#include "ErrorProtocol.h"
 
 CKObjectDeclaration *FillBehaviorRestartCMODecl();
 CKERROR CreateRestartCMOProto(CKBehaviorPrototype **pproto);
@@ -52,7 +51,7 @@ int RestartCMO(const CKBehaviorContext &behcontext)
 
     InterfaceManager *man = InterfaceManager::GetManager(context);
     if (!man || !man->GetGameInfo())
-        TT_ERROR("RestartCMO.cpp", "int RestartCMO(...)", " gameInfo == NULL, exit CMO");
+        context->OutputToConsoleExBeep("RestartCMO: gameInfo == NULL, exit CMO");
 
     ::PostMessageA((HWND)context->GetMainWindow(), TT_MSG_CMO_RESTART, 0, 0);
     beh->ActivateOutput(0);

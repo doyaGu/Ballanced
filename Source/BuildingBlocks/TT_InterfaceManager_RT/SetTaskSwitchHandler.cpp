@@ -8,7 +8,6 @@
 #include "TT_InterfaceManager_RT.h"
 
 #include "InterfaceManager.h"
-#include "ErrorProtocol.h"
 
 CKObjectDeclaration *FillBehaviorSetTaskSwitchHandlerDecl();
 CKERROR CreateSetTaskSwitchHandlerProto(CKBehaviorPrototype **pproto);
@@ -56,11 +55,11 @@ int SetTaskSwitchHandler(const CKBehaviorContext &behcontext)
 	InterfaceManager *man = InterfaceManager::GetManager(context);
 	if (!man || !man->GetGameInfo())
 	{
-		TT_ERROR("SetTaskSwitchHandler.cpp", "int SetTaskSwitchHandler(...)", " gameInfo == NULL, exit CMO");
+        context->OutputToConsoleExBeep("SetTaskSwitchHandler: gameInfo == NULL, exit CMO");
 		return CKBR_OK;
 	}
 
-	BOOL enable = TRUE;
+	CKBOOL enable = TRUE;
 	beh->GetInputParameterValue(0, &enable);
 	man->SetTaskSwitchEnabled(enable == TRUE);
 	beh->ActivateOutput(0);

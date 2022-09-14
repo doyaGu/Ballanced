@@ -7,10 +7,7 @@
 /////////////////////////////////////////////////////
 #include "TT_InterfaceManager_RT.h"
 
-#include <string.h>
-
 #include "InterfaceManager.h"
-#include "ErrorProtocol.h"
 
 CKObjectDeclaration *FillBehaviorLoadCMODecl();
 CKERROR CreateLoadCMOProto(CKBehaviorPrototype **pproto);
@@ -58,7 +55,7 @@ int LoadCMO(const CKBehaviorContext &behcontext)
 
     InterfaceManager *man = InterfaceManager::GetManager(context);
     if (!man || !man->GetGameInfo())
-        TT_ERROR("LoadCMO.cpp", "int LoadCMO(...)", " gameInfo == NULL, exit CMO");
+        context->OutputToConsoleExBeep("LoadCMO: gameInfo == NULL, exit CMO");
 
     man->SetCmoName(name);
     ::PostMessageA((HWND)context->GetMainWindow(), TT_MSG_CMO_LOAD, (WPARAM)man->GetCmoName(), 0);

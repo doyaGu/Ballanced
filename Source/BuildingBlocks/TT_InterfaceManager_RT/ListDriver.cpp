@@ -8,7 +8,6 @@
 #include "TT_InterfaceManager_RT.h"
 
 #include "InterfaceManager.h"
-#include "ErrorProtocol.h"
 
 CKObjectDeclaration *FillBehaviorListDriverDecl();
 CKERROR CreateListDriverProto(CKBehaviorPrototype **pproto);
@@ -71,7 +70,7 @@ int ListDriver(const CKBehaviorContext &behcontext)
     InterfaceManager *man = InterfaceManager::GetManager(context);
     if (!man)
     {
-        TT_ERROR("ListDriver.cpp", "int ListDriver(...)", " im == NULL");
+        context->OutputToConsoleExBeep("ListDriver: im == NULL");
         beh->ActivateOutput(1);
         return CKBR_OK;
     }

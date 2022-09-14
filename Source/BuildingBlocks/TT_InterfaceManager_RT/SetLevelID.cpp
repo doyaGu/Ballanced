@@ -8,7 +8,6 @@
 #include "TT_InterfaceManager_RT.h"
 
 #include "InterfaceManager.h"
-#include "ErrorProtocol.h"
 
 CKObjectDeclaration *FillBehaviorSetLevelIDDecl();
 CKERROR CreateSetLevelIDProto(CKBehaviorPrototype **pproto);
@@ -55,7 +54,7 @@ int SetLevelID(const CKBehaviorContext &behcontext)
     InterfaceManager *man = InterfaceManager::GetManager(context);
     if (!man)
     {
-        TT_ERROR("SetLevelID.cpp", "int SetLevelID(...)", " im == NULL");
+        context->OutputToConsoleExBeep("SetLevelID: im == NULL");
         return CKBR_OK;
     }
 
@@ -63,7 +62,7 @@ int SetLevelID(const CKBehaviorContext &behcontext)
     if (!gameInfo)
     {
         ::PostMessageA((HWND)context->GetMainWindow(), TT_MSG_NO_GAMEINFO, 0x12, 0);
-        TT_ERROR("SetLevelID.cpp", "int SetLevelID(...)", " gameInfo not exists");
+        context->OutputToConsoleExBeep("SetLevelID: gameInfo not exists");
     }
 
     beh->GetInputParameterValue(0, &gameInfo->levelID);

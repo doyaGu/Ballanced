@@ -1,9 +1,6 @@
 #include "TT_InterfaceManager_RT.h"
 
-#include <stdio.h>
-
 #include "InterfaceManager.h"
-#include "ErrorProtocol.h"
 
 #define TT_INTERFACE_MANAGER_BEHAVIOR CKGUID(0x1B5171D8, 0x41B60E5F)
 
@@ -32,10 +29,7 @@ CKERROR InitInstance(CKContext *context)
 CKERROR ExitInstance(CKContext *context)
 {
     InterfaceManager *man = InterfaceManager::GetManager(context);
-    if (man)
-    {
-        delete man;
-    }
+    if (man) delete man;
     return CK_OK;
 }
 
@@ -75,18 +69,6 @@ PLUGIN_EXPORT void RegisterBehaviorDeclarations(XObjectDeclarationArray *reg);
 
 void RegisterBehaviorDeclarations(XObjectDeclarationArray *reg)
 {
-    char fullpath[260];
-    char drive[4];
-    char dir[260];
-    char filename[256];
-    char ext[256];
-    char buffer[260];
-
-    ::GetModuleFileNameA(NULL, fullpath, 260);
-    _splitpath(fullpath, drive, dir, filename, ext);
-    sprintf(buffer, "%s%s..\\", drive, dir);
-    TT_ERROR_OPEN("TT_Player_CMO_Interface", buffer, true);
-
     // Message
     RegisterBehavior(reg, FillBehaviorRestartCMODecl);
     RegisterBehavior(reg, FillBehaviorLoadCMODecl);
