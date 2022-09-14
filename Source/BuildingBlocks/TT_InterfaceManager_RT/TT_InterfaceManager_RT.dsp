@@ -106,10 +106,6 @@ SOURCE=.\DeleteGameInfo.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\ErrorProtocol.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\ExistsGameInfo.cpp
 # End Source File
 # Begin Source File
@@ -316,10 +312,6 @@ SOURCE=.\WriteRegistry.cpp
 # Begin Group "Header Files"
 
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
-# Begin Source File
-
-SOURCE=.\ErrorProtocol.h
-# End Source File
 # Begin Source File
 
 SOURCE=.\GameInfo.h
