@@ -62,6 +62,8 @@ struct CGameConfig
 
     static CGameConfig &Get();
 
+    CGameConfig();
+
     void SetPath(PathCategory category, const char *path);
     const char *GetPath(PathCategory category) const;
     bool HasPath(PathCategory category) const;
@@ -72,33 +74,6 @@ struct CGameConfig
     void LoadFromIni(const char *filename = "");
     void LoadPathsFromIni(const char *filename = "");
     void SaveToIni(const char *filename = "");
-
-    CGameConfig()
-        : langId(1),
-          adaptiveCamera(false),
-          unlockWidescreen(false),
-          unlockHighResolution(false),
-          skipOpening(false),
-          driver(0),
-          bpp(PLAYER_DEFAULT_BPP),
-          width(PLAYER_DEFAULT_WIDTH),
-          height(PLAYER_DEFAULT_HEIGHT),
-          fullscreen(false),
-          unlockFramerate(false),
-          disableFilter(false),
-          disableDithering(false),
-          antialias(0),
-          disableMipmap(false),
-          disableSpecular(false),
-          posX(2147483647),
-          posY(2147483647),
-
-          borderless(false),
-          resizable(false),
-          clipMouse(false),
-          alwaysHandleInput(false),
-          pauseOnDeactivated(false),
-          rookie(false){};
 
 private:
     char m_Paths[ePathCategoryCount][MAX_PATH];
