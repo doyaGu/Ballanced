@@ -66,7 +66,6 @@ int ListScreenModes(const CKBehaviorContext &behcontext)
         return CKBR_OK;
     }
 
-    screenModes->GetColumnCount();
     screenModes->Clear();
     while (screenModes->GetColumnCount() > 0)
         screenModes->RemoveColumn(0);
@@ -84,37 +83,32 @@ int ListScreenModes(const CKBehaviorContext &behcontext)
         return CKBR_OK;
     }
 
-    if (drDesc->DisplayModeCount > 0)
-    {
     VxDisplayMode *dm = drDesc->DisplayModes;
     const int dmCount = drDesc->DisplayModeCount;
+    int i = 0, row = 0;
+    while (i < dmCount)
+    {
+        int width = dm[i].Width;
+        int height = dm[i].Height;
 
-        int i;
         int maxRefreshRate = 0;
-        for (i = 0; i < dmCount; ++i)
+        for (int j = i; dm[j].Width == width && dm[j].Height == height && j < dmCount; ++j)
         {
-            if (dm[i].RefreshRate > maxRefreshRate)
-                maxRefreshRate = dm[i].RefreshRate;
-            else
-                break;
+            if (dm[j].RefreshRate > maxRefreshRate && dm[j].Bpp > 8)
+                maxRefreshRate = dm[j].RefreshRate;
         }
 
-        int j = 0;
-        int width = 0, height = 0;
-        for (i = 0; i < dmCount; ++i)
+        while (dm[i].Width == width && dm[i].Height == height && i < dmCount)
         {
-            if ((dm[i].Width != width || dm[i].Height != height) && dm[i].Bpp > 8 && dm[i].RefreshRate == maxRefreshRate)
-            {
+            if (dm[i].RefreshRate == maxRefreshRate && dm[i].Bpp > 8) {
                 screenModes->InsertRow();
-                screenModes->SetElementValue(j, 0, &i, sizeof(int));
-                screenModes->SetElementValue(j, 1, &dm[i].Width, sizeof(int));
-                screenModes->SetElementValue(j, 2, &dm[i].Height, sizeof(int));
-                screenModes->SetElementValue(j, 3, &dm[i].Bpp, sizeof(int));
-                ++j;
-
-                width = dm[i].Width;
-                height = dm[i].Height;
+                screenModes->SetElementValue(row, 0, &i, sizeof(int));
+                screenModes->SetElementValue(row, 1, &dm[i].Width, sizeof(int));
+                screenModes->SetElementValue(row, 2, &dm[i].Height, sizeof(int));
+                screenModes->SetElementValue(row, 3, &dm[i].Bpp, sizeof(int));
+                ++row;
             }
+            ++i;
         }
     }
 
