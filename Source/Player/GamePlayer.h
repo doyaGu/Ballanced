@@ -11,16 +11,16 @@ public:
     enum PlayerState
     {
         eInitial = 0,
-        ePlaying = 1,
-        ePaused = 2,
-        eFocusLost = 3
+        eReady = 1,
+        ePlaying = 2,
+        ePaused = 3,
+        eFocusLost = 4
     };
 
-    static CGamePlayer &GetInstance();
-
+    CGamePlayer();
     ~CGamePlayer();
 
-    bool Init(HINSTANCE hInstance);
+    bool Init(HINSTANCE hInstance, HANDLE hMutex);
     void Run();
     bool Process();
     void Terminate();
@@ -30,11 +30,6 @@ public:
     void Play();
     void Pause();
     void Reset();
-
-    int GetState() const
-    {
-        return m_State;
-    }
 
     void OnDestroy();
     void OnMove();
@@ -57,7 +52,13 @@ public:
     void OnStopFullscreen();
     void OnSwitchFullscreen();
 
-protected:
+    static void Register(CGamePlayer *player);
+    static CGamePlayer *GetInstance();
+
+private:
+    CGamePlayer(const CGamePlayer &);
+    CGamePlayer &operator=(const CGamePlayer &);
+
     int InitEngine();
     bool ReInitEngine();
     bool LoadRenderEngine();
@@ -68,11 +69,9 @@ protected:
     CNeMoContext m_NeMoContext;
     CWinContext m_WinContext;
     CGame m_Game;
+    HANDLE m_hMutex;
 
-private:
-    CGamePlayer();
-    CGamePlayer(const CGamePlayer &);
-    CGamePlayer &operator=(const CGamePlayer &);
+    static CGamePlayer *s_Instance;
 };
 
 #endif /* PLAYER_GAMEPLAYER_H */
