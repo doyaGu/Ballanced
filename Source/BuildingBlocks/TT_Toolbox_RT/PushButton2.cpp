@@ -15,7 +15,7 @@ int PushButton2(const CKBehaviorContext &behcontext);
 CKObjectDeclaration *FillBehaviorPushButton2Decl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT PushButton2");
-    od->SetDescription("push button without material changes");
+    od->SetDescription("Push button without material changes");
     od->SetCategory("TT Toolbox/Interface");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
     od->SetGuid(CKGUID(0x14d325d1, 0x6748654e));

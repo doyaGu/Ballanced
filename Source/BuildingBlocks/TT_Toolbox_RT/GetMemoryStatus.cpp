@@ -15,7 +15,7 @@ int GetMemoryStatus(const CKBehaviorContext &behcontext);
 CKObjectDeclaration *FillBehaviorGetMemoryStatusDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT GetMemoryStatus");
-    od->SetDescription("reads system memory status");
+    od->SetDescription("Reads system memory status");
     od->SetCategory("TT Toolbox/System");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
     od->SetGuid(CKGUID(0x3b826e04, 0x6e764285));

@@ -15,7 +15,7 @@ int OperationSystem(const CKBehaviorContext &behcontext);
 CKObjectDeclaration *FillBehaviorOperationSystemDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT OperationSystem");
-    od->SetDescription("reads operation system");
+    od->SetDescription("Reads operation system");
     od->SetCategory("TT Toolbox/System");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
     od->SetGuid(CKGUID(0x4c94621d, 0x24fe2cf3));

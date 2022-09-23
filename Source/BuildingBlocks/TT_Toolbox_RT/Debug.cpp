@@ -15,7 +15,7 @@ int Debug(const CKBehaviorContext &behcontext);
 CKObjectDeclaration *FillBehaviorDebugDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT_Debug");
-    od->SetDescription("Debug ");
+    od->SetDescription("Debug");
     od->SetCategory("TT Toolbox/Debug");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
     od->SetGuid(CKGUID(0x4a446c43, 0x66fa2375));

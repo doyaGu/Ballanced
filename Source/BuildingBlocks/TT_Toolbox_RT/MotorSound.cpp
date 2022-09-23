@@ -16,7 +16,7 @@ CKERROR MotorSoundCallBack(const CKBehaviorContext &behcontext);
 CKObjectDeclaration *FillBehaviorMotorSoundDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT_MotorSound");
-    od->SetDescription("plays different samples according to a given vehicle velocity");
+    od->SetDescription("Plays different samples according to a given vehicle velocity");
     od->SetCategory("TT Toolbox/Sounds");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
     od->SetGuid(CKGUID(0x1a1a67aa, 0x664108ed));
