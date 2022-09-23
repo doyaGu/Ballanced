@@ -31,14 +31,9 @@ CNeMoContext::CNeMoContext()
       m_Fullscreen(false),
       m_Driver(0),
       m_ScreenMode(-1),
-      m_MsgWindowClose(0)
-{
-    strcpy(m_ProgPath, "");
-}
+      m_MsgWindowClose(0) {}
 
-CNeMoContext::~CNeMoContext()
-{
-}
+CNeMoContext::~CNeMoContext() {}
 
 CKERROR CNeMoContext::CreateContext()
 {
@@ -202,6 +197,97 @@ void CNeMoContext::RefreshScreen()
     }
 }
 
+void CNeMoContext::SetScreen(CWinContext *wincontext, bool fullscreen, int driver, int bpp, int width, int height)
+{
+    m_WinContext = wincontext;
+    m_Fullscreen = fullscreen;
+    m_Bpp = bpp;
+    m_Width = width;
+    m_Height = height;
+    m_ScreenMode = driver;
+}
+
+void CNeMoContext::SetWindow(CWinContext *wincontext, bool fullscreen, int bpp, int width, int height)
+{
+    m_WinContext = wincontext;
+    m_Fullscreen = fullscreen;
+    m_Bpp = bpp;
+    m_Width = width;
+    m_Height = height;
+}
+
+void CNeMoContext::GetResolution(int &width, int &height)
+{
+    width = m_Width;
+    height = m_Height;
+}
+
+void CNeMoContext::SetResolution(int width, int height)
+{
+    m_Width = width;
+    m_Height = height;
+}
+
+int CNeMoContext::GetWidth() const
+{
+    return m_Width;
+}
+
+void CNeMoContext::SetWidth(int width)
+{
+    m_Width = width;
+}
+
+int CNeMoContext::GetHeight() const
+{
+    return m_Height;
+}
+
+void CNeMoContext::SetHeight(int height)
+{
+    m_Height = height;
+}
+
+int CNeMoContext::GetBPP() const
+{
+    return m_Bpp;
+}
+
+void CNeMoContext::SetBPP(int bpp)
+{
+    m_Bpp = bpp;
+}
+
+int CNeMoContext::GetRefreshRate() const
+{
+    return m_RefreshRate;
+}
+
+void CNeMoContext::SetRefreshRate(int fps)
+{
+    m_RefreshRate = fps;
+}
+
+int CNeMoContext::GetDriver() const
+{
+    return m_Driver;
+}
+
+void CNeMoContext::SetDriver(int driver)
+{
+    m_Driver = driver;
+}
+
+int CNeMoContext::GetScreenMode() const
+{
+    return m_ScreenMode;
+}
+
+void CNeMoContext::SetScreenMode(int screenMode)
+{
+    m_ScreenMode = screenMode;
+}
+
 bool CNeMoContext::FindScreenMode()
 {
     VxDriverDesc *drDesc = m_RenderManager->GetRenderDriverDescription(m_Driver);
@@ -337,6 +423,16 @@ bool CNeMoContext::IsRenderFullscreen() const
     return m_RenderContext->IsFullScreen() == TRUE;
 }
 
+bool CNeMoContext::IsFullscreen() const
+{
+    return m_Fullscreen;
+}
+
+void CNeMoContext::SetFullscreen(bool fullscreen)
+{
+    m_Fullscreen = fullscreen;
+}
+
 void CNeMoContext::ResizeWindow()
 {
     int w, h;
@@ -367,6 +463,41 @@ void CNeMoContext::MinimizeWindow()
     if (!StopFullscreen())
         return;
     m_WinContext->MinimizeMainWindow();
+}
+
+void CNeMoContext::SetRenderContext(CKRenderContext *renderContext)
+{
+    m_RenderContext = renderContext;
+}
+
+void CNeMoContext::SetWinContext(CWinContext *winContext)
+{
+    m_WinContext = winContext;
+}
+
+CKContext *CNeMoContext::GetCKContext()
+{
+    return m_CKContext;
+}
+
+CKRenderContext *CNeMoContext::GetRenderContext() const
+{
+    return m_RenderContext;
+}
+
+CKRenderManager *CNeMoContext::GetRenderManager() const
+{
+    return m_RenderManager;
+}
+
+CKInputManager *CNeMoContext::GetInputManager() const
+{
+    return m_InputManager;
+}
+
+InterfaceManager *CNeMoContext::GetInterfaceManager() const
+{
+    return m_InterfaceManager;
 }
 
 bool CNeMoContext::CreateRenderContext()
@@ -458,17 +589,6 @@ void CNeMoContext::AddDataPath(const char *path)
     m_CKContext->GetPathManager()->AddPath(DATA_PATH_IDX, str);
 }
 
-char *CNeMoContext::GetProgPath()
-{
-    return m_ProgPath;
-}
-
-void CNeMoContext::SetProgPath(const char *path)
-{
-    if (path)
-        strcpy(m_ProgPath, path);
-}
-
 CKERROR CNeMoContext::GetFileInfo(CKSTRING filename, CKFileInfo *fileinfo)
 {
     return m_CKContext->GetFileInfo(filename, fileinfo);
@@ -522,6 +642,20 @@ CKLevel *CNeMoContext::GetCurrentLevel()
 CKScene *CNeMoContext::GetCurrentScene()
 {
     return m_CKContext->GetCurrentScene();
+}
+
+CKBehavior *CNeMoContext::CreateBB(CKBehavior *beh, CKGUID guid, CKBeObject *target)
+{
+    CKBehavior *behavior = (CKBehavior *) beh->GetCKContext()->CreateObject(CKCID_BEHAVIOR);
+    behavior->InitFromGuid(guid);
+    if (target)
+    {
+        behavior->UseTarget();
+        CKBeObject **pt = &target;
+        behavior->GetTargetParameter()->GetDirectSource()->SetValue(pt);
+    }
+    beh->AddSubBehavior(behavior);
+    return behavior;
 }
 
 CKBehavior *CNeMoContext::GetBehavior(const XObjectPointerArray &array, const char *name)
@@ -638,6 +772,23 @@ CKBehaviorLink *CNeMoContext::GetBehaviorLink(CKBehavior *beh, CKBehavior *inBeh
     return NULL;
 }
 
+CKBehaviorLink *CNeMoContext::GetBehaviorLink(CKBehavior *beh, const char *inBehName, const char *outBehName, int inPos, int outPos)
+{
+    const int linkCount = beh->GetSubBehaviorLinkCount();
+    for (int i = 0; i < linkCount; ++i)
+    {
+        CKBehaviorLink *link = beh->GetSubBehaviorLink(i);
+        CKBehaviorIO *inIO = link->GetInBehaviorIO();
+        CKBehaviorIO *outIO = link->GetOutBehaviorIO();
+        CKBehavior *inBeh = inIO->GetOwner();
+        CKBehavior *outBeh = outIO->GetOwner();
+        if (strcmp(inBeh->GetName(), inBehName) == 0 && inBeh->GetOutput(inPos) == inIO &&
+            strcmp(outBeh->GetName(), outBehName) == 0 && outBeh->GetInput(outPos) == outIO)
+            return link;
+    }
+    return NULL;
+}
+
 CKBehaviorLink *CNeMoContext::GetBehaviorLink(CKBehavior *beh, CKBehaviorIO *in, CKBehaviorIO *out)
 {
     const int linkCount = beh->GetSubBehaviorLinkCount();
@@ -685,6 +836,21 @@ CKBehaviorLink *CNeMoContext::RemoveBehaviorLink(CKBehavior *beh, const char *in
 CKBehaviorLink *CNeMoContext::RemoveBehaviorLink(CKBehavior *beh, CKBehavior *inBeh, const char *outBehName, int inPos, int outPos, bool destroy)
 {
     CKBehaviorLink *link = GetBehaviorLink(beh, inBeh, outBehName, inPos, outPos);
+    if (!link)
+        return NULL;
+
+    beh->RemoveSubBehaviorLink(link);
+    if (destroy)
+    {
+        DestroyObject(link);
+        return NULL;
+    }
+    return link;
+}
+
+CKBehaviorLink *CNeMoContext::RemoveBehaviorLink(CKBehavior *beh, const char *inBehName, const char *outBehName, int inPos, int outPos, bool destroy)
+{
+    CKBehaviorLink *link = GetBehaviorLink(beh, inBehName, outBehName, inPos, outPos);
     if (!link)
         return NULL;
 
@@ -884,4 +1050,14 @@ void CNeMoContext::AddCloseMessage()
 bool CNeMoContext::BroadcastCloseMessage()
 {
     return m_MessageManager->SendMessageBroadcast(m_MsgWindowClose, CKCID_BEOBJECT) != NULL;
+}
+
+CNeMoContext *CNeMoContext::GetInstance()
+{
+    return s_Instance;
+}
+
+void CNeMoContext::RegisterInstance(CNeMoContext *nemoContext)
+{
+    s_Instance = nemoContext;
 }

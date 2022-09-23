@@ -29,96 +29,37 @@ public:
     void ClearScreen();
     void RefreshScreen();
 
-    void SetScreen(CWinContext *wincontext, bool fullscreen, int driver, int bpp, int width, int height)
-    {
-        m_WinContext = wincontext;
-        m_Fullscreen = fullscreen;
-        m_Bpp = bpp;
-        m_Width = width;
-        m_Height = height;
-        m_ScreenMode = driver;
-    }
+    void SetScreen(CWinContext *wincontext, bool fullscreen, int driver, int bpp, int width, int height);
 
-    void SetWindow(CWinContext *wincontext, bool fullscreen, int bpp, int width, int height)
-    {
-        m_WinContext = wincontext;
-        m_Fullscreen = fullscreen;
-        m_Bpp = bpp;
-        m_Width = width;
-        m_Height = height;
-    }
+    void SetWindow(CWinContext *wincontext, bool fullscreen, int bpp, int width, int height);
 
-    void GetResolution(int &width, int &height)
-    {
-        width = m_Width;
-        height = m_Height;
-    }
+    void GetResolution(int &width, int &height);
 
-    void SetResolution(int width, int height)
-    {
-        m_Width = width;
-        m_Height = height;
-    }
+    void SetResolution(int width, int height);
 
-    int GetWidth() const
-    {
-        return m_Width;
-    }
+    int GetWidth() const;
 
-    void SetWidth(int width)
-    {
-        m_Width = width;
-    }
+    void SetWidth(int width);
 
-    int GetHeight() const
-    {
-        return m_Height;
-    }
+    int GetHeight() const;
 
-    void SetHeight(int height)
-    {
-        m_Height = height;
-    }
+    void SetHeight(int height);
 
-    int GetBPP() const
-    {
-        return m_Bpp;
-    }
+    int GetBPP() const;
 
-    void SetBPP(int bpp)
-    {
-        m_Bpp = bpp;
-    }
+    void SetBPP(int bpp);
 
-    int GetRefreshRate() const
-    {
-        return m_RefreshRate;
-    }
+    int GetRefreshRate() const;
 
-    void SetRefreshRate(int fps)
-    {
-        m_RefreshRate = fps;
-    }
+    void SetRefreshRate(int fps);
 
-    int GetDriver() const
-    {
-        return m_Driver;
-    }
+    int GetDriver() const;
 
-    void SetDriver(int driver)
-    {
-        m_Driver = driver;
-    }
+    void SetDriver(int driver);
 
-    int GetScreenMode() const
-    {
-        return m_ScreenMode;
-    }
+    int GetScreenMode() const;
 
-    void SetScreenMode(int screenMode)
-    {
-        m_ScreenMode = screenMode;
-    }
+    void SetScreenMode(int screenMode);
 
     bool FindScreenMode();
     bool ApplyScreenMode();
@@ -128,54 +69,25 @@ public:
     bool StopFullscreen();
     bool IsRenderFullscreen() const;
 
-    bool IsFullscreen() const
-    {
-        return m_Fullscreen;
-    }
+    bool IsFullscreen() const;
 
-    void SetFullscreen(bool fullscreen)
-    {
-        m_Fullscreen = fullscreen;
-    }
+    void SetFullscreen(bool fullscreen);
 
     void ResizeWindow();
     bool RestoreWindow();
     void MinimizeWindow();
 
-    void SetRenderContext(CKRenderContext *renderContext)
-    {
-        m_RenderContext = renderContext;
-    }
+    void SetRenderContext(CKRenderContext *renderContext);
 
-    void SetWinContext(CWinContext *winContext)
-    {
-        m_WinContext = winContext;
-    }
+    void SetWinContext(CWinContext *winContext);
 
-    CKContext *GetCKContext()
-    {
-        return m_CKContext;
-    }
+    CKContext *GetCKContext();
 
-    CKRenderContext *GetRenderContext() const
-    {
-        return m_RenderContext;
-    }
+    CKRenderContext *GetRenderContext() const;
+    CKRenderManager *GetRenderManager() const;
 
-    CKRenderManager *GetRenderManager() const
-    {
-        return m_RenderManager;
-    }
-
-    CKInputManager *GetInputManager() const
-    {
-        return m_InputManager;
-    }
-
-    InterfaceManager *GetInterfaceManager() const
-    {
-        return m_InterfaceManager;
-    }
+    CKInputManager *GetInputManager() const;
+    InterfaceManager *GetInterfaceManager() const;
 
     CKERROR CreateContext();
     bool CreateRenderContext();
@@ -185,9 +97,6 @@ public:
     void AddSoundPath(const char *path);
     void AddBitmapPath(const char *path);
     void AddDataPath(const char *path);
-
-    char *GetProgPath();
-    void SetProgPath(const char *path);
 
     CKERROR GetFileInfo(CKSTRING filename, CKFileInfo *fileinfo);
     CKERROR LoadFile(char *filename, CKObjectArray *liste, CK_LOAD_FLAGS loadFlags = CK_LOAD_DEFAULT, CKGUID *readerGuid = NULL);
@@ -204,6 +113,8 @@ public:
     CKLevel *GetCurrentLevel();
     CKScene *GetCurrentScene();
 
+    CKBehavior *CreateBB(CKBehavior *beh, CKGUID guid, CKBeObject *target = NULL);
+
     CKBehavior *GetBehavior(const XObjectPointerArray &array, const char *name);
     CKBehavior *GetBehavior(CKBehavior *beh, const char *name);
     CKBehavior *GetBehavior(CKBehavior *beh, const char *name, const char *targetName);
@@ -214,11 +125,13 @@ public:
     CKBehaviorLink *GetBehaviorLink(CKBehavior *beh, CKBehavior *inBeh, CKBehavior *outBeh, int inPos = 0, int outPos = 0);
     CKBehaviorLink *GetBehaviorLink(CKBehavior *beh, const char *inBehName, CKBehavior *outBeh, int inPos = 0, int outPos = 0);
     CKBehaviorLink *GetBehaviorLink(CKBehavior *beh, CKBehavior *inBeh, const char *outBehName, int inPos = 0, int outPos = 0);
+    CKBehaviorLink *GetBehaviorLink(CKBehavior *beh, const char *inBehName, const char *outBehName, int inPos = 0, int outPos = 0);
     CKBehaviorLink *GetBehaviorLink(CKBehavior *beh, CKBehaviorIO *in, CKBehaviorIO *out);
 
     CKBehaviorLink *RemoveBehaviorLink(CKBehavior *beh, CKBehavior *inBeh, CKBehavior *outBeh, int inPos = 0, int outPos = 0, bool destroy = false);
     CKBehaviorLink *RemoveBehaviorLink(CKBehavior *beh, const char *inBehName, CKBehavior *outBeh, int inPos = 0, int outPos = 0, bool destroy = false);
     CKBehaviorLink *RemoveBehaviorLink(CKBehavior *beh, CKBehavior *inBeh, const char *outBehName, int inPos = 0, int outPos = 0, bool destroy = false);
+    CKBehaviorLink *RemoveBehaviorLink(CKBehavior *beh, const char *inBehName, const char *outBehName, int inPos = 0, int outPos = 0, bool destroy = false);
     CKBehaviorLink *RemoveBehaviorLink(CKBehavior *beh, CKBehaviorIO *in, CKBehaviorIO *out, bool destroy = false);
 
     CKMessageType AddMessageType(CKSTRING msg);
@@ -233,15 +146,9 @@ public:
     void AddCloseMessage();
     bool BroadcastCloseMessage();
 
-    static CNeMoContext *GetInstance()
-    {
-        return s_Instance;
-    }
+    static CNeMoContext *GetInstance();
 
-    static void RegisterInstance(CNeMoContext *nemoContext)
-    {
-        s_Instance = nemoContext;
-    }
+    static void RegisterInstance(CNeMoContext *nemoContext);
 
 private:
     CNeMoContext(const CNeMoContext &);
@@ -266,7 +173,6 @@ private:
     bool m_Fullscreen;
     int m_Driver;
     int m_ScreenMode;
-    char m_ProgPath[512];
     CKMessageType m_MsgWindowClose;
 
     static CNeMoContext *s_Instance;
