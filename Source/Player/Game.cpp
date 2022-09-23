@@ -8,11 +8,10 @@
 #include "Logger.h"
 #include "InterfaceManager.h"
 
-static bool EditDefaultLevelScript()
+static bool EditScriptDefaultLevel()
 {
     CNeMoContext *nc = CNeMoContext::GetInstance();
-    if (!nc)
-        return false;
+    assert(nc != NULL);
 
     const CGameConfig &config = CGameConfig::Get();
 
@@ -20,17 +19,35 @@ static bool EditDefaultLevelScript()
     if (!level)
         return false;
 
-    CKBehavior *script = nc->GetBehavior(level->ComputeObjectList(CKCID_BEHAVIOR), "Default Level");
-    if (!script)
+    CKBehavior *defaultLevel = nc->GetBehavior(level->ComputeObjectList(CKCID_BEHAVIOR), "Default Level");
+    if (!defaultLevel)
         return false;
 
-    CKBehavior *sl = nc->GetBehavior(script, "Set Language");
-    if (!sl)
-        return false;
+    // Set debug mode
+    {
+        CKBehavior *sd = nc->GetBehavior(defaultLevel, "set DebugMode");
+        if (!sd)
+            return false;
+
+        CKBehavior *bs = nc->GetBehavior(sd, "Binary Switch");
+        if (!bs)
+            return false;
+
+        CKParameterLocal *local = sd->CreateLocalParameter("Condition", CKPGUID_BOOL);
+        CKBOOL debug = config.debug ? TRUE : FALSE;
+        local->SetValue(&debug);
+        bs->GetInputParameter(0)->SetDirectSource(local);
+    }
 
     // Bypass "Set Language" script and set our language id
     {
+        CKBehavior *sl = nc->GetBehavior(defaultLevel, "Set Language");
+        if (!sl)
+            return false;
+
         CKBehavior *rr = nc->GetBehavior(sl, "TT_ReadRegistry");
+        if (!rr)
+            return false;
 
         CKBehaviorLink *linkOpRr = nc->RemoveBehaviorLink(sl, "Op", rr, 0, 0);
         if (!linkOpRr)
@@ -50,7 +67,7 @@ static bool EditDefaultLevelScript()
 
     int i;
 
-    CKBehavior *sm = nc->GetBehavior(script, "Screen Modes");
+    CKBehavior *sm = nc->GetBehavior(defaultLevel, "Screen Modes");
     if (!sm)
         return false;
 
@@ -119,7 +136,7 @@ static bool EditDefaultLevelScript()
         nc->CreateBehaviorLink(sm, inBeh, filters[2], 0, 0);
     }
 
-    CKBehavior *sts = nc->GetBehavior(script, "Synch to Screen");
+    CKBehavior *sts = nc->GetBehavior(defaultLevel, "Synch to Screen");
     if (!sts)
         return false;
 
@@ -156,22 +173,22 @@ static bool EditDefaultLevelScript()
     // Skip Opening Animation
     if (config.skipOpening)
     {
-        CKBehavior *is = nc->GetBehavior(script, "Intro Start");
-        CKBehavior *ie = nc->GetBehavior(script, "Intro Ende");
-        CKBehavior *ml = nc->GetBehavior(script, "Main Loading");
-        CKBehavior *ps = nc->GetBehavior(script, "Preload Sound");
+        CKBehavior *is = nc->GetBehavior(defaultLevel, "Intro Start");
+        CKBehavior *ie = nc->GetBehavior(defaultLevel, "Intro Ende");
+        CKBehavior *ml = nc->GetBehavior(defaultLevel, "Main Loading");
+        CKBehavior *ps = nc->GetBehavior(defaultLevel, "Preload Sound");
         if (!is || !ie || !ml || !ps)
             return false;
 
-        CKBehaviorLink *linkStsIs = nc->GetBehaviorLink(script, sts, is, 0, 0);
+        CKBehaviorLink *linkStsIs = nc->GetBehaviorLink(defaultLevel, sts, is, 0, 0);
         if (!linkStsIs)
             return false;
         linkStsIs->SetOutBehaviorIO(ml->GetInput(0));
 
-        CKBehaviorLink *linkIeAs = nc->GetBehaviorLink(script, ie, "Activate Script", 0, 0);
+        CKBehaviorLink *linkIeAs = nc->GetBehaviorLink(defaultLevel, ie, "Activate Script", 0, 0);
         if (!linkIeAs)
             return false;
-        CKBehaviorLink *linkPsWfa = nc->GetBehaviorLink(script, ps, "Wait For All", 0, 0);
+        CKBehaviorLink *linkPsWfa = nc->GetBehaviorLink(defaultLevel, ps, "Wait For All", 0, 0);
         if (!linkPsWfa)
             return false;
         linkPsWfa->SetOutBehaviorIO(linkIeAs->GetOutBehaviorIO());
@@ -218,9 +235,9 @@ CGame::~CGame()
 
 bool CGame::Load()
 {
+    CGameConfig &config = CGameConfig::Get();
     CNeMoContext *nc = CNeMoContext::GetInstance();
-    if (!nc)
-        return false;
+    assert(nc != NULL);
 
     if (!m_GameInfo)
     {
@@ -229,7 +246,7 @@ bool CGame::Load()
     }
 
     char cmoPath[MAX_PATH];
-    _snprintf(cmoPath, MAX_PATH, "%s%s\\%s", nc->GetProgPath(), m_GameInfo->path, m_GameInfo->fileName);
+    _snprintf(cmoPath, MAX_PATH, "%s%s\\%s", config.GetPath(eRootPath), m_GameInfo->path, m_GameInfo->fileName);
     FILE *fp = fopen(cmoPath, "r");
     if (!fp)
     {
@@ -284,8 +301,7 @@ void CGame::SetGameInfo(CGameInfo *gameInfo)
 bool CGame::FinishLoad()
 {
     CNeMoContext *nc = CNeMoContext::GetInstance();
-    if (!nc)
-        return false;
+    assert(nc != NULL);
 
     const CGameConfig &config = CGameConfig::Get();
 
@@ -307,7 +323,7 @@ bool CGame::FinishLoad()
 
     nc->RefreshScreen();
 
-    EditDefaultLevelScript();
+    EditScriptDefaultLevel();
 
     if (config.adaptiveCamera)
     {
@@ -329,8 +345,8 @@ void CGame::SyncCamerasWithScreen()
     if (CGameConfig::Get().adaptiveCamera)
     {
         CNeMoContext *nc = CNeMoContext::GetInstance();
-        if (!nc)
-            return;
+        assert(nc != NULL);
+
         CKRenderContext *rc = nc->GetRenderContext();
         if (!rc)
             return;
