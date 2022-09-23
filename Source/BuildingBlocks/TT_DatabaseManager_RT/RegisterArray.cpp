@@ -1,7 +1,7 @@
 /////////////////////////////////////////////////////
 /////////////////////////////////////////////////////
 //
-//		          TT Register Array
+//                TT Register Array
 //
 /////////////////////////////////////////////////////
 /////////////////////////////////////////////////////
@@ -19,7 +19,7 @@ CKObjectDeclaration *FillBehaviorRegisterArrayDecl()
     od->SetDescription("Registers an array for storage in a database");
     od->SetCategory("TT Database");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
-    od->SetGuid(CKGUID(0x348773dc,0x19ae6322));
+    od->SetGuid(CKGUID(0x348773dc, 0x19ae6322));
     od->SetAuthorGuid(TERRATOOLS_GUID);
     od->SetAuthorName("Terratools");
     od->SetVersion(0x00010000);
