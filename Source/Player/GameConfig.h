@@ -23,8 +23,9 @@ enum PathCategory
     ePathCategoryCount = 9
 };
 
-struct CGameConfig
+class CGameConfig
 {
+public:
     // Startup Settings
     int langId;
     bool adaptiveCamera;
@@ -40,29 +41,27 @@ struct CGameConfig
     bool fullscreen;
     bool unlockFramerate;
 
+    int antialias;
     bool disableFilter;
     bool disableDithering;
-    int antialias;
     bool disableMipmap;
     bool disableSpecular;
 
     // Window Settings
-    int posX;
-    int posY;
     bool borderless;
     bool resizable;
     bool clipMouse;
     bool alwaysHandleInput;
     bool pauseOnDeactivated;
+    int posX;
+    int posY;
 
     // Game Settings
+    bool debug;
     bool rookie;
 
-    // Paths
-
-    static CGameConfig &Get();
-
     CGameConfig();
+    ~CGameConfig();
 
     void SetPath(PathCategory category, const char *path);
     const char *GetPath(PathCategory category) const;
@@ -74,6 +73,8 @@ struct CGameConfig
     void LoadFromIni(const char *filename = "");
     void LoadPathsFromIni(const char *filename = "");
     void SaveToIni(const char *filename = "");
+
+    static CGameConfig &Get();
 
 private:
     char m_Paths[ePathCategoryCount][MAX_PATH];
