@@ -78,6 +78,12 @@ static void ParseConfigsFromCmdline(CmdlineParser &parser, CGameConfig &config)
             config.unlockFramerate = true;
             continue;
         }
+        if (parser.Next(arg, "--antialias", '\0', 1))
+        {
+            if (arg.GetValue(0, value))
+                config.antialias = value;
+            continue;
+        }
         if (parser.Next(arg, "--disable-filter", '\0'))
         {
             config.disableFilter = true;
@@ -88,12 +94,6 @@ static void ParseConfigsFromCmdline(CmdlineParser &parser, CGameConfig &config)
             config.disableDithering = true;
             continue;
         }
-        if (parser.Next(arg, "--antialias", '\0', 1))
-        {
-            if (arg.GetValue(0, value))
-                config.antialias = value;
-            continue;
-        }
         if (parser.Next(arg, "--disable-mipmap", '\0'))
         {
             config.disableMipmap = true;
@@ -102,18 +102,6 @@ static void ParseConfigsFromCmdline(CmdlineParser &parser, CGameConfig &config)
         if (parser.Next(arg, "--disable-specular", '\0'))
         {
             config.disableSpecular = true;
-            continue;
-        }
-        if (parser.Next(arg, "--position-x", 'x', 1))
-        {
-            if (arg.GetValue(0, value))
-                config.posX = value;
-            continue;
-        }
-        if (parser.Next(arg, "--position-y", 'y', 1))
-        {
-            if (arg.GetValue(0, value))
-                config.posY = value;
             continue;
         }
         if (parser.Next(arg, "--borderless", 'c'))
@@ -141,6 +129,23 @@ static void ParseConfigsFromCmdline(CmdlineParser &parser, CGameConfig &config)
             config.pauseOnDeactivated = true;
             continue;
         }
+        if (parser.Next(arg, "--position-x", 'x', 1))
+        {
+            if (arg.GetValue(0, value))
+                config.posX = value;
+            continue;
+        }
+        if (parser.Next(arg, "--position-y", 'y', 1))
+        {
+            if (arg.GetValue(0, value))
+                config.posY = value;
+            continue;
+        }
+        if (parser.Next(arg, "--debug", 'd'))
+        {
+            config.debug = true;
+            continue;
+        }
         if (parser.Next(arg, "--rookie", 'r'))
         {
             config.rookie = true;
@@ -162,7 +167,7 @@ static bool IniGetInteger(const char *section, const char *name, int &value, con
     ::GetPrivateProfileStringA(section, name, "", buf, 512, filename);
     if (strcmp(buf, "") == 0)
         return false;
-    int val = atoi(buf);
+    int val = strtol(buf, NULL, 10);
     if (val == 0 && strcmp(buf, "0") != 0)
         return false;
     value = val;
@@ -196,12 +201,6 @@ static bool IniSetBoolean(const char *section, const char *name, bool value, con
     return ::WritePrivateProfileStringA(section, name, buf, filename) != 0;
 }
 
-CGameConfig &CGameConfig::Get()
-{
-    static CGameConfig config;
-    return config;
-}
-
 CGameConfig::CGameConfig()
     : langId(1),
       adaptiveCamera(false),
@@ -214,22 +213,28 @@ CGameConfig::CGameConfig()
       height(PLAYER_DEFAULT_HEIGHT),
       fullscreen(false),
       unlockFramerate(false),
+      antialias(0),
       disableFilter(false),
       disableDithering(false),
-      antialias(0),
       disableMipmap(false),
       disableSpecular(false),
-      posX(2147483647),
-      posY(2147483647),
-
       borderless(false),
       resizable(false),
       clipMouse(false),
       alwaysHandleInput(false),
       pauseOnDeactivated(false),
+      posX(2147483647),
+      posY(2147483647),
+      debug(false),
       rookie(false)
 {
     memset(m_Paths, 0, sizeof(m_Paths));
+}
+
+CGameConfig::~CGameConfig()
+{
+    if (HasPath(eConfigPath))
+        SaveToIni();
 }
 
 void CGameConfig::SetPath(PathCategory category, const char *path)
@@ -358,21 +363,23 @@ void CGameConfig::LoadFromIni(const char *filename)
     IniGetInteger("Graphics", "Height", height, filename);
     IniGetBoolean("Graphics", "FullScreen", fullscreen, filename);
     IniGetBoolean("Graphics", "UnlockFramerate", unlockFramerate, filename);
+
+    IniGetInteger("Graphics", "Antialias", antialias, filename);
     IniGetBoolean("Graphics", "DisableFilter", disableFilter, filename);
     IniGetBoolean("Graphics", "DisableDithering", disableDithering, filename);
-    IniGetInteger("Graphics", "Antialias", antialias, filename);
     IniGetBoolean("Graphics", "DisableMipmap", disableMipmap, filename);
     IniGetBoolean("Graphics", "DisableSpecular", disableSpecular, filename);
 
-    IniGetInteger("Window", "X", posX, filename);
-    IniGetInteger("Window", "Y", posY, filename);
     IniGetBoolean("Window", "Borderless", borderless, filename);
     IniGetBoolean("Window", "Resizable", resizable, filename);
     IniGetBoolean("Window", "ClipMouse", clipMouse, filename);
     IniGetBoolean("Window", "AlwaysHandleInput", alwaysHandleInput, filename);
     IniGetBoolean("Window", "PauseOnDeactivated", pauseOnDeactivated, filename);
+    IniGetInteger("Window", "X", posX, filename);
+    IniGetInteger("Window", "Y", posY, filename);
 
     IniGetBoolean("Game", "Rookie", rookie, filename);
+    IniGetBoolean("Game", "Debug", debug, filename);
 }
 
 void CGameConfig::LoadPathsFromIni(const char *filename)
@@ -421,19 +428,20 @@ void CGameConfig::SaveToIni(const char *filename)
     IniSetInteger("Graphics", "Height", height, filename);
     IniSetBoolean("Graphics", "FullScreen", fullscreen, filename);
     IniSetBoolean("Graphics", "UnlockFramerate", unlockFramerate, filename);
+
+    IniSetInteger("Graphics", "Antialias", antialias, filename);
     IniSetBoolean("Graphics", "DisableFilter", disableFilter, filename);
     IniSetBoolean("Graphics", "DisableDithering", disableDithering, filename);
-    IniSetInteger("Graphics", "Antialias", antialias, filename);
     IniSetBoolean("Graphics", "DisableMipmap", disableMipmap, filename);
     IniSetBoolean("Graphics", "DisableSpecular", disableSpecular, filename);
 
-    IniSetInteger("Window", "X", posX, filename);
-    IniSetInteger("Window", "Y", posY, filename);
     IniSetBoolean("Window", "Borderless", borderless, filename);
     IniSetBoolean("Window", "Resizable", resizable, filename);
     IniSetBoolean("Window", "ClipMouse", clipMouse, filename);
     IniSetBoolean("Window", "AlwaysHandleInput", alwaysHandleInput, filename);
     IniSetBoolean("Window", "PauseOnDeactivated", pauseOnDeactivated, filename);
+    IniSetInteger("Window", "X", posX, filename);
+    IniSetInteger("Window", "Y", posY, filename);
 
     if (HasPath(eRootPath))
         IniSetString("Path", "RootPath", m_Paths[eRootPath], filename);
@@ -451,4 +459,10 @@ void CGameConfig::SaveToIni(const char *filename)
         IniSetString("Path", "BitmapPath", m_Paths[eBitmapPath], filename);
     if (HasPath(eDataPath))
         IniSetString("Path", "DataPath", m_Paths[eDataPath], filename);
+}
+
+CGameConfig &CGameConfig::Get()
+{
+    static CGameConfig config;
+    return config;
 }
