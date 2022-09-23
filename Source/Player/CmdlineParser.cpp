@@ -101,6 +101,11 @@ bool CmdlineArg::GetValue(int i, long &value) const
     return true;
 }
 
+int CmdlineArg::GetSize() const
+{
+    return m_Size;
+}
+
 CmdlineParser::CmdlineParser(int argc, char **argv) : m_Index(0)
 {
     for (int i = 1; i < argc; ++i)
@@ -180,4 +185,24 @@ bool CmdlineParser::Next(CmdlineArg &arg, const char *longopt, char opt, int max
 
     ++m_Index;
     return true;
+}
+
+bool CmdlineParser::Skip()
+{
+    if (m_Index < m_Args.size())
+    {
+        ++m_Index;
+        return true;
+    }
+    return false;
+}
+
+bool CmdlineParser::Done() const
+{
+    return m_Index >= m_Args.size();
+}
+
+void CmdlineParser::Reset()
+{
+    m_Index = 0;
 }

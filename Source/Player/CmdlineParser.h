@@ -13,10 +13,7 @@ public:
     bool GetValue(int i, std::string &value) const;
     bool GetValue(int i, long &value) const;
 
-    int GetSize() const
-    {
-        return m_Size;
-    }
+    int GetSize() const;
 
 private:
     const std::string *m_Values;
@@ -31,25 +28,11 @@ public:
 
     bool Next(CmdlineArg &arg, const char *longopt, char opt = '\0', int maxValueCount = 0);
 
-    bool Skip()
-    {
-        if (m_Index < m_Args.size())
-        {
-            ++m_Index;
-            return true;
-        }
-        return false;
-    }
+    bool Skip();
 
-    bool Done() const
-    {
-        return m_Index >= m_Args.size();
-    }
+    bool Done() const;
 
-    void Reset()
-    {
-        m_Index = 0;
-    }
+    void Reset();
 
 private:
     std::vector<std::string> m_Args;
