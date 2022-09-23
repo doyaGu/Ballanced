@@ -10,6 +10,8 @@
 #include "InterfaceManager.h"
 #include "resource.h"
 
+CGamePlayer *CGamePlayer::s_Instance = NULL;
+
 static CKERROR LogRedirect(CKUICallbackStruct &cbStruct, void *)
 {
     if (cbStruct.Reason == CKUIM_OUTTOCONSOLE ||
@@ -166,80 +168,81 @@ static BOOL CALLBACK AboutProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    CGamePlayer &player = CGamePlayer::GetInstance();
+    CGamePlayer *player = CGamePlayer::GetInstance();
+    assert(player != NULL);
 
     switch (uMsg)
     {
     case WM_DESTROY:
-        player.OnDestroy();
+        player->OnDestroy();
         break;
 
     case WM_MOVE:
-        player.OnMove();
+        player->OnMove();
         break;
 
     case WM_SIZE:
-        player.OnSized();
+        player->OnSized();
         break;
 
     case WM_PAINT:
-        player.OnPaint();
+        player->OnPaint();
         break;
 
     case WM_CLOSE:
-        player.OnClose();
+        player->OnClose();
         return 0;
 
     case WM_ACTIVATEAPP:
-        player.OnActivateApp(hWnd, uMsg, wParam, lParam);
+        player->OnActivateApp(hWnd, uMsg, wParam, lParam);
         break;
 
     case WM_SETCURSOR:
-        player.OnSetCursor();
+        player->OnSetCursor();
         break;
 
     case WM_GETMINMAXINFO:
-        player.OnGetMinMaxInfo((LPMINMAXINFO)lParam);
+        player->OnGetMinMaxInfo((LPMINMAXINFO)lParam);
         break;
 
     case WM_KEYDOWN:
-        return player.OnKeyDown(wParam);
+        return player->OnKeyDown(wParam);
 
     case WM_SYSKEYDOWN:
-        return player.OnSysKeyDown(wParam);
+        return player->OnSysKeyDown(wParam);
 
     case WM_COMMAND:
-        return player.OnCommand(LOWORD(wParam), HIWORD(wParam));
+        return player->OnCommand(LOWORD(wParam), HIWORD(wParam));
 
     case TT_MSG_NO_GAMEINFO:
-        player.OnExceptionCMO(wParam, lParam);
+        player->OnExceptionCMO(wParam, lParam);
         break;
 
     case TT_MSG_CMO_RESTART:
-        player.OnReturn(wParam, lParam);
+        player->OnReturn(wParam, lParam);
         break;
 
     case TT_MSG_CMO_LOAD:
-        player.OnLoadCMO(wParam, lParam);
+        player->OnLoadCMO(wParam, lParam);
         break;
 
     case TT_MSG_EXIT_TO_SYS:
-        player.OnExitToSystem(wParam, lParam);
+        player->OnExitToSystem(wParam, lParam);
         break;
 
     case TT_MSG_EXIT_TO_TITLE:
-        player.OnExitToTitle(wParam, lParam);
+        player->OnExitToTitle(wParam, lParam);
         break;
 
     case TT_MSG_SCREEN_MODE_CHG:
-        return player.OnChangeScreenMode(wParam, lParam);
+        return player->OnChangeScreenMode(wParam, lParam);
 
     case TT_MSG_GO_FULLSCREEN:
-        player.OnGoFullscreen();
+        player->OnGoFullscreen();
         break;
 
     case TT_MSG_STOP_FULLSCREEN:
-        player.OnStopFullscreen();
+        player->OnStopFullscreen();
         return 1;
 
     default:
@@ -249,18 +252,26 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     return ::DefWindowProcA(hWnd, uMsg, wParam, lParam);
 }
 
-CGamePlayer &CGamePlayer::GetInstance()
-{
-    static CGamePlayer player;
-    return player;
-}
+CGamePlayer::CGamePlayer()
+    : m_State(eInitial),
+      m_NeMoContext(),
+      m_WinContext(),
+      m_Game(),
+      m_hMutex(NULL) {}
 
 CGamePlayer::~CGamePlayer()
 {
+    Terminate();
 }
 
-bool CGamePlayer::Init(HINSTANCE hInstance)
+bool CGamePlayer::Init(HINSTANCE hInstance, HANDLE hMutex)
 {
+    if (m_State != eInitial)
+        return true;
+
+    Register(this);
+    m_hMutex = hMutex;
+
     CGameConfig &config = CGameConfig::Get();
 
     if (!config.HasPath(eRootPath))
@@ -301,7 +312,6 @@ bool CGamePlayer::Init(HINSTANCE hInstance)
     }
 
     CNeMoContext::RegisterInstance(&m_NeMoContext);
-    m_NeMoContext.SetProgPath(config.GetPath(eRootPath));
 
     switch (InitEngine())
     {
@@ -354,6 +364,7 @@ bool CGamePlayer::Init(HINSTANCE hInstance)
     ::SendMessageA(m_WinContext.GetMainWindow(), TT_MSG_EXIT_TO_TITLE, NULL, NULL);
     m_WinContext.FocusMainWindow();
 
+    m_State = eReady;
     return true;
 }
 
@@ -375,20 +386,27 @@ bool CGamePlayer::Process()
 
 void CGamePlayer::Terminate()
 {
-    if (m_State != eInitial)
-    {
-        Pause();
-        m_NeMoContext.Cleanup();
-        if (m_NeMoContext.RestoreWindow())
-            m_NeMoContext.RefreshScreen();
-        m_NeMoContext.Shutdown();
-    }
+    if (m_State == eInitial)
+        return;
+
+    Pause();
+    m_NeMoContext.Cleanup();
+    if (m_NeMoContext.RestoreWindow())
+        m_NeMoContext.RefreshScreen();
+    m_NeMoContext.Shutdown();
+
+    if (m_hMutex)
+        ::CloseHandle(m_hMutex);
+    m_hMutex = NULL;
 
     m_State = eInitial;
 }
 
 bool CGamePlayer::Load(const char *filename)
 {
+    if (m_State == eInitial)
+        return false;
+
     CGameConfig &config = CGameConfig::Get();
     if (_access(config.GetPath(eSoundPath), 0) == -1)
     {
@@ -449,7 +467,8 @@ void CGamePlayer::OnDestroy()
 void CGamePlayer::OnMove()
 {
     CGameConfig &config = CGameConfig::Get();
-    m_WinContext.GetPosition(config.posX, config.posY);
+    if (!config.fullscreen)
+        m_WinContext.GetPosition(config.posX, config.posY);
 }
 
 void CGamePlayer::OnSized()
@@ -690,6 +709,16 @@ void CGamePlayer::OnSwitchFullscreen()
     Play();
 }
 
+void CGamePlayer::Register(CGamePlayer *player)
+{
+    s_Instance = player;
+}
+
+CGamePlayer *CGamePlayer::GetInstance()
+{
+    return s_Instance;
+}
+
 int CGamePlayer::InitEngine()
 {
     {
@@ -797,9 +826,3 @@ void CGamePlayer::RedirectLog()
 {
     m_NeMoContext.GetCKContext()->SetInterfaceMode(FALSE, LogRedirect, NULL);
 }
-
-CGamePlayer::CGamePlayer()
-    : m_State(eInitial),
-      m_NeMoContext(),
-      m_WinContext(),
-      m_Game() {}
