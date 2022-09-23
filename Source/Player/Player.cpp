@@ -94,13 +94,11 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
 
     CLogger::Get().Open("Player", config.GetPath(eRootPath), false);
 
-    CGamePlayer &player = CGamePlayer::GetInstance();
-
-    if (!player.Init(hInstance))
+    CGamePlayer player;
+    if (!player.Init(hInstance, hMutex))
     {
         ::MessageBoxA(NULL, "The game could not be started!", "Error", MB_OK);
         CLogger::Get().Error("The application could not be initialized!!!");
-        player.Terminate();
         return -1;
     }
 
@@ -108,19 +106,11 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLi
     {
         ::MessageBoxA(NULL, "The base module could not be loaded!", "Error", MB_OK);
         CLogger::Get().Error("The base module could not be loaded!!!");
-        player.Terminate();
         return -1;
     }
 
     player.Run();
     player.Terminate();
 
-    config.SaveToIni();
-
-    if (hMutex)
-    {
-        ::ReleaseMutex(hMutex);
-        hMutex = NULL;
-    }
     return 0;
 }
