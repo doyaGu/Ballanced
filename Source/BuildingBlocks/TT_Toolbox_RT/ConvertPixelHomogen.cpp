@@ -15,7 +15,7 @@ int ConvertPixelHomogen(const CKBehaviorContext &behcontext);
 CKObjectDeclaration *FillBehaviorConvertPixelHomogenDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT ConvertPixel-Homogen");
-    od->SetDescription("konvertiert Pixelkoordinaten in homogene Koordinaten und umgekehrt");
+    od->SetDescription("Converts pixel coordinates to homogeneous coordinates and vice versa");
     od->SetCategory("TT Toolbox/Logic");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
     od->SetGuid(CKGUID(0x18f96977, 0x18e20f83));

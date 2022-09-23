@@ -16,7 +16,7 @@ CKERROR AnisoMappingCallBack(const CKBehaviorContext &behcontext);
 CKObjectDeclaration *FillBehaviorAnisoMappingDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT_AnisoMapping");
-    od->SetDescription("erzeugt lichtabh�ngiges BumpMapping");
+    od->SetDescription("Creates light dependent bump mapping");
     od->SetCategory("TT Toolbox/Mapping");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
     od->SetGuid(CKGUID(0x73b30b5e, 0x4fed4c65));

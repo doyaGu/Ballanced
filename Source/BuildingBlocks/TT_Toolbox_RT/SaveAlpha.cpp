@@ -15,7 +15,7 @@ int SaveAlpha(const CKBehaviorContext &behcontext);
 CKObjectDeclaration *FillBehaviorSaveAlphaDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT_SaveAlpha");
-    od->SetDescription("Kopiert den Alpha-Kanal in die RGB-Werte der Texture und speichert diese in eine TGA-Datei");
+    od->SetDescription("Copies the alpha channel to the texture's RGB values and saves them to a TGA file");
     od->SetCategory("TT Toolbox/Material");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
     od->SetGuid(CKGUID(0x5ca62d31, 0x5d2031b8));

@@ -15,7 +15,7 @@ int SetMipMapping(const CKBehaviorContext &behcontext);
 CKObjectDeclaration *FillBehaviorSetMipMappingDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT_SetMipMapping");
-    od->SetDescription("stellt MipMapping f�r Material ein");
+    od->SetDescription("Sets mipmapping for material");
     od->SetCategory("TT Toolbox/Material");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
     od->SetGuid(CKGUID(0x38c34dab, 0x5dd03bdf));

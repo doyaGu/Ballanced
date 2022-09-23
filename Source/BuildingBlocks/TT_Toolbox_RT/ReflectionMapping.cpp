@@ -15,7 +15,7 @@ int ReflectionMapping(const CKBehaviorContext &behcontext);
 CKObjectDeclaration *FillBehaviorReflectionMappingDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT_ReflectionMapping");
-    od->SetDescription("erzeugt ReflectionMapping �ber �nderung der MappingChannelNormalen");
+    od->SetDescription("Creates reflection mapping when changing mappings channel normals");
     od->SetCategory("TT Toolbox/Mapping");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
     od->SetGuid(CKGUID(0x7e212b2f, 0x24db67c6));

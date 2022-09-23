@@ -15,7 +15,7 @@ int ShowVector(const CKBehaviorContext &behcontext);
 CKObjectDeclaration *FillBehaviorShowVectorDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT_ShowVector");
-    od->SetDescription("zeigt Vektor �ber 2 gegebene Punkte an");
+    od->SetDescription("Displays vector over 2 given points");
     od->SetCategory("TT Toolbox/Logic");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
     od->SetGuid(CKGUID(0x2fca6b65, 0x73b31ebd));

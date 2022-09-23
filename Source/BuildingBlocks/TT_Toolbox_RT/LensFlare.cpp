@@ -16,7 +16,7 @@ CKERROR LensFlareCallBack(const CKBehaviorContext &behcontext);
 CKObjectDeclaration *FillBehaviorLensFlareDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT_LensFlare");
-    od->SetDescription("ereugt Kamerareflexionen");
+    od->SetDescription("Creates camera reflections");
     od->SetCategory("TT Toolbox/Object");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
     od->SetGuid(CKGUID(0x241b32a5, 0x71fe3357));

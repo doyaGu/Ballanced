@@ -15,7 +15,7 @@ int GetCurvePoint(const CKBehaviorContext &behcontext);
 CKObjectDeclaration *FillBehaviorGetCurvePointDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT GetCurvePoint");
-    od->SetDescription("Gibt CurvePoint zur�ck");
+    od->SetDescription("Get Curve Point");
     od->SetCategory("TT Toolbox/3D Transformations");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
     od->SetGuid(CKGUID(0x50eb3a17, 0x15c5bf9));

@@ -15,7 +15,7 @@ int ConvertBox(const CKBehaviorContext &behcontext);
 CKObjectDeclaration *FillBehaviorConvertBoxDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT_ConvertBox");
-    od->SetDescription("generiert aus 2 Vektoren eine BoundingBox");
+    od->SetDescription("Generates a bounding box from 2 vectors");
     od->SetCategory("TT Toolbox/Logic");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
     od->SetGuid(CKGUID(0x694867ff, 0x7db16d1f));

@@ -16,7 +16,7 @@ CKERROR MagnetMeshFormCallBack(const CKBehaviorContext &behcontext);
 CKObjectDeclaration *FillBehaviorMagnetMeshFormDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT MagnetMeshForm");
-    od->SetDescription("Objekt wird magnetisch von eimem anderen angezogen");
+    od->SetDescription("Object is magnetically attracted to another");
     od->SetCategory("TT Toolbox/Mesh");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
     od->SetGuid(CKGUID(0x8e53929, 0x4c9c5205));

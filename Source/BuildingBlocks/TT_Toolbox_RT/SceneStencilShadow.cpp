@@ -16,7 +16,7 @@ CKERROR SceneStencilShadowCallBack(const CKBehaviorContext &behcontext);
 CKObjectDeclaration *FillBehaviorSceneStencilShadowDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT_SceneStencilShadow");
-    od->SetDescription("erzeugt StencilBuffer-Schatten (32Bit n�tig!)");
+    od->SetDescription("Creates StencilBuffer shadows (32Bit required!)");
     od->SetCategory("TT Toolbox/FX");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
     od->SetGuid(CKGUID(0x4dcf4ca0, 0x474e25ec));

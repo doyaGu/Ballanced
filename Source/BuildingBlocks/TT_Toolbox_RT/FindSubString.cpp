@@ -16,7 +16,7 @@ CKERROR FindSubStringCallBack(const CKBehaviorContext &behcontext);
 CKObjectDeclaration *FillBehaviorFindSubStringDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT Find SubString");
-    od->SetDescription("sucht in Objectnamen nach Strings");
+    od->SetDescription("Searches for strings in object names");
     od->SetCategory("TT Toolbox/Logic");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
     od->SetGuid(CKGUID(0x12f31e27, 0x4cea0bf5));

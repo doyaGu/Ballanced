@@ -16,7 +16,7 @@ CKERROR ShadowMappingCallBack(const CKBehaviorContext &behcontext);
 CKObjectDeclaration *FillBehaviorShadowMappingDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT ShadowMapping");
-    od->SetDescription("erstellt Schatten �ber UV-Mapping");
+    od->SetDescription("Creates shadows via UV mapping");
     od->SetCategory("TT Toolbox/FX");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
     od->SetGuid(CKGUID(0x334c7dfe, 0x47c81a31));

@@ -15,7 +15,7 @@ int GeneratePlane(const CKBehaviorContext &behcontext);
 CKObjectDeclaration *FillBehaviorGeneratePlaneDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT_GeneratePlane");
-    od->SetDescription("generiert Plane");
+    od->SetDescription("Generates plane");
     od->SetCategory("TT Toolbox/Mesh");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
     od->SetGuid(CKGUID(0x5ae72f89, 0x57eb5413));

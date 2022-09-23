@@ -15,7 +15,7 @@ int IsObjectVisible(const CKBehaviorContext &behcontext);
 CKObjectDeclaration *FillBehaviorIsObjectVisibleDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT_IsObjectVisible");
-    od->SetDescription("testet ob Objekt sichtbar ist");
+    od->SetDescription("Tests whether object is visible");
     od->SetCategory("TT Toolbox/Test");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
     od->SetGuid(CKGUID(0x39cf3dd3, 0x11a92281));

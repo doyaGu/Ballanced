@@ -15,7 +15,7 @@ int LookAt(const CKBehaviorContext &behcontext);
 CKObjectDeclaration *FillBehaviorLookAtDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT LookAt");
-    od->SetDescription("Achsenbeschr�nktes Lock at.");
+    od->SetDescription("Axis constrained lock at.");
     od->SetCategory("TT Toolbox/Logic");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
     od->SetGuid(CKGUID(0x3d4861f8, 0x2861703d));

@@ -16,7 +16,7 @@ CKERROR Set3DSpriteCallBack(const CKBehaviorContext &behcontext);
 CKObjectDeclaration *FillBehaviorSet3DSpriteDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT Set_3DSprite");
-    od->SetDescription("stellt Position, Groesse, Offset und UV-Mapping f�r 3D-Sprite ein");
+    od->SetDescription("Sets position, size, offset and UV mapping for 3D sprite");
     od->SetCategory("TT Toolbox/Sprite");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
     od->SetGuid(CKGUID(0x408e30b5, 0x22a07ada));

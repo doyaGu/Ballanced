@@ -16,7 +16,7 @@ CKERROR FollowCameraCallBack(const CKBehaviorContext &behcontext);
 CKObjectDeclaration *FillBehaviorFollowCameraDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT FollowCamera");
-    od->SetDescription("Kamera folgt einem Objekt");
+    od->SetDescription("Camera follows an object");
     od->SetCategory("TT Toolbox/3D Transformations");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
     od->SetGuid(CKGUID(0x595b4723, 0x576c6749));

@@ -15,7 +15,7 @@ int SearchRow(const CKBehaviorContext &behcontext);
 CKObjectDeclaration *FillBehaviorSearchRowDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT_SearchRow");
-    od->SetDescription("sucht Wert in Array und gibt Zeile aus");
+    od->SetDescription("Finds value in array and returns row");
     od->SetCategory("TT Toolbox/Logic");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
     od->SetGuid(CKGUID(0x279603a9, 0x16f20716));

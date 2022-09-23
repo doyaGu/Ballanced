@@ -16,7 +16,7 @@ CKERROR HighMapMeshformCallBack(const CKBehaviorContext &behcontext);
 CKObjectDeclaration *FillBehaviorHighMapMeshformDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT_HighMapMeshform");
-    od->SetDescription("verformt das Mesh aufgrund der Texturdaten");
+    od->SetDescription("Deforms the mesh based on the texture data");
     od->SetCategory("TT Toolbox/Mesh");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
     od->SetGuid(CKGUID(0x2e3c2d7e, 0x7be7234e));

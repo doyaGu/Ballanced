@@ -15,7 +15,7 @@ int IsObjectActive(const CKBehaviorContext &behcontext);
 CKObjectDeclaration *FillBehaviorIsObjectActiveDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT_IsObjectActive");
-    od->SetDescription("testet ob Objekt aktiv ist");
+    od->SetDescription("Tests whether object is active");
     od->SetCategory("TT Toolbox/Test");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
     od->SetGuid(CKGUID(0x409f03d9, 0x7616062c));

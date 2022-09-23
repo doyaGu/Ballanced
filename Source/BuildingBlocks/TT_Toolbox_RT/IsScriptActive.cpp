@@ -15,7 +15,7 @@ int IsScriptActive(const CKBehaviorContext &behcontext);
 CKObjectDeclaration *FillBehaviorIsScriptActiveDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT_IsScriptActive");
-    od->SetDescription("testet ob Script aktiv ist");
+    od->SetDescription("Tests whether script is active");
     od->SetCategory("TT Toolbox/Test");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
     od->SetGuid(CKGUID(0x66e06b8a, 0x57db26d0));

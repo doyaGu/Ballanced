@@ -15,7 +15,7 @@ CKERROR SkyCallBack(const CKBehaviorContext &behcontext);
 CKObjectDeclaration *FillBehaviorSkyDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT Sky");
-    od->SetDescription("erstellt ein Skyobjekt mit beliebig vielen Seitenfl�chen und ver�nderbaren Materialtransparenz");
+    od->SetDescription("Creates a sky object with any number of faces and changeable material transparency");
     od->SetCategory("TT Gravity");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
     od->SetGuid(CKGUID(0x36691920, 0x3b261630));

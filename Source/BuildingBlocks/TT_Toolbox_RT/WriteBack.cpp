@@ -15,7 +15,7 @@ int WriteBack(const CKBehaviorContext &behcontext);
 CKObjectDeclaration *FillBehaviorWriteBackDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT WriteBack");
-    od->SetDescription("Schreibt einen Wert in ein dynamisch ersetzten Parameter.");
+    od->SetDescription("Writes a value to a dynamically substituted parameter.");
     od->SetCategory("TT Toolbox/Advanced");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
     od->SetGuid(CKGUID(0x78b31127, 0xa875030));
