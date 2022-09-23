@@ -89,7 +89,7 @@ int TextureSine(const CKBehaviorContext &behcontext)
     beh->GetLocalParameterValue(1, &time);
 
     float t;
-    for (int i = 0; i < pointsNumber; i++, uvarray = (VxUV *)((BYTE *)uvarray + Stride))
+    for (int i = 0; i < pointsNumber; i++, uvarray = (VxUV *)((CKBYTE *)uvarray + Stride))
     {
         t = ((float)i / pointsNumber - 0.5f) * 4.0f + time * l;
         uvarray->u = savedUV[i].u + (0.5f - savedUV[i].u) * xamp * cosf(t);
@@ -130,7 +130,7 @@ CKERROR TextureSinusCallBack(const CKBehaviorContext &behcontext)
         VxUV *savedUV;
         savedUV = new VxUV[nbvert];
 
-        for (int i = 0; i < nbvert; i++, uvarray = (VxUV *)((BYTE *)uvarray + Stride))
+        for (int i = 0; i < nbvert; i++, uvarray = (VxUV *)((CKBYTE *)uvarray + Stride))
         {
             savedUV[i] = *uvarray;
         }
@@ -157,7 +157,7 @@ CKERROR TextureSinusCallBack(const CKBehaviorContext &behcontext)
         if (!savePos)
             return 0;
 
-        for (int i = 0; i < nbvert; i++, uvarray = (VxUV *)((BYTE *)uvarray + Stride))
+        for (int i = 0; i < nbvert; i++, uvarray = (VxUV *)((CKBYTE *)uvarray + Stride))
         {
             *uvarray = savePos[i];
         }
