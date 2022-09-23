@@ -15,7 +15,7 @@ int SplitString(const CKBehaviorContext &behcontext);
 CKObjectDeclaration *FillBehaviorSplitStringDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT_SplitString");
-    od->SetDescription("split a string into Sub-Elements.");
+    od->SetDescription("Split a string into Sub-Elements.");
     od->SetCategory("TT Toolbox/Logic");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
     od->SetGuid(CKGUID(0x5ae74e2f, 0x799c49b5));

@@ -15,7 +15,7 @@ CKERROR RealShadowMappingCallBack(const CKBehaviorContext &behcontext);
 CKObjectDeclaration *FillBehaviorRealShadowMappingDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT RealShadowMapping");
-    od->SetDescription("calculate the real postion of shadow");
+    od->SetDescription("Calculate the real postion of shadow");
     od->SetCategory("TT Gravity");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
     od->SetGuid(CKGUID(0x452816af, 0x681a3a81));

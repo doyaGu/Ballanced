@@ -16,7 +16,7 @@ CKERROR GetNearestCurvePositionCallBack(const CKBehaviorContext &behcontext);
 CKObjectDeclaration *FillBehaviorGetNearestCurvePositionDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT GetNearestCurvePosition");
-    od->SetDescription("");
+    od->SetDescription("Get Nearest Curve Position");
     od->SetCategory("TT Toolbox/Logic");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
     od->SetGuid(CKGUID(0x4db6e14, 0x2c151f73));

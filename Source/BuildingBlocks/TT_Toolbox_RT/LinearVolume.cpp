@@ -15,7 +15,7 @@ int LinearVolume(const CKBehaviorContext &behcontext);
 CKObjectDeclaration *FillBehaviorLinearVolumeDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT_LinearVolume");
-    od->SetDescription("plays different samples according to a given vehicle velocity");
+    od->SetDescription("Plays different samples according to a given vehicle velocity");
     od->SetCategory("TT Toolbox/Sounds");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
     od->SetGuid(CKGUID(0x9b335b3, 0x12d17cdc));
