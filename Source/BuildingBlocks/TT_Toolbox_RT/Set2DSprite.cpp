@@ -16,7 +16,7 @@ CKERROR Set2DSpriteCallBack(const CKBehaviorContext &behcontext);
 CKObjectDeclaration *FillBehaviorSet2DSpriteDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT Set_2DSprite");
-    od->SetDescription("stellt Position, Groesse und UV-Mapping f�r Sprite ein");
+    od->SetDescription("Sets position, size and UV mapping for sprite");
     od->SetCategory("TT Toolbox/Sprite");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
     od->SetGuid(CKGUID(0x3c392558, 0x419d2680));

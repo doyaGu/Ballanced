@@ -16,7 +16,7 @@ CKERROR PMSMeshdeformCallBack(const CKBehaviorContext &behcontext);
 CKObjectDeclaration *FillBehaviorPMSMeshdeformDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT PMS_Meshdeform");
-    od->SetDescription("generiert Wellen �ber Pierson-Moskowitz-Spektrum");
+    od->SetDescription("Generates waves via Pierson-Moskowitz spectrum");
     od->SetCategory("TT Toolbox/Mesh");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
     od->SetGuid(CKGUID(0x38b87d43, 0x149b755b));

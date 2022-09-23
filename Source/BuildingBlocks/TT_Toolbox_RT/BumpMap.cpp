@@ -15,7 +15,7 @@ int BumpMap(const CKBehaviorContext &behcontext);
 CKObjectDeclaration *FillBehaviorBumpMapDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT_BumpMap");
-    od->SetDescription("erzeugt lichtabh�ngiges BumpMapping");
+    od->SetDescription("Creates light dependent bump mapping");
     od->SetCategory("TT Toolbox/Mapping");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
     od->SetGuid(CKGUID(0x630d05f7, 0x1dda541f));

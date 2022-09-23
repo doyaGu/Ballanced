@@ -15,7 +15,7 @@ int RefractionMapping(const CKBehaviorContext &behcontext);
 CKObjectDeclaration *FillBehaviorRefractionMappingDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT_RefractionMapping");
-    od->SetDescription("erzeugt RefractionMapping �ber �nderung der MappingChannelNormalen");
+    od->SetDescription("Creates refraction mapping when changing the mappings channel normals");
     od->SetCategory("TT Toolbox/Mapping");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
     od->SetGuid(CKGUID(0x53024810, 0x22ed280f));

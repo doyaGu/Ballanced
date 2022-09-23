@@ -16,7 +16,7 @@ CKERROR RippleWaveCallBack(const CKBehaviorContext &behcontext);
 CKObjectDeclaration *FillBehaviorRippleWaveDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT_RippleWave");
-    od->SetDescription("erzeugt Wellenringe");
+    od->SetDescription("Creates wavy rings");
     od->SetCategory("TT Toolbox/Mesh");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
     od->SetGuid(CKGUID(0x2f6a47b3, 0x35f4755c));

@@ -15,7 +15,7 @@ int ConvertTimeToString(const CKBehaviorContext &behcontext);
 CKObjectDeclaration *FillBehaviorConvertTimeToStringDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT ConvertTimeToString");
-    od->SetDescription("konvertiert Time in Stringform 00:00:00");
+    od->SetDescription("Converts time to string of the form 00:00:00");
     od->SetCategory("TT Toolbox/Logic");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
     od->SetGuid(CKGUID(0x69e34443, 0x459f23db));

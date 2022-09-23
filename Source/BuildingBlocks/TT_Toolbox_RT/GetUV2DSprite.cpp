@@ -15,7 +15,7 @@ int GetUV2DSprite(const CKBehaviorContext &behcontext);
 CKObjectDeclaration *FillBehaviorGetUV2DSpriteDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT GetUV2DSprite");
-    od->SetDescription("holt UV-Koordinaten eines 2d-Sprites");
+    od->SetDescription("Gets UV coordinates of a 2d sprite");
     od->SetCategory("TT Toolbox/Sprite");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
     od->SetGuid(CKGUID(0x4f16689a, 0x472b1c63));

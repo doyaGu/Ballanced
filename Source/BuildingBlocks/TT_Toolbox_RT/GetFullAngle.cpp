@@ -15,7 +15,7 @@ int GetFullAngle(const CKBehaviorContext &behcontext);
 CKObjectDeclaration *FillBehaviorGetFullAngleDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT_GetFullAngle");
-    od->SetDescription("berechne Winkel aus 2 2DVektoren");
+    od->SetDescription("Calculate angles from 2 2D vectors");
     od->SetCategory("TT Toolbox/Logic");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
     od->SetGuid(CKGUID(0x7a18014d, 0x9d2e73));

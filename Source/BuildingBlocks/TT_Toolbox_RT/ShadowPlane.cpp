@@ -15,7 +15,7 @@ int ShadowPlane(const CKBehaviorContext &behcontext);
 CKObjectDeclaration *FillBehaviorShadowPlaneDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT ShadowPlane");
-    od->SetDescription("erstellt Schatten-Plane ohne ZBuffer-Schreiben");
+    od->SetDescription("Creates shadow planes without Z-Buffer writing");
     od->SetCategory("TT Toolbox/FX");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
     od->SetGuid(CKGUID(0x137c3d66, 0x3ff1752d));

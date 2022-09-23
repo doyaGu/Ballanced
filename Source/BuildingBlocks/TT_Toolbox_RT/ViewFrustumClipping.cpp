@@ -16,7 +16,7 @@ CKERROR ViewFrustumClippingCallBack(const CKBehaviorContext &behcontext);
 CKObjectDeclaration *FillBehaviorViewFrustumClippingDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT_ViewFrustumClipping");
-    od->SetDescription("erzeugt lichtabh�ngiges BumpMapping");
+    od->SetDescription("Creates light dependent bump mapping");
     od->SetCategory("TT Toolbox/Logic");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
     od->SetGuid(CKGUID(0x412e4cd0, 0x6f860de3));

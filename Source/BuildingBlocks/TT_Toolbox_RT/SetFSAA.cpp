@@ -15,7 +15,7 @@ int SetFSAA(const CKBehaviorContext &behcontext);
 CKObjectDeclaration *FillBehaviorSetFSAADecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT_SetFSAA");
-    od->SetDescription("setzt im Renderstatus Antialiasing ein/aus");
+    od->SetDescription("Toggles antialiasing on/off in the render state");
     od->SetCategory("TT Toolbox/FX");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
     od->SetGuid(CKGUID(0x30bd6156, 0x14772834));

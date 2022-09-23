@@ -15,7 +15,7 @@ int GetGroupBoundingBox(const CKBehaviorContext &behcontext);
 CKObjectDeclaration *FillBehaviorGetGroupBoundingBoxDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT GetGroupBoundingBox");
-    od->SetDescription("holt BoundingBox f�r Gruppe");
+    od->SetDescription("Get bounding box for group");
     od->SetCategory("TT Toolbox/Logic");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
     od->SetGuid(CKGUID(0x3cc07535, 0x37e351c));

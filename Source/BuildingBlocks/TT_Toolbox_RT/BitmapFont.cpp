@@ -16,7 +16,7 @@ CKERROR BitmapFontCallBack(const CKBehaviorContext &behcontext);
 CKObjectDeclaration *FillBehaviorBitmapFontDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT_BitmapFont");
-    od->SetDescription("erzeugt aus einer Textur ein Objekt-Text");
+    od->SetDescription("Creates an object text from a texture");
     od->SetCategory("TT Toolbox/FX");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
     od->SetGuid(CKGUID(0x173e60ff, 0x4db14bcc));

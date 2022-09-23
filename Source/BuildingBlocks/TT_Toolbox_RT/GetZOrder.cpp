@@ -15,7 +15,7 @@ int GetZOrder(const CKBehaviorContext &behcontext);
 CKObjectDeclaration *FillBehaviorGetZOrderDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT_GetZOrder");
-    od->SetDescription("�ndern des Mappings und erzeugen von PlanarMapping");
+    od->SetDescription("Changing the mapping and creating planar mapping");
     od->SetCategory("TT Toolbox/Logic");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
     od->SetGuid(CKGUID(0x9163112, 0x1d2b4454));

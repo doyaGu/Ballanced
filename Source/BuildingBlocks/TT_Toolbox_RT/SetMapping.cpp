@@ -15,7 +15,7 @@ int SetMapping(const CKBehaviorContext &behcontext);
 CKObjectDeclaration *FillBehaviorSetMappingDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT_SetMapping");
-    od->SetDescription("aendern der UV-Koordianten f�r die Materialchannels");
+    od->SetDescription("Change the UV coordinates for the Material Channels");
     od->SetCategory("TT Toolbox/Mapping");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
     od->SetGuid(CKGUID(0x2e36319f, 0x6ec6031f));

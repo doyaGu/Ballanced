@@ -15,7 +15,7 @@ int ReplaceInputparameter(const CKBehaviorContext &behcontext);
 CKObjectDeclaration *FillBehaviorReplaceInputparameterDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT ReplaceInputparameter");
-    od->SetDescription("Verlinkt einen Inputparameter mit einem anderen Parameter.");
+    od->SetDescription("Links an input parameter to another parameter.");
     od->SetCategory("TT Toolbox/Advanced");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
     od->SetGuid(CKGUID(0x54a776b7, 0x20fc1e7c));

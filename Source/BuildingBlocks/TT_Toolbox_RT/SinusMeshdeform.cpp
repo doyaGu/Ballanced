@@ -16,7 +16,7 @@ CKERROR SinusMeshdeformCallBack(const CKBehaviorContext &behcontext);
 CKObjectDeclaration *FillBehaviorSinusMeshdeformDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT SinusMeshdeform");
-    od->SetDescription("generiert Sinuswellen");
+    od->SetDescription("Generates sine waves");
     od->SetCategory("TT Toolbox/Mesh");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
     od->SetGuid(CKGUID(0x4f907f12, 0x16af15d6));
