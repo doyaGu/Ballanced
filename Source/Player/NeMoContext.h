@@ -115,18 +115,18 @@ public:
 
     CKBehavior *CreateBB(CKBehavior *beh, CKGUID guid, CKBeObject *target = NULL);
 
-    CKBehavior *GetBehavior(const XObjectPointerArray &array, const char *name);
-    CKBehavior *GetBehavior(CKBehavior *beh, const char *name);
-    CKBehavior *GetBehavior(CKBehavior *beh, const char *name, const char *targetName);
+    CKBehavior *GetBehavior(const XObjectPointerArray &array, const char *name, CKBehavior *previous = NULL);
+    CKBehavior *GetBehavior(CKBehavior *beh, const char *name, CKBehavior *previous = NULL);
+    CKBehavior *GetBehavior(CKBehavior *beh, const char *name, const char *targetName, CKBehavior *previous = NULL);
 
     CKBehaviorLink *CreateBehaviorLink(CKBehavior *beh, CKBehavior *inBeh, CKBehavior *outBeh, int inPos = 0, int outPos = 0, int delay = 0);
     CKBehaviorLink *CreateBehaviorLink(CKBehavior *beh, CKBehaviorIO *in, CKBehaviorIO *out, int delay = 0);
 
-    CKBehaviorLink *GetBehaviorLink(CKBehavior *beh, CKBehavior *inBeh, CKBehavior *outBeh, int inPos = 0, int outPos = 0);
-    CKBehaviorLink *GetBehaviorLink(CKBehavior *beh, const char *inBehName, CKBehavior *outBeh, int inPos = 0, int outPos = 0);
-    CKBehaviorLink *GetBehaviorLink(CKBehavior *beh, CKBehavior *inBeh, const char *outBehName, int inPos = 0, int outPos = 0);
-    CKBehaviorLink *GetBehaviorLink(CKBehavior *beh, const char *inBehName, const char *outBehName, int inPos = 0, int outPos = 0);
-    CKBehaviorLink *GetBehaviorLink(CKBehavior *beh, CKBehaviorIO *in, CKBehaviorIO *out);
+    CKBehaviorLink *GetBehaviorLink(CKBehavior *beh, CKBehavior *inBeh, CKBehavior *outBeh, int inPos = 0, int outPos = 0, CKBehaviorLink *previous = NULL);
+    CKBehaviorLink *GetBehaviorLink(CKBehavior *beh, const char *inBehName, CKBehavior *outBeh, int inPos = 0, int outPos = 0, CKBehaviorLink *previous = NULL);
+    CKBehaviorLink *GetBehaviorLink(CKBehavior *beh, CKBehavior *inBeh, const char *outBehName, int inPos = 0, int outPos = 0, CKBehaviorLink *previous = NULL);
+    CKBehaviorLink *GetBehaviorLink(CKBehavior *beh, const char *inBehName, const char *outBehName, int inPos = 0, int outPos = 0, CKBehaviorLink *previous = NULL);
+    CKBehaviorLink *GetBehaviorLink(CKBehavior *beh, CKBehaviorIO *in, CKBehaviorIO *out, CKBehaviorLink *previous = NULL);
 
     CKBehaviorLink *RemoveBehaviorLink(CKBehavior *beh, CKBehavior *inBeh, CKBehavior *outBeh, int inPos = 0, int outPos = 0, bool destroy = false);
     CKBehaviorLink *RemoveBehaviorLink(CKBehavior *beh, const char *inBehName, CKBehavior *outBeh, int inPos = 0, int outPos = 0, bool destroy = false);
