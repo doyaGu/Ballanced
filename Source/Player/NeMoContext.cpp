@@ -93,19 +93,19 @@ bool CNeMoContext::StartUp()
 
 void CNeMoContext::Shutdown()
 {
-    if (!m_RenderContext)
+    if (!m_CKContext)
         return;
 
     Cleanup();
 
+    if (m_RenderManager && m_RenderContext)
         m_RenderManager->DestroyRenderContext(m_RenderContext);
     m_RenderContext = NULL;
 
     if (m_CKContext)
         CKCloseContext(m_CKContext);
-    m_CKContext = NULL;
-
     CKShutdown();
+    m_CKContext = NULL;
 }
 
 void CNeMoContext::Play()
@@ -125,8 +125,7 @@ void CNeMoContext::Reset()
 
 void CNeMoContext::Cleanup()
 {
-    Pause();
-    Reset();
+    m_CKContext->Reset();
     m_CKContext->ClearAll();
 }
 
