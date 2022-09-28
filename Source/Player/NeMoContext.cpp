@@ -508,11 +508,11 @@ bool CNeMoContext::CreateRenderContext()
 {
     CKRenderManager *rm = m_CKContext->GetRenderManager();
     CKRECT rect = {0, 0, m_Width, m_Height};
-    m_RenderContext = rm->CreateRenderContext(m_WinContext->GetRenderWindow(), m_Driver, &rect, FALSE, m_Bpp, -1, -1, 0);
+    m_RenderContext = rm->CreateRenderContext(m_WinContext->GetRenderWindow(), m_Driver, &rect, FALSE, m_Bpp);
     if (!m_RenderContext)
         return false;
 
-    if (m_Fullscreen && m_RenderContext->GoFullScreen(m_Width, m_Height, m_Bpp, m_Driver, 0) != CK_OK)
+    if (m_Fullscreen && m_RenderContext->GoFullScreen(m_Width, m_Height, m_Bpp, m_Driver) != CK_OK)
     {
         if (!RestoreWindow())
         {
@@ -650,7 +650,7 @@ CKScene *CNeMoContext::GetCurrentScene()
 
 CKBehavior *CNeMoContext::CreateBehavior(CKBehavior *script, CKGUID guid, CKBeObject *target)
 {
-    CKBehavior *behavior = (CKBehavior *) script->GetCKContext()->CreateObject(CKCID_BEHAVIOR);
+    CKBehavior *behavior = (CKBehavior *)script->GetCKContext()->CreateObject(CKCID_BEHAVIOR);
     behavior->InitFromGuid(guid);
     if (target)
     {
@@ -662,7 +662,8 @@ CKBehavior *CNeMoContext::CreateBehavior(CKBehavior *script, CKGUID guid, CKBeOb
     return behavior;
 }
 
-void CNeMoContext::LinkBehavior(CKBehavior *script, CKBehaviorLink *link, CKBehavior *beh, int inPos, int outPos) {
+void CNeMoContext::LinkBehavior(CKBehavior *script, CKBehaviorLink *link, CKBehavior *beh, int inPos, int outPos)
+{
     CreateBehaviorLink(script, beh, link->GetOutBehaviorIO(), outPos);
     link->SetOutBehaviorIO(beh->GetInput(inPos));
 }
@@ -813,11 +814,13 @@ CKBehaviorLink *CNeMoContext::CreateBehaviorLink(CKBehavior *script, CKBehaviorI
     return link;
 }
 
-CKBehaviorLink *CNeMoContext::CreateBehaviorLink(CKBehavior *script, CKBehaviorIO *in, CKBehavior *outBeh, int outPos, int delay) {
+CKBehaviorLink *CNeMoContext::CreateBehaviorLink(CKBehavior *script, CKBehaviorIO *in, CKBehavior *outBeh, int outPos, int delay)
+{
     return CreateBehaviorLink(script, in, outBeh->GetInput(outPos), delay);
 }
 
-CKBehaviorLink *CNeMoContext::CreateBehaviorLink(CKBehavior *script, CKBehavior *inBeh, CKBehaviorIO *out, int inPos, int delay) {
+CKBehaviorLink *CNeMoContext::CreateBehaviorLink(CKBehavior *script, CKBehavior *inBeh, CKBehaviorIO *out, int inPos, int delay)
+{
     return CreateBehaviorLink(script, inBeh->GetOutput(inPos), out, delay);
 }
 
