@@ -86,6 +86,7 @@ public:
     CKRenderContext *GetRenderContext() const;
     CKRenderManager *GetRenderManager() const;
 
+    CKTimeManager *GetTimeManager() const;
     CKInputManager *GetInputManager() const;
     InterfaceManager *GetInterfaceManager() const;
 
