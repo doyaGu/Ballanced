@@ -739,6 +739,12 @@ int CGamePlayer::InitEngine()
     if (!LoadRenderEngine())
         return CKERR_INVALIDPARAMETER;
 
+    if (!LoadManagers())
+        return CKERR_INVALIDPARAMETER;
+
+    if (!LoadBuildingBlocks())
+        return CKERR_INVALIDPARAMETER;
+
     if (!LoadPlugins())
         return CKERR_INVALIDPARAMETER;
 
@@ -795,8 +801,7 @@ bool CGamePlayer::LoadRenderEngine()
     return true;
 }
 
-bool CGamePlayer::LoadPlugins()
-{
+bool CGamePlayer::LoadManagers() {
     CGameConfig &config = CGameConfig::Get();
     const char *path = config.GetPath(eManagerPath);
     if (_access(path, 0) == -1 || !m_NeMoContext.ParsePlugins(path))
@@ -804,21 +809,29 @@ bool CGamePlayer::LoadPlugins()
         CLogger::Get().Error("Managers parse error");
         return false;
     }
+    return true;
+}
 
-    path = config.GetPath(eBuildingBlockPath);
+bool CGamePlayer::LoadBuildingBlocks() {
+    CGameConfig &config = CGameConfig::Get();
+    const char *path = config.GetPath(eBuildingBlockPath);
     if (_access(path, 0) == -1 || !m_NeMoContext.ParsePlugins(path))
     {
         CLogger::Get().Error("Behaviors parse error");
         return false;
     }
+    return true;
+}
 
-    path = config.GetPath(ePluginPath);
+bool CGamePlayer::LoadPlugins()
+{
+    CGameConfig &config = CGameConfig::Get();
+    const char *path = config.GetPath(ePluginPath);
     if (_access(path, 0) == -1 || !m_NeMoContext.ParsePlugins(path))
     {
         CLogger::Get().Error("Plugins parse error");
         return false;
     }
-
     return true;
 }
 

@@ -62,6 +62,8 @@ private:
     int InitEngine();
     bool ReInitEngine();
     bool LoadRenderEngine();
+    bool LoadManagers();
+    bool LoadBuildingBlocks();
     bool LoadPlugins();
     void RedirectLog();
 
