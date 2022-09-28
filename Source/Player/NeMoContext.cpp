@@ -406,11 +406,15 @@ bool CNeMoContext::GoFullscreen()
 
 bool CNeMoContext::StopFullscreen()
 {
-    if (!m_RenderContext || !IsRenderFullscreen())
+    if (!m_RenderContext)
         return false;
 
-    m_RenderContext->StopFullScreen();
-    m_Fullscreen = false;
+    if (IsRenderFullscreen())
+    {
+        m_RenderContext->StopFullScreen();
+        m_Fullscreen = false;
+    }
+
     return true;
 }
 
