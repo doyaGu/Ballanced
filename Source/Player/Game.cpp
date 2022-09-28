@@ -246,8 +246,16 @@ static void EditScriptDefaultLevel()
                         CKBehavior *smc2 = linkCsmSmc->GetOutBehaviorIO()->GetOwner();
                         nc->DestroyObject(linkCsmSmc);
 
-                        nc->CreateBehaviorLink(sts, ts1, smc2, 0, 0);
-                        nc->CreateBehaviorLink(sts, ts2, smc2, 0, 0);
+                        // TT Change ScreenMode
+                        CKBehavior *csm = nc->CreateBehavior(sts, CKGUID(0x38b84d97, 0x13932f28));
+                        CKParameterLocal *pin0 = nc->CreateLocalParameter(sts, "Driver ID", CKPGUID_INT, nc->GetDriver());
+                        CKParameterLocal *pin1 = nc->CreateLocalParameter(sts, "ScreenMode ID", CKPGUID_INT, nc->GetScreenMode());
+                        csm->GetInputParameter(0)->SetDirectSource(pin0);
+                        csm->GetInputParameter(1)->SetDirectSource(pin1);
+
+                        nc->CreateBehaviorLink(sts, ts1, csm, 0, 0);
+                        nc->CreateBehaviorLink(sts, ts2, csm, 0, 0);
+                        nc->CreateBehaviorLink(sts, csm, smc2, 0, 0);
 
                         success = true;
                     }
