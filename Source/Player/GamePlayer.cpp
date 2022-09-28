@@ -688,20 +688,18 @@ void CGamePlayer::OnSwitchFullscreen()
     Pause();
 
     CGameConfig &config = CGameConfig::Get();
-    static int x = config.posX;
-    static int y = config.posY;
     if (!m_NeMoContext.IsRenderFullscreen())
     {
-        m_NeMoContext.GoFullscreen();
         config.fullscreen = true;
+        m_NeMoContext.GoFullscreen();
         if (config.clipMouse)
             ClipMouse(false);
     }
     else
     {
         m_NeMoContext.RestoreWindow();
+        m_WinContext.SetPosition(config.posX, config.posY);
         config.fullscreen = false;
-        m_WinContext.SetPosition(x, y);
         if (config.clipMouse)
             ClipMouse(true);
     }
