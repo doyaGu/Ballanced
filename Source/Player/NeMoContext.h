@@ -113,26 +113,50 @@ public:
     CKLevel *GetCurrentLevel();
     CKScene *GetCurrentScene();
 
-    CKBehavior *CreateBB(CKBehavior *beh, CKGUID guid, CKBeObject *target = NULL);
+    CKBehavior *CreateBehavior(CKBehavior *script, CKGUID guid, CKBeObject *target = NULL);
+
+    void LinkBehavior(CKBehavior *script, CKBehaviorLink *link, CKBehavior *beh, int inPos, int outPos);
+
+    void RemoveBehavior(CKBehavior *script, CKBehavior *beh, bool destroy = false);
 
     CKBehavior *GetBehavior(const XObjectPointerArray &array, const char *name, CKBehavior *previous = NULL);
-    CKBehavior *GetBehavior(CKBehavior *beh, const char *name, CKBehavior *previous = NULL);
-    CKBehavior *GetBehavior(CKBehavior *beh, const char *name, const char *targetName, CKBehavior *previous = NULL);
+    CKBehavior *GetBehavior(CKBehavior *script, const char *name, CKBehavior *previous = NULL);
+    CKBehavior *GetBehavior(CKBehavior *script, const char *name, const char *targetName, CKBehavior *previous = NULL);
 
-    CKBehaviorLink *CreateBehaviorLink(CKBehavior *beh, CKBehavior *inBeh, CKBehavior *outBeh, int inPos = 0, int outPos = 0, int delay = 0);
-    CKBehaviorLink *CreateBehaviorLink(CKBehavior *beh, CKBehaviorIO *in, CKBehaviorIO *out, int delay = 0);
+    CKParameterLocal *CreateLocalParameter(CKBehavior *script, const char *name, CKGUID type);
 
-    CKBehaviorLink *GetBehaviorLink(CKBehavior *beh, CKBehavior *inBeh, CKBehavior *outBeh, int inPos = 0, int outPos = 0, CKBehaviorLink *previous = NULL);
-    CKBehaviorLink *GetBehaviorLink(CKBehavior *beh, const char *inBehName, CKBehavior *outBeh, int inPos = 0, int outPos = 0, CKBehaviorLink *previous = NULL);
-    CKBehaviorLink *GetBehaviorLink(CKBehavior *beh, CKBehavior *inBeh, const char *outBehName, int inPos = 0, int outPos = 0, CKBehaviorLink *previous = NULL);
-    CKBehaviorLink *GetBehaviorLink(CKBehavior *beh, const char *inBehName, const char *outBehName, int inPos = 0, int outPos = 0, CKBehaviorLink *previous = NULL);
-    CKBehaviorLink *GetBehaviorLink(CKBehavior *beh, CKBehaviorIO *in, CKBehaviorIO *out, CKBehaviorLink *previous = NULL);
+    template<typename T>
+    CKParameterLocal *CreateLocalParameter(CKBehavior *script, const char *name, CKGUID guid, T value)
+    {
+        CKParameterLocal *param = CreateLocalParameter(script, name, guid);
+        param->SetValue(&value, sizeof(T));
+        return param;
+    }
 
-    CKBehaviorLink *RemoveBehaviorLink(CKBehavior *beh, CKBehavior *inBeh, CKBehavior *outBeh, int inPos = 0, int outPos = 0, bool destroy = false);
-    CKBehaviorLink *RemoveBehaviorLink(CKBehavior *beh, const char *inBehName, CKBehavior *outBeh, int inPos = 0, int outPos = 0, bool destroy = false);
-    CKBehaviorLink *RemoveBehaviorLink(CKBehavior *beh, CKBehavior *inBeh, const char *outBehName, int inPos = 0, int outPos = 0, bool destroy = false);
-    CKBehaviorLink *RemoveBehaviorLink(CKBehavior *beh, const char *inBehName, const char *outBehName, int inPos = 0, int outPos = 0, bool destroy = false);
-    CKBehaviorLink *RemoveBehaviorLink(CKBehavior *beh, CKBehaviorIO *in, CKBehaviorIO *out, bool destroy = false);
+    template<>
+    CKParameterLocal *CreateLocalParameter(CKBehavior *script, const char *name, CKGUID guid, CKObject *value)
+    {
+        return CreateLocalParameter(script, name, guid, CKOBJID(value));
+    }
+
+    CKParameterLocal *CreateLocalParameter(CKBehavior *script, const char *name, const char *value);
+
+    CKBehaviorLink *CreateBehaviorLink(CKBehavior *script, CKBehavior *inBeh, CKBehavior *outBeh, int inPos = 0, int outPos = 0, int delay = 0);
+    CKBehaviorLink *CreateBehaviorLink(CKBehavior *script, CKBehaviorIO *in, CKBehaviorIO *out, int delay = 0);
+    CKBehaviorLink *CreateBehaviorLink(CKBehavior *script, CKBehavior *inBeh, CKBehaviorIO *out, int inPos, int delay = 0);
+    CKBehaviorLink *CreateBehaviorLink(CKBehavior *script, CKBehaviorIO *in, CKBehavior *outBeh, int outPos, int delay = 0);
+
+    CKBehaviorLink *GetBehaviorLink(CKBehavior *script, CKBehavior *inBeh, CKBehavior *outBeh, int inPos = 0, int outPos = 0, CKBehaviorLink *previous = NULL);
+    CKBehaviorLink *GetBehaviorLink(CKBehavior *script, const char *inBehName, CKBehavior *outBeh, int inPos = 0, int outPos = 0, CKBehaviorLink *previous = NULL);
+    CKBehaviorLink *GetBehaviorLink(CKBehavior *script, CKBehavior *inBeh, const char *outBehName, int inPos = 0, int outPos = 0, CKBehaviorLink *previous = NULL);
+    CKBehaviorLink *GetBehaviorLink(CKBehavior *script, const char *inBehName, const char *outBehName, int inPos = 0, int outPos = 0, CKBehaviorLink *previous = NULL);
+    CKBehaviorLink *GetBehaviorLink(CKBehavior *script, CKBehaviorIO *in, CKBehaviorIO *out, CKBehaviorLink *previous = NULL);
+
+    CKBehaviorLink *RemoveBehaviorLink(CKBehavior *script, CKBehavior *inBeh, CKBehavior *outBeh, int inPos = 0, int outPos = 0, bool destroy = false);
+    CKBehaviorLink *RemoveBehaviorLink(CKBehavior *script, const char *inBehName, CKBehavior *outBeh, int inPos = 0, int outPos = 0, bool destroy = false);
+    CKBehaviorLink *RemoveBehaviorLink(CKBehavior *script, CKBehavior *inBeh, const char *outBehName, int inPos = 0, int outPos = 0, bool destroy = false);
+    CKBehaviorLink *RemoveBehaviorLink(CKBehavior *script, const char *inBehName, const char *outBehName, int inPos = 0, int outPos = 0, bool destroy = false);
+    CKBehaviorLink *RemoveBehaviorLink(CKBehavior *script, CKBehaviorIO *in, CKBehaviorIO *out, bool destroy = false);
 
     CKMessageType AddMessageType(CKSTRING msg);
     CKMessageType GetMessageByString(const char *msg);

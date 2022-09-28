@@ -643,9 +643,9 @@ CKScene *CNeMoContext::GetCurrentScene()
     return m_CKContext->GetCurrentScene();
 }
 
-CKBehavior *CNeMoContext::CreateBB(CKBehavior *beh, CKGUID guid, CKBeObject *target)
+CKBehavior *CNeMoContext::CreateBehavior(CKBehavior *script, CKGUID guid, CKBeObject *target)
 {
-    CKBehavior *behavior = (CKBehavior *) beh->GetCKContext()->CreateObject(CKCID_BEHAVIOR);
+    CKBehavior *behavior = (CKBehavior *) script->GetCKContext()->CreateObject(CKCID_BEHAVIOR);
     behavior->InitFromGuid(guid);
     if (target)
     {
@@ -653,8 +653,33 @@ CKBehavior *CNeMoContext::CreateBB(CKBehavior *beh, CKGUID guid, CKBeObject *tar
         CKBeObject **pt = &target;
         behavior->GetTargetParameter()->GetDirectSource()->SetValue(pt);
     }
-    beh->AddSubBehavior(behavior);
+    script->AddSubBehavior(behavior);
     return behavior;
+}
+
+void CNeMoContext::LinkBehavior(CKBehavior *script, CKBehaviorLink *link, CKBehavior *beh, int inPos, int outPos) {
+    CreateBehaviorLink(script, beh, link->GetOutBehaviorIO(), outPos);
+    link->SetOutBehaviorIO(beh->GetInput(inPos));
+}
+
+void CNeMoContext::RemoveBehavior(CKBehavior *script, CKBehavior *beh, bool destroy)
+{
+    const int count = script->GetSubBehaviorLinkCount();
+    for (int i = 0; i < count; i++)
+    {
+        CKBehaviorLink *link = script->GetSubBehaviorLink(i);
+        if (link->GetInBehaviorIO()->GetOwner() == beh || link->GetOutBehaviorIO()->GetOwner() == beh)
+        {
+            script->RemoveSubBehaviorLink(link);
+            if (destroy)
+                DestroyObject(link);
+        }
+    }
+
+    beh->Activate(false);
+    script->RemoveSubBehavior(beh);
+    if (destroy)
+        DestroyObject(beh);
 }
 
 CKBehavior *CNeMoContext::GetBehavior(const XObjectPointerArray &array, const char *name, CKBehavior *previous)
@@ -687,17 +712,17 @@ CKBehavior *CNeMoContext::GetBehavior(const XObjectPointerArray &array, const ch
     return behavior;
 }
 
-CKBehavior *CNeMoContext::GetBehavior(CKBehavior *beh, const char *name, CKBehavior *previous)
+CKBehavior *CNeMoContext::GetBehavior(CKBehavior *script, const char *name, CKBehavior *previous)
 {
     CKBehavior *behavior = NULL;
-    const int count = beh->GetSubBehaviorCount();
+    const int count = script->GetSubBehaviorCount();
     int i = 0;
 
     if (previous)
     {
         for (; i < count; ++i)
         {
-            CKBehavior *b = beh->GetSubBehavior(i);
+            CKBehavior *b = script->GetSubBehavior(i);
             if (b == previous)
             {
                 ++i;
@@ -708,7 +733,7 @@ CKBehavior *CNeMoContext::GetBehavior(CKBehavior *beh, const char *name, CKBehav
 
     for (; i < count; ++i)
     {
-        CKBehavior *b = beh->GetSubBehavior(i);
+        CKBehavior *b = script->GetSubBehavior(i);
         if (strcmp(b->GetName(), name) == 0)
         {
             behavior = b;
@@ -719,17 +744,17 @@ CKBehavior *CNeMoContext::GetBehavior(CKBehavior *beh, const char *name, CKBehav
     return behavior;
 }
 
-CKBehavior *CNeMoContext::GetBehavior(CKBehavior *beh, const char *name, const char *targetName, CKBehavior *previous)
+CKBehavior *CNeMoContext::GetBehavior(CKBehavior *script, const char *name, const char *targetName, CKBehavior *previous)
 {
     CKBehavior *behavior = NULL;
-    const int count = beh->GetSubBehaviorCount();
+    const int count = script->GetSubBehaviorCount();
     int i = 0;
 
     if (previous)
     {
         for (; i < count; ++i)
         {
-            CKBehavior *b = beh->GetSubBehavior(i);
+            CKBehavior *b = script->GetSubBehavior(i);
             if (b == previous)
             {
                 ++i;
@@ -740,7 +765,7 @@ CKBehavior *CNeMoContext::GetBehavior(CKBehavior *beh, const char *name, const c
 
     for (; i < count; ++i)
     {
-        CKBehavior *b = beh->GetSubBehavior(i);
+        CKBehavior *b = script->GetSubBehavior(i);
         if (strcmp(b->GetName(), name) == 0)
         {
             CKObject *target = b->GetTarget();
@@ -755,32 +780,52 @@ CKBehavior *CNeMoContext::GetBehavior(CKBehavior *beh, const char *name, const c
     return behavior;
 }
 
-CKBehaviorLink *CNeMoContext::CreateBehaviorLink(CKBehavior *beh, CKBehavior *inBeh, CKBehavior *outBeh, int inPos, int outPos, int delay)
+CKParameterLocal *CNeMoContext::CreateLocalParameter(CKBehavior *script, const char *name, CKGUID type)
 {
-    return CreateBehaviorLink(beh, inBeh->GetOutput(inPos), outBeh->GetInput(outPos), delay);
+    return script->CreateLocalParameter((CKSTRING)name, type);
 }
 
-CKBehaviorLink *CNeMoContext::CreateBehaviorLink(CKBehavior *beh, CKBehaviorIO *in, CKBehaviorIO *out, int delay)
+CKParameterLocal *CNeMoContext::CreateLocalParameter(CKBehavior *script, const char *name, const char *value)
+{
+    CKParameterLocal *param = CreateLocalParameter(script, name, CKPGUID_STRING);
+    param->SetStringValue((CKSTRING)value);
+    return param;
+}
+
+CKBehaviorLink *CNeMoContext::CreateBehaviorLink(CKBehavior *script, CKBehavior *inBeh, CKBehavior *outBeh, int inPos, int outPos, int delay)
+{
+    return CreateBehaviorLink(script, inBeh->GetOutput(inPos), outBeh->GetInput(outPos), delay);
+}
+
+CKBehaviorLink *CNeMoContext::CreateBehaviorLink(CKBehavior *script, CKBehaviorIO *in, CKBehaviorIO *out, int delay)
 {
     CKBehaviorLink *link = (CKBehaviorLink *)m_CKContext->CreateObject(CKCID_BEHAVIORLINK);
     link->SetInBehaviorIO(in);
     link->SetOutBehaviorIO(out);
     link->SetInitialActivationDelay(delay);
     link->ResetActivationDelay();
-    beh->AddSubBehaviorLink(link);
+    script->AddSubBehaviorLink(link);
     return link;
 }
 
-CKBehaviorLink *CNeMoContext::GetBehaviorLink(CKBehavior *beh, CKBehavior *inBeh, CKBehavior *outBeh, int inPos, int outPos, CKBehaviorLink *previous)
+CKBehaviorLink *CNeMoContext::CreateBehaviorLink(CKBehavior *script, CKBehaviorIO *in, CKBehavior *outBeh, int outPos, int delay) {
+    return CreateBehaviorLink(script, in, outBeh->GetInput(outPos), delay);
+}
+
+CKBehaviorLink *CNeMoContext::CreateBehaviorLink(CKBehavior *script, CKBehavior *inBeh, CKBehaviorIO *out, int inPos, int delay) {
+    return CreateBehaviorLink(script, inBeh->GetOutput(inPos), out, delay);
+}
+
+CKBehaviorLink *CNeMoContext::GetBehaviorLink(CKBehavior *script, CKBehavior *inBeh, CKBehavior *outBeh, int inPos, int outPos, CKBehaviorLink *previous)
 {
-    const int linkCount = beh->GetSubBehaviorLinkCount();
+    const int linkCount = script->GetSubBehaviorLinkCount();
     int i = 0;
 
     if (previous)
     {
         for (; i < linkCount; ++i)
         {
-            CKBehaviorLink *link = beh->GetSubBehaviorLink(i);
+            CKBehaviorLink *link = script->GetSubBehaviorLink(i);
             if (link == previous)
             {
                 ++i;
@@ -791,7 +836,7 @@ CKBehaviorLink *CNeMoContext::GetBehaviorLink(CKBehavior *beh, CKBehavior *inBeh
 
     for (; i < linkCount; ++i)
     {
-        CKBehaviorLink *link = beh->GetSubBehaviorLink(i);
+        CKBehaviorLink *link = script->GetSubBehaviorLink(i);
         CKBehaviorIO *inIO = link->GetInBehaviorIO();
         CKBehaviorIO *outIO = link->GetOutBehaviorIO();
         if (inIO->GetOwner() == inBeh && inBeh->GetOutput(inPos) == inIO &&
@@ -802,16 +847,16 @@ CKBehaviorLink *CNeMoContext::GetBehaviorLink(CKBehavior *beh, CKBehavior *inBeh
     return NULL;
 }
 
-CKBehaviorLink *CNeMoContext::GetBehaviorLink(CKBehavior *beh, const char *inBehName, CKBehavior *outBeh, int inPos, int outPos, CKBehaviorLink *previous)
+CKBehaviorLink *CNeMoContext::GetBehaviorLink(CKBehavior *script, const char *inBehName, CKBehavior *outBeh, int inPos, int outPos, CKBehaviorLink *previous)
 {
-    const int linkCount = beh->GetSubBehaviorLinkCount();
+    const int linkCount = script->GetSubBehaviorLinkCount();
     int i = 0;
 
     if (previous)
     {
         for (; i < linkCount; ++i)
         {
-            CKBehaviorLink *link = beh->GetSubBehaviorLink(i);
+            CKBehaviorLink *link = script->GetSubBehaviorLink(i);
             if (link == previous)
             {
                 ++i;
@@ -822,7 +867,7 @@ CKBehaviorLink *CNeMoContext::GetBehaviorLink(CKBehavior *beh, const char *inBeh
 
     for (; i < linkCount; ++i)
     {
-        CKBehaviorLink *link = beh->GetSubBehaviorLink(i);
+        CKBehaviorLink *link = script->GetSubBehaviorLink(i);
         CKBehaviorIO *inIO = link->GetInBehaviorIO();
         CKBehaviorIO *outIO = link->GetOutBehaviorIO();
         CKBehavior *inBeh = inIO->GetOwner();
@@ -834,16 +879,16 @@ CKBehaviorLink *CNeMoContext::GetBehaviorLink(CKBehavior *beh, const char *inBeh
     return NULL;
 }
 
-CKBehaviorLink *CNeMoContext::GetBehaviorLink(CKBehavior *beh, CKBehavior *inBeh, const char *outBehName, int inPos, int outPos, CKBehaviorLink *previous)
+CKBehaviorLink *CNeMoContext::GetBehaviorLink(CKBehavior *script, CKBehavior *inBeh, const char *outBehName, int inPos, int outPos, CKBehaviorLink *previous)
 {
-    const int linkCount = beh->GetSubBehaviorLinkCount();
+    const int linkCount = script->GetSubBehaviorLinkCount();
     int i = 0;
 
     if (previous)
     {
         for (; i < linkCount; ++i)
         {
-            CKBehaviorLink *link = beh->GetSubBehaviorLink(i);
+            CKBehaviorLink *link = script->GetSubBehaviorLink(i);
             if (link == previous)
             {
                 ++i;
@@ -854,7 +899,7 @@ CKBehaviorLink *CNeMoContext::GetBehaviorLink(CKBehavior *beh, CKBehavior *inBeh
 
     for (; i < linkCount; ++i)
     {
-        CKBehaviorLink *link = beh->GetSubBehaviorLink(i);
+        CKBehaviorLink *link = script->GetSubBehaviorLink(i);
         CKBehaviorIO *inIO = link->GetInBehaviorIO();
         CKBehaviorIO *outIO = link->GetOutBehaviorIO();
         CKBehavior *outBeh = outIO->GetOwner();
@@ -866,16 +911,16 @@ CKBehaviorLink *CNeMoContext::GetBehaviorLink(CKBehavior *beh, CKBehavior *inBeh
     return NULL;
 }
 
-CKBehaviorLink *CNeMoContext::GetBehaviorLink(CKBehavior *beh, const char *inBehName, const char *outBehName, int inPos, int outPos, CKBehaviorLink *previous)
+CKBehaviorLink *CNeMoContext::GetBehaviorLink(CKBehavior *script, const char *inBehName, const char *outBehName, int inPos, int outPos, CKBehaviorLink *previous)
 {
-    const int linkCount = beh->GetSubBehaviorLinkCount();
+    const int linkCount = script->GetSubBehaviorLinkCount();
     int i = 0;
 
     if (previous)
     {
         for (; i < linkCount; ++i)
         {
-            CKBehaviorLink *link = beh->GetSubBehaviorLink(i);
+            CKBehaviorLink *link = script->GetSubBehaviorLink(i);
             if (link == previous)
             {
                 ++i;
@@ -886,7 +931,7 @@ CKBehaviorLink *CNeMoContext::GetBehaviorLink(CKBehavior *beh, const char *inBeh
 
     for (; i < linkCount; ++i)
     {
-        CKBehaviorLink *link = beh->GetSubBehaviorLink(i);
+        CKBehaviorLink *link = script->GetSubBehaviorLink(i);
         CKBehaviorIO *inIO = link->GetInBehaviorIO();
         CKBehaviorIO *outIO = link->GetOutBehaviorIO();
         CKBehavior *inBeh = inIO->GetOwner();
@@ -899,16 +944,16 @@ CKBehaviorLink *CNeMoContext::GetBehaviorLink(CKBehavior *beh, const char *inBeh
     return NULL;
 }
 
-CKBehaviorLink *CNeMoContext::GetBehaviorLink(CKBehavior *beh, CKBehaviorIO *in, CKBehaviorIO *out, CKBehaviorLink *previous)
+CKBehaviorLink *CNeMoContext::GetBehaviorLink(CKBehavior *script, CKBehaviorIO *in, CKBehaviorIO *out, CKBehaviorLink *previous)
 {
-    const int linkCount = beh->GetSubBehaviorLinkCount();
+    const int linkCount = script->GetSubBehaviorLinkCount();
     int i = 0;
 
     if (previous)
     {
         for (; i < linkCount; ++i)
         {
-            CKBehaviorLink *link = beh->GetSubBehaviorLink(i);
+            CKBehaviorLink *link = script->GetSubBehaviorLink(i);
             if (link == previous)
             {
                 ++i;
@@ -919,7 +964,7 @@ CKBehaviorLink *CNeMoContext::GetBehaviorLink(CKBehavior *beh, CKBehaviorIO *in,
 
     for (; i < linkCount; ++i)
     {
-        CKBehaviorLink *link = beh->GetSubBehaviorLink(i);
+        CKBehaviorLink *link = script->GetSubBehaviorLink(i);
         CKBehaviorIO *inIO = link->GetInBehaviorIO();
         CKBehaviorIO *outIO = link->GetOutBehaviorIO();
         if (inIO == in && outIO == out)
@@ -929,13 +974,13 @@ CKBehaviorLink *CNeMoContext::GetBehaviorLink(CKBehavior *beh, CKBehaviorIO *in,
     return NULL;
 }
 
-CKBehaviorLink *CNeMoContext::RemoveBehaviorLink(CKBehavior *beh, CKBehavior *inBeh, CKBehavior *outBeh, int inPos, int outPos, bool destroy)
+CKBehaviorLink *CNeMoContext::RemoveBehaviorLink(CKBehavior *script, CKBehavior *inBeh, CKBehavior *outBeh, int inPos, int outPos, bool destroy)
 {
-    CKBehaviorLink *link = GetBehaviorLink(beh, inBeh, outBeh, inPos, outPos);
+    CKBehaviorLink *link = GetBehaviorLink(script, inBeh, outBeh, inPos, outPos);
     if (!link)
         return NULL;
 
-    beh->RemoveSubBehaviorLink(link);
+    script->RemoveSubBehaviorLink(link);
     if (destroy)
     {
         DestroyObject(link);
@@ -944,13 +989,13 @@ CKBehaviorLink *CNeMoContext::RemoveBehaviorLink(CKBehavior *beh, CKBehavior *in
     return link;
 }
 
-CKBehaviorLink *CNeMoContext::RemoveBehaviorLink(CKBehavior *beh, const char *inBehName, CKBehavior *outBeh, int inPos, int outPos, bool destroy)
+CKBehaviorLink *CNeMoContext::RemoveBehaviorLink(CKBehavior *script, const char *inBehName, CKBehavior *outBeh, int inPos, int outPos, bool destroy)
 {
-    CKBehaviorLink *link = GetBehaviorLink(beh, inBehName, outBeh, inPos, outPos);
+    CKBehaviorLink *link = GetBehaviorLink(script, inBehName, outBeh, inPos, outPos);
     if (!link)
         return NULL;
 
-    beh->RemoveSubBehaviorLink(link);
+    script->RemoveSubBehaviorLink(link);
     if (destroy)
     {
         DestroyObject(link);
@@ -959,13 +1004,13 @@ CKBehaviorLink *CNeMoContext::RemoveBehaviorLink(CKBehavior *beh, const char *in
     return link;
 }
 
-CKBehaviorLink *CNeMoContext::RemoveBehaviorLink(CKBehavior *beh, CKBehavior *inBeh, const char *outBehName, int inPos, int outPos, bool destroy)
+CKBehaviorLink *CNeMoContext::RemoveBehaviorLink(CKBehavior *script, CKBehavior *inBeh, const char *outBehName, int inPos, int outPos, bool destroy)
 {
-    CKBehaviorLink *link = GetBehaviorLink(beh, inBeh, outBehName, inPos, outPos);
+    CKBehaviorLink *link = GetBehaviorLink(script, inBeh, outBehName, inPos, outPos);
     if (!link)
         return NULL;
 
-    beh->RemoveSubBehaviorLink(link);
+    script->RemoveSubBehaviorLink(link);
     if (destroy)
     {
         DestroyObject(link);
@@ -974,13 +1019,13 @@ CKBehaviorLink *CNeMoContext::RemoveBehaviorLink(CKBehavior *beh, CKBehavior *in
     return link;
 }
 
-CKBehaviorLink *CNeMoContext::RemoveBehaviorLink(CKBehavior *beh, const char *inBehName, const char *outBehName, int inPos, int outPos, bool destroy)
+CKBehaviorLink *CNeMoContext::RemoveBehaviorLink(CKBehavior *script, const char *inBehName, const char *outBehName, int inPos, int outPos, bool destroy)
 {
-    CKBehaviorLink *link = GetBehaviorLink(beh, inBehName, outBehName, inPos, outPos);
+    CKBehaviorLink *link = GetBehaviorLink(script, inBehName, outBehName, inPos, outPos);
     if (!link)
         return NULL;
 
-    beh->RemoveSubBehaviorLink(link);
+    script->RemoveSubBehaviorLink(link);
     if (destroy)
     {
         DestroyObject(link);
@@ -989,13 +1034,13 @@ CKBehaviorLink *CNeMoContext::RemoveBehaviorLink(CKBehavior *beh, const char *in
     return link;
 }
 
-CKBehaviorLink *CNeMoContext::RemoveBehaviorLink(CKBehavior *beh, CKBehaviorIO *in, CKBehaviorIO *out, bool destroy)
+CKBehaviorLink *CNeMoContext::RemoveBehaviorLink(CKBehavior *script, CKBehaviorIO *in, CKBehaviorIO *out, bool destroy)
 {
-    CKBehaviorLink *link = GetBehaviorLink(beh, in, out);
+    CKBehaviorLink *link = GetBehaviorLink(script, in, out);
     if (!link)
         return NULL;
 
-    beh->RemoveSubBehaviorLink(link);
+    script->RemoveSubBehaviorLink(link);
     if (destroy)
     {
         DestroyObject(link);
