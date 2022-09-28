@@ -32,11 +32,11 @@ CAPTION "FullScreen Setup"
 FONT 8, "MS Sans Serif"
 BEGIN
     DEFPUSHBUTTON   "OK",1,100,144,80,16
-    LTEXT           "Screen Mode",-1,10,10,48,8
-    LTEXT           "Driver",-1,270,10,24,8
-    LISTBOX         IDC_LB_SCREEN_MODE,10,20,250,120,LBS_SORT |
+    LTEXT           "Driver",-1,10,10,24,8
+    LTEXT           "Screen Mode",-1,270,10,48,8
+    LISTBOX         IDC_LB_DRIVER,10,20,250,120,LBS_SORT |
                     LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
-    LISTBOX         IDC_LB_DRIVER,270,20,120,160,LBS_SORT |
+    LISTBOX         IDC_LB_SCREEN_MODE,270,20,120,160,LBS_SORT |
                     LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
     PUSHBUTTON      "Cancel",2,100,164,80,16
 END
