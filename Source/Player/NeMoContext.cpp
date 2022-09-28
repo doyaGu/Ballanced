@@ -352,9 +352,6 @@ bool CNeMoContext::ChangeScreenMode(int driver, int screenMode)
     if (!m_RenderContext)
         return false;
 
-    if (driver == m_Driver && screenMode == m_ScreenMode)
-        return true;
-
     int driverBefore = m_Driver;
     int screenModeBefore = m_ScreenMode;
     m_Driver = driver;
