@@ -389,10 +389,7 @@ void CGamePlayer::Terminate()
     if (m_State == eInitial)
         return;
 
-    Pause();
-    m_NeMoContext.Cleanup();
-    if (m_NeMoContext.RestoreWindow())
-        m_NeMoContext.RefreshScreen();
+    m_NeMoContext.RestoreWindow();
     m_NeMoContext.Shutdown();
 
     if (m_hMutex)
@@ -608,8 +605,6 @@ int CGamePlayer::OnCommand(UINT id, UINT code)
 
 void CGamePlayer::OnExceptionCMO(WPARAM wParam, LPARAM lParam)
 {
-    m_NeMoContext.RestoreWindow();
-    m_NeMoContext.Cleanup();
     CLogger::Get().Error("Exception in the CMO - Abort");
     OnDestroy();
 }
@@ -666,17 +661,13 @@ int CGamePlayer::OnChangeScreenMode(WPARAM wParam, LPARAM lParam)
 
 void CGamePlayer::OnGoFullscreen()
 {
-    Pause();
-    m_NeMoContext.GoFullscreen();
-    Play();
     CGameConfig::Get().fullscreen = true;
+    m_NeMoContext.GoFullscreen();
 }
 
 void CGamePlayer::OnStopFullscreen()
 {
-    Pause();
     m_NeMoContext.StopFullscreen();
-    Play();
     CGameConfig::Get().fullscreen = false;
 }
 
@@ -799,7 +790,8 @@ bool CGamePlayer::LoadRenderEngine()
     return true;
 }
 
-bool CGamePlayer::LoadManagers() {
+bool CGamePlayer::LoadManagers()
+{
     CGameConfig &config = CGameConfig::Get();
     const char *path = config.GetPath(eManagerPath);
     if (_access(path, 0) == -1 || !m_NeMoContext.ParsePlugins(path))
@@ -810,7 +802,8 @@ bool CGamePlayer::LoadManagers() {
     return true;
 }
 
-bool CGamePlayer::LoadBuildingBlocks() {
+bool CGamePlayer::LoadBuildingBlocks()
+{
     CGameConfig &config = CGameConfig::Get();
     const char *path = config.GetPath(eBuildingBlockPath);
     if (_access(path, 0) == -1 || !m_NeMoContext.ParsePlugins(path))
