@@ -489,6 +489,11 @@ CKRenderManager *CNeMoContext::GetRenderManager() const
     return m_RenderManager;
 }
 
+CKTimeManager *CNeMoContext::GetTimeManager() const
+{
+    return m_TimeManager;
+}
+
 CKInputManager *CNeMoContext::GetInputManager() const
 {
     return m_InputManager;
