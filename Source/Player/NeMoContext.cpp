@@ -392,7 +392,7 @@ bool CNeMoContext::GoFullscreen()
     VxDisplayMode *dm = &drDesc->DisplayModes[m_ScreenMode];
     m_RenderContext->GoFullScreen(dm->Width, dm->Height, dm->Bpp, m_Driver);
 
-    if (drDesc->Caps2D.Family == CKRST_DIRECTX && m_RenderContext->IsFullScreen())
+    if (m_RenderContext->IsFullScreen())
     {
         m_WinContext->AdjustMainStyle(true);
         m_WinContext->SetPosition(0, 0);
