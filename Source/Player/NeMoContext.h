@@ -75,7 +75,6 @@ public:
 
     void ResizeWindow();
     bool RestoreWindow();
-    void MinimizeWindow();
 
     void SetRenderContext(CKRenderContext *renderContext);
 
