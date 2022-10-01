@@ -458,13 +458,6 @@ bool CNeMoContext::RestoreWindow()
     return true;
 }
 
-void CNeMoContext::MinimizeWindow()
-{
-    if (!StopFullscreen())
-        return;
-    m_WinContext->MinimizeMainWindow();
-}
-
 void CNeMoContext::SetRenderContext(CKRenderContext *renderContext)
 {
     m_RenderContext = renderContext;

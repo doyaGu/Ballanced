@@ -516,8 +516,10 @@ void CGamePlayer::OnActivateApp(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
             {
                 if (firstDeActivate)
                     wasFullscreen = true;
+
+                Pause();
                 m_NeMoContext.RestoreWindow();
-                m_NeMoContext.MinimizeWindow();
+                m_WinContext.ShowMainWindow(false);
             }
             else if (firstDeActivate)
             {
@@ -530,7 +532,10 @@ void CGamePlayer::OnActivateApp(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
     else
     {
         if (wasFullscreen && !firstDeActivate)
+        {
+            m_WinContext.ShowMainWindow();
             m_NeMoContext.GoFullscreen();
+        }
 
         if (config.clipMouse)
             ClipMouse(true);

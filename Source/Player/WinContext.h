@@ -26,9 +26,6 @@ public:
     void ShowMainWindow(bool show = true);
     void ShowRenderWindow(bool show = true);
 
-    void MinimizeMainWindow();
-    void MinimizeRenderWindow();
-
     void FocusMainWindow();
     void FocusRenderWindow();
 

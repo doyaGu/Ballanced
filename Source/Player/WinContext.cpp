@@ -59,24 +59,14 @@ void CWinContext::UpdateWindows()
 
 void CWinContext::ShowMainWindow(bool show)
 {
-    int cmd = show ? SW_SHOW : SW_HIDE;
+    int cmd = show ? SW_SHOW : SW_SHOWMINIMIZED;
     ::ShowWindow(m_MainWindow, cmd);
 }
 
 void CWinContext::ShowRenderWindow(bool show)
 {
-    int cmd = show ? SW_SHOW : SW_HIDE;
+    int cmd = show ? SW_SHOW : SW_SHOWMINIMIZED;
     ::ShowWindow(m_RenderWindow, cmd);
-}
-
-void CWinContext::MinimizeMainWindow()
-{
-    ::ShowWindow(m_MainWindow, SW_SHOWMINIMIZED);
-}
-
-void CWinContext::MinimizeRenderWindow()
-{
-    ::ShowWindow(m_RenderWindow, SW_SHOWMINIMIZED);
 }
 
 void CWinContext::FocusMainWindow()
