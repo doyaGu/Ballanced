@@ -203,7 +203,7 @@ void CNeMoContext::SetScreen(CWinContext *wincontext, bool fullscreen, int drive
     m_Bpp = bpp;
     m_Width = width;
     m_Height = height;
-    m_ScreenMode = driver;
+    m_Driver = driver;
 }
 
 void CNeMoContext::SetWindow(CWinContext *wincontext, bool fullscreen, int bpp, int width, int height)
