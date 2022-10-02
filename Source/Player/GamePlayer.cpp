@@ -668,14 +668,18 @@ int CGamePlayer::OnChangeScreenMode(WPARAM wParam, LPARAM lParam)
 
 void CGamePlayer::OnGoFullscreen()
 {
+    Pause();
     CGameConfig::Get().fullscreen = true;
     m_NeMoContext.GoFullscreen();
+    Play();
 }
 
 void CGamePlayer::OnStopFullscreen()
 {
+    Pause();
     m_NeMoContext.StopFullscreen();
     CGameConfig::Get().fullscreen = false;
+    Play();
 }
 
 void CGamePlayer::OnSwitchFullscreen()
