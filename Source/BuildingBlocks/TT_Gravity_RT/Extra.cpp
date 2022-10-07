@@ -849,7 +849,7 @@ int Extra(const CKBehaviorContext &behcontext)
             context->OutputToConsole("Extra isn't initialized yet, this could slow all down.", FALSE);
             if (InitializeExtra(behcontext) != CKBR_OK)
             {
-                context->OutputToConsole("Couldn't intialize the Extra.");
+                context->OutputToConsole("Couldn't initialize the Extra.");
                 return CKBR_PARAMETERERROR;
             }
             initialized = TRUE;
