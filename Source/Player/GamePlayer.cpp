@@ -36,7 +36,7 @@ static bool ClipMouse(bool enable)
         return false;
 
     if (!enable)
-        return ClipCursor(NULL) == TRUE; // Disable the clipping
+        return ::ClipCursor(NULL) == TRUE; // Disable the clipping
 
     // Retrieve the render window rectangle
     VxRect r;
@@ -49,7 +49,7 @@ static bool ClipMouse(bool enable)
     rect.right = (LONG)r.right;
 
     // To clip the mouse in it.
-    return ClipCursor(&rect) == TRUE;
+    return ::ClipCursor(&rect) == TRUE;
 }
 
 static BOOL FillScreenModeList(HWND hWnd)
@@ -74,12 +74,12 @@ static BOOL FillScreenModeList(HWND hWnd)
             if (dm[i].Bpp > 8)
             {
                 sprintf(buffer, "%d x %d x %d x %dHz", dm[i].Width, dm[i].Height, dm[i].Bpp, dm[i].RefreshRate);
-                int index = SendDlgItemMessageA(hWnd, IDC_LB_SCREEN_MODE, LB_ADDSTRING, 0, (LPARAM)buffer);
-                SendDlgItemMessageA(hWnd, IDC_LB_SCREEN_MODE, LB_SETITEMDATA, index, i);
+                int index = ::SendDlgItemMessage(hWnd, IDC_LB_SCREEN_MODE, LB_ADDSTRING, 0, (LPARAM)buffer);
+                ::SendDlgItemMessage(hWnd, IDC_LB_SCREEN_MODE, LB_SETITEMDATA, index, i);
                 if (i == context->GetScreenMode())
                 {
-                    SendDlgItemMessageA(hWnd, IDC_LB_SCREEN_MODE, LB_SETCURSEL, index, 0);
-                    SendDlgItemMessageA(hWnd, IDC_LB_SCREEN_MODE, LB_SETTOPINDEX, index, 0);
+                    ::SendDlgItemMessage(hWnd, IDC_LB_SCREEN_MODE, LB_SETCURSEL, index, 0);
+                    ::SendDlgItemMessage(hWnd, IDC_LB_SCREEN_MODE, LB_SETTOPINDEX, index, 0);
                 }
             }
             ++i;
@@ -100,10 +100,10 @@ static void OnInitDialog(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     for (int i = 0; i < drCount; ++i)
     {
         VxDriverDesc *drDesc = rm->GetRenderDriverDescription(i);
-        int index = ::SendDlgItemMessageA(hWnd, IDC_LB_DRIVER, LB_ADDSTRING, 0, (LPARAM)drDesc->DriverName);
-        ::SendDlgItemMessageA(hWnd, IDC_LB_DRIVER, LB_SETITEMDATA, index, i);
+        int index = ::SendDlgItemMessage(hWnd, IDC_LB_DRIVER, LB_ADDSTRING, 0, (LPARAM)drDesc->DriverName);
+        ::SendDlgItemMessage(hWnd, IDC_LB_DRIVER, LB_SETITEMDATA, index, i);
         if (i == context->GetDriver())
-            ::SendDlgItemMessageA(hWnd, IDC_LB_DRIVER, LB_SETCURSEL, index, 0);
+            ::SendDlgItemMessage(hWnd, IDC_LB_DRIVER, LB_SETCURSEL, index, 0);
     }
 }
 
@@ -122,22 +122,22 @@ static BOOL CALLBACK FullscreenSetupProc(HWND hWnd, UINT uMsg, WPARAM wParam, LP
         CNeMoContext *context = CNeMoContext::GetInstance();
         if (wNotifyCode == LBN_SELCHANGE && wID == IDC_LB_DRIVER)
         {
-            int index = ::SendDlgItemMessageA(hWnd, IDC_LB_DRIVER, LB_GETCURSEL, 0, 0);
-            int driver = ::SendDlgItemMessageA(hWnd, IDC_LB_DRIVER, LB_GETITEMDATA, index, 0);
+            int index = ::SendDlgItemMessage(hWnd, IDC_LB_DRIVER, LB_GETCURSEL, 0, 0);
+            int driver = ::SendDlgItemMessage(hWnd, IDC_LB_DRIVER, LB_GETITEMDATA, index, 0);
             context->SetDriver(driver);
 
-            ::SendDlgItemMessageA(hWnd, IDC_LB_SCREEN_MODE, LB_RESETCONTENT, 0, 0);
+            ::SendDlgItemMessage(hWnd, IDC_LB_SCREEN_MODE, LB_RESETCONTENT, 0, 0);
             if (!FillScreenModeList(hWnd))
-                EndDialog(hWnd, FALSE);
+                ::EndDialog(hWnd, FALSE);
             return TRUE;
         }
         else if (wID == IDOK || wID == IDCANCEL)
         {
-            int index = ::SendDlgItemMessageA(hWnd, IDC_LB_SCREEN_MODE, LB_GETCURSEL, 0, 0);
-            int screenMode = SendDlgItemMessageA(hWnd, IDC_LB_SCREEN_MODE, LB_GETITEMDATA, index, 0);
+            int index = ::SendDlgItemMessage(hWnd, IDC_LB_SCREEN_MODE, LB_GETCURSEL, 0, 0);
+            int screenMode = SendDlgItemMessage(hWnd, IDC_LB_SCREEN_MODE, LB_GETITEMDATA, index, 0);
             context->SetScreenMode(screenMode);
 
-            EndDialog(hWnd, wID);
+            ::EndDialog(hWnd, wID);
             return TRUE;
         }
     }
@@ -156,7 +156,7 @@ static BOOL CALLBACK AboutProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
     case WM_COMMAND:
         if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
         {
-            EndDialog(hWnd, LOWORD(wParam));
+            ::EndDialog(hWnd, LOWORD(wParam));
             return TRUE;
         }
         break;
@@ -249,7 +249,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         break;
     }
 
-    return ::DefWindowProcA(hWnd, uMsg, wParam, lParam);
+    return ::DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
 
 CGamePlayer::CGamePlayer()
@@ -319,14 +319,14 @@ bool CGamePlayer::Init(HINSTANCE hInstance, HANDLE hMutex)
         RedirectLog();
         break;
     case CKERR_NODLLFOUND:
-        ::MessageBoxA(NULL, "Necessary dll is not found", "Error", MB_OK);
+        ::MessageBox(NULL, "Necessary dll is not found", "Error", MB_OK);
         return false;
     case CKERR_NORENDERENGINE:
-        ::MessageBoxA(NULL, "No RenderEngine", "Error", MB_OK);
+        ::MessageBox(NULL, "No RenderEngine", "Error", MB_OK);
         return false;
     case CKERR_INVALIDPARAMETER:
     {
-        if (::DialogBoxParamA(m_WinContext.GetAppInstance(), MAKEINTRESOURCE(IDD_FULLSCREEN_SETUP), NULL, FullscreenSetupProc, 0) != IDOK)
+        if (::DialogBoxParam(m_WinContext.GetAppInstance(), MAKEINTRESOURCE(IDD_FULLSCREEN_SETUP), NULL, FullscreenSetupProc, 0) != IDOK)
             return false;
         if (!m_NeMoContext.ApplyScreenMode())
             return false;
@@ -341,7 +341,7 @@ bool CGamePlayer::Init(HINSTANCE hInstance, HANDLE hMutex)
         if (!ReInitEngine())
             return false;
     }
-    break;
+        break;
     default:
         return false;
     }
@@ -377,9 +377,9 @@ void CGamePlayer::Run()
 bool CGamePlayer::Process()
 {
     if (!m_WinContext.Process())
-        return false;
+            return false;
 
-    m_NeMoContext.Process();
+        m_NeMoContext.Process();
 
     return true;
 }
@@ -556,7 +556,7 @@ void CGamePlayer::OnActivateApp(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 void CGamePlayer::OnSetCursor()
 {
     if (m_State == ePaused)
-        ::SetCursor(::LoadCursorA(NULL, IDC_ARROW));
+        ::SetCursor(::LoadCursor(NULL, IDC_ARROW));
 }
 
 void CGamePlayer::OnGetMinMaxInfo(LPMINMAXINFO lpmmi)
@@ -600,7 +600,7 @@ int CGamePlayer::OnCommand(UINT id, UINT code)
     {
     case IDM_APP_ABOUT:
         Pause();
-        ::DialogBoxParamA(m_WinContext.GetAppInstance(), MAKEINTRESOURCE(IDD_ABOUT), NULL, AboutProc, 0);
+        ::DialogBoxParam(m_WinContext.GetAppInstance(), MAKEINTRESOURCE(IDD_ABOUT), NULL, AboutProc, 0);
         Play();
         break;
 
