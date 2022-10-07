@@ -37,22 +37,6 @@ bool CWinContext::Init(HINSTANCE hInstance, LPFNWNDPROC lpfnWndProc)
     return true;
 }
 
-bool CWinContext::Process() {
-    MSG msg;
-    if (::PeekMessageA(&msg, NULL, 0, 0, PM_REMOVE))
-{
-        if (msg.message == WM_QUIT)
-            return false;
-
-        if (!::TranslateAccelerator(m_MainWindow, m_hAccelTable, &msg))
-        {
-            ::TranslateMessage(&msg);
-            ::DispatchMessage(&msg);
-        }
-    }
-    return true;
-}
-
 void CWinContext::UpdateWindows()
 {
     ::UpdateWindow(m_MainWindow);
@@ -173,6 +157,16 @@ void CWinContext::SetMainStyle(int add, int remove)
             m_MainWndStyle = style;
         }
     }
+}
+
+int CWinContext::TranslateAccelerators(MSG *msg)
+{
+    return ::TranslateAccelerator(m_MainWindow, m_hAccelTable, msg);
+}
+
+bool CWinContext::IsIconic()
+{
+    return ::IsIconic(m_MainWindow) == TRUE;
 }
 
 void CWinContext::LoadWindowNames()

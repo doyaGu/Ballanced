@@ -377,10 +377,22 @@ void CGamePlayer::Run()
 
 bool CGamePlayer::Process()
 {
-    if (!m_WinContext.Process())
+    MSG msg;
+    if (::PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+    {
+        if (msg.message == WM_QUIT)
             return false;
 
-    m_NeMoContext.Process();
+        if (!m_WinContext.TranslateAccelerators(&msg))
+        {
+            ::TranslateMessage(&msg);
+            ::DispatchMessage(&msg);
+        }
+    }
+    else if (!m_WinContext.IsIconic())
+    {
+        m_NeMoContext.Process();
+    }
 
     return true;
 }

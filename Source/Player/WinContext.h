@@ -27,8 +27,6 @@ public:
 
     bool Init(HINSTANCE hInstance, LPFNWNDPROC lpfnWndProc);
 
-    bool Process();
-
     void UpdateWindows();
 
     void ShowMainWindow(bool show = true);
@@ -67,6 +65,10 @@ public:
     void SetRenderSize(int width, int height);
 
     void SetMainStyle(int add, int remove);
+
+    int TranslateAccelerators(MSG *msg);
+
+    bool IsIconic();
 
 private:
     CWinContext(const CWinContext &);
