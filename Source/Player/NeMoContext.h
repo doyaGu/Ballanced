@@ -3,7 +3,6 @@
 
 #include "CKAll.h"
 
-class CWinContext;
 class InterfaceManager;
 
 class CNeMoContext
@@ -29,7 +28,7 @@ public:
     void ClearScreen();
     void RefreshScreen();
 
-    void SetScreen(CWinContext *wincontext, bool fullscreen, int driver, int bpp, int width, int height);
+    void SetScreen(bool fullscreen, int driver, int width, int height, int bpp, int refreshRate = 0);
 
     void GetResolution(int &width, int &height);
 
@@ -49,7 +48,7 @@ public:
 
     int GetRefreshRate() const;
 
-    void SetRefreshRate(int fps);
+    void SetRefreshRate(int refreshRate);
 
     int GetDriver() const;
 
@@ -61,7 +60,6 @@ public:
 
     bool FindScreenMode();
     bool ApplyScreenMode();
-    bool ChangeScreenMode(int driver, int screenMode);
 
     bool GoFullscreen();
     bool StopFullscreen();
@@ -71,12 +69,7 @@ public:
 
     void SetFullscreen(bool fullscreen);
 
-    void ResizeWindow();
-    bool RestoreWindow();
-
     void SetRenderContext(CKRenderContext *renderContext);
-
-    void SetWinContext(CWinContext *winContext);
 
     CKContext *GetCKContext();
 
@@ -87,8 +80,8 @@ public:
     CKInputManager *GetInputManager() const;
     InterfaceManager *GetInterfaceManager() const;
 
-    CKERROR CreateContext();
-    bool CreateRenderContext();
+    CKERROR CreateContext(WIN_HANDLE mainWin);
+    CKERROR CreateRenderContext(WIN_HANDLE renderWin);
     int GetRenderEnginePluginIdx();
     bool ParsePlugins(const char *dir);
 
@@ -183,15 +176,11 @@ private:
     CKInputManager *m_InputManager;
     InterfaceManager *m_InterfaceManager;
     CKRenderContext *m_RenderContext;
-    CWinContext *m_WinContext;
     const char *m_RenderEngine;
-    int m_Width;
-    int m_Height;
-    int m_Bpp;
-    int m_RefreshRate;
-    bool m_Fullscreen;
     int m_Driver;
     int m_ScreenMode;
+    VxDisplayMode m_DisplayMode;
+    bool m_Fullscreen;
 
     static CNeMoContext *s_Instance;
 };
