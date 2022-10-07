@@ -457,7 +457,6 @@ void CGamePlayer::Reset()
 
 void CGamePlayer::OnDestroy()
 {
-    m_NeMoContext.BroadcastCloseMessage();
     ::PostQuitMessage(0);
 }
 
@@ -705,8 +704,6 @@ void CGamePlayer::OnSwitchFullscreen()
         if (config.clipMouse)
             ClipMouse(true);
     }
-
-    Play();
 }
 
 void CGamePlayer::Register(CGamePlayer *player)
@@ -770,8 +767,6 @@ int CGamePlayer::InitEngine()
         CLogger::Get().Error("Failed to create render context");
         return CKERR_INVALIDPARAMETER;
     }
-
-    m_NeMoContext.AddCloseMessage();
 
     return CK_OK;
 }

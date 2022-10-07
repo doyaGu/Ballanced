@@ -1,6 +1,5 @@
 #include "NeMoContext.h"
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -30,8 +29,7 @@ CNeMoContext::CNeMoContext()
       m_RefreshRate(0),
       m_Fullscreen(false),
       m_Driver(0),
-      m_ScreenMode(-1),
-      m_MsgWindowClose(0) {}
+      m_ScreenMode(-1) {}
 
 CNeMoContext::~CNeMoContext() {}
 
@@ -110,24 +108,24 @@ void CNeMoContext::Shutdown()
 
 void CNeMoContext::Play()
 {
-    m_CKContext->Play();
+        m_CKContext->Play();
 }
 
 void CNeMoContext::Pause()
 {
-    m_CKContext->Pause();
+        m_CKContext->Pause();
 }
 
 void CNeMoContext::Reset()
 {
-    m_CKContext->Reset();
+        m_CKContext->Reset();
 }
 
 void CNeMoContext::Cleanup()
 {
-    m_CKContext->Reset();
-    m_CKContext->ClearAll();
-}
+        m_CKContext->Reset();
+        m_CKContext->ClearAll();
+    }
 
 bool CNeMoContext::IsPlaying() const
 {
@@ -204,15 +202,6 @@ void CNeMoContext::SetScreen(CWinContext *wincontext, bool fullscreen, int drive
     m_Width = width;
     m_Height = height;
     m_Driver = driver;
-}
-
-void CNeMoContext::SetWindow(CWinContext *wincontext, bool fullscreen, int bpp, int width, int height)
-{
-    m_WinContext = wincontext;
-    m_Fullscreen = fullscreen;
-    m_Bpp = bpp;
-    m_Width = width;
-    m_Height = height;
 }
 
 void CNeMoContext::GetResolution(int &width, int &height)
@@ -411,8 +400,8 @@ bool CNeMoContext::StopFullscreen()
 
     if (IsRenderFullscreen())
     {
-        m_RenderContext->StopFullScreen();
-        m_Fullscreen = false;
+    m_RenderContext->StopFullScreen();
+    m_Fullscreen = false;
     }
 
     return true;
@@ -1213,16 +1202,6 @@ int CNeMoContext::SendMessage(char *targetObject, char *message, int id0, int id
         return 1;
     }
     return -1;
-}
-
-void CNeMoContext::AddCloseMessage()
-{
-    m_MsgWindowClose = m_MessageManager->AddMessageType("WM_CLOSE");
-}
-
-bool CNeMoContext::BroadcastCloseMessage()
-{
-    return m_MessageManager->SendMessageBroadcast(m_MsgWindowClose, CKCID_BEOBJECT) != NULL;
 }
 
 CNeMoContext *CNeMoContext::GetInstance()

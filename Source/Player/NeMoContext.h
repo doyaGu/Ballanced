@@ -31,8 +31,6 @@ public:
 
     void SetScreen(CWinContext *wincontext, bool fullscreen, int driver, int bpp, int width, int height);
 
-    void SetWindow(CWinContext *wincontext, bool fullscreen, int bpp, int width, int height);
-
     void GetResolution(int &width, int &height);
 
     void SetResolution(int width, int height);
@@ -167,9 +165,6 @@ public:
     int SendMessage(char *targetObject, char *message, int id0, int id1, int id2, float value);
     int SendMessage(char *targetObject, char *message, int id0, int id1, int id2, char *value);
 
-    void AddCloseMessage();
-    bool BroadcastCloseMessage();
-
     static CNeMoContext *GetInstance();
 
     static void RegisterInstance(CNeMoContext *nemoContext);
@@ -197,7 +192,6 @@ private:
     bool m_Fullscreen;
     int m_Driver;
     int m_ScreenMode;
-    CKMessageType m_MsgWindowClose;
 
     static CNeMoContext *s_Instance;
 };
