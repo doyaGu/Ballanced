@@ -55,7 +55,7 @@ namespace utils
         }
         else
         {
-            size_t len = ::GetCurrentDirectoryA(size, buffer);
+            size_t len = ::GetCurrentDirectory(size, buffer);
             len = size - 1 - len;
             strncat(buffer, "\\", len);
             --len;
@@ -90,7 +90,7 @@ namespace utils
         char drive[4];
         char dir[MAX_PATH];
         char filename[MAX_PATH];
-        ::GetModuleFileNameA(NULL, szPath, MAX_PATH);
+        ::GetModuleFileName(NULL, szPath, MAX_PATH);
         _splitpath(szPath, drive, dir, filename, NULL);
 
         _snprintf(szPath, size, "%s%s", drive, dir);
@@ -143,8 +143,8 @@ namespace utils
             if (*pch != '/' && *pch != '\\')
                 continue;
             *pch = '\0';
-            if (::GetFileAttributesA(pt) == -1)
-                if (!::CreateDirectoryA(pt, NULL))
+            if (::GetFileAttributes(pt) == -1)
+                if (!::CreateDirectory(pt, NULL))
                     break;
             *pch = '\\';
         }

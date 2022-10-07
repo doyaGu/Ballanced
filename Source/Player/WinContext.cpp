@@ -13,8 +13,8 @@ CWinContext::CWinContext()
       m_MainWndStyle(0),
       m_RenderWndStyle(0)
 {
-    memset(&m_MainWndClass, 0, sizeof(WNDCLASSEXA));
-    memset(&m_RenderWndClass, 0, sizeof(WNDCLASSA));
+    memset(&m_MainWndClass, 0, sizeof(WNDCLASSEX));
+    memset(&m_RenderWndClass, 0, sizeof(WNDCLASS));
     memset(m_MainWndName, 0, sizeof(m_MainWndName));
     memset(m_RenderWndName, 0, sizeof(m_RenderWndName));
     memset(m_MainWndClassName, 0, sizeof(m_MainWndClassName));
@@ -38,14 +38,14 @@ bool CWinContext::Init(HINSTANCE hInstance, LPFNWNDPROC lpfnWndProc)
 bool CWinContext::Process() {
     MSG msg;
     if (::PeekMessageA(&msg, NULL, 0, 0, PM_REMOVE))
-    {
+{
         if (msg.message == WM_QUIT)
             return false;
 
-        if (!::TranslateAcceleratorA(m_MainWindow, m_hAccelTable, &msg))
+        if (!::TranslateAccelerator(m_MainWindow, m_hAccelTable, &msg))
         {
             ::TranslateMessage(&msg);
-            ::DispatchMessageA(&msg);
+            ::DispatchMessage(&msg);
         }
     }
     return true;
@@ -167,36 +167,36 @@ void CWinContext::SetRenderSize(int width, int height)
 
 void CWinContext::LoadWindowNames()
 {
-    ::LoadStringA(m_hInstance, IDS_MAIN_WND_NAME, m_MainWndName, 100);
-    ::LoadStringA(m_hInstance, IDS_RENDER_WND_NAME, m_RenderWndName, 100);
-    ::LoadStringA(m_hInstance, IDS_MAIN_WND_CLASS_NAME, m_MainWndClassName, 100);
-    ::LoadStringA(m_hInstance, IDS_RENDER_WND_CLASS_NAME, m_RenderWndClassName, 100);
+    ::LoadString(m_hInstance, IDS_MAIN_WND_NAME, m_MainWndName, 100);
+    ::LoadString(m_hInstance, IDS_RENDER_WND_NAME, m_RenderWndName, 100);
+    ::LoadString(m_hInstance, IDS_MAIN_WND_CLASS_NAME, m_MainWndClassName, 100);
+    ::LoadString(m_hInstance, IDS_RENDER_WND_CLASS_NAME, m_RenderWndClassName, 100);
 }
 
 bool CWinContext::RegisterWindowClasses(LPFNWNDPROC lpfnWndProc)
 {
     m_MainWndClass.lpfnWndProc = lpfnWndProc;
-    m_MainWndClass.cbSize = sizeof(WNDCLASSEXA);
+    m_MainWndClass.cbSize = sizeof(WNDCLASSEX);
     m_MainWndClass.style = CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS;
     m_MainWndClass.cbClsExtra = 0;
     m_MainWndClass.cbWndExtra = 0;
     m_MainWndClass.hInstance = m_hInstance;
-    m_MainWndClass.hIcon = ::LoadIconA(m_hInstance, MAKEINTRESOURCE(IDI_PLAYER));
-    m_MainWndClass.hCursor = ::LoadCursorA(NULL, IDC_ARROW);
-    m_MainWndClass.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
+    m_MainWndClass.hIcon = ::LoadIcon(m_hInstance, MAKEINTRESOURCE(IDI_PLAYER));
+    m_MainWndClass.hCursor = ::LoadCursor(NULL, IDC_ARROW);
+    m_MainWndClass.hbrBackground = (HBRUSH)::GetStockObject(BLACK_BRUSH);
     m_MainWndClass.lpszMenuName = NULL;
     m_MainWndClass.lpszClassName = m_MainWndClassName;
-    m_MainWndClass.hIconSm = ::LoadIconA(m_hInstance, MAKEINTRESOURCE(IDI_PLAYER));
+    m_MainWndClass.hIconSm = ::LoadIcon(m_hInstance, MAKEINTRESOURCE(IDI_PLAYER));
 
     m_RenderWndClass.lpfnWndProc = lpfnWndProc;
     m_RenderWndClass.style = CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS;
     m_RenderWndClass.hInstance = m_hInstance;
     m_RenderWndClass.lpszClassName = m_RenderWndClassName;
 
-    if (!::RegisterClassA(&m_RenderWndClass))
+    if (!::RegisterClass(&m_RenderWndClass))
         return false;
 
-    if (!::RegisterClassExA(&m_MainWndClass))
+    if (!::RegisterClassEx(&m_MainWndClass))
         return false;
 
     return true;
@@ -222,7 +222,7 @@ bool CWinContext::CreateWindows()
     int x = (config.fullscreen) ? CW_USEDEFAULT : (::GetSystemMetrics(SM_CXSCREEN) - mainWidth) / 2;
     int y = (config.fullscreen) ? CW_USEDEFAULT : (::GetSystemMetrics(SM_CYSCREEN) - mainHeight) / 2;
 
-    m_MainWindow = ::CreateWindowExA(
+    m_MainWindow = ::CreateWindowEx(
         WS_EX_LEFT,
         m_MainWndClassName,
         m_MainWndName,
@@ -239,7 +239,7 @@ bool CWinContext::CreateWindows()
         return false;
 
     m_RenderWndStyle = WS_CHILD | WS_VISIBLE;
-    m_RenderWindow = ::CreateWindowExA(
+    m_RenderWindow = ::CreateWindowEx(
         WS_EX_TOPMOST,
         m_RenderWndClassName,
         m_RenderWndName,
@@ -255,7 +255,7 @@ bool CWinContext::CreateWindows()
     if (!m_RenderWindow)
         return false;
 
-    m_hAccelTable = ::LoadAcceleratorsA(m_hInstance, MAKEINTRESOURCE(IDR_ACCEL));
+    m_hAccelTable = ::LoadAccelerators(m_hInstance, MAKEINTRESOURCE(IDR_ACCEL));
 
     return true;
 }

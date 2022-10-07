@@ -72,12 +72,12 @@ private:
     HWND m_RenderWindow;
     HINSTANCE m_hInstance;
     HACCEL m_hAccelTable;
-    WNDCLASSEXA m_MainWndClass;
-    WNDCLASSA m_RenderWndClass;
-    char m_MainWndName[128];
-    char m_RenderWndName[128];
-    char m_MainWndClassName[128];
-    char m_RenderWndClassName[128];
+    WNDCLASSEX m_MainWndClass;
+    WNDCLASS m_RenderWndClass;
+    TCHAR m_MainWndName[128];
+    TCHAR m_RenderWndName[128];
+    TCHAR m_MainWndClassName[128];
+    TCHAR m_RenderWndClassName[128];
     DWORD m_MainWndStyle;
     DWORD m_RenderWndStyle;
 };
