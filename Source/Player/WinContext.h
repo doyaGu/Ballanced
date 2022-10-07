@@ -29,6 +29,8 @@ public:
 
     void UpdateWindows();
 
+    void DestroyWindows();
+
     void ShowMainWindow(bool show = true);
     void ShowRenderWindow(bool show = true);
 
