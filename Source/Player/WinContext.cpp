@@ -70,6 +70,16 @@ void CWinContext::FocusRenderWindow()
     ::SetFocus(m_RenderWindow);
 }
 
+bool CWinContext::PostMessageToMainWindow(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    return ::PostMessage(m_MainWindow, uMsg, wParam, lParam) == TRUE;
+}
+
+bool CWinContext::PostMessageToRenderWindow(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    return ::PostMessage(m_RenderWindow, uMsg, wParam, lParam) == TRUE;
+}
+
 void CWinContext::GetPosition(int &x, int &y)
 {
     if (m_MainWindow)

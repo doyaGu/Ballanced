@@ -589,7 +589,7 @@ int CGamePlayer::OnSysKeyDown(UINT uKey)
 
     case VK_F4:
         // ALT + F4 -> Quit the application
-        ::PostMessage(m_WinContext.GetMainWindow(), TT_MSG_EXIT_TO_SYS, 0, 0);
+        m_WinContext.PostMessageToMainWindow(TT_MSG_EXIT_TO_SYS, 0, 0);
         return 1;
 
     default:
@@ -617,7 +617,7 @@ int CGamePlayer::OnCommand(UINT id, UINT code)
 void CGamePlayer::OnExceptionCMO(WPARAM wParam, LPARAM lParam)
 {
     CLogger::Get().Error("Exception in the CMO - Abort");
-    ::PostMessage(m_WinContext.GetMainWindow(), TT_MSG_EXIT_TO_SYS, 0, 0);
+    m_WinContext.PostMessageToMainWindow(TT_MSG_EXIT_TO_SYS, 0, 0);
 }
 
 void CGamePlayer::OnReturn(WPARAM wParam, LPARAM lParam)
@@ -641,7 +641,7 @@ bool CGamePlayer::OnLoadCMO(WPARAM wParam, LPARAM lParam)
 void CGamePlayer::OnExitToSystem(WPARAM wParam, LPARAM lParam)
 {
     OnStopFullscreen();
-    ::PostMessage(m_WinContext.GetMainWindow(), WM_CLOSE, 0, 0);
+    m_WinContext.PostMessageToMainWindow(WM_CLOSE, 0, 0);
 }
 
 void CGamePlayer::OnExitToTitle(WPARAM wParam, LPARAM lParam)
