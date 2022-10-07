@@ -383,7 +383,7 @@ bool CNeMoContext::GoFullscreen()
 
     if (m_RenderContext->IsFullScreen())
     {
-        m_WinContext->AdjustMainStyle(true);
+        m_WinContext->SetMainStyle(WINDOW_STYLE_FULLSCREEN, WINDOW_STYLE_USECURRENTSETTINGS);
         m_WinContext->SetPosition(0, 0);
         m_WinContext->SetMainSize(m_Width, m_Height);
         m_WinContext->UpdateWindows();
@@ -435,7 +435,7 @@ bool CNeMoContext::RestoreWindow()
     if (!StopFullscreen())
         return false;
 
-    m_WinContext->AdjustMainStyle(false);
+    m_WinContext->SetMainStyle(WINDOW_STYLE_USECURRENTSETTINGS, WINDOW_STYLE_FULLSCREEN);
     m_WinContext->SetMainSize(m_Width, m_Height);
     m_WinContext->ShowMainWindow();
     m_WinContext->FocusMainWindow();
