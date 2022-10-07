@@ -37,6 +37,9 @@ public:
     void FocusMainWindow();
     void FocusRenderWindow();
 
+    bool PostMessageToMainWindow(UINT uMsg, WPARAM wParam, LPARAM lParam);
+    bool PostMessageToRenderWindow(UINT uMsg, WPARAM wParam, LPARAM lParam);
+
     HINSTANCE GetAppInstance() const
     {
         return m_hInstance;
