@@ -205,9 +205,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
         player->OnGetMinMaxInfo((LPMINMAXINFO)lParam);
         break;
 
-    case WM_KEYDOWN:
-        return player->OnKeyDown(wParam);
-
     case WM_SYSKEYDOWN:
         return player->OnSysKeyDown(wParam);
 
@@ -578,11 +575,6 @@ void CGamePlayer::OnGetMinMaxInfo(LPMINMAXINFO lpmmi)
         lpmmi->ptMinTrackSize.x = 400;
         lpmmi->ptMinTrackSize.y = 200;
     }
-}
-
-int CGamePlayer::OnKeyDown(UINT uKey)
-{
-    return 0;
 }
 
 int CGamePlayer::OnSysKeyDown(UINT uKey)
