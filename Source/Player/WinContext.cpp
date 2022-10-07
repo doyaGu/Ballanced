@@ -2,7 +2,6 @@
 
 #include <string.h>
 
-#include "GameConfig.h"
 #include "resource.h"
 
 CWinContext::CWinContext()
@@ -11,7 +10,10 @@ CWinContext::CWinContext()
       m_hInstance(NULL),
       m_hAccelTable(NULL),
       m_MainWndStyle(0),
-      m_RenderWndStyle(0)
+      m_RenderWndStyle(0),
+      m_Width(0),
+      m_Height(0),
+      m_StyleFlags(0)
 {
     memset(&m_MainWndClass, 0, sizeof(WNDCLASSEX));
     memset(&m_RenderWndClass, 0, sizeof(WNDCLASS));
@@ -79,26 +81,6 @@ void CWinContext::FocusRenderWindow()
     ::SetFocus(m_RenderWindow);
 }
 
-void CWinContext::AdjustMainStyle(bool fullscreen)
-{
-    DWORD style = WS_POPUP;
-    if (!fullscreen)
-    {
-        const CGameConfig &config = CGameConfig::Get();
-        if (!config.borderless)
-            style = WS_OVERLAPPED | WS_CAPTION;
-        if (config.resizable)
-            style |= WS_SIZEBOX;
-    }
-
-    if (style != m_MainWndStyle)
-    {
-        ::SetWindowLongA(m_MainWindow, GWL_STYLE, style);
-        ::SetWindowPos(m_MainWindow, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
-        m_MainWndStyle = style;
-    }
-}
-
 void CWinContext::GetPosition(int &x, int &y)
 {
     if (m_MainWindow)
@@ -151,6 +133,9 @@ void CWinContext::GetRenderSize(int &width, int &height)
 
 void CWinContext::SetMainSize(int width, int height)
 {
+    m_Width = width;
+    m_Height = height;
+
     if (m_MainWindow)
     {
         RECT rect = {0, 0, width, height};
@@ -163,6 +148,31 @@ void CWinContext::SetRenderSize(int width, int height)
 {
     if (m_RenderWindow)
         ::SetWindowPos(m_RenderWindow, HWND_TOPMOST, 0, 0, width, height, SWP_NOMOVE | SWP_NOZORDER);
+}
+
+void CWinContext::SetMainStyle(int add, int remove)
+{
+    m_StyleFlags |= add;
+    m_StyleFlags &= ~remove;
+
+    if (m_MainWindow)
+    {
+        DWORD style = WS_POPUP;
+        if (!(m_StyleFlags & WINDOW_STYLE_FULLSCREEN))
+        {
+            if (!(m_StyleFlags & WINDOW_STYLE_BORDERLESS))
+                style = WS_OVERLAPPED | WS_CAPTION;
+            if (m_StyleFlags & WINDOW_STYLE_RESIZABLE)
+                style |= WS_SIZEBOX;
+        }
+
+        if (style != m_MainWndStyle)
+        {
+            ::SetWindowLong(m_MainWindow, GWL_STYLE, style);
+            ::SetWindowPos(m_MainWindow, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
+            m_MainWndStyle = style;
+        }
+    }
 }
 
 void CWinContext::LoadWindowNames()
@@ -204,23 +214,21 @@ bool CWinContext::RegisterWindowClasses(LPFNWNDPROC lpfnWndProc)
 
 bool CWinContext::CreateWindows()
 {
-    const CGameConfig &config = CGameConfig::Get();
-
-    m_MainWndStyle = (config.fullscreen || config.borderless) ? WS_POPUP : WS_OVERLAPPED | WS_CAPTION;
-    if (!config.fullscreen)
+    m_MainWndStyle = (m_StyleFlags & (WINDOW_STYLE_FULLSCREEN | WINDOW_STYLE_BORDERLESS)) ? WS_POPUP : WS_OVERLAPPED | WS_CAPTION;
+    if (!(m_StyleFlags & WINDOW_STYLE_FULLSCREEN))
     {
-        if (config.resizable)
+        if (m_StyleFlags & WINDOW_STYLE_RESIZABLE)
             m_MainWndStyle |= WS_SIZEBOX;
     }
 
-    RECT rect = {0, 0, config.width, config.height};
-    AdjustWindowRect(&rect, m_MainWndStyle, FALSE);
+    RECT rect = {0, 0, m_Width, m_Height};
+    ::AdjustWindowRect(&rect, m_MainWndStyle, FALSE);
 
     int mainWidth = rect.right - rect.left;
     int mainHeight = rect.bottom - rect.top;
 
-    int x = (config.fullscreen) ? CW_USEDEFAULT : (::GetSystemMetrics(SM_CXSCREEN) - mainWidth) / 2;
-    int y = (config.fullscreen) ? CW_USEDEFAULT : (::GetSystemMetrics(SM_CYSCREEN) - mainHeight) / 2;
+    int x = (m_StyleFlags & WINDOW_STYLE_FULLSCREEN) ? CW_USEDEFAULT : (::GetSystemMetrics(SM_CXSCREEN) - mainWidth) / 2;
+    int y = (m_StyleFlags & WINDOW_STYLE_FULLSCREEN) ? CW_USEDEFAULT : (::GetSystemMetrics(SM_CYSCREEN) - mainHeight) / 2;
 
     m_MainWindow = ::CreateWindowEx(
         WS_EX_LEFT,
@@ -246,8 +254,8 @@ bool CWinContext::CreateWindows()
         m_RenderWndStyle,
         0,
         0,
-        config.width,
-        config.height,
+        m_Width,
+        m_Height,
         m_MainWindow,
         NULL,
         m_hInstance,

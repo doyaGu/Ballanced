@@ -301,7 +301,19 @@ bool CGamePlayer::Init(HINSTANCE hInstance, HANDLE hMutex)
         }
     }
 
-    // Save the last position firstly.
+    m_WinContext.SetMainSize(config.width, config.height);
+    {
+        int styleFlags = 0;
+        if (config.fullscreen)
+            styleFlags |= WINDOW_STYLE_FULLSCREEN;
+        if (config.borderless)
+            styleFlags |= WINDOW_STYLE_BORDERLESS;
+        if (config.resizable)
+            styleFlags |= WINDOW_STYLE_RESIZABLE;
+        m_WinContext.SetMainStyle(styleFlags, WINDOW_STYLE_USECURRENTSETTINGS);
+    }
+
+    // Keep the last position before creating the windows.
     int x = config.posX;
     int y = config.posY;
 
@@ -311,7 +323,10 @@ bool CGamePlayer::Init(HINSTANCE hInstance, HANDLE hMutex)
         return false;
     }
 
-    CNeMoContext::RegisterInstance(&m_NeMoContext);
+    m_WinContext.SetMainSize(config.width, config.height);
+    m_WinContext.SetRenderSize(config.width, config.height);
+    if (!config.fullscreen && x != 2147483647 && y != 2147483647)
+        m_WinContext.SetPosition(x, y);
 
     switch (InitEngine())
     {
@@ -724,9 +739,6 @@ int CGamePlayer::InitEngine()
     }
 
     CGameConfig &config = CGameConfig::Get();
-
-    m_WinContext.SetMainSize(config.width, config.height);
-    m_WinContext.SetRenderSize(config.width, config.height);
 
     m_NeMoContext.SetScreen(&m_WinContext, config.fullscreen, config.driver, config.bpp, config.width, config.height);
 

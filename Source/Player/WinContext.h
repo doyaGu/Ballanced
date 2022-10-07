@@ -11,6 +11,14 @@
 
 typedef LRESULT(CALLBACK *LPFNWNDPROC)(HWND, UINT, WPARAM, LPARAM);
 
+typedef enum WINDOW_STYLE_FLAGS
+{
+    WINDOW_STYLE_USECURRENTSETTINGS = 0x00000000, // Do not change any setting
+    WINDOW_STYLE_FULLSCREEN         = 0x00000001, // Full Screen
+    WINDOW_STYLE_BORDERLESS         = 0x00000002, // Borderless
+    WINDOW_STYLE_RESIZABLE          = 0x00000004, // Resizable
+} WINDOW_STYLE_FLAGS;
+
 class CWinContext
 {
 public:
@@ -28,8 +36,6 @@ public:
 
     void FocusMainWindow();
     void FocusRenderWindow();
-
-    void AdjustMainStyle(bool fullscreen);
 
     HINSTANCE GetAppInstance() const
     {
@@ -60,6 +66,8 @@ public:
     void SetMainSize(int width, int height);
     void SetRenderSize(int width, int height);
 
+    void SetMainStyle(int add, int remove);
+
 private:
     CWinContext(const CWinContext &);
     CWinContext &operator=(const CWinContext &);
@@ -80,6 +88,9 @@ private:
     TCHAR m_RenderWndClassName[128];
     DWORD m_MainWndStyle;
     DWORD m_RenderWndStyle;
+    int m_Width;
+    int m_Height;
+    int m_StyleFlags;
 };
 
 #endif /* PLAYER_WINCONTEXT_H */
