@@ -3,10 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "WinContext.h"
 #include "Logger.h"
 #include "InterfaceManager.h"
-#include "config.h"
 
 CNeMoContext *CNeMoContext::s_Instance = NULL;
 
@@ -21,20 +19,22 @@ CNeMoContext::CNeMoContext()
       m_InputManager(NULL),
       m_InterfaceManager(NULL),
       m_RenderContext(NULL),
-      m_WinContext(NULL),
       m_RenderEngine("CK2_3D"),
-      m_Width(PLAYER_DEFAULT_WIDTH),
-      m_Height(PLAYER_DEFAULT_HEIGHT),
-      m_Bpp(PLAYER_DEFAULT_BPP),
-      m_RefreshRate(0),
-      m_Fullscreen(false),
       m_Driver(0),
-      m_ScreenMode(-1) {}
+      m_ScreenMode(-1),
+      m_DisplayMode(),
+      m_Fullscreen(false) {}
 
-CNeMoContext::~CNeMoContext() {}
-
-CKERROR CNeMoContext::CreateContext()
+CNeMoContext::~CNeMoContext()
 {
+    Shutdown();
+}
+
+CKERROR CNeMoContext::CreateContext(WIN_HANDLE mainWin)
+{
+    if (!mainWin)
+        return CKERR_INVALIDPARAMETER;
+
     int iRenderEngine = GetRenderEnginePluginIdx();
     if (iRenderEngine == -1)
     {
@@ -42,7 +42,7 @@ CKERROR CNeMoContext::CreateContext()
         return CKERR_NORENDERENGINE;
     }
 
-    CKERROR res = CKCreateContext(&m_CKContext, m_WinContext->GetMainWindow(), iRenderEngine, 0);
+    CKERROR res = CKCreateContext(&m_CKContext, mainWin, iRenderEngine, 0);
     if (res != CK_OK)
     {
         if (res == CKERR_NODLLFOUND)
@@ -108,38 +108,42 @@ void CNeMoContext::Shutdown()
 
 void CNeMoContext::Play()
 {
-        m_CKContext->Play();
+    XASSERT(m_CKContext);
+    m_CKContext->Play();
 }
 
 void CNeMoContext::Pause()
 {
-        m_CKContext->Pause();
+    XASSERT(m_CKContext);
+    m_CKContext->Pause();
 }
 
 void CNeMoContext::Reset()
 {
-        m_CKContext->Reset();
+    XASSERT(m_CKContext);
+    m_CKContext->Reset();
 }
 
 void CNeMoContext::Cleanup()
 {
-        m_CKContext->Reset();
-        m_CKContext->ClearAll();
-    }
+    XASSERT(m_CKContext);
+    m_CKContext->Reset();
+    m_CKContext->ClearAll();
+}
 
 bool CNeMoContext::IsPlaying() const
 {
-    return m_CKContext->IsPlaying() == TRUE;
+    return m_CKContext && m_CKContext->IsPlaying() == TRUE;
 }
 
 bool CNeMoContext::IsReseted() const
 {
-    return m_CKContext->IsReseted() == TRUE;
+    return m_CKContext && m_CKContext->IsReseted() == TRUE;
 }
 
 void CNeMoContext::Process()
 {
-    if (m_CKContext->IsPlaying())
+    if (m_CKContext && m_CKContext->IsPlaying())
     {
         float beforeRender = 0.0f;
         float beforeProcess = 0.0f;
@@ -194,66 +198,66 @@ void CNeMoContext::RefreshScreen()
     }
 }
 
-void CNeMoContext::SetScreen(CWinContext *wincontext, bool fullscreen, int driver, int bpp, int width, int height)
+void CNeMoContext::SetScreen(bool fullscreen, int driver, int width, int height, int bpp, int refreshRate)
 {
-    m_WinContext = wincontext;
     m_Fullscreen = fullscreen;
-    m_Bpp = bpp;
-    m_Width = width;
-    m_Height = height;
     m_Driver = driver;
+    m_DisplayMode.Width = width;
+    m_DisplayMode.Height = height;
+    m_DisplayMode.Bpp = bpp;
+    m_DisplayMode.RefreshRate = refreshRate;
 }
 
 void CNeMoContext::GetResolution(int &width, int &height)
 {
-    width = m_Width;
-    height = m_Height;
+    width = m_DisplayMode.Width;
+    height = m_DisplayMode.Height;
 }
 
 void CNeMoContext::SetResolution(int width, int height)
 {
-    m_Width = width;
-    m_Height = height;
+    m_DisplayMode.Width = width;
+    m_DisplayMode.Height = height;
 }
 
 int CNeMoContext::GetWidth() const
 {
-    return m_Width;
+    return m_DisplayMode.Width;
 }
 
 void CNeMoContext::SetWidth(int width)
 {
-    m_Width = width;
+    m_DisplayMode.Width = width;
 }
 
 int CNeMoContext::GetHeight() const
 {
-    return m_Height;
+    return m_DisplayMode.Height;
 }
 
 void CNeMoContext::SetHeight(int height)
 {
-    m_Height = height;
+    m_DisplayMode.Height = height;
 }
 
 int CNeMoContext::GetBPP() const
 {
-    return m_Bpp;
+    return m_DisplayMode.Bpp;
 }
 
 void CNeMoContext::SetBPP(int bpp)
 {
-    m_Bpp = bpp;
+    m_DisplayMode.Bpp = bpp;
 }
 
 int CNeMoContext::GetRefreshRate() const
 {
-    return m_RefreshRate;
+    return m_DisplayMode.RefreshRate;
 }
 
-void CNeMoContext::SetRefreshRate(int fps)
+void CNeMoContext::SetRefreshRate(int refreshRate)
 {
-    m_RefreshRate = fps;
+    m_DisplayMode.RefreshRate = refreshRate;
 }
 
 int CNeMoContext::GetDriver() const
@@ -291,25 +295,25 @@ bool CNeMoContext::FindScreenMode()
     VxDisplayMode *dm = drDesc->DisplayModes;
     const int dmCount = drDesc->DisplayModeCount;
 
-    m_RefreshRate = 0;
+    m_DisplayMode.RefreshRate = 0;
     for (int i = 0; i < dmCount; ++i)
     {
-        if (dm[i].Width == m_Width &&
-            dm[i].Height == m_Height &&
-            dm[i].Bpp == m_Bpp)
+        if (dm[i].Width == m_DisplayMode.Width &&
+            dm[i].Height == m_DisplayMode.Height &&
+            dm[i].Bpp == m_DisplayMode.Bpp)
         {
-            if (dm[i].RefreshRate > m_RefreshRate)
-                m_RefreshRate = dm[i].RefreshRate;
+            if (dm[i].RefreshRate > m_DisplayMode.RefreshRate)
+                m_DisplayMode.RefreshRate = dm[i].RefreshRate;
         }
     }
 
     m_ScreenMode = -1;
     for (int j = 0; j < dmCount; ++j)
     {
-        if (dm[j].Width == m_Width &&
-            dm[j].Height == m_Height &&
-            dm[j].Bpp == m_Bpp &&
-            dm[j].RefreshRate == m_RefreshRate)
+        if (dm[j].Width == m_DisplayMode.Width &&
+            dm[j].Height == m_DisplayMode.Height &&
+            dm[j].Bpp == m_DisplayMode.Bpp &&
+            dm[j].RefreshRate == m_DisplayMode.RefreshRate)
         {
             m_ScreenMode = j;
             break;
@@ -326,46 +330,10 @@ bool CNeMoContext::ApplyScreenMode()
         return false;
 
     const int dmCount = drDesc->DisplayModeCount;
-    if (m_ScreenMode >= dmCount)
+    if (m_ScreenMode < 0 || m_ScreenMode >= dmCount)
         return false;
 
-    VxDisplayMode *dm = &drDesc->DisplayModes[m_ScreenMode];
-    m_Width = dm->Width;
-    m_Height = dm->Height;
-    m_Bpp = dm->Bpp;
-    return true;
-}
-
-bool CNeMoContext::ChangeScreenMode(int driver, int screenMode)
-{
-    if (!m_RenderContext)
-        return false;
-
-    int driverBefore = m_Driver;
-    int screenModeBefore = m_ScreenMode;
-    m_Driver = driver;
-    m_ScreenMode = screenMode;
-    if (!ApplyScreenMode())
-    {
-        m_Driver = driverBefore;
-        m_ScreenMode = screenModeBefore;
-        ApplyScreenMode();
-        return false;
-    }
-
-    bool fullscreenBefore = IsRenderFullscreen();
-    if (fullscreenBefore)
-    {
-        StopFullscreen();
-        GoFullscreen();
-    }
-    else
-    {
-        m_WinContext->SetMainSize(m_Width, m_Height);
-        m_WinContext->SetRenderSize(m_Width, m_Height);
-        m_RenderContext->Resize();
-    }
-
+    m_DisplayMode = drDesc->DisplayModes[m_ScreenMode];
     return true;
 }
 
@@ -374,20 +342,8 @@ bool CNeMoContext::GoFullscreen()
     if (!m_RenderContext || IsRenderFullscreen())
         return false;
 
-    VxDriverDesc *drDesc = m_RenderManager->GetRenderDriverDescription(m_Driver);
-    if (!drDesc)
+    if (m_RenderContext->GoFullScreen(m_DisplayMode.Width, m_DisplayMode.Height, m_DisplayMode.Bpp, m_Driver, m_DisplayMode.RefreshRate) != CK_OK)
         return false;
-
-    VxDisplayMode *dm = &drDesc->DisplayModes[m_ScreenMode];
-    m_RenderContext->GoFullScreen(dm->Width, dm->Height, dm->Bpp, m_Driver);
-
-    if (m_RenderContext->IsFullScreen())
-    {
-        m_WinContext->SetMainStyle(WINDOW_STYLE_FULLSCREEN, WINDOW_STYLE_USECURRENTSETTINGS);
-        m_WinContext->SetPosition(0, 0);
-        m_WinContext->SetMainSize(m_Width, m_Height);
-        m_WinContext->UpdateWindows();
-    }
 
     m_Fullscreen = true;
     return true;
@@ -395,15 +351,12 @@ bool CNeMoContext::GoFullscreen()
 
 bool CNeMoContext::StopFullscreen()
 {
-    if (!m_RenderContext)
+    if (!m_RenderContext || !IsRenderFullscreen())
         return false;
 
-    if (IsRenderFullscreen())
-    {
     m_RenderContext->StopFullScreen();
-    m_Fullscreen = false;
-    }
 
+    m_Fullscreen = false;
     return true;
 }
 
@@ -422,39 +375,9 @@ void CNeMoContext::SetFullscreen(bool fullscreen)
     m_Fullscreen = fullscreen;
 }
 
-void CNeMoContext::ResizeWindow()
-{
-    int w, h;
-    m_WinContext->GetMainSize(w, h);
-    m_WinContext->SetRenderSize(w, h);
-    m_RenderContext->Resize();
-}
-
-bool CNeMoContext::RestoreWindow()
-{
-    if (!StopFullscreen())
-        return false;
-
-    m_WinContext->SetMainStyle(WINDOW_STYLE_USECURRENTSETTINGS, WINDOW_STYLE_FULLSCREEN);
-    m_WinContext->SetMainSize(m_Width, m_Height);
-    m_WinContext->ShowMainWindow();
-    m_WinContext->FocusMainWindow();
-    m_WinContext->SetRenderSize(m_Width, m_Height);
-    m_RenderContext->Resize();
-    m_WinContext->FocusRenderWindow();
-    m_WinContext->UpdateWindows();
-    m_Fullscreen = false;
-    return true;
-}
-
 void CNeMoContext::SetRenderContext(CKRenderContext *renderContext)
 {
     m_RenderContext = renderContext;
-}
-
-void CNeMoContext::SetWinContext(CWinContext *winContext)
-{
-    m_WinContext = winContext;
 }
 
 CKContext *CNeMoContext::GetCKContext()
@@ -487,33 +410,18 @@ InterfaceManager *CNeMoContext::GetInterfaceManager() const
     return m_InterfaceManager;
 }
 
-bool CNeMoContext::CreateRenderContext()
+CKERROR CNeMoContext::CreateRenderContext(WIN_HANDLE renderWin)
 {
+    if (!renderWin)
+        return CKERR_INVALIDPARAMETER;
+
     CKRenderManager *rm = m_CKContext->GetRenderManager();
-    CKRECT rect = {0, 0, m_Width, m_Height};
-    m_RenderContext = rm->CreateRenderContext(m_WinContext->GetRenderWindow(), m_Driver, &rect, FALSE, m_Bpp);
+    CKRECT rect = {0, 0, m_DisplayMode.Width, m_DisplayMode.Height};
+    m_RenderContext = rm->CreateRenderContext(renderWin, m_Driver, &rect, FALSE, m_DisplayMode.Bpp);
     if (!m_RenderContext)
-        return false;
+        return CKERR_INVALIDPARAMETER;
 
-    if (m_Fullscreen && m_RenderContext->GoFullScreen(m_Width, m_Height, m_Bpp, m_Driver) != CK_OK)
-    {
-        if (!RestoreWindow())
-        {
-            CLogger::Get().Error("Cannot switch to windowed mode");
-            return false;
-        }
-        return false;
-    }
-
-    if (!m_Fullscreen)
-        RestoreWindow();
-
-    m_WinContext->FocusMainWindow();
-
-    ClearScreen();
-    RefreshScreen();
-
-    return true;
+    return CK_OK;
 }
 
 int CNeMoContext::GetRenderEnginePluginIdx()

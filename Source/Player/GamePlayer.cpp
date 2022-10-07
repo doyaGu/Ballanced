@@ -340,22 +340,8 @@ bool CGamePlayer::Init(HINSTANCE hInstance, HANDLE hMutex)
         ::MessageBox(NULL, "No RenderEngine", "Error", MB_OK);
         return false;
     case CKERR_INVALIDPARAMETER:
-    {
-        if (::DialogBoxParam(m_WinContext.GetAppInstance(), MAKEINTRESOURCE(IDD_FULLSCREEN_SETUP), NULL, FullscreenSetupProc, 0) != IDOK)
-            return false;
-        if (!m_NeMoContext.ApplyScreenMode())
-            return false;
-
-        config.bpp = m_NeMoContext.GetBPP();
-        config.driver = m_NeMoContext.GetDriver();
-        config.width = m_NeMoContext.GetWidth();
-        config.height = m_NeMoContext.GetHeight();
-        m_WinContext.SetMainSize(config.width, config.height);
-        m_WinContext.SetRenderSize(config.width, config.height);
-
         if (!ReInitEngine())
             return false;
-    }
         break;
     default:
         return false;
@@ -394,7 +380,7 @@ bool CGamePlayer::Process()
     if (!m_WinContext.Process())
             return false;
 
-        m_NeMoContext.Process();
+    m_NeMoContext.Process();
 
     return true;
 }
@@ -404,7 +390,6 @@ void CGamePlayer::Terminate()
     if (m_State == eInitial)
         return;
 
-    m_NeMoContext.RestoreWindow();
     m_NeMoContext.Shutdown();
 
     if (m_hMutex)
@@ -484,9 +469,14 @@ void CGamePlayer::OnMove()
 
 void CGamePlayer::OnSized()
 {
-    CKRenderContext *renderContext = m_NeMoContext.GetRenderContext();
-    if (renderContext)
-        m_NeMoContext.ResizeWindow();
+    CKRenderContext *rc = m_NeMoContext.GetRenderContext();
+    if (rc)
+    {
+        int w, h;
+        m_WinContext.GetMainSize(w, h);
+        m_WinContext.SetRenderSize(w, h);
+        rc->Resize();
+    }
 }
 
 void CGamePlayer::OnPaint()
@@ -532,7 +522,7 @@ void CGamePlayer::OnActivateApp(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
                     wasFullscreen = true;
 
                 Pause();
-                m_NeMoContext.RestoreWindow();
+                OnStopFullscreen();
                 if (wasPlaying && !config.pauseOnDeactivated)
                     Play();
             }
@@ -547,11 +537,7 @@ void CGamePlayer::OnActivateApp(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
     else
     {
         if (wasFullscreen && !firstDeActivate)
-        {
-            m_NeMoContext.GoFullscreen();
-            m_WinContext.ShowMainWindow();
-            m_WinContext.FocusMainWindow();
-        }
+            OnGoFullscreen();
 
         if (config.clipMouse)
             ClipMouse(true);
@@ -656,10 +642,31 @@ void CGamePlayer::OnExitToTitle(WPARAM wParam, LPARAM lParam)
 
 int CGamePlayer::OnChangeScreenMode(WPARAM wParam, LPARAM lParam)
 {
-    if (!m_NeMoContext.ChangeScreenMode(lParam, wParam))
+    int driverBefore = m_NeMoContext.GetDriver();
+    int screenModeBefore = m_NeMoContext.GetScreenMode();
+    m_NeMoContext.SetDriver(lParam);
+    m_NeMoContext.SetScreenMode((int)wParam);
+    if (!m_NeMoContext.ApplyScreenMode())
     {
+        m_NeMoContext.SetDriver(driverBefore);
+        m_NeMoContext.SetScreenMode(screenModeBefore);
+
         CLogger::Get().Error("Failed to change screen mode");
         return 0;
+    }
+
+    if (m_NeMoContext.IsRenderFullscreen())
+    {
+        OnStopFullscreen();
+        OnGoFullscreen();
+    }
+    else
+    {
+        int w, h;
+        m_NeMoContext.GetResolution(w, h);
+        m_WinContext.SetMainSize(w, h);
+        m_WinContext.SetRenderSize(w, h);
+        m_NeMoContext.GetRenderContext()->Resize();
     }
 
     m_Game.SyncCamerasWithScreen();
@@ -669,10 +676,9 @@ int CGamePlayer::OnChangeScreenMode(WPARAM wParam, LPARAM lParam)
     im->SetScreenMode(m_NeMoContext.GetScreenMode());
 
     CGameConfig &config = CGameConfig::Get();
-    config.bpp = m_NeMoContext.GetBPP();
     config.driver = m_NeMoContext.GetDriver();
-    config.width = m_NeMoContext.GetWidth();
-    config.height = m_NeMoContext.GetHeight();
+    m_NeMoContext.GetResolution(config.width, config.height);
+    config.bpp = m_NeMoContext.GetBPP();
 
     if (config.clipMouse)
         ClipMouse(true);
@@ -683,16 +689,41 @@ int CGamePlayer::OnChangeScreenMode(WPARAM wParam, LPARAM lParam)
 void CGamePlayer::OnGoFullscreen()
 {
     Pause();
-    CGameConfig::Get().fullscreen = true;
+
     m_NeMoContext.GoFullscreen();
+
+    int w, h;
+    m_NeMoContext.GetResolution(w, h);
+    m_WinContext.SetMainStyle(WINDOW_STYLE_FULLSCREEN, WINDOW_STYLE_USECURRENTSETTINGS);
+    m_WinContext.SetPosition(0, 0);
+    m_WinContext.SetMainSize(w, h);
+    m_WinContext.ShowMainWindow();
+    m_WinContext.FocusMainWindow();
+    m_WinContext.SetRenderSize(w, h);
+    m_NeMoContext.GetRenderContext()->Resize();
+    m_WinContext.FocusRenderWindow();
+    m_WinContext.UpdateWindows();
+
     Play();
 }
 
 void CGamePlayer::OnStopFullscreen()
 {
     Pause();
+
     m_NeMoContext.StopFullscreen();
-    CGameConfig::Get().fullscreen = false;
+
+    int w, h;
+    m_NeMoContext.GetResolution(w, h);
+    m_WinContext.SetMainStyle(WINDOW_STYLE_USECURRENTSETTINGS, WINDOW_STYLE_FULLSCREEN);
+    m_WinContext.SetMainSize(w, h);
+    m_WinContext.ShowMainWindow();
+    m_WinContext.FocusMainWindow();
+    m_WinContext.SetRenderSize(w, h);
+    m_NeMoContext.GetRenderContext()->Resize();
+    m_WinContext.FocusRenderWindow();
+    m_WinContext.UpdateWindows();
+
     Play();
 }
 
@@ -701,19 +732,17 @@ void CGamePlayer::OnSwitchFullscreen()
     if (m_State == eInitial)
         return;
 
-    Pause();
-
     CGameConfig &config = CGameConfig::Get();
     if (!m_NeMoContext.IsRenderFullscreen())
     {
         config.fullscreen = true;
-        m_NeMoContext.GoFullscreen();
+        OnGoFullscreen();
         if (config.clipMouse)
             ClipMouse(false);
     }
     else
     {
-        m_NeMoContext.RestoreWindow();
+        OnStopFullscreen();
         m_WinContext.SetPosition(config.posX, config.posY);
         config.fullscreen = false;
         if (config.clipMouse)
@@ -738,9 +767,7 @@ int CGamePlayer::InitEngine()
         splash.Show();
     }
 
-    CGameConfig &config = CGameConfig::Get();
-
-    m_NeMoContext.SetScreen(&m_WinContext, config.fullscreen, config.driver, config.bpp, config.width, config.height);
+    CNeMoContext::RegisterInstance(&m_NeMoContext);
 
     if (!m_NeMoContext.StartUp())
         return CKERR_INVALIDPARAMETER;
@@ -757,9 +784,16 @@ int CGamePlayer::InitEngine()
     if (!LoadPlugins())
         return CKERR_INVALIDPARAMETER;
 
-    CKERROR err = m_NeMoContext.CreateContext();
+    CGameConfig &config = CGameConfig::Get();
+
+    m_NeMoContext.SetScreen(config.fullscreen, config.driver, config.width, config.height, config.bpp);
+
+    CKERROR err = m_NeMoContext.CreateContext(m_WinContext.GetMainWindow());
     if (err != CK_OK)
+    {
+        CLogger::Get().Error("Failed to create engine context");
         return err;
+    }
 
     CKRenderManager *rm = m_NeMoContext.GetRenderManager();
     rm->SetRenderOptions("DisableFilter", config.disableFilter);
@@ -774,25 +808,56 @@ int CGamePlayer::InitEngine()
         return CKERR_INVALIDPARAMETER;
     }
 
-    if (!m_NeMoContext.CreateRenderContext())
+    err = m_NeMoContext.CreateRenderContext(m_WinContext.GetRenderWindow());
+    if (err != CK_OK)
     {
         CLogger::Get().Error("Failed to create render context");
-        return CKERR_INVALIDPARAMETER;
+        return err;
     }
+
+    if (config.fullscreen)
+        OnGoFullscreen();
+    else
+        OnStopFullscreen();
+
+    m_NeMoContext.ClearScreen();
+    m_NeMoContext.RefreshScreen();
 
     return CK_OK;
 }
 
 bool CGamePlayer::ReInitEngine()
 {
-    if (!m_NeMoContext.CreateRenderContext())
+    if (::DialogBoxParam(m_WinContext.GetAppInstance(), MAKEINTRESOURCE(IDD_FULLSCREEN_SETUP), NULL, FullscreenSetupProc, 0) != IDOK)
+        return false;
+    if (!m_NeMoContext.ApplyScreenMode())
+        return false;
+
+    CGameConfig &config = CGameConfig::Get();
+    config.driver = m_NeMoContext.GetDriver();
+    m_NeMoContext.GetResolution(config.width, config.height);
+    config.bpp = m_NeMoContext.GetBPP();
+
+    m_WinContext.SetMainSize(config.width, config.height);
+    m_WinContext.SetRenderSize(config.width, config.height);
+    if (!config.fullscreen)
+        m_WinContext.SetPosition(config.posX, config.posY);
+
+    CKERROR err = m_NeMoContext.CreateRenderContext(m_WinContext.GetRenderWindow());
+    if (err != CK_OK)
     {
         CLogger::Get().Error("Cannot recreate render context");
         return false;
     }
-    m_WinContext.UpdateWindows();
-    m_WinContext.ShowMainWindow();
-    m_WinContext.ShowRenderWindow();
+
+    if (config.fullscreen)
+        OnGoFullscreen();
+    else
+        OnStopFullscreen();
+
+    m_NeMoContext.ClearScreen();
+    m_NeMoContext.RefreshScreen();
+
     return true;
 }
 
