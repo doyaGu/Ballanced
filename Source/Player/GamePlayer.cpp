@@ -353,17 +353,13 @@ bool CGamePlayer::Init(HINSTANCE hInstance, HANDLE hMutex)
     im->SetRookie(config.rookie);
     im->SetTaskSwitchEnabled(true);
 
-    if (!config.fullscreen && x != 2147483647 && y != 2147483647)
-        m_WinContext.SetPosition(x, y);
+    m_NeMoContext.RefreshScreen();
 
     m_WinContext.UpdateWindows();
     m_WinContext.ShowMainWindow();
     m_WinContext.ShowRenderWindow();
-
-    m_NeMoContext.RefreshScreen();
-
-    ::SendMessageA(m_WinContext.GetMainWindow(), TT_MSG_EXIT_TO_TITLE, NULL, NULL);
     m_WinContext.FocusMainWindow();
+    m_WinContext.FocusRenderWindow();
 
     m_State = eReady;
     return true;
@@ -499,7 +495,11 @@ void CGamePlayer::OnPaint()
 
 void CGamePlayer::OnClose()
 {
-    ::PostMessageA(m_WinContext.GetMainWindow(), TT_MSG_EXIT_TO_SYS, 0, 0);
+    m_NeMoContext.Cleanup();
+    m_NeMoContext.RefreshScreen();
+    m_NeMoContext.Shutdown();
+
+    m_WinContext.DestroyWindows();
 }
 
 void CGamePlayer::OnActivateApp(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -597,7 +597,7 @@ int CGamePlayer::OnSysKeyDown(UINT uKey)
 
     case VK_F4:
         // ALT + F4 -> Quit the application
-        OnClose();
+        ::PostMessage(m_WinContext.GetMainWindow(), TT_MSG_EXIT_TO_SYS, 0, 0);
         return 1;
 
     default:
@@ -625,7 +625,7 @@ int CGamePlayer::OnCommand(UINT id, UINT code)
 void CGamePlayer::OnExceptionCMO(WPARAM wParam, LPARAM lParam)
 {
     CLogger::Get().Error("Exception in the CMO - Abort");
-    OnDestroy();
+    ::PostMessage(m_WinContext.GetMainWindow(), TT_MSG_EXIT_TO_SYS, 0, 0);
 }
 
 void CGamePlayer::OnReturn(WPARAM wParam, LPARAM lParam)
@@ -634,7 +634,10 @@ void CGamePlayer::OnReturn(WPARAM wParam, LPARAM lParam)
     im->SetGameInfo(m_Game.GetGameInfo());
 
     if (!m_Game.Load())
+    {
         OnDestroy();
+        return;
+    }
     Play();
 }
 
@@ -645,7 +648,8 @@ bool CGamePlayer::OnLoadCMO(WPARAM wParam, LPARAM lParam)
 
 void CGamePlayer::OnExitToSystem(WPARAM wParam, LPARAM lParam)
 {
-    OnDestroy();
+    OnStopFullscreen();
+    ::PostMessage(m_WinContext.GetMainWindow(), WM_CLOSE, 0, 0);
 }
 
 void CGamePlayer::OnExitToTitle(WPARAM wParam, LPARAM lParam)

@@ -43,6 +43,11 @@ void CWinContext::UpdateWindows()
     ::UpdateWindow(m_RenderWindow);
 }
 
+void CWinContext::DestroyWindows()
+{
+    ::DestroyWindow(m_MainWindow);
+}
+
 void CWinContext::ShowMainWindow(bool show)
 {
     int cmd = show ? SW_SHOW : SW_SHOWMINIMIZED;
