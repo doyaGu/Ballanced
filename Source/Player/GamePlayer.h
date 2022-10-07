@@ -39,7 +39,6 @@ public:
     void OnActivateApp(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
     void OnSetCursor();
     void OnGetMinMaxInfo(LPMINMAXINFO lpmmi);
-    int OnKeyDown(UINT uKey);
     int OnSysKeyDown(UINT uKey);
     int OnCommand(UINT id, UINT code);
     void OnExceptionCMO(WPARAM wParam, LPARAM lParam);
