@@ -1,6 +1,6 @@
-#include "CurveEmitter.h"
+#include "CKAll.h"
 
-#include "TT_ParticleSystems_RT.h"
+#include "CurveEmitter.h"
 
 void CurveEmitter::InitiateParticle(Particle *p)
 {

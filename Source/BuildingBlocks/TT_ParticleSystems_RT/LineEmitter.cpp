@@ -1,6 +1,6 @@
-#include "LineEmitter.h"
+#include "CKAll.h"
 
-#include "TT_ParticleSystems_RT.h"
+#include "LineEmitter.h"
 
 void LineEmitter::InitiateParticle(Particle *p)
 {

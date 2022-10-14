@@ -1,5 +1,5 @@
-#ifndef BUILDINGBLOCKS_PARTICLESYSTEMRENDERCALLBACK_H
-#define BUILDINGBLOCKS_PARTICLESYSTEMRENDERCALLBACK_H
+#ifndef PARTICLESYSTEMRENDERCALLBACK_H
+#define PARTICLESYSTEMRENDERCALLBACK_H
 
 // New Render Callback
 
@@ -15,4 +15,4 @@ int RenderParticles_CS(CKRenderContext *dev, CKRenderObject *mov, void *arg);
 int RenderParticles_RS(CKRenderContext *dev, CKRenderObject *mov, void *arg);
 int RenderParticles_FS(CKRenderContext *dev, CKRenderObject *mov, void *arg);
 
-#endif // BUILDINGBLOCKS_PARTICLESYSTEMRENDERCALLBACK_H
+#endif

@@ -1,5 +1,5 @@
-#ifndef BUILDINGBLOCKS_CURVEEMITTER_H
-#define BUILDINGBLOCKS_CURVEEMITTER_H
+#ifndef CurveEMITTER_H
+#define CurveEMITTER_H
 
 #include "PointEmitter.h"
 
@@ -16,4 +16,4 @@ protected:
     void InitiateDirection(Particle *);
 };
 
-#endif // BUILDINGBLOCKS_CURVEEMITTER_H
+#endif

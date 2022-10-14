@@ -1,8 +1,7 @@
-#ifndef BUILDINGBLOCKS_PARTICLEMANAGER_H
-#define BUILDINGBLOCKS_PARTICLEMANAGER_H
+#ifndef PARTICLEMANAGER_H
+#define PARTICLEMANAGER_H
 
 #include "CKBaseManager.h"
-#include "CKContext.h"
 
 #include "ParticleTools.h"
 
@@ -15,15 +14,17 @@
 #include "CurveEmitter.h"
 #include "CylindricalEmitter.h"
 #include "SphericalEmitter.h"
+#include "TimePointEmitter.h"
+#include "WaveEmitter.h"
 
-#define PARTICLE_MANAGER_GUID CKGUID(0x1DD91197, 0x1F703F3)
-
-class ParticleEmitter;
+#define PARTICLE_MANAGER_GUID CKGUID(0x1dd91197, 0x1f703f3)
 
 class ParticleManager : public CKBaseManager
 {
 public:
+    // Ctor
     ParticleManager(CKContext *ctx);
+    // Dtor
     ~ParticleManager();
 
     CKERROR OnCKInit();
@@ -45,6 +46,13 @@ public:
                CKMANAGER_FUNC_PostClearAll |
                CKMANAGER_FUNC_PostProcess;
     }
+
+    static ParticleManager *GetManager(CKContext *context)
+    {
+        return (ParticleManager *)context->GetManagerByGuid(PARTICLE_MANAGER_GUID);
+    }
+
+    // Methods
 
     // Particle System Creation
     ParticleEmitter *CreateNewEmitter(CKGUID guid, CK_ID entity);
@@ -76,6 +84,8 @@ public:
     void ManageTunnel(ParticleEmitter *em, float deltat);
     void ManageProjector(ParticleEmitter *em, float deltat);
 
+    ///
+    // Members
     // Particle Systems Attributes
     // Interactors
     int m_GravityAttribute;
@@ -121,7 +131,7 @@ public:
 
     void InteractorsSetRemoveMesh(CKBOOL iAdd);
 
-    // Meshes
+    // meshes
     CK_ID m_GlobalWindMesh;
     CK_ID m_LocalWindMesh;
     CK_ID m_MagnetMesh;
@@ -151,15 +161,10 @@ public:
     XArray<ParticleEmitter *> m_Emitters;
     int m_TotalParticleCount;
 
-    static ParticleManager *GetManager(CKContext *context)
-    {
-        return (ParticleManager *)context->GetManagerByGuid(PARTICLE_MANAGER_GUID);
-    }
-
 protected:
     void _InteractorsSetRemoveMesh(int iAttribute, CK_ID iMeshID, CKBOOL iAdd);
 };
 
 extern ParticleManager TheParticleManager;
 
-#endif // BUILDINGBLOCKS_PARTICLEMANAGER_H
+#endif

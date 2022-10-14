@@ -1,6 +1,6 @@
-#include "CylindricalEmitter.h"
+#include "CKAll.h"
 
-#include "TT_ParticleSystems_RT.h"
+#include "CylindricalEmitter.h"
 
 void CylindricalEmitter::InitiateParticle(Particle *p)
 {
@@ -14,6 +14,4 @@ void CylindricalEmitter::InitiateParticle(Particle *p)
     entity->Transform(&p->pos, &randpos);
 }
 
-void CylindricalEmitter::InitiateDirection(Particle *p)
-{
-}
+void CylindricalEmitter::InitiateDirection(Particle *p) {}

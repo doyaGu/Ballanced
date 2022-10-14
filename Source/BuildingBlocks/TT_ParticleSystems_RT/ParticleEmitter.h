@@ -1,8 +1,16 @@
-#ifndef BUILDINGBLOCKS_PARTICLEEMITTER_H
-#define BUILDINGBLOCKS_PARTICLEEMITTER_H
+#ifndef PARTICLEEMITTER_H
+#define PARTICLEEMITTER_H
 
 #include "Particle.h"
 #include "ParticleTools.h"
+
+#ifdef WIN32
+#include <windows.h>
+#endif
+
+//#define MT_VERB
+
+//#define USE_THR 1
 
 class ParticleManager;
 
@@ -80,7 +88,7 @@ public:
     // NULL terminated linked list
     Particle *particles;
     // the particles pool
-    BYTE *m_BackPool;
+    CKBYTE *m_BackPool;
     Particle *m_Pool;
     // maximum number of particles
     int m_MaximumParticles;
@@ -96,6 +104,27 @@ public:
     float m_Life;
     // life variation
     float m_LifeVariation;
+
+    // trailing particles
+    int m_TrailCount;
+    // historic of recent particles.
+    struct ParticleHistoric
+    {
+        inline ParticleHistoric() {}
+        inline ParticleHistoric(unsigned int size) : start(0),
+                                                     count(0)
+        {
+            particles.Resize(size);
+        }
+
+        int start;
+        int count;
+        XArray<Particle> particles;
+    };
+    // Old particles.
+    XClassArray<ParticleHistoric> old_pos;
+
+    ParticleHistoric &GetParticleHistoric(Particle *part);
 
     // Blend Modes
     VXBLEND_MODE m_SrcBlend;
@@ -134,23 +163,25 @@ public:
     XArray<ParticleImpact> m_Impacts;
     int m_CurrentImpact;
 
-    static WORD *m_GlobalIndices;
+    static CKWORD *m_GlobalIndices;
     static int m_GlobalIndicesCount;
 
-    int m_Flag;
-    int m_DeltaTime;
-    int m_Activity;
-    CKMesh *m_Shape;
-    int val_12c;
-    int val_120;
-    int m_EmissionDelay;
+    CKBehavior *m_Behavior;
+    ParticleManager *m_Manager;
+
+    // Thread computation
+#ifdef WIN32
+    HANDLE hasBeenComputedEvent;
+#endif
+    volatile bool hasBeenRendered; // used for cases where we compute once and render twice
+    volatile bool hasBeenEnqueud;  // used for cases where we compute once and render twice
 
 protected:
-    // create the particle at its initial position : depends of the emitter type
+    // create the particle at its initial position : depends on the emitter type
     virtual void InitiateParticle(Particle *p) = 0;
     virtual void InitiateDirection(Particle *p);
 };
 
 void ShowParticles(CKBehavior *beh, CKBOOL show = TRUE);
 
-#endif // BUILDINGBLOCKS_PARTICLEEMITTER_H
+#endif

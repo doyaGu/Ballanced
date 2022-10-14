@@ -5,16 +5,10 @@
 //
 /////////////////////////////////////////////////////
 /////////////////////////////////////////////////////
-#include "TT_ParticleSystems_RT.h"
+#include "CKAll.h"
 
-#include "CurveEmitter.h"
-#include "DiscEmitter.h"
-#include "LineEmitter.h"
-#include "PlanarEmitter.h"
-#include "PointEmitter.h"
-
-#include "GeneralParticleSystem.h"
 #include "ParticleGuids.h"
+#include "GeneralParticleSystem.h"
 
 CKObjectDeclaration *FillBehaviorCurveParticleSystemDecl();
 
@@ -29,7 +23,7 @@ CKObjectDeclaration *FillBehaviorCurveParticleSystemDecl()
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateGeneralParticleSystemProto);
     od->SetCompatibleClassId(CKCID_CURVE);
-    od->SetCategory("Particles");
+    od->SetCategory("TT_Particles");
     od->NeedManager(PARTICLE_MANAGER_GUID);
     /* rem:
     Particle System which emits particles from a curve, in the Y local direction of it.

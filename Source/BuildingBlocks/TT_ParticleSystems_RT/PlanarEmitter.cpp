@@ -1,6 +1,6 @@
-#include "PlanarEmitter.h"
+#include "CKAll.h"
 
-#include "TT_ParticleSystems_RT.h"
+#include "PlanarEmitter.h"
 
 void PlanarEmitter::InitiateParticle(Particle *p)
 {

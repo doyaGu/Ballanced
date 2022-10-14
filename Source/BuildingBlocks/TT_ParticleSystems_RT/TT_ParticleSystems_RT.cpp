@@ -1,4 +1,4 @@
-#include "TT_ParticleSystems_RT.h"
+#include "CKAll.h"
 
 #include "GeneralParticleSystem.h"
 #include "ParticleGuids.h"
@@ -86,9 +86,7 @@ CKERROR ExitInstance(CKContext *context)
     // Manager
     ParticleManager *man = ParticleManager::GetManager(context);
     if (man)
-    {
         delete man;
-    }
 
     CKParameterManager *pm = context->GetParameterManager();
 
@@ -153,6 +151,8 @@ void RegisterBehaviorDeclarations(XObjectDeclarationArray *reg)
     RegisterBehavior(reg, FillBehaviorCurveParticleSystemDecl);
     RegisterBehavior(reg, FillBehaviorCylindricalParticleSystemDecl);
     RegisterBehavior(reg, FillBehaviorSphericalParticleSystemDecl);
+
+    // Added by Terratools
     RegisterBehavior(reg, FillBehaviorTimeDependentPointParticleSystemDecl);
     RegisterBehavior(reg, FillBehaviorWaveParticleSystemDecl);
 }

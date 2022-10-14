@@ -1,15 +1,17 @@
+#include "CKAll.h"
+
 #include "ParticleTools.h"
 
-BOOL RayBoxIntersection(const VxBbox &box, VxVector &p0, VxVector &p1, VxVector &res, VxVector &norm)
+CKBOOL RayBoxIntersection(const VxBbox &box, VxVector &p0, VxVector &p1, VxVector &res, VxVector &norm)
 {
-    BOOL inside = TRUE;
+    CKBOOL inside = TRUE;
     int quadrant[3];
     int i;
     int whichPlane;
     VxVector maxT;
     VxVector candidatePlane;
     // Find candidate planes; this loop can be avoided if
-    // rays cast all from the eye(assume perpsective view)
+    // rays cast all from the eye(assume perspective view)
     for (i = 0; i < 3; i++)
         if (p0.v[i] < box.Min.v[i])
         {
@@ -74,9 +76,9 @@ BOOL RayBoxIntersection(const VxBbox &box, VxVector &p0, VxVector &p1, VxVector 
     return 1;
 }
 
-BOOL RayInteriorBoxIntersection(const VxBbox &box, VxVector &p0, VxVector &p1, VxVector &res, VxVector &norm)
+CKBOOL RayInteriorBoxIntersection(const VxBbox &box, VxVector &p0, VxVector &p1, VxVector &res, VxVector &norm)
 {
-    BOOL inside = TRUE;
+    CKBOOL inside = TRUE;
     int quadrant[3];
     int i;
     int whichPlane;
@@ -148,7 +150,7 @@ BOOL RayInteriorBoxIntersection(const VxBbox &box, VxVector &p0, VxVector &p1, V
     return (TRUE);
 }
 
-BOOL RaySphereIntersection(VxVector &p0, VxVector &p1, VxVector &res, VxVector &norm)
+CKBOOL RaySphereIntersection(VxVector &p0, VxVector &p1, VxVector &res, VxVector &norm)
 {
     float dist0 = SquareMagnitude(p0);
     float dist1 = SquareMagnitude(p1);
@@ -172,7 +174,7 @@ BOOL RaySphereIntersection(VxVector &p0, VxVector &p1, VxVector &res, VxVector &
     return FALSE;
 }
 
-BOOL RayTubeIntersection(VxVector &p0, VxVector &p1, VxVector &res, VxVector &norm)
+CKBOOL RayTubeIntersection(VxVector &p0, VxVector &p1, VxVector &res, VxVector &norm)
 {
     VxVector O(0, 0, 0);
     VxVector d(0, 0, 1);
@@ -216,7 +218,7 @@ BOOL RayTubeIntersection(VxVector &p0, VxVector &p1, VxVector &res, VxVector &no
     return FALSE;
 }
 
-BOOL RayPlaneIntersection(VxVector &Normal, VxVector &pt, VxVector &ori, VxVector &dest, VxVector &res)
+CKBOOL RayPlaneIntersection(VxVector &Normal, VxVector &pt, VxVector &ori, VxVector &dest, VxVector &res)
 {
     VxVector V = dest - ori;
     VxVector AP = ori - pt;
