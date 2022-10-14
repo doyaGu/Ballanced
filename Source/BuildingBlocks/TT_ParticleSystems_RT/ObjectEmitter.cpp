@@ -1,8 +1,6 @@
+#include "CKAll.h"
+
 #include "ObjectEmitter.h"
-
-#include "TT_ParticleSystems_RT.h"
-
-#include <time.h>
 
 void ObjectEmitter::InitiateParticle(Particle *p)
 {

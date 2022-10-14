@@ -1,6 +1,8 @@
-#include "SphericalEmitter.h"
+#include "CKAll.h"
 
-#include "TT_ParticleSystems_RT.h"
+#include <time.h>
+
+#include "SphericalEmitter.h"
 
 void SphericalEmitter::InitiateParticle(Particle *p)
 {

@@ -5,7 +5,7 @@ set(BUILDING_BLOCKS
     TT_DatabaseManager_RT
     # TT_Gravity_RT
     TT_InterfaceManager_RT
-    # TT_ParticleSystems_RT
+    TT_ParticleSystems_RT
     # TT_Toolbox_RT
 )
 

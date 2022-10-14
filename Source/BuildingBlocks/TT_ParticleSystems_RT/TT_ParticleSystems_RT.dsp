@@ -170,7 +170,7 @@ SOURCE=.\ParticleSystemMeshes.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\ParticleSystemRenderCB.cpp
+SOURCE=.\ParticleSystemRenderCallbacks.cpp
 # End Source File
 # Begin Source File
 
@@ -202,12 +202,32 @@ SOURCE=.\SphericalParticleSystem.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\TimeDependentPointParticleSystem.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\TimePointEmitter.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\TT_ParticleSystems_RT.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\WaveEmitter.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\WaveParticleSystem.cpp
 # End Source File
 # End Group
 # Begin Group "Header Files"
 
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
+# Begin Source File
+
+SOURCE=.\BlockingQueue.h
+# End Source File
 # Begin Source File
 
 SOURCE=.\CubicEmitter.h
@@ -254,7 +274,7 @@ SOURCE=.\ParticleManager.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\ParticleSystemRenderCallBacks.h
+SOURCE=.\ParticleSystemRenderCallbacks.h
 # End Source File
 # Begin Source File
 
@@ -274,7 +294,15 @@ SOURCE=.\SphericalEmitter.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\TT_ParticleSystems_RT.h
+SOURCE=.\ThreadSafeQueue.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\TimePointEmitter.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\WaveEmitter.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"

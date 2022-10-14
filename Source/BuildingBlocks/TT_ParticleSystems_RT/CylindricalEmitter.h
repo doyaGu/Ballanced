@@ -1,17 +1,16 @@
-#ifndef BUILDINGBLOCKS_CYLINDRICALEMITTER_H
-#define BUILDINGBLOCKS_CYLINDRICALEMITTER_H
+#ifndef CylindricalEMITTER_H
+#define CylindricalEMITTER_H
 
 #include "PointEmitter.h"
 
-class CylindricalEmitter : public PointEmitter
-{
+class CylindricalEmitter : public PointEmitter {
 public:
-    CylindricalEmitter(CKContext *ctx, CK_ID ent, char *name) : PointEmitter(ctx, ent, name){};
+    CylindricalEmitter(CKContext* ctx,CK_ID ent,char* name) : PointEmitter(ctx,ent,name) {}
 
 protected:
     // add a particle
-    void InitiateParticle(Particle *);
-    void InitiateDirection(Particle *);
+    void InitiateParticle(Particle*);
+    void InitiateDirection(Particle*);
 };
 
-#endif // BUILDINGBLOCKS_CYLINDRICALEMITTER_H
+#endif

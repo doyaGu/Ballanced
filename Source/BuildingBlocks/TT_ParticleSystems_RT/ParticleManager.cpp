@@ -1,10 +1,9 @@
-#include "ParticleManager.h"
-
-#include "TT_ParticleSystems_RT.h"
+#include "CKAll.h"
 
 #include "Particle.h"
 #include "ParticleGuids.h"
 #include "ParticleEmitter.h"
+#include "ParticleManager.h"
 
 char *ParticleManager::Name = "Particle Manager";
 
@@ -12,7 +11,7 @@ char *ParticleManager::Name = "Particle Manager";
 // see ParticleManager.h for the class definition
 ParticleManager::ParticleManager(CKContext *context) : CKBaseManager(context, PARTICLE_MANAGER_GUID, ParticleManager::Name)
 {
-    ParticleEmitter::m_GlobalIndices = 0;
+    ParticleEmitter::m_GlobalIndices = NULL;
     ParticleEmitter::m_GlobalIndicesCount = 0;
 
     InitMeshes();
@@ -30,9 +29,11 @@ void ParticleManager::ShowInteractors(CKBOOL on)
     for (int i = 0; i < count; ++i)
     {
         CKBehavior *beh = (CKBehavior *)CKGetObject(ids[i]);
+        // it's a building block
         if (beh->GetType() == CKBEHAVIORTYPE_BASE)
-        { // it's a building block
+        {
             CKGUID guid = beh->GetPrototypeGuid();
+            // it's a particle system block
             if ((guid == POINTSYSTEM_GUID) ||
                 (guid == PLANARSYSTEM_GUID) ||
                 (guid == CUBICSYSTEM_GUID) ||
@@ -41,8 +42,10 @@ void ParticleManager::ShowInteractors(CKBOOL on)
                 (guid == OBJECTSYSTEM_GUID) ||
                 (guid == CURVESYSTEM_GUID) ||
                 (guid == CYLINDRICALSYSTEM_GUID) ||
-                (guid == SPHERICALSYSTEM_GUID))
-            { // it's a particle system block
+                (guid == SPHERICALSYSTEM_GUID) ||
+                (guid == TIMEPOINTSYSTEM_GUID) ||
+                (guid == WAVESYSTEM_GUID))
+            {
                 beh->SetLocalParameterValue(DISPLAYINTERACTORS, &m_ShowInteractors);
             }
         }
@@ -69,48 +72,56 @@ void ParticleManager::InitAttributes()
     attman->SetAttributeDefaultValue(att, "-0.0001");
     attman->SetAttributeCallbackFunction(att, ParticleAttributeCallback, this);
     m_GravityAttribute = att;
+
     // Global Wind
     att = attman->RegisterNewAttributeType(ParticleGlobalWindName, CKPGUID_FLOAT, CKCID_3DENTITY);
     attman->SetAttributeCategory(att, ParticleSystemsInteractorsName);
     attman->SetAttributeDefaultValue(att, "0.001");
     attman->SetAttributeCallbackFunction(att, ParticleAttributeCallback, this);
     m_GlobalWindAttribute = att;
+
     // Local Wind
     att = attman->RegisterNewAttributeType(ParticleLocalWindName, CKPGUID_2DVECTOR, CKCID_3DENTITY);
     attman->SetAttributeCategory(att, ParticleSystemsInteractorsName);
     attman->SetAttributeDefaultValue(att, "0.001,0");
     attman->SetAttributeCallbackFunction(att, ParticleAttributeCallback, this);
     m_LocalWindAttribute = att;
+
     // Magnet
     att = attman->RegisterNewAttributeType(ParticleMagnetName, CKPGUID_FLOAT, CKCID_3DENTITY);
     attman->SetAttributeCategory(att, ParticleSystemsInteractorsName);
     attman->SetAttributeCallbackFunction(att, ParticleAttributeCallback, this);
     attman->SetAttributeDefaultValue(att, "1.0");
     m_MagnetAttribute = att;
+
     // Vortex
     att = attman->RegisterNewAttributeType(ParticleVortexName, CKPGUID_VECTOR, CKCID_3DENTITY);
     attman->SetAttributeCategory(att, ParticleSystemsInteractorsName);
     attman->SetAttributeCallbackFunction(att, ParticleAttributeCallback, this);
     attman->SetAttributeDefaultValue(att, "1.0,1.0,1.0");
     m_VortexAttribute = att;
+
     // Disruption Box
     att = attman->RegisterNewAttributeType(ParticleDisruptionBoxName, CKPGUID_VECTOR, CKCID_3DENTITY);
     attman->SetAttributeCategory(att, ParticleSystemsInteractorsName);
     attman->SetAttributeCallbackFunction(att, ParticleAttributeCallback, this);
     attman->SetAttributeDefaultValue(att, "0.1,0.1,0.1");
     m_DisruptionBoxAttribute = att;
+
     // Mutation Box
     att = attman->RegisterNewAttributeType(ParticleMutationBoxName, CKPGUID_PARTICLEMUTATION, CKCID_3DENTITY);
     attman->SetAttributeCategory(att, ParticleSystemsInteractorsName);
     attman->SetAttributeCallbackFunction(att, ParticleAttributeCallback, this);
     attman->SetAttributeDefaultValue(att, "1.0;0.01;255,255,255,255;0.01");
     m_MutationBoxAttribute = att;
+
     // Atmosphere
     att = attman->RegisterNewAttributeType(ParticleAtmosphereName, CKPGUID_FLOAT);
     attman->SetAttributeCategory(att, ParticleSystemsInteractorsName);
     attman->SetAttributeDefaultValue(att, "0.003");
     attman->SetAttributeCallbackFunction(att, ParticleAttributeCallback, this);
     m_AtmosphereAttribute = att;
+
     // Tunnel
     att = attman->RegisterNewAttributeType(ParticleTunnelName, CKPGUID_PARTICLETUNNEL, CKCID_3DENTITY);
     attman->SetAttributeCategory(att, ParticleSystemsInteractorsName);
@@ -138,18 +149,21 @@ void ParticleManager::InitAttributes()
     attman->SetAttributeDefaultValue(att, "1.0;1.0;100");
     attman->SetAttributeCallbackFunction(att, ParticleAttributeCallback, this);
     m_DPlaneAttribute = att;
+
     // Infinite Plane
     att = attman->RegisterNewAttributeType(ParticleDInfinitePlaneName, CKPGUID_PDEFLECTORS, CKCID_3DENTITY);
     attman->SetAttributeCategory(att, ParticleSystemsDeflectorsName);
     attman->SetAttributeCallbackFunction(att, ParticleAttributeCallback, this);
     attman->SetAttributeDefaultValue(att, "1.0;1.0;100");
     m_DInfinitePlaneAttribute = att;
+
     // Sphere
     att = attman->RegisterNewAttributeType(ParticleDSphereName, CKPGUID_PDEFLECTORS, CKCID_3DENTITY);
     attman->SetAttributeCategory(att, ParticleSystemsDeflectorsName);
     attman->SetAttributeCallbackFunction(att, ParticleAttributeCallback, this);
     attman->SetAttributeDefaultValue(att, "1.0;1.0;100");
     m_DSphereAttribute = att;
+
     /* Not working yet : so commented */
     // Cylinder
     att = attman->RegisterNewAttributeType(ParticleDCylinderName, CKPGUID_PDEFLECTORS, CKCID_3DENTITY);
@@ -157,12 +171,14 @@ void ParticleManager::InitAttributes()
     attman->SetAttributeCallbackFunction(att, ParticleAttributeCallback, this);
     attman->SetAttributeDefaultValue(att, "1.0;1.0;100");
     m_DCylinderAttribute = att;
+
     // Box
     att = attman->RegisterNewAttributeType(ParticleDBoxName, CKPGUID_PDEFLECTORS, CKCID_3DENTITY);
     attman->SetAttributeCategory(att, ParticleSystemsDeflectorsName);
     attman->SetAttributeCallbackFunction(att, ParticleAttributeCallback, this);
     attman->SetAttributeDefaultValue(att, "1.0;1.0;100");
     m_DBoxAttribute = att;
+
     // Object
     att = attman->RegisterNewAttributeType(ParticleDObjectName, CKPGUID_PODEFLECTORS, CKCID_3DENTITY);
     attman->SetAttributeCategory(att, ParticleSystemsDeflectorsName);
@@ -226,8 +242,7 @@ void ParticleManager::InitMeshes()
     m_SphericalMesh = 0;
 }
 
-CKERROR
-ParticleManager::OnCKInit()
+CKERROR ParticleManager::OnCKInit()
 {
     // We create the attributes
     InitAttributes();
@@ -236,8 +251,7 @@ ParticleManager::OnCKInit()
     return CK_OK;
 }
 
-CKERROR
-ParticleManager::OnCKPause()
+CKERROR ParticleManager::OnCKPause()
 {
     // set the interactors meshes
     InteractorsSetRemoveMesh(TRUE);
@@ -245,8 +259,7 @@ ParticleManager::OnCKPause()
     return CK_OK;
 }
 
-CKERROR
-ParticleManager::PostLaunchScene(CKScene *OldScene, CKScene *NewScene)
+CKERROR ParticleManager::PostLaunchScene(CKScene *OldScene, CKScene *NewScene)
 {
     // set the interactors meshes
     InteractorsSetRemoveMesh(TRUE);
@@ -254,16 +267,14 @@ ParticleManager::PostLaunchScene(CKScene *OldScene, CKScene *NewScene)
     return CK_OK;
 }
 
-CKERROR
-ParticleManager::PreSave()
+CKERROR ParticleManager::PreSave()
 {
     InteractorsSetRemoveMesh(FALSE);
 
     return CK_OK;
 }
 
-CKERROR
-ParticleManager::PostSave()
+CKERROR ParticleManager::PostSave()
 {
     InteractorsSetRemoveMesh(TRUE);
 
@@ -276,8 +287,7 @@ ParticleManager::~ParticleManager()
     ParticleEmitter::m_GlobalIndices = 0;
 }
 
-ParticleEmitter *
-ParticleManager::CreateNewEmitter(CKGUID guid, CK_ID entity)
+ParticleEmitter *ParticleManager::CreateNewEmitter(CKGUID guid, CK_ID entity)
 {
     // Creation of the emitter
     ParticleEmitter *em = NULL;
@@ -318,9 +328,13 @@ ParticleManager::CreateNewEmitter(CKGUID guid, CK_ID entity)
         em->m_Mesh = m_DiscMesh;
     }
     else if (guid == OBJECTSYSTEM_GUID)
+    {
         em = new ObjectEmitter(m_Context, entity, "ObjectEmitter");
+    }
     else if (guid == CURVESYSTEM_GUID)
+    {
         em = new CurveEmitter(m_Context, entity, "CurveEmitter");
+    }
     else if (guid == CYLINDRICALSYSTEM_GUID)
     {
         em = new CylindricalEmitter(m_Context, entity, "CylindricalEmitter");
@@ -335,6 +349,17 @@ ParticleManager::CreateNewEmitter(CKGUID guid, CK_ID entity)
         CreateSphericalMesh();
         em->m_Mesh = m_SphericalMesh;
     }
+    else if (guid == TIMEPOINTSYSTEM_GUID)
+    {
+        em = new TimePointEmitter(m_Context, entity, "TimePointEmitter");
+    }
+    else if (guid == WAVESYSTEM_GUID)
+    {
+        em = new WaveEmitter(m_Context, entity, "WaveEmitter");
+    }
+
+    // register the manager
+    em->m_Manager = this;
 
     // +1 Emitter
     m_Emitters.PushBack(em);
@@ -348,14 +373,12 @@ void ParticleManager::DeleteEmitter(ParticleEmitter *iEmitter)
     delete iEmitter;
 }
 
-CKERROR
-ParticleManager::PostProcess()
+CKERROR ParticleManager::PostProcess()
 {
-    // totalize the curent count of emitted particles
+    // Add up the current count of emitted particles
     m_TotalParticleCount = 0;
     for (ParticleEmitter **it = m_Emitters.Begin(); it != m_Emitters.End(); ++it)
     {
-
         m_TotalParticleCount += (*it)->particleCount;
     }
 
@@ -389,8 +412,7 @@ int InteractorsRC(CKRenderContext *dev, CKRenderObject *obj, void *arg)
         for (int i = 0; i < ent->GetMeshCount(); i++)
         {
             CKMesh *mesh = ent->GetMesh(i);
-            if (mesh)
-                mesh->Render(dev, ent);
+            if (mesh) mesh->Render(dev, ent);
         }
     }
 

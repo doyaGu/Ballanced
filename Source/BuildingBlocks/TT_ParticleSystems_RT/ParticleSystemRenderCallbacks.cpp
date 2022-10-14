@@ -1,14 +1,46 @@
-#include "TT_ParticleSystems_RT.h"
+#include "CKAll.h"
 
 #include "ParticleEmitter.h"
 #include "ParticleSystemRenderCallbacks.h"
 
 int (*renderParticles)(CKRenderContext *dev, CKRenderObject *obj, void *arg);
 
+// ACC - July 10,2002
+// Need to add code into each RenderCB to test if shutdown
+// Then we need to wait on PE to be finished
+//
+extern VxMutex logguard;
+extern FILE *ACCLOG;
+
+#ifdef USE_THR
+void ThreadWaitForCompletion(ParticleEmitter *em, const char *RenderingMethod)
+{
+#ifdef MT_VERB
+    // ACC, July 10, 2002
+    {
+        VxMutexLock lock(logguard);
+        fprintf(ACCLOG, "About to render a %s\n", RenderingMethod);
+        fflush(ACCLOG);
+    }
+#endif
+
+    // Wait
+    if (!em->hasBeenRendered && em->hasBeenEnqueud)
+    {
+        WaitForSingleObject(em->hasBeenComputedEvent, INFINITE);
+        em->hasBeenRendered = TRUE;
+    }
+}
+#endif
+
 int RenderParticles_P(CKRenderContext *dev, CKRenderObject *obj, void *arg)
 {
     CK3dEntity *mov = (CK3dEntity *)obj;
     ParticleEmitter *em = (ParticleEmitter *)arg;
+
+#ifdef USE_THR
+    ThreadWaitForCompletion(em, "Point");
+#endif
 
     // This section of code can go into the render call back, and return premature
     // if particle is shutdown
@@ -47,7 +79,7 @@ int RenderParticles_P(CKRenderContext *dev, CKRenderObject *obj, void *arg)
     Particle *p = em->getParticles();
 
     VxVector *positions = (VxVector *)data->PositionPtr;
-    DWORD *colors = (DWORD *)data->ColorPtr;
+    CKDWORD *colors = (CKDWORD *)data->ColorPtr;
 
     while (p)
     {
@@ -57,8 +89,8 @@ int RenderParticles_P(CKRenderContext *dev, CKRenderObject *obj, void *arg)
         // next point
         p = p->next;
 
-        colors = (DWORD *)((BYTE *)colors + data->ColorStride);
-        positions = (VxVector *)((BYTE *)positions + data->PositionStride);
+        colors = (CKDWORD *)((CKBYTE *)colors + data->ColorStride);
+        positions = (VxVector *)((CKBYTE *)positions + data->PositionStride);
     }
 
     // The drawing
@@ -75,6 +107,10 @@ int RenderParticles_L(CKRenderContext *dev, CKRenderObject *obj, void *arg)
 {
     CK3dEntity *mov = (CK3dEntity *)obj;
     ParticleEmitter *em = (ParticleEmitter *)arg;
+
+#ifdef USE_THR
+    ThreadWaitForCompletion(em, "Line");
+#endif
 
     // This section of code can go into the render call back, and return premature
     // if particle is shutdown
@@ -110,11 +146,10 @@ int RenderParticles_L(CKRenderContext *dev, CKRenderObject *obj, void *arg)
     dev->SetTextureStageState(CKRST_TSS_STAGEBLEND, 0, 1);
 
     Particle *p = em->getParticles();
-    int i = 0;
     VxColor oldColor;
 
     VxVector *positions = (VxVector *)data->PositionPtr;
-    DWORD *colors = (DWORD *)data->ColorPtr;
+    CKDWORD *colors = (CKDWORD *)data->ColorPtr;
 
     while (p)
     {
@@ -126,17 +161,17 @@ int RenderParticles_L(CKRenderContext *dev, CKRenderObject *obj, void *arg)
 
         // Start of line
         *positions = p->pos - p->dir * p->m_DeltaTime;
-        positions = (VxVector *)((BYTE *)positions + data->PositionStride);
+        positions = (VxVector *)((CKBYTE *)positions + data->PositionStride);
 
         *colors = RGBAFTOCOLOR(&oldColor);
-        colors = (DWORD *)((BYTE *)colors + data->ColorStride);
+        colors = (CKDWORD *)((CKBYTE *)colors + data->ColorStride);
 
         // End of line
         *positions = p->pos + p->dir * p->m_Angle;
-        positions = (VxVector *)((BYTE *)positions + data->PositionStride);
+        positions = (VxVector *)((CKBYTE *)positions + data->PositionStride);
 
         *colors = RGBAFTOCOLOR(&(p->m_Color));
-        colors = (DWORD *)((BYTE *)colors + data->ColorStride);
+        colors = (CKDWORD *)((CKBYTE *)colors + data->ColorStride);
 
         // Next particle
         p = p->next;
@@ -156,6 +191,10 @@ int RenderParticles_LL(CKRenderContext *dev, CKRenderObject *obj, void *arg)
 {
     CK3dEntity *mov = (CK3dEntity *)obj;
     ParticleEmitter *em = (ParticleEmitter *)arg;
+
+#ifdef USE_THR
+    ThreadWaitForCompletion(em, "LongLine");
+#endif
 
     // This section of code can go into the render call back, and return premature
     // if particle is shutdown
@@ -196,9 +235,9 @@ int RenderParticles_LL(CKRenderContext *dev, CKRenderObject *obj, void *arg)
     VxColor oldColor;
 
     VxVector *positions = (VxVector *)data->PositionPtr;
-    DWORD *colors = (DWORD *)data->ColorPtr;
+    CKDWORD *colors = (CKDWORD *)data->ColorPtr;
 
-    DWORD num_prims = 0;
+    CKDWORD num_prims = 0;
     while (p)
     {
 #define for    \
@@ -225,44 +264,44 @@ int RenderParticles_LL(CKRenderContext *dev, CKRenderObject *obj, void *arg)
             l2end = ph.particles.Size();
 
             *positions = ph.particles[l2end - 1].pos;
-            (BYTE *&)positions += data->PositionStride;
+            (CKBYTE *&)positions += data->PositionStride;
 
             *colors = RGBAFTOCOLOR(&(p->m_Color));
-            (BYTE *&)colors += data->ColorStride;
+            (CKBYTE *&)colors += data->ColorStride;
 
             *positions = ph.particles[0].pos;
-            (BYTE *&)positions += data->PositionStride;
+            (CKBYTE *&)positions += data->PositionStride;
 
             *colors = RGBAFTOCOLOR(&(p->m_Color));
-            (BYTE *&)colors += data->ColorStride;
+            (CKBYTE *&)colors += data->ColorStride;
         }
         for (; px < l1end; prev = px++)
         {
             *positions = ph.particles[prev].pos;
-            (BYTE *&)positions += data->PositionStride;
+            (CKBYTE *&)positions += data->PositionStride;
 
             *colors = RGBAFTOCOLOR(&(p->m_Color));
-            (BYTE *&)colors += data->ColorStride;
+            (CKBYTE *&)colors += data->ColorStride;
 
             *positions = ph.particles[px].pos;
-            (BYTE *&)positions += data->PositionStride;
+            (CKBYTE *&)positions += data->PositionStride;
 
             *colors = RGBAFTOCOLOR(&(p->m_Color));
-            (BYTE *&)colors += data->ColorStride;
+            (CKBYTE *&)colors += data->ColorStride;
         }
         for (prev = px++; px < l2end; prev = px++)
         {
             *positions = ph.particles[prev].pos;
-            (BYTE *&)positions += data->PositionStride;
+            (CKBYTE *&)positions += data->PositionStride;
 
             *colors = RGBAFTOCOLOR(&(p->m_Color));
-            (BYTE *&)colors += data->ColorStride;
+            (CKBYTE *&)colors += data->ColorStride;
 
             *positions = ph.particles[px].pos;
-            (BYTE *&)positions += data->PositionStride;
+            (CKBYTE *&)positions += data->PositionStride;
 
             *colors = RGBAFTOCOLOR(&(p->m_Color));
-            (BYTE *&)colors += data->ColorStride;
+            (CKBYTE *&)colors += data->ColorStride;
         }
         num_prims += ph.count - 1;
 
@@ -284,6 +323,10 @@ int RenderParticles_S(CKRenderContext *dev, CKRenderObject *obj, void *arg)
 {
     CK3dEntity *mov = (CK3dEntity *)obj;
     ParticleEmitter *em = (ParticleEmitter *)arg;
+
+#ifdef USE_THR
+    ThreadWaitForCompletion(em, "Sprite");
+#endif
 
     // This section of code can go into the render call back, and return premature
     // if particle is shutdown
@@ -315,7 +358,7 @@ int RenderParticles_S(CKRenderContext *dev, CKRenderObject *obj, void *arg)
 
     VxUV *uvs = (VxUV *)data->TexCoordPtr;
     VxVector *positions = (VxVector *)data->PositionPtr;
-    DWORD *colors = (DWORD *)data->ColorPtr;
+    CKDWORD *colors = (CKDWORD *)data->ColorPtr;
 
     ///
     // Indices
@@ -324,7 +367,7 @@ int RenderParticles_S(CKRenderContext *dev, CKRenderObject *obj, void *arg)
         delete[] ParticleEmitter::m_GlobalIndices;
 
         ParticleEmitter::m_GlobalIndicesCount = pc * 6;
-        ParticleEmitter::m_GlobalIndices = new WORD[ParticleEmitter::m_GlobalIndicesCount];
+        ParticleEmitter::m_GlobalIndices = new CKWORD[ParticleEmitter::m_GlobalIndicesCount];
 
         int ni = 0;
         int fi = 0;
@@ -397,7 +440,7 @@ int RenderParticles_S(CKRenderContext *dev, CKRenderObject *obj, void *arg)
         }
 
         // Precalcul for color
-        DWORD col = RGBAFTOCOLOR(&(p->m_Color));
+        CKDWORD col = RGBAFTOCOLOR(&(p->m_Color));
 
         // Precalcul for uvs
         if (changeuv)
@@ -415,36 +458,36 @@ int RenderParticles_S(CKRenderContext *dev, CKRenderObject *obj, void *arg)
 
         // Filling vertices
         *positions = pos - cr + cu;
-        positions = (VxVector *)((BYTE *)positions + data->PositionStride);
+        positions = (VxVector *)((CKBYTE *)positions + data->PositionStride);
         *colors = col;
-        colors = (DWORD *)((BYTE *)colors + data->ColorStride);
+        colors = (CKDWORD *)((CKBYTE *)colors + data->ColorStride);
         uvs->u = u;
         uvs->v = v;
-        uvs = (VxUV *)((BYTE *)uvs + data->TexCoordStride);
+        uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoordStride);
 
         *positions = pos + cr + cu;
-        positions = (VxVector *)((BYTE *)positions + data->PositionStride);
+        positions = (VxVector *)((CKBYTE *)positions + data->PositionStride);
         *colors = col;
-        colors = (DWORD *)((BYTE *)colors + data->ColorStride);
+        colors = (CKDWORD *)((CKBYTE *)colors + data->ColorStride);
         uvs->u = u + step;
         uvs->v = v;
-        uvs = (VxUV *)((BYTE *)uvs + data->TexCoordStride);
+        uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoordStride);
 
         *positions = pos + cr - cu;
-        positions = (VxVector *)((BYTE *)positions + data->PositionStride);
+        positions = (VxVector *)((CKBYTE *)positions + data->PositionStride);
         *colors = col;
-        colors = (DWORD *)((BYTE *)colors + data->ColorStride);
+        colors = (CKDWORD *)((CKBYTE *)colors + data->ColorStride);
         uvs->u = u + step;
         uvs->v = v + step;
-        uvs = (VxUV *)((BYTE *)uvs + data->TexCoordStride);
+        uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoordStride);
 
         *positions = pos - cr - cu;
-        positions = (VxVector *)((BYTE *)positions + data->PositionStride);
+        positions = (VxVector *)((CKBYTE *)positions + data->PositionStride);
         *colors = col;
-        colors = (DWORD *)((BYTE *)colors + data->ColorStride);
+        colors = (CKDWORD *)((CKBYTE *)colors + data->ColorStride);
         uvs->u = u;
         uvs->v = v + step;
-        uvs = (VxUV *)((BYTE *)uvs + data->TexCoordStride);
+        uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoordStride);
 
         ++np;
         p = p->next;
@@ -466,7 +509,7 @@ int RenderParticles_S(CKRenderContext *dev, CKRenderObject *obj, void *arg)
 #endif
                 uvs = (VxUV *)data->TexCoordPtr;
                 positions = (VxVector *)data->PositionPtr;
-                colors = (DWORD *)data->ColorPtr;
+                colors = (CKDWORD *)data->ColorPtr;
             }
         }
     }
@@ -489,6 +532,10 @@ int RenderParticles_LS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
     CK3dEntity *mov = (CK3dEntity *)obj;
     ParticleEmitter *em = (ParticleEmitter *)arg;
 
+#ifdef USE_THR
+    ThreadWaitForCompletion(em, "LongSprite");
+#endif
+
     // This section of code can go into the render call back, and return premature
     // if particle is shutdown
     // if there is no more particles and the behavior is inactive
@@ -508,11 +555,19 @@ int RenderParticles_LS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
 
     const int VBUFFERSIZE = 4000;
 
+    assert(em->m_TrailCount > 0);
+    int pc = em->particleCount * em->m_TrailCount;
+    if (!pc)
+        return 0;
+#ifndef PSX2
     VxDrawPrimitiveData *data = dev->GetDrawPrimitiveStructure((CKRST_DPFLAGS)(CKRST_DP_TR_CL_VCT | CKRST_DP_VBUFFER), (4 * pc > VBUFFERSIZE) ? VBUFFERSIZE : 4 * pc);
+#else
+    VxDrawPrimitiveData *data = dev->GetDrawPrimitiveStructure((CKRST_DPFLAGS)(CKRST_DP_TR_CL_VCT), (4 * pc > VBUFFERSIZE) ? VBUFFERSIZE : 4 * pc);
+#endif
 
     VxUV *uvs = (VxUV *)data->TexCoordPtr;
     VxVector *positions = (VxVector *)data->PositionPtr;
-    DWORD *colors = (DWORD *)data->ColorPtr;
+    CKDWORD *colors = (CKDWORD *)data->ColorPtr;
 
     ///
     // Indices
@@ -521,7 +576,7 @@ int RenderParticles_LS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
         delete[] ParticleEmitter::m_GlobalIndices;
 
         ParticleEmitter::m_GlobalIndicesCount = pc * 6;
-        ParticleEmitter::m_GlobalIndices = new WORD[ParticleEmitter::m_GlobalIndicesCount];
+        ParticleEmitter::m_GlobalIndices = new CKWORD[ParticleEmitter::m_GlobalIndicesCount];
 
         int ni = 0;
         int fi = 0;
@@ -571,7 +626,7 @@ int RenderParticles_LS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
         struct local
         {
             static inline void FillParticle(const Particle *p,
-                                            VxDrawPrimitiveData *data, VxVector *&positions, DWORD *&colors,
+                                            VxDrawPrimitiveData *data, VxVector *&positions, CKDWORD *&colors,
                                             VxUV *&uvs, const VxVector &camup, const VxVector &camright,
                                             BOOL changeuv, int framehc, float step)
             {
@@ -595,7 +650,7 @@ int RenderParticles_LS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
                 }
 
                 // Precalcul for color
-                DWORD col = RGBAFTOCOLOR(&(p->m_Color));
+                CKDWORD col = RGBAFTOCOLOR(&(p->m_Color));
 
                 float u = 0.0f;
                 float v = 0.0f;
@@ -615,36 +670,36 @@ int RenderParticles_LS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
 
                 // Filling vertices
                 *positions = pos - cr + cu;
-                (BYTE *&)positions += data->PositionStride;
+                (CKBYTE *&)positions += data->PositionStride;
                 *colors = col;
-                (BYTE *&)colors += data->ColorStride;
+                (CKBYTE *&)colors += data->ColorStride;
                 uvs->u = u;
                 uvs->v = v;
-                (BYTE *&)uvs += data->TexCoordStride;
+                (CKBYTE *&)uvs += data->TexCoordStride;
 
                 *positions = pos + cr + cu;
-                (BYTE *&)positions += data->PositionStride;
+                (CKBYTE *&)positions += data->PositionStride;
                 *colors = col;
-                (BYTE *&)colors += data->ColorStride;
+                (CKBYTE *&)colors += data->ColorStride;
                 uvs->u = u + step;
                 uvs->v = v;
-                (BYTE *&)uvs += data->TexCoordStride;
+                (CKBYTE *&)uvs += data->TexCoordStride;
 
                 *positions = pos + cr - cu;
-                (BYTE *&)positions += data->PositionStride;
+                (CKBYTE *&)positions += data->PositionStride;
                 *colors = col;
-                (BYTE *&)colors += data->ColorStride;
+                (CKBYTE *&)colors += data->ColorStride;
                 uvs->u = u + step;
                 uvs->v = v + step;
-                (BYTE *&)uvs += data->TexCoordStride;
+                (CKBYTE *&)uvs += data->TexCoordStride;
 
                 *positions = pos - cr - cu;
-                (BYTE *&)positions += data->PositionStride;
+                (CKBYTE *&)positions += data->PositionStride;
                 *colors = col;
-                (BYTE *&)colors += data->ColorStride;
+                (CKBYTE *&)colors += data->ColorStride;
                 uvs->u = u;
                 uvs->v = v + step;
-                (BYTE *&)uvs += data->TexCoordStride;
+                (CKBYTE *&)uvs += data->TexCoordStride;
             }
         };
 
@@ -666,7 +721,7 @@ int RenderParticles_LS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
 #endif
                 uvs = (VxUV *)data->TexCoordPtr;
                 positions = (VxVector *)data->PositionPtr;
-                colors = (DWORD *)data->ColorPtr;
+                colors = (CKDWORD *)data->ColorPtr;
             }
         }
 
@@ -711,6 +766,10 @@ int RenderParticles_FS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
     CK3dEntity *mov = (CK3dEntity *)obj;
     ParticleEmitter *em = (ParticleEmitter *)arg;
 
+#ifdef USE_THR
+    ThreadWaitForCompletion(em, "FastSprite");
+#endif
+
     // This section of code can go into the render call back, and return premature
     // if particle is shutdown
     // if there is no more particles and the behavior is inactive
@@ -733,7 +792,7 @@ int RenderParticles_FS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
 
     XPtrStrided<VxUV> uvs(data->TexCoordPtr, data->TexCoordStride);
     XPtrStrided<VxVector> positions(data->PositionPtr, data->PositionStride);
-    XPtrStrided<DWORD> colors(data->ColorPtr, data->ColorStride);
+    XPtrStrided<CKDWORD> colors(data->ColorPtr, data->ColorStride);
 
     // Render States
     em->SetState(dev);
@@ -786,7 +845,7 @@ int RenderParticles_FS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
         pos = p->pos;
 
         // Colors
-        DWORD col = RGBAFTOCOLOR(&(p->m_Color));
+        CKDWORD col = RGBAFTOCOLOR(&(p->m_Color));
 
         // The texture coordinates
         if (changeuv)
@@ -846,6 +905,10 @@ int RenderParticles_OS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
     CK3dEntity *mov = (CK3dEntity *)obj;
     ParticleEmitter *em = (ParticleEmitter *)arg;
 
+#ifdef USE_THR
+    ThreadWaitForCompletion(em, "OrientableSprite");
+#endif
+
     // This section of code can go into the render call back, and return premature
     // if particle is shutdown
     // if there is no more particles and the behavior is inactive
@@ -875,7 +938,7 @@ int RenderParticles_OS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
 
     VxUV *uvs = (VxUV *)data->TexCoordPtr;
     VxVector *positions = (VxVector *)data->PositionPtr;
-    DWORD *colors = (DWORD *)data->ColorPtr;
+    CKDWORD *colors = (CKDWORD *)data->ColorPtr;
 
     ///
     // Indices
@@ -884,7 +947,7 @@ int RenderParticles_OS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
         delete[] ParticleEmitter::m_GlobalIndices;
 
         ParticleEmitter::m_GlobalIndicesCount = pc * 6;
-        ParticleEmitter::m_GlobalIndices = new WORD[ParticleEmitter::m_GlobalIndicesCount];
+        ParticleEmitter::m_GlobalIndices = new CKWORD[ParticleEmitter::m_GlobalIndicesCount];
 
         int ni = 0;
         int fi = 0;
@@ -960,8 +1023,8 @@ int RenderParticles_OS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
         oldColor.b = p->m_Color.b - p->deltaColor.b * p->m_DeltaTime;
         oldColor.a = p->m_Color.a - p->deltaColor.a * p->m_DeltaTime;
 
-        DWORD col = RGBAFTOCOLOR(&(p->m_Color));
-        DWORD oldcol = RGBAFTOCOLOR(&oldColor);
+        CKDWORD col = RGBAFTOCOLOR(&(p->m_Color));
+        CKDWORD oldcol = RGBAFTOCOLOR(&oldColor);
 
         // The texture coordinates
         if (changeuv)
@@ -979,36 +1042,36 @@ int RenderParticles_OS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
 
         // Filling vertices
         *positions = pos + vv * p->m_Size + ww * p->m_Size;
-        positions = (VxVector *)((BYTE *)positions + data->PositionStride);
+        positions = (VxVector *)((CKBYTE *)positions + data->PositionStride);
         *colors = col;
-        colors = (DWORD *)((BYTE *)colors + data->ColorStride);
+        colors = (CKDWORD *)((CKBYTE *)colors + data->ColorStride);
         uvs->u = u;
         uvs->v = v;
-        uvs = (VxUV *)((BYTE *)uvs + data->TexCoordStride);
+        uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoordStride);
 
         *positions = pos + vv * p->m_Size - ww * p->m_Size;
-        positions = (VxVector *)((BYTE *)positions + data->PositionStride);
+        positions = (VxVector *)((CKBYTE *)positions + data->PositionStride);
         *colors = col;
-        colors = (DWORD *)((BYTE *)colors + data->ColorStride);
+        colors = (CKDWORD *)((CKBYTE *)colors + data->ColorStride);
         uvs->u = u + step;
         uvs->v = v;
-        uvs = (VxUV *)((BYTE *)uvs + data->TexCoordStride);
+        uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoordStride);
 
         *positions = old - vv * oldsize - ww * oldsize;
-        positions = (VxVector *)((BYTE *)positions + data->PositionStride);
+        positions = (VxVector *)((CKBYTE *)positions + data->PositionStride);
         *colors = oldcol;
-        colors = (DWORD *)((BYTE *)colors + data->ColorStride);
+        colors = (CKDWORD *)((CKBYTE *)colors + data->ColorStride);
         uvs->u = u + step;
         uvs->v = v + step;
-        uvs = (VxUV *)((BYTE *)uvs + data->TexCoordStride);
+        uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoordStride);
 
         *positions = old - vv * oldsize + ww * oldsize;
-        positions = (VxVector *)((BYTE *)positions + data->PositionStride);
+        positions = (VxVector *)((CKBYTE *)positions + data->PositionStride);
         *colors = oldcol;
-        colors = (DWORD *)((BYTE *)colors + data->ColorStride);
+        colors = (CKDWORD *)((CKBYTE *)colors + data->ColorStride);
         uvs->u = u;
         uvs->v = v + step;
-        uvs = (VxUV *)((BYTE *)uvs + data->TexCoordStride);
+        uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoordStride);
 
         p = p->next;
         ni += 4;
@@ -1030,6 +1093,10 @@ int RenderParticles_LOS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
 {
     CK3dEntity *mov = (CK3dEntity *)obj;
     ParticleEmitter *em = (ParticleEmitter *)arg;
+
+#ifdef USE_THR
+    ThreadWaitForCompletion(em, "LongOrientableSprite");
+#endif
 
     // This section of code can go into the render call back, and return premature
     // if particle is shutdown
@@ -1066,7 +1133,7 @@ int RenderParticles_LOS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
 
     VxUV *uvs = (VxUV *)data->TexCoordPtr;
     VxVector *positions = (VxVector *)data->PositionPtr;
-    DWORD *colors = (DWORD *)data->ColorPtr;
+    CKDWORD *colors = (CKDWORD *)data->ColorPtr;
 
     // Index buffer
     CKWORD *index_buffer = dev->GetDrawPrimitiveIndices(pc * num_idx_max);
@@ -1106,7 +1173,7 @@ int RenderParticles_LOS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
         cd *= halfsize;
 
         // Precalcul for color
-        DWORD col = RGBAFTOCOLOR(&(p->m_Color));
+        CKDWORD col = RGBAFTOCOLOR(&(p->m_Color));
 
         float u = 0.0f;
         float v = 0.0f;
@@ -1150,7 +1217,7 @@ int RenderParticles_LOS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
 #endif
                 uvs = (VxUV *)data->TexCoordPtr;
                 positions = (VxVector *)data->PositionPtr;
-                colors = (DWORD *)data->ColorPtr;
+                colors = (CKDWORD *)data->ColorPtr;
 
                 index_buffer = dev->GetDrawPrimitiveIndices(pc * num_idx_max);
             }
@@ -1164,24 +1231,24 @@ int RenderParticles_LOS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
             for (int px = start; px < size; ++px)
             {
                 VxVector &pos = ph.particles[px].pos;
-                DWORD col = RGBAFTOCOLOR(&ph.particles[px].m_Color);
+                CKDWORD col = RGBAFTOCOLOR(&ph.particles[px].m_Color);
 
                 // Filling vertices
                 *positions = pos + cd;
-                (BYTE *&)positions += data->PositionStride;
+                (CKBYTE *&)positions += data->PositionStride;
                 *colors = col;
-                (BYTE *&)colors += data->ColorStride;
+                (CKBYTE *&)colors += data->ColorStride;
                 uvs->u = u;
                 uvs->v = v;
-                (BYTE *&)uvs += data->TexCoordStride;
+                (CKBYTE *&)uvs += data->TexCoordStride;
 
                 *positions = pos - cd;
-                (BYTE *&)positions += data->PositionStride;
+                (CKBYTE *&)positions += data->PositionStride;
                 *colors = col;
-                (BYTE *&)colors += data->ColorStride;
+                (CKBYTE *&)colors += data->ColorStride;
                 uvs->u = u;
                 uvs->v = v + step;
-                (BYTE *&)uvs += data->TexCoordStride;
+                (CKBYTE *&)uvs += data->TexCoordStride;
 
                 u += local_step;
 
@@ -1230,6 +1297,10 @@ int RenderParticles_CS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
     CK3dEntity *mov = (CK3dEntity *)obj;
     ParticleEmitter *em = (ParticleEmitter *)arg;
 
+#ifdef USE_THR
+    ThreadWaitForCompletion(em, "Comet");
+#endif
+
     // This section of code can go into the render call back, and return premature
     // if particle is shutdown
     // if there is no more particles and the behavior is inactive
@@ -1251,7 +1322,7 @@ int RenderParticles_CS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
     VxDrawPrimitiveData *data = dev->GetDrawPrimitiveStructure(CKRST_DP_TR_CL_VCT, 4 * pc);
     VxUV *uvs = (VxUV *)data->TexCoordPtr;
     VxVector *positions = (VxVector *)data->PositionPtr;
-    DWORD *colors = (DWORD *)data->ColorPtr;
+    CKDWORD *colors = (CKDWORD *)data->ColorPtr;
 
     ///
     // Indices
@@ -1260,7 +1331,7 @@ int RenderParticles_CS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
         delete[] ParticleEmitter::m_GlobalIndices;
 
         ParticleEmitter::m_GlobalIndicesCount = pc * 6;
-        ParticleEmitter::m_GlobalIndices = new WORD[ParticleEmitter::m_GlobalIndicesCount];
+        ParticleEmitter::m_GlobalIndices = new CKWORD[ParticleEmitter::m_GlobalIndicesCount];
 
         int ni = 0;
         int fi = 0;
@@ -1338,8 +1409,8 @@ int RenderParticles_CS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
         oldColor.b = p->m_Color.b - p->deltaColor.b * p->m_DeltaTime;
         oldColor.a = p->m_Color.a - p->deltaColor.a * p->m_DeltaTime;
 
-        DWORD col = RGBAFTOCOLOR(&(p->m_Color));
-        DWORD oldcol = RGBAFTOCOLOR(&oldColor);
+        CKDWORD col = RGBAFTOCOLOR(&(p->m_Color));
+        CKDWORD oldcol = RGBAFTOCOLOR(&oldColor);
 
         // The texture coordinates
         if (changeuv)
@@ -1357,36 +1428,36 @@ int RenderParticles_CS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
 
         // Filling vertices
         *positions = center + ww;
-        positions = (VxVector *)((BYTE *)positions + data->PositionStride);
+        positions = (VxVector *)((CKBYTE *)positions + data->PositionStride);
         *colors = col;
-        colors = (DWORD *)((BYTE *)colors + data->ColorStride);
+        colors = (CKDWORD *)((CKBYTE *)colors + data->ColorStride);
         uvs->u = u;
         uvs->v = v;
-        uvs = (VxUV *)((BYTE *)uvs + data->TexCoordStride);
+        uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoordStride);
 
         *positions = pos;
-        positions = (VxVector *)((BYTE *)positions + data->PositionStride);
+        positions = (VxVector *)((CKBYTE *)positions + data->PositionStride);
         *colors = col;
-        colors = (DWORD *)((BYTE *)colors + data->ColorStride);
+        colors = (CKDWORD *)((CKBYTE *)colors + data->ColorStride);
         uvs->u = u + step;
         uvs->v = v;
-        uvs = (VxUV *)((BYTE *)uvs + data->TexCoordStride);
+        uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoordStride);
 
         *positions = center - ww;
-        positions = (VxVector *)((BYTE *)positions + data->PositionStride);
+        positions = (VxVector *)((CKBYTE *)positions + data->PositionStride);
         *colors = col;
-        colors = (DWORD *)((BYTE *)colors + data->ColorStride);
+        colors = (CKDWORD *)((CKBYTE *)colors + data->ColorStride);
         uvs->u = u + step;
         uvs->v = v + step;
-        uvs = (VxUV *)((BYTE *)uvs + data->TexCoordStride);
+        uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoordStride);
 
         *positions = old;
-        positions = (VxVector *)((BYTE *)positions + data->PositionStride);
+        positions = (VxVector *)((CKBYTE *)positions + data->PositionStride);
         *colors = oldcol;
-        colors = (DWORD *)((BYTE *)colors + data->ColorStride);
+        colors = (CKDWORD *)((CKBYTE *)colors + data->ColorStride);
         uvs->u = u;
         uvs->v = v + step;
-        uvs = (VxUV *)((BYTE *)uvs + data->TexCoordStride);
+        uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoordStride);
 
         p = p->next;
         ni += 4;
@@ -1406,6 +1477,11 @@ int RenderParticles_RS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
 {
     CK3dEntity *mov = (CK3dEntity *)obj;
     ParticleEmitter *em = (ParticleEmitter *)arg;
+    // ACC, July 10, 2002
+
+#ifdef USE_THR
+    ThreadWaitForCompletion(em, "Radial");
+#endif
 
     // This section of code can go into the render call back, and return premature
     // if particle is shutdown
@@ -1434,7 +1510,7 @@ int RenderParticles_RS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
         delete[] ParticleEmitter::m_GlobalIndices;
 
         ParticleEmitter::m_GlobalIndicesCount = pc * 6;
-        ParticleEmitter::m_GlobalIndices = new WORD[ParticleEmitter::m_GlobalIndicesCount];
+        ParticleEmitter::m_GlobalIndices = new CKWORD[ParticleEmitter::m_GlobalIndicesCount];
 
         int ni = 0;
         int fi = 0;
@@ -1453,7 +1529,7 @@ int RenderParticles_RS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
 
     VxUV *uvs = (VxUV *)data->TexCoordPtr;
     VxVector *positions = (VxVector *)data->PositionPtr;
-    DWORD *colors = (DWORD *)data->ColorPtr;
+    CKDWORD *colors = (CKDWORD *)data->ColorPtr;
 
     // Render States
     em->SetState(dev);
@@ -1505,7 +1581,7 @@ int RenderParticles_RS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
         ww.y = vv.x;
 
         // the colors
-        DWORD col = RGBAFTOCOLOR(&(p->m_Color));
+        CKDWORD col = RGBAFTOCOLOR(&(p->m_Color));
 
         // The texture coordinates
         if (changeuv)
@@ -1523,36 +1599,36 @@ int RenderParticles_RS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
 
         // Filling vertices
         *positions = pos + vv * p->m_Size + ww * p->m_Size;
-        positions = (VxVector *)((BYTE *)positions + data->PositionStride);
+        positions = (VxVector *)((CKBYTE *)positions + data->PositionStride);
         *colors = col;
-        colors = (DWORD *)((BYTE *)colors + data->ColorStride);
+        colors = (CKDWORD *)((CKBYTE *)colors + data->ColorStride);
         uvs->u = u;
         uvs->v = v;
-        uvs = (VxUV *)((BYTE *)uvs + data->TexCoordStride);
+        uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoordStride);
 
         *positions = pos + vv * p->m_Size - ww * p->m_Size;
-        positions = (VxVector *)((BYTE *)positions + data->PositionStride);
+        positions = (VxVector *)((CKBYTE *)positions + data->PositionStride);
         *colors = col;
-        colors = (DWORD *)((BYTE *)colors + data->ColorStride);
+        colors = (CKDWORD *)((CKBYTE *)colors + data->ColorStride);
         uvs->u = u + step;
         uvs->v = v;
-        uvs = (VxUV *)((BYTE *)uvs + data->TexCoordStride);
+        uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoordStride);
 
         *positions = old - vv * p->m_Size - ww * p->m_Size;
-        positions = (VxVector *)((BYTE *)positions + data->PositionStride);
+        positions = (VxVector *)((CKBYTE *)positions + data->PositionStride);
         *colors = col;
-        colors = (DWORD *)((BYTE *)colors + data->ColorStride);
+        colors = (CKDWORD *)((CKBYTE *)colors + data->ColorStride);
         uvs->u = u + step;
         uvs->v = v + step;
-        uvs = (VxUV *)((BYTE *)uvs + data->TexCoordStride);
+        uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoordStride);
 
         *positions = old - vv * p->m_Size + ww * p->m_Size;
-        positions = (VxVector *)((BYTE *)positions + data->PositionStride);
+        positions = (VxVector *)((CKBYTE *)positions + data->PositionStride);
         *colors = col;
-        colors = (DWORD *)((BYTE *)colors + data->ColorStride);
+        colors = (CKDWORD *)((CKBYTE *)colors + data->ColorStride);
         uvs->u = u;
         uvs->v = v + step;
-        uvs = (VxUV *)((BYTE *)uvs + data->TexCoordStride);
+        uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoordStride);
 
         p = p->next;
         ni += 4;
@@ -1573,6 +1649,10 @@ int RenderParticles_O(CKRenderContext *dev, CKRenderObject *obj, void *arg)
     //	int todo_manage_reflection_in_objects;
     CK3dEntity *mov = (CK3dEntity *)obj;
     ParticleEmitter *em = (ParticleEmitter *)arg;
+
+#ifdef USE_THR
+    ThreadWaitForCompletion(em, "Object");
+#endif
 
     // This section of code can go into the render call back, and return premature
     // if particle is shutdown
@@ -1623,7 +1703,10 @@ int RenderParticles_O(CKRenderContext *dev, CKRenderObject *obj, void *arg)
                 {
                     ent->Rotate(&dir, p->m_Angle);
                 }
-                ent->SetScale(&VxVector(p->m_Size, p->m_Size, p->m_Size));
+                {
+                    VxVector vec(p->m_Size, p->m_Size, p->m_Size);
+                    ent->SetScale(&vec);
+                }
                 ent->Render(dev, FALSE);
             }
         }

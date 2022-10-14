@@ -5,12 +5,10 @@
 //
 /////////////////////////////////////////////////////
 /////////////////////////////////////////////////////
-#include "TT_ParticleSystems_RT.h"
+#include "CKAll.h"
 
-#include "GeneralParticleSystem.h"
-#include "ParticleEmitter.h"
 #include "ParticleGuids.h"
-#include "ParticleSystemRenderCallbacks.h"
+#include "GeneralParticleSystem.h"
 
 CKObjectDeclaration *FillBehaviorCubicParticleSystemDecl()
 {
@@ -23,7 +21,7 @@ CKObjectDeclaration *FillBehaviorCubicParticleSystemDecl()
     od->SetVersion(0x00010000);
     od->SetCreationFunction(CreateGeneralParticleSystemProto);
     od->SetCompatibleClassId(CKCID_3DENTITY);
-    od->SetCategory("Particles");
+    od->SetCategory("TT_Particles");
     od->NeedManager(PARTICLE_MANAGER_GUID);
     /* rem:
     Particle System which emits particles from within a cube, defined in size by frame dimensions it is attached to.

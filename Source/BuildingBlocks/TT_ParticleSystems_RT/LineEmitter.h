@@ -1,5 +1,5 @@
-#ifndef BUILDINGBLOCKS_LINEEMITTER_H
-#define BUILDINGBLOCKS_LINEEMITTER_H
+#ifndef LINEEMITTER_H
+#define LINEEMITTER_H
 
 #include "PointEmitter.h"
 
@@ -13,4 +13,4 @@ protected:
     void InitiateParticle(Particle *);
 };
 
-#endif // BUILDINGBLOCKS_LINEEMITTER_H
+#endif

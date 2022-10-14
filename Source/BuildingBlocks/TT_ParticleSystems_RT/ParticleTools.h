@@ -1,7 +1,7 @@
-#ifndef BUILDINGBLOCKS_PARTICLETOOLS_H
-#define BUILDINGBLOCKS_PARTICLETOOLS_H
+#ifndef PARTICLETOOLS_H
+#define PARTICLETOOLS_H
 
-#include "TT_ParticleSystems_RT.h"
+#include "CKAll.h"
 
 #include <time.h>
 
@@ -17,10 +17,12 @@
 #define RANDNUMP ((float)rand() * INV_RAND)
 
 // float RandomNum();
-BOOL RayBoxIntersection(const VxBbox &box, VxVector &p0, VxVector &p1, VxVector &res, VxVector &norm);
-BOOL RayInteriorBoxIntersection(const VxBbox &box, VxVector &p0, VxVector &p1, VxVector &res, VxVector &norm);
-BOOL RaySphereIntersection(VxVector &p0, VxVector &p1, VxVector &res, VxVector &norm);
-BOOL RayPlaneIntersection(VxVector &Normal, VxVector &pt, VxVector &ori, VxVector &dest, VxVector &res);
-BOOL RayTubeIntersection(VxVector &p0, VxVector &p1, VxVector &res, VxVector &norm);
+CKBOOL RayBoxIntersection(const VxBbox &box, VxVector &p0, VxVector &p1, VxVector &res, VxVector &norm);
+CKBOOL RayInteriorBoxIntersection(const VxBbox &box, VxVector &p0, VxVector &p1, VxVector &res, VxVector &norm);
+CKBOOL RaySphereIntersection(VxVector &p0, VxVector &p1, VxVector &res, VxVector &norm);
+CKBOOL RayPlaneIntersection(VxVector &Normal, VxVector &pt, VxVector &ori, VxVector &dest, VxVector &res);
+CKBOOL RayTubeIntersection(VxVector &p0, VxVector &p1, VxVector &res, VxVector &norm);
 
-#endif // BUILDINGBLOCKS_PARTICLETOOLS_H
+// //
+// //
+#endif

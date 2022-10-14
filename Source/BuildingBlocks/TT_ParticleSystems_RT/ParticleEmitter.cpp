@@ -1,25 +1,22 @@
+#include "CKAll.h"
+
 #include "ParticleEmitter.h"
-
-#include "TT_ParticleSystems_RT.h"
-
-#include <time.h>
-
 #include "ParticleManager.h"
 #include "ParticleSystemRenderCallbacks.h"
 
 // 128 Bytes to have 16 bytes aligned data for Pentium3 optimisations 32 DWORDS
-BYTE _PS_AlignedMemory[128];
+CKBYTE _PS_AlignedMemory[128];
 
-DWORD *g_PS_AlignZone = (DWORD *)((DWORD)(_PS_AlignedMemory + 15) & 0xFFFFFFF0);
+CKDWORD *g_PS_AlignZone = (CKDWORD *)((CKDWORD)(_PS_AlignedMemory + 15) & 0xFFFFFFF0);
 float *g_Min = (float *)g_PS_AlignZone;			 // 16  Bytes  (4 floats)	+4
 float *g_Max = (float *)(g_PS_AlignZone + 4);	 // 16  Bytes  (4 floats)	+8
 float *g_One = (float *)(g_PS_AlignZone + 8);	 // 16  Bytes  (4 floats)	+12 (1.0f,1.0f,1.0f,1.0f);
 float *g_Delta = (float *)(g_PS_AlignZone + 12); // 16  Bytes  (4 floats)	+16 (delta,delta,delta,delta);
 
-WORD *ParticleEmitter::m_GlobalIndices = 0;
+CKWORD *ParticleEmitter::m_GlobalIndices = NULL;
 int ParticleEmitter::m_GlobalIndicesCount = 0;
 
-// Constructeur
+// Constructor
 ParticleEmitter::ParticleEmitter(CKContext *ctx, CK_ID entity, char *name)
 {
     m_Context = ctx;
@@ -79,6 +76,7 @@ ParticleEmitter::ParticleEmitter(CKContext *ctx, CK_ID entity, char *name)
     m_InteractorsFlags = 0;
     m_DeflectorsFlags = 0;
     m_RenderMode = 3;
+    m_TrailCount = 0;
 
     m_Mesh = 0;
     m_Entity = entity;
@@ -88,16 +86,57 @@ ParticleEmitter::ParticleEmitter(CKContext *ctx, CK_ID entity, char *name)
 
     m_CurrentImpact = 0;
     m_Behavior = NULL;
+#ifdef WIN32
+    // ACC, July 10, 2002  Create Event to be waited in Render CB
+    hasBeenComputedEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+    hasBeenRendered = false;
+    hasBeenEnqueud = false;
+#endif
 
     InitParticleSystem();
 };
 
+#ifdef USE_THR
+#include "blockingqueue.h"
+#include "GeneralParticleSystem.h"
+
+extern BlockingQueue<ThreadParam> PSqueue;
+#endif
+
 // Destructeur
 ParticleEmitter::~ParticleEmitter()
 {
+#ifdef USE_THR
+    if (hasBeenEnqueud)
+    {
+        WaitForSingleObject(hasBeenComputedEvent, INFINITE);
+
+        while (hasBeenEnqueud)
+        {
+            int a = 0;
+        }
+    }
+
+    EnterCriticalSection(&PSqueue.mGuardAccess);
+    for (list<ThreadParam>::iterator it = PSqueue.mQueue.begin(); it != PSqueue.mQueue.end();)
+    {
+        if (it->pe == this)
+        {
+            it = PSqueue.mQueue.erase(it);
+            int a = 0;
+        }
+        else
+            ++it;
+    }
+    LeaveCriticalSection(&PSqueue.mGuardAccess);
+#endif
+
     delete[] m_BackPool;
     m_BackPool = NULL;
     m_Entity = 0;
+#ifdef WIN32
+    CloseHandle(hasBeenComputedEvent);
+#endif
 }
 
 void ParticleEmitter::InitParticleSystem()
@@ -107,9 +146,9 @@ void ParticleEmitter::InitParticleSystem()
         delete[] m_BackPool;
         m_BackPool = NULL;
     }
-    m_BackPool = new BYTE[m_MaximumParticles * sizeof(Particle) + 16];
+    m_BackPool = new CKBYTE[m_MaximumParticles * sizeof(Particle) + 16];
 
-    m_Pool = (Particle *)((DWORD)(m_BackPool + 15) & 0xFFFFFFF0);
+    m_Pool = (Particle *)((CKDWORD)(m_BackPool + 15) & 0xFFFFFFF0);
     for (int loop = 0; loop < m_MaximumParticles - 1; loop++)
     {
         m_Pool[loop].next = &m_Pool[loop + 1];
@@ -117,6 +156,12 @@ void ParticleEmitter::InitParticleSystem()
     m_Pool[m_MaximumParticles - 1].next = NULL;
     particles = NULL;
     particleCount = 0;
+
+    // Clear Historic pool.
+    old_pos.Clear();
+    old_pos.Reserve(m_MaximumParticles);
+    for (int i = 0; i < m_MaximumParticles; i++)
+        old_pos.PushBack(ParticleHistoric(m_TrailCount));
 }
 
 void ParticleEmitter::UpdateParticles(float rdeltat)
@@ -130,8 +175,7 @@ void ParticleEmitter::UpdateParticles(float rdeltat)
     float deltat;
     Particle *particle = particles;
     // If there is no particles yet, we buzz off
-    if (!particles)
-        return;
+    if (!particles) return;
 
     VxVector minv(100000, 100000, 100000), maxv(-100000, -100000, -100000);
     g_Min[0] = g_Min[1] = g_Min[2] = g_Min[3] = 1e6f;
@@ -169,7 +213,7 @@ void ParticleEmitter::UpdateParticles(float rdeltat)
         pm->ManageGlobalWind(this, rdeltat);
     if (m_InteractorsFlags & PI_LOCALWIND)
         pm->ManageLocalWind(this, rdeltat);
-    // The magnet act on the position so it came after positionning
+    // The magnet act on the position, so it came after positioning
     if (m_InteractorsFlags & PI_MAGNET)
         pm->ManageMagnet(this, rdeltat);
     if (m_InteractorsFlags & PI_VORTEX)
@@ -183,7 +227,7 @@ void ParticleEmitter::UpdateParticles(float rdeltat)
     if (m_InteractorsFlags & PI_PROJECTOR)
         pm->ManageProjector(this, rdeltat);
 
-    DWORD ProcessorFeatures = GetProcessorFeatures();
+    CKDWORD ProcessorFeatures = GetProcessorFeatures();
 #ifdef SIMD_SUPPORTED
     if (ProcessorFeatures & PROC_SIMD)
     {
@@ -407,11 +451,34 @@ void ParticleEmitter::UpdateParticles(float rdeltat)
             // new delta time
             particle->m_DeltaTime = deltat;
 
+            // Updates trail position.
+            if (m_TrailCount)
+            {
+                int idx = ((CKBYTE *)particle - m_BackPool) / sizeof(Particle);
+                XASSERT(idx < m_MaximumParticles);
+                ParticleHistoric &ph = old_pos[idx];
+                if (ph.count == m_TrailCount)
+                {
+                    ph.particles[ph.start++] = *particle;
+                    if (ph.start >= m_TrailCount)
+                        ph.start = 0;
+                }
+                else
+                    ph.particles[ph.count++] = *particle;
+            }
             particle = particle->next;
         }
         else
         {
             // Delete particle
+            if (m_TrailCount)
+            {
+                int idx = ((CKBYTE *)particle - m_BackPool) / sizeof(Particle);
+                XASSERT(idx < m_MaximumParticles);
+                ParticleHistoric &ph = old_pos[idx];
+                ph.start = 0;
+                ph.count = 0;
+            }
             Particle *tmp = particle->next;
             if (particle->prev)
                 particle->prev->next = particle->next;
@@ -759,8 +826,6 @@ void ParticleEmitter::InitiateDirection(Particle *p)
 
 void ParticleEmitter::ReadInputs(CKBehavior *beh)
 {
-    beh->GetInputParameterValue(EMISSIONDELAY, &m_EmissionDelay);
-
     beh->GetInputParameterValue(YAWVARIATION, &m_YawVariation);
     beh->GetInputParameterValue(PITCHVARIATION, &m_PitchVariation);
     beh->GetInputParameterValue(SPEED, &m_Speed);
@@ -875,7 +940,7 @@ void ParticleEmitter::ReadInputs(CKBehavior *beh)
 
 void ParticleEmitter::ReadSettings(CKBehavior *beh)
 {
-    // Patch to see if its not an old behavior
+    // Patch to see if it's not an old behavior
     CKParameterLocal *pl = beh->GetLocalParameter(MESSAGE);
     if (pl && pl->GetGUID() != CKPGUID_MESSAGE)
     {
@@ -885,25 +950,31 @@ void ParticleEmitter::ReadSettings(CKBehavior *beh)
         return;
     }
 
+    // Trail
+    int tc = 0;
+    beh->GetLocalParameterValue(TRAILCOUNT, &tc);
+
     ///////////////////////////
     // Memory Management
     ///////////////////////////
     int pn;
     beh->GetLocalParameterValue(PARTICLENUMBER, &pn);
-    if (pn != m_MaximumParticles && pn > 0)
+    if ((pn != m_MaximumParticles && pn > 0) || (tc != m_TrailCount && tc > 0))
     {
+        m_TrailCount = tc;
         m_MaximumParticles = pn;
         InitParticleSystem();
     }
     else
     {
+        m_TrailCount = tc;
         m_MaximumParticles = pn;
     }
 
     ///////////////////////////
-    // Interactors Diplay
+    // Interactors Display
     ///////////////////////////
-    ParticleManager *pm = m_Manager; // m_Context->GetManagerByGuid(0x1DD91197, 0x1F703F3);
+    ParticleManager *pm = m_Manager;
     BOOL display;
     beh->GetLocalParameterValue(DISPLAYINTERACTORS, &display);
     pm->ShowInteractors(display);
@@ -912,39 +983,44 @@ void ParticleEmitter::ReadSettings(CKBehavior *beh)
     // Render Mode Management
     ///////////////////////////
     beh->GetLocalParameterValue(RENDERMODES, &m_RenderMode);
-    switch (m_RenderMode)
-    {
-    case PR_POINT:
+    if (m_RenderMode == PR_POINT)
         m_RenderParticlesCallback = RenderParticles_P;
-        break;
-    case PR_LINE:
-        m_RenderParticlesCallback = RenderParticles_L;
-        break;
-    case PR_SPRITE:
-        m_RenderParticlesCallback = RenderParticles_S;
-        break;
-    case PR_OBJECT:
-        m_RenderParticlesCallback = RenderParticles_O;
-        break;
-    case PR_FSPRITE:
-        m_RenderParticlesCallback = RenderParticles_FS;
-        break;
-    case PR_OSPRITE:
-        m_RenderParticlesCallback = RenderParticles_OS;
-        break;
-    case PR_CSPRITE:
-        m_RenderParticlesCallback = RenderParticles_CS;
-        break;
-    case PR_RSPRITE:
-        m_RenderParticlesCallback = RenderParticles_RS;
-        break;
-    case PR_LONGLINE:
-        m_RenderParticlesCallback = RenderParticles_LL;
-        break;
-    default:
-        m_RenderParticlesCallback = NULL;
-        break;
+    else if (m_RenderMode == PR_LINE)
+    {
+        if (m_TrailCount > 1)
+            m_RenderParticlesCallback = RenderParticles_LL;
+        else
+            m_RenderParticlesCallback = RenderParticles_L;
     }
+    else if (m_RenderMode == PR_SPRITE)
+    {
+        if (m_TrailCount > 1)
+            m_RenderParticlesCallback = RenderParticles_LS;
+        else
+            m_RenderParticlesCallback = RenderParticles_S;
+    }
+    else if (m_RenderMode == PR_OBJECT)
+        m_RenderParticlesCallback = RenderParticles_O;
+    else if (m_RenderMode == PR_FSPRITE)
+        m_RenderParticlesCallback = RenderParticles_FS;
+    else if (m_RenderMode == PR_OSPRITE)
+    {
+        if (m_TrailCount > 1)
+            m_RenderParticlesCallback = RenderParticles_LOS;
+        else
+            m_RenderParticlesCallback = RenderParticles_OS;
+    }
+    else if (m_RenderMode == PR_CSPRITE)
+        m_RenderParticlesCallback = RenderParticles_CS;
+    else if (m_RenderMode == PR_RSPRITE)
+        m_RenderParticlesCallback = RenderParticles_RS;
+    else
+        m_RenderParticlesCallback = NULL;
+
+    /*
+    CK3dEntity* entity = (CK3dEntity*)CKGetObject(m_Entity);
+    entity->SetRenderCallBack( m_RenderParticlesCallback, this );
+    */
 
     //////////////////////////////
     // Blend Factors management
@@ -1009,10 +1085,16 @@ void ParticleEmitter::ReadSettings(CKBehavior *beh)
 
     // Collision Outputs
 
-    if (m_DeflectorsFlags & PD_IMPACTS)
-    { // we have to create outputs param and ios
+    if (m_DeflectorsFlags & PD_IMPACTS) // we have to create outputs param and ios
+    {
         if (beh->GetInputCount() == 3)
         {
+            // first we destroy all the outputs
+            while (beh->GetOutputParameterCount())
+            {
+                CKDestroyObject(beh->RemoveOutputParameter(0));
+            }
+
             beh->CreateInput("Impacts Loop In");
             beh->CreateOutput("Impacts Loop Out");
             beh->CreateOutputParameter("Impact Position", CKPGUID_VECTOR);
@@ -1021,8 +1103,8 @@ void ParticleEmitter::ReadSettings(CKBehavior *beh)
             beh->CreateOutputParameter("Impact Texture Coordinates", CKPGUID_2DVECTOR);
         }
     }
-    else
-    { // we have to delete outputs param and ios
+    else // we have to delete outputs param and ios
+    {
         beh->DeleteInput(3);
         beh->DeleteOutput(3);
 
@@ -1030,6 +1112,28 @@ void ParticleEmitter::ReadSettings(CKBehavior *beh)
         CKDestroyObject(beh->RemoveOutputParameter(2));
         CKDestroyObject(beh->RemoveOutputParameter(1));
         CKDestroyObject(beh->RemoveOutputParameter(0));
+    }
+
+    // Output are either  C C C C, or C C C C P or P and nothing else
+
+    CKBOOL outputParticleCount = FALSE;
+    beh->GetLocalParameterValue(PARTICLESCOUNT, &outputParticleCount);
+
+    if (outputParticleCount)
+    {
+        beh->CreateOutputParameter("Particle Count", CKPGUID_INT);
+    }
+    else
+    {
+
+        if (beh->GetOutputParameterCount() == 1)
+        {
+            CKDestroyObject(beh->RemoveOutputParameter(0));
+        }
+        else
+        { // there is the collision outputs, then the p count
+            CKDestroyObject(beh->RemoveOutputParameter(4));
+        }
     }
 
     // INTERACTORS
@@ -1058,7 +1162,7 @@ void ParticleEmitter::SetState(CKRenderContext *dev, CKBOOL gouraud)
 
     dev->SetState(VXRENDERSTATE_SPECULARENABLE, FALSE);
     dev->SetState(VXRENDERSTATE_FILLMODE, VXFILL_SOLID);
-    // Gouraud / Flat
+    // Goraud / Flat
     if (gouraud)
         dev->SetState(VXRENDERSTATE_SHADEMODE, VXSHADE_GOURAUD);
     else
@@ -1086,4 +1190,12 @@ void ParticleEmitter::SetState(CKRenderContext *dev, CKBOOL gouraud)
     dev->SetTextureStageState(CKRST_TSS_STAGEBLEND, 0, 1);
     dev->SetTextureStageState(CKRST_TSS_TEXTURETRANSFORMFLAGS, 0);
     dev->SetTextureStageState(CKRST_TSS_TEXCOORDINDEX, 0);
+}
+
+ParticleEmitter::ParticleHistoric &ParticleEmitter::GetParticleHistoric(Particle *part)
+{
+    typedef XClassArray<ParticleEmitter::ParticleHistoric> t_array_ph;
+    int idx = ((CKBYTE *)part - m_BackPool) / sizeof(Particle);
+    XASSERT(idx < m_MaximumParticles);
+    return old_pos[idx];
 }

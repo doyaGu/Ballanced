@@ -1,4 +1,4 @@
-#include "TT_ParticleSystems_RT.h"
+#include "CKAll.h"
 
 #include "ParticleManager.h"
 
@@ -8,7 +8,7 @@
     V.z = c;                  \
     mesh->SetVertexPosition(i, &V)
 
-void CreateCircle(CKMesh *mesh, int start, int count, float radius, VxVector &axis, DWORD col, float pos = 0.0f)
+void CreateCircle(CKMesh *mesh, int start, int count, float radius, VxVector &axis, CKDWORD col, float pos = 0.0f)
 {
     float angle = 0;
     float step = 2.0f * PI / count;

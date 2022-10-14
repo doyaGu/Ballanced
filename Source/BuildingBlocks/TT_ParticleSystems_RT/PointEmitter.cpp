@@ -1,6 +1,6 @@
-#include "PointEmitter.h"
+#include "CKAll.h"
 
-#include "TT_ParticleSystems_RT.h"
+#include "PointEmitter.h"
 
 void PointEmitter::InitiateParticle(Particle *p)
 {
