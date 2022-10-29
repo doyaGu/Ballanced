@@ -174,6 +174,11 @@ void CWinContext::SetMainStyle(int add, int remove)
     }
 }
 
+void CWinContext::SetWindowText(LPCSTR str) {
+    if (!str) str = m_MainWndName;
+    ::SetWindowText(m_MainWindow, str);
+}
+
 int CWinContext::TranslateAccelerators(MSG *msg)
 {
     return ::TranslateAccelerator(m_MainWindow, m_hAccelTable, msg);
