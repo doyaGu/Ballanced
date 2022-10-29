@@ -1,27 +1,26 @@
 #include "Utils.h"
 
-#include "stdio.h"
-#include "stdlib.h"
-#include "string.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/stat.h>
 
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
-#include <Windows.h>
+#include <windows.h>
 #include <ShlObj.h>
 
 namespace utils
 {
-    static struct stat g_Stat;
-
     bool IsFileExist(const char *file)
     {
         if (!file || strcmp(file, "") == 0)
             return false;
 
-        memset(&g_Stat, 0, sizeof(struct stat));
-        return stat(file, &g_Stat) == 0 && (g_Stat.st_mode & S_IFREG);
+        struct stat fstat;
+        memset(&fstat, 0, sizeof(struct stat));
+        return stat(file, &fstat) == 0 && (fstat.st_mode & S_IFREG);
     }
 
     bool IsDirectoryExist(const char *dir)
@@ -29,8 +28,9 @@ namespace utils
         if (!dir || strcmp(dir, "") == 0)
             return false;
 
-        memset(&g_Stat, 0, sizeof(struct stat));
-        return stat(dir, &g_Stat) == 0 && (g_Stat.st_mode & S_IFDIR);
+        struct stat fstat;
+        memset(&fstat, 0, sizeof(struct stat));
+        return stat(dir, &fstat) == 0 && (fstat.st_mode & S_IFDIR);
     }
 
     bool IsAbsolutePath(const char *path)
