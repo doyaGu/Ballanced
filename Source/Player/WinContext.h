@@ -71,6 +71,8 @@ public:
 
     void SetMainStyle(int add, int remove);
 
+    void SetWindowText(LPCSTR str = NULL);
+
     int TranslateAccelerators(MSG *msg);
 
     bool IsIconic();
