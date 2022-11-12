@@ -8,6 +8,8 @@
 #include "CKAll.h"
 #include "ToolboxGuids.h"
 
+#include <windows.h>
+
 CKObjectDeclaration *FillBehaviorExistFileDecl();
 CKERROR CreateExistFileProto(CKBehaviorPrototype **pproto);
 int ExistFile(const CKBehaviorContext &behcontext);
@@ -49,6 +51,16 @@ CKERROR CreateExistFileProto(CKBehaviorPrototype **pproto)
 int ExistFile(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
-    // TODO: To be finished.
+    
+    CKSTRING file = (CKSTRING)beh->GetInputParameterReadDataPtr(0);
+    if (::GetFileAttributesA(file) != -1)
+    {
+        beh->ActivateOutput(0, TRUE);
+    }
+    else
+    {
+        beh->ActivateOutput(1, TRUE);
+    }
+
     return CKBR_OK;
 }

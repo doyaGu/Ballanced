@@ -50,6 +50,22 @@ CKERROR CreateShowVectorProto(CKBehaviorPrototype **pproto)
 int ShowVector(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
-    // TODO: To be finished.
+
+    if (beh->IsInputActive(0))
+    {
+        beh->ActivateInput(0, FALSE);
+        beh->ActivateOutput(0, TRUE);
+    }
+
+    VxVector start;
+    beh->GetInputParameterValue(0, &start);
+
+    VxVector end;
+    beh->GetInputParameterValue(1, &end);
+
+    CKCurve *curve = (CKCurve *)beh->GetInputParameterObject(2);
+    curve->GetControlPoint(0)->SetPosition(start);
+    curve->GetControlPoint(1)->SetPosition(end);
+
     return CKBR_OK;
 }

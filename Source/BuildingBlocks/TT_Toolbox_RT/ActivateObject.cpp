@@ -50,6 +50,32 @@ CKERROR CreateActivateObjectProto(CKBehaviorPrototype **pproto)
 int ActivateObject(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
-    // TODO: To be finished.
+
+    beh->ActivateInput(0, FALSE);
+    beh->ActivateOutput(0, TRUE);
+
+    CKBeObject *object = (CKBeObject *)beh->GetInputParameterObject(0);
+    if (!object)
+        return CKBR_PARAMETERERROR;
+
+    if (behcontext.CurrentScene)
+        behcontext.CurrentScene->Activate(object, FALSE);
+
+    CKBOOL resetScript = FALSE;
+    beh->GetInputParameterValue(1, &resetScript);
+
+    CKBOOL activateAllScript = FALSE;
+    beh->GetInputParameterValue(2, &activateAllScript);
+
+    if (activateAllScript)
+    {
+        for (int i = 0; i < object->GetScriptCount(); ++i)
+        {
+            CKBehavior *script = object->GetScript(i);
+            if (behcontext.CurrentScene)
+                behcontext.CurrentScene->Activate(script, resetScript);
+        }
+    }
+
     return CKBR_OK;
 }

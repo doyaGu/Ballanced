@@ -8,6 +8,8 @@
 #include "CKAll.h"
 #include "ToolboxGuids.h"
 
+#include <windows.h>
+
 CKObjectDeclaration *FillBehaviorCreateDirectoryDecl();
 CKERROR CreateCreateDirectoryProto(CKBehaviorPrototype **pproto);
 int CreateDirectory(const CKBehaviorContext &behcontext);
@@ -49,6 +51,16 @@ CKERROR CreateCreateDirectoryProto(CKBehaviorPrototype **pproto)
 int CreateDirectory(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
-    // TODO: To be finished.
+
+    CKSTRING dir = (CKSTRING)beh->GetInputParameterReadDataPtr(0);
+    if (::CreateDirectoryA(dir, NULL) == TRUE)
+    {
+        beh->ActivateOutput(0, TRUE);
+    }
+    else
+    {
+        beh->ActivateOutput(1, TRUE);
+    }
+
     return CKBR_OK;
 }

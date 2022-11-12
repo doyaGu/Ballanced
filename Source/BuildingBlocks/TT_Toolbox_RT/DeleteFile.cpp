@@ -8,6 +8,8 @@
 #include "CKAll.h"
 #include "ToolboxGuids.h"
 
+#include <windows.h>
+
 CKObjectDeclaration *FillBehaviorDeleteFileDecl();
 CKERROR CreateDeleteFileProto(CKBehaviorPrototype **pproto);
 int DeleteFile(const CKBehaviorContext &behcontext);
@@ -49,6 +51,16 @@ CKERROR CreateDeleteFileProto(CKBehaviorPrototype **pproto)
 int DeleteFile(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
-    // TODO: To be finished.
+
+    CKSTRING file = (CKSTRING)beh->GetInputParameterReadDataPtr(0);
+    if (::DeleteFileA(file) == TRUE)
+    {
+        beh->ActivateOutput(0, TRUE);
+    }
+    else
+    {
+        beh->ActivateOutput(1, TRUE);
+    }
+
     return CKBR_OK;
 }
