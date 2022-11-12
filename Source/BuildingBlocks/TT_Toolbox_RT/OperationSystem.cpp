@@ -8,6 +8,8 @@
 #include "CKAll.h"
 #include "ToolboxGuids.h"
 
+#include <windows.h>
+
 CKObjectDeclaration *FillBehaviorOperationSystemDecl();
 CKERROR CreateOperationSystemProto(CKBehaviorPrototype **pproto);
 int OperationSystem(const CKBehaviorContext &behcontext);
@@ -50,6 +52,16 @@ CKERROR CreateOperationSystemProto(CKBehaviorPrototype **pproto)
 int OperationSystem(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
-    // TODO: To be finished.
+
+    OSVERSIONINFO osvi;
+    ::ZeroMemory(&osvi, sizeof(OSVERSIONINFO));
+    osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+    ::GetVersionEx(&osvi);
+
+    beh->SetOutputParameterValue(0, &osvi.dwPlatformId, sizeof(DWORD));
+    beh->SetOutputParameterValue(1, &osvi.dwMinorVersion, sizeof(DWORD));
+    beh->SetOutputParameterValue(2, &osvi.dwMajorVersion, sizeof(DWORD));
+
+    beh->ActivateOutput(0, TRUE);
     return CKBR_OK;
 }

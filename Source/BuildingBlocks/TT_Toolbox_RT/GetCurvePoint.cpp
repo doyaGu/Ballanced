@@ -53,5 +53,27 @@ int GetCurvePoint(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
     CKContext *context = behcontext.Context;
+
+    beh->ActivateInput(0, FALSE);
+    beh->ActivateOutput(0, TRUE);
+    CKCurve *curve = (CKCurve *)beh->GetTarget();
+    if (!curve)
+        return CKBR_OWNERERROR;
+
+    int number = 0;
+    beh->GetInputParameterValue(0, &number);
+
+    CKCurvePoint *point = curve->GetControlPoint(number);
+    if (!point)
+    {
+        context->OutputToConsole("no CurvePoint!");
+        return CK_OK;
+    }
+
+    VxVector pos;
+    point->GetPosition(&pos);
+    point->SetName("Curvepoints", TRUE);
+
+    beh->SetOutputParameterObject(0, point);
 	return CK_OK;
 }

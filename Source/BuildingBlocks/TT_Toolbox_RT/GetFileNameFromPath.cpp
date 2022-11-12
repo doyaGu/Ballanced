@@ -52,6 +52,17 @@ CKERROR CreateGetFileNameFromPathProto(CKBehaviorPrototype **pproto)
 int GetFileNameFromPath(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
-    // TODO: To be finished.
+
+    CKSTRING path = (CKSTRING)beh->GetInputParameterReadDataPtr(0);
+    CKBOOL useSlash = FALSE;
+    beh->GetLocalParameterValue(0, &useSlash);
+    char sep = (useSlash) ? '/' : '\\';
+    char *filename = strrchr(path, sep);
+    if (filename)
+        beh->SetOutputParameterValue(0, filename + 1);
+    else
+        beh->SetOutputParameterValue(0, path);
+
+    beh->ActivateOutput(0, TRUE);
     return CKBR_OK;
 }
