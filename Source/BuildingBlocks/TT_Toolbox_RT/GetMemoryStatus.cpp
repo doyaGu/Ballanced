@@ -8,6 +8,8 @@
 #include "CKAll.h"
 #include "ToolboxGuids.h"
 
+#include <windows.h>
+
 CKObjectDeclaration *FillBehaviorGetMemoryStatusDecl();
 CKERROR CreateGetMemoryStatusProto(CKBehaviorPrototype **pproto);
 int GetMemoryStatus(const CKBehaviorContext &behcontext);
@@ -52,6 +54,25 @@ CKERROR CreateGetMemoryStatusProto(CKBehaviorPrototype **pproto)
 int GetMemoryStatus(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
-    // TODO: To be finished.
+
+    MEMORYSTATUS statex;
+    statex.dwLength = sizeof(statex);
+    ::GlobalMemoryStatus(&statex);
+
+    beh->SetOutputParameterValue(0, &statex.dwMemoryLoad, sizeof(DWORD));
+
+    DWORD dwTotalPhys = statex.dwTotalPhys / (1024 * 1024);
+    beh->SetOutputParameterValue(1, &dwTotalPhys, sizeof(DWORD));
+
+    DWORD dwAvailPhys = statex.dwAvailPhys / (1024 * 1024);
+    beh->SetOutputParameterValue(2, &dwAvailPhys, sizeof(DWORD));
+
+    DWORD dwTotalVirtual = statex.dwTotalVirtual / (1024 * 1024);
+    beh->SetOutputParameterValue(3, &dwTotalVirtual, sizeof(DWORD));
+
+    DWORD dwAvailVirtual = statex.dwAvailVirtual / (1024 * 1024);
+    beh->SetOutputParameterValue(4, &dwAvailVirtual, sizeof(DWORD));
+
+    beh->ActivateOutput(0, TRUE);
     return CKBR_OK;
 }

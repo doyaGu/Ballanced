@@ -47,9 +47,26 @@ CKERROR CreateLinearVolumeProto(CKBehaviorPrototype **pproto)
     return CK_OK;
 }
 
+double linearize(double val)
+{
+    if ( val > 1.0 )
+        return 1.0;
+    if ( val > 0.01 )
+        return pow(50.0, val) * 0.02;
+    return 0.0;
+}
+
 int LinearVolume(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
-    // TODO: To be finished.
+
+    beh->ActivateInput(0, FALSE);
+
+    float vol = 0.0f;
+    beh->GetInputParameterValue(0, &vol);
+    vol = (float)linearize(vol);
+    beh->SetOutputParameterValue(0, &vol);
+
+    beh->ActivateOutput(0, TRUE);
     return CKBR_OK;
 }

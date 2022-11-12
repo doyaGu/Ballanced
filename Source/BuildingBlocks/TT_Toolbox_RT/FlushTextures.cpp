@@ -46,6 +46,11 @@ CKERROR CreateFlushTexturesProto(CKBehaviorPrototype **pproto)
 int FlushTextures(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
-    // TODO: To be finished.
+
+    beh->ActivateInput(0, FALSE);
+    CKRenderManager *rm = behcontext.Context->GetRenderManager();
+    rm->FlushTextures();
+    beh->ActivateOutput(0, TRUE);
+
     return CKBR_OK;
 }

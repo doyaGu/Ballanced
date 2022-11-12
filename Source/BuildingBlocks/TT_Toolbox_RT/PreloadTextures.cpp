@@ -48,6 +48,21 @@ CKERROR CreatePreloadTexturesProto(CKBehaviorPrototype **pproto)
 int PreloadTextures(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
-    // TODO: To be finished.
+    CKContext *context = behcontext.Context;
+
+    beh->ActivateInput(0, FALSE);
+
+    int count = 0;
+    int texCount = context->GetObjectsCountByClassID(CKCID_TEXTURE);
+    CK_ID *texIds = context->GetObjectsListByClassID(CKCID_TEXTURE);
+    for (int i = 0; i < texCount; ++i)
+    {
+        CKTexture *texture = (CKTexture *)context->GetObject(texIds[i]);
+        if (!texture->IsInVideoMemory() && texture->SystemToVideoMemory(behcontext.CurrentRenderContext))
+            ++count;
+    }
+    beh->SetOutputParameterValue(0, &count);
+
+    beh->ActivateOutput(0, TRUE);
     return CKBR_OK;
 }
