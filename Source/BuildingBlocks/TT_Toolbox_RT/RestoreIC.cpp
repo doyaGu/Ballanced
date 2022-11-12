@@ -50,6 +50,28 @@ CKERROR CreateRestoreICProto(CKBehaviorPrototype **pproto)
 int RestoreIC(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
-    // TODO: To be finished.
+
+    beh->ActivateInput(0, FALSE);
+    beh->ActivateOutput(0);
+
+    //----- Get Object
+    CKBeObject *bo = (CKBeObject *)beh->GetTarget();
+    if (!bo)
+        return CKBR_OWNERERROR;
+
+    CKScene *scn = behcontext.CurrentScene;
+    if (!scn)
+        return CKBR_GENERICERROR;
+
+    //----- Restore the IC
+    if (bo->IsInScene(scn))
+    {
+        CKStateChunk *chunk = scn->GetObjectInitialValue(bo);
+        if (chunk)
+        {
+            CKReadObjectState(bo, chunk);
+        }
+    }
+
     return CKBR_OK;
 }

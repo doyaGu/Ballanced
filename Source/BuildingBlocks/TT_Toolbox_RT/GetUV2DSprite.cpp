@@ -50,6 +50,20 @@ CKERROR CreateGetUV2DSpriteProto(CKBehaviorPrototype **pproto)
 int GetUV2DSprite(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
-    // TODO: To be finished.
+
+    if (beh->IsInputActive(0))
+    {
+        beh->ActivateInput(0, FALSE);
+        beh->ActivateOutput(0, TRUE);
+    }
+
+    CK2dEntity *target = (CK2dEntity *)beh->GetTarget();
+    if (!target)
+        return CKBR_OWNERERROR;
+
+    VxRect uv;
+    target->GetSourceRect(uv);
+    beh->SetOutputParameterValue(0, &uv);
+
     return CKBR_OK;
 }

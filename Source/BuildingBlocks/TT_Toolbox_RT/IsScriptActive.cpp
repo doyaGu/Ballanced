@@ -49,6 +49,26 @@ CKERROR CreateIsScriptActiveProto(CKBehaviorPrototype **pproto)
 int IsScriptActive(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
-    // TODO: To be finished.
+
+    CKBehavior *script = (CKBehavior *)beh->GetInputParameterObject(0);
+    if (!script)
+    {
+        behcontext.Context->OutputToConsole("no Script!");
+        return CKBR_PARAMETERERROR;
+    }
+
+    if (script->IsActive())
+    {
+        beh->ActivateInput(0, FALSE);
+        beh->ActivateOutput(0, TRUE);
+        beh->ActivateOutput(1, FALSE);
+    }
+    else
+    {
+        beh->ActivateInput(0, FALSE);
+        beh->ActivateOutput(0, FALSE);
+        beh->ActivateOutput(1, TRUE);
+    }
+
     return CKBR_OK;
 }

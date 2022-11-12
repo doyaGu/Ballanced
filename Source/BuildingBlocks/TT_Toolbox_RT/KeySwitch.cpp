@@ -56,13 +56,52 @@ CKERROR CreateKeySwitchProto(CKBehaviorPrototype **pproto)
 int KeySwitch(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
-    // TODO: To be finished.
-    return CKBR_OK;
+
+    if (beh->IsInputActive(1))
+    {
+        beh->ActivateInput(1, FALSE);
+        return CKBR_OK;
+    }
+
+    int inputParamCount = beh->GetInputParameterCount();
+    if (inputParamCount != beh->GetOutputCount())
+    {
+        throw "Input parameter / Output mismatch";
+    }
+
+    return CKBR_ACTIVATENEXTFRAME;
 }
 
 CKERROR KeySwitchCallBack(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
-    // TODO: To be finished.
-    return CKBR_OK;
+
+    switch (behcontext.CallbackMessage)
+    {
+        case CKM_BEHAVIOREDITED:
+        {
+            char buf[12];
+            int outputCount = beh->GetOutputCount();
+            int inputParamCount = beh->GetInputParameterCount();
+            if (inputParamCount < outputCount)
+            {
+                for (int i = inputParamCount; i < outputCount; ++i)
+                {
+                    sprintf(buf, "Key %d", i);
+                    beh->CreateInputParameter(buf, CKPGUID_KEY);
+                }
+            }
+            else
+            {
+                for (int i = inputParamCount; i > outputCount; --i)
+                {
+                    CKParameterIn *pin = beh->RemoveInputParameter(i);
+                    behcontext.Context->DestroyObject(pin);
+                }
+            }
+        }
+            break;
+    }
+
+    return CKBR_ACTIVATENEXTFRAME;
 }

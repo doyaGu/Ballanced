@@ -49,6 +49,26 @@ CKERROR CreateIsObjectVisibleProto(CKBehaviorPrototype **pproto)
 int IsObjectVisible(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
-    // TODO: To be finished.
+
+    CKBehavior *object = (CKBehavior *)beh->GetInputParameterObject(0);
+    if (!object)
+    {
+        behcontext.Context->OutputToConsole("no Object!");
+        return CKBR_PARAMETERERROR;
+    }
+
+    if (object->IsVisible())
+    {
+        beh->ActivateInput(0, FALSE);
+        beh->ActivateOutput(0, TRUE);
+        beh->ActivateOutput(1, FALSE);
+    }
+    else
+    {
+        beh->ActivateInput(0, FALSE);
+        beh->ActivateOutput(0, FALSE);
+        beh->ActivateOutput(1, TRUE);
+    }
+
     return CKBR_OK;
 }

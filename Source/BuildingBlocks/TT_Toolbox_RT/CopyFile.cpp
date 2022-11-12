@@ -8,6 +8,8 @@
 #include "CKAll.h"
 #include "ToolboxGuids.h"
 
+#include <windows.h>
+
 CKObjectDeclaration *FillBehaviorCopyFileDecl();
 CKERROR CreateCopyFileProto(CKBehaviorPrototype **pproto);
 int CopyFile(const CKBehaviorContext &behcontext);
@@ -51,6 +53,19 @@ CKERROR CreateCopyFileProto(CKBehaviorPrototype **pproto)
 int CopyFile(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
-    // TODO: To be finished.
+
+    CKSTRING src = (CKSTRING)beh->GetInputParameterReadDataPtr(0);
+    CKSTRING dest = (CKSTRING)beh->GetInputParameterReadDataPtr(0);
+    CKBOOL overwrite = FALSE;
+    beh->GetInputParameterValue(2, &overwrite);
+    if (::CopyFileA(src, dest, overwrite) == TRUE)
+    {
+        beh->ActivateOutput(0, TRUE);
+    }
+    else
+    {
+        beh->ActivateOutput(1, TRUE);
+    }
+
     return CKBR_OK;
 }

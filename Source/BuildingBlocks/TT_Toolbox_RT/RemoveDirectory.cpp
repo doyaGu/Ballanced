@@ -8,6 +8,8 @@
 #include "CKAll.h"
 #include "ToolboxGuids.h"
 
+#include <windows.h>
+
 CKObjectDeclaration *FillBehaviorRemoveDirectoryDecl();
 CKERROR CreateRemoveDirectoryProto(CKBehaviorPrototype **pproto);
 int RemoveDirectory(const CKBehaviorContext &behcontext);
@@ -49,6 +51,16 @@ CKERROR CreateRemoveDirectoryProto(CKBehaviorPrototype **pproto)
 int RemoveDirectory(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
-    // TODO: To be finished.
+
+    CKSTRING dir = (CKSTRING)beh->GetInputParameterReadDataPtr(0);
+    if (::RemoveDirectoryA(dir) == TRUE)
+    {
+        beh->ActivateOutput(0, TRUE);
+    }
+    else
+    {
+        beh->ActivateOutput(1, TRUE);
+    }
+
     return CKBR_OK;
 }

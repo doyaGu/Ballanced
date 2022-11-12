@@ -8,6 +8,8 @@
 #include "CKAll.h"
 #include "ToolboxGuids.h"
 
+#include <windows.h>
+
 CKObjectDeclaration *FillBehaviorSetCurrentDirectoryDecl();
 CKERROR CreateSetCurrentDirectoryProto(CKBehaviorPrototype **pproto);
 int SetCurrentDirectory(const CKBehaviorContext &behcontext);
@@ -49,6 +51,16 @@ CKERROR CreateSetCurrentDirectoryProto(CKBehaviorPrototype **pproto)
 int SetCurrentDirectory(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
-    // TODO: To be finished.
+
+    CKSTRING dir = (CKSTRING)beh->GetInputParameterReadDataPtr(0);
+    if (::SetCurrentDirectoryA(dir) == TRUE)
+    {
+        beh->ActivateOutput(0, TRUE);
+    }
+    else
+    {
+        beh->ActivateOutput(1, TRUE);
+    }
+
     return CKBR_OK;
 }
