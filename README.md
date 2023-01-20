@@ -37,8 +37,6 @@ If you use CMake, run the command `cmake -B build -G "Visual Studio 16 2019" -A 
 
 If you use Visual Studio 6.0, open `Ballance.dsw`, and compile the projects.
 
-When using Visual Studio 6.0, you need [Windows Server 2003 SP1 SDK](http://www.microsoft.com/en-us/download/details.aspx?id=15656) to compile the **Player** project due to the use of `GlobalMemoryStatusEx`.
-
 ## Improvements
 
 There are serval changes and improvements implemented to the original game.
