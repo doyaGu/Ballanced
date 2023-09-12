@@ -33,24 +33,9 @@ This project uses CMake as the build tool, and Visual Studio 6.0 is also support
 
 Clone the repository with `git clone https://github.com/doyaGu/Ballanced.git`. Then `cd Ballanced` into the cloned repository.
 
-If you use CMake, run the command `cmake -B build -G "Visual Studio 16 2019" -A Win32` to generate Visual Studio projects and solutions. Then open the solution file under the `build` directory and compile the projects.
+If you use CMake, run the command `cmake -B build -G "Visual Studio 16 2022" -A Win32` to generate Visual Studio projects and solutions. Then open the solution file under the `build` directory and compile the projects.
 
 If you use Visual Studio 6.0, open `Ballance.dsw`, and compile the projects.
-
-## Improvements
-
-There are serval changes and improvements implemented to the original game.
-
-- Fixed incomplete displaying in windowed mode
-- Fixed memory checking problem
-- Support in-game resizing in windowed mode 
-- Replace registry operation with using initialization file
-- No dependency on `Dsetup`
-- Disabled Exception Handling in **Player**
-- Support command-line configuration
-- Support 32-bit color mode
-- ResDll is integrated into Player
-- ...
 
 ## To-Do
 
