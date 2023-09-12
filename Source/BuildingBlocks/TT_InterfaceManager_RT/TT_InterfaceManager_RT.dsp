@@ -43,7 +43,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "TT_INTERFACEMANAGER_RT_EXPORTS" /YX /FD /c
-# ADD CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "TT_INTERFACEMANAGER_RT_EXPORTS" /FD /c
+# ADD CPP /nologo /MT /W3 /GX /O2 /I "./" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "TT_INTERFACEMANAGER_RT_EXPORTS" /FD /c
 # SUBTRACT CPP /YX
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
@@ -54,7 +54,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /machine:I386
-# ADD LINK32 CK2.lib VxMath.lib kernel32.lib user32.lib /nologo /dll /machine:I386 /out:"../../../BuildingBlocks/TT_InterfaceManager_RT.dll"
+# ADD LINK32 CK2.lib VxMath.lib kernel32.lib user32.lib advapi32.lib /nologo /dll /machine:I386 /out:"../../../BuildingBlocks/TT_InterfaceManager_RT.dll"
 
 !ELSEIF  "$(CFG)" == "TT_InterfaceManager_RT - Win32 Debug"
 
@@ -70,7 +70,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "TT_INTERFACEMANAGER_RT_EXPORTS" /YX /FD /GZ /c
-# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "TT_INTERFACEMANAGER_RT_EXPORTS" /FD /GZ /c
+# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I "./" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "TT_INTERFACEMANAGER_RT_EXPORTS" /FD /GZ /c
 # SUBTRACT CPP /YX
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
@@ -81,7 +81,8 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 CK2.lib VxMath.lib kernel32.lib user32.lib /nologo /dll /debug /machine:I386 /out:"../../../BuildingBlocks/TT_InterfaceManager_RT.dll" /pdbtype:sept
+# ADD LINK32 CK2.lib VxMath.lib kernel32.lib user32.lib advapi32.lib /nologo /dll /debug /machine:I386 /out:"../../../BuildingBlocks/TT_InterfaceManager_RT.dll" /pdbtype:sept
+# SUBTRACT LINK32 /pdb:none
 
 !ENDIF 
 
@@ -92,113 +93,217 @@ LINK32=link.exe
 # Begin Group "Source Files"
 
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
+# Begin Group "Behaviors"
+
+# PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\ChangeScreenMode.cpp
+SOURCE=.\Behaviors\ChangeScreenMode.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\CreateNewGameInfo.cpp
+SOURCE=.\Behaviors\CreateNewGameInfo.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\DeleteGameInfo.cpp
+SOURCE=.\Behaviors\DeleteGameInfo.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\ExistsGameInfo.cpp
+SOURCE=.\Behaviors\ExistsGameInfo.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\ExitToSystem.cpp
+SOURCE=.\Behaviors\ExitToSystem.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\GetBooleanValueFromRegistry.cpp
+SOURCE=.\Behaviors\GetBooleanValueFromRegistry.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\GetFloatValueFromRegistry.cpp
+SOURCE=.\Behaviors\GetFloatValueFromRegistry.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\GetGameBonus.cpp
+SOURCE=.\Behaviors\GetGameBonus.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\GetGameData.cpp
+SOURCE=.\Behaviors\GetGameData.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\GetGameID.cpp
+SOURCE=.\Behaviors\GetGameID.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\GetGameName.cpp
+SOURCE=.\Behaviors\GetGameName.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\GetGameScore.cpp
+SOURCE=.\Behaviors\GetGameScore.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\GetIntegerValueFromRegistry.cpp
+SOURCE=.\Behaviors\GetIntegerValueFromRegistry.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\GetLevelBonus.cpp
+SOURCE=.\Behaviors\GetLevelBonus.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\GetLevelData.cpp
+SOURCE=.\Behaviors\GetLevelData.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\GetLevelID.cpp
+SOURCE=.\Behaviors\GetLevelID.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\GetLevelName.cpp
+SOURCE=.\Behaviors\GetLevelName.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\GetLevelReached.cpp
+SOURCE=.\Behaviors\GetLevelReached.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\GetLevelScore.cpp
+SOURCE=.\Behaviors\GetLevelScore.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\GetStringValueFromRegistry.cpp
+SOURCE=.\Behaviors\GetStringValueFromRegistry.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\InstallArray.cpp
+SOURCE=.\Behaviors\InstallArray.cpp
 # End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\IsRookie.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\LimitFramerate.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\ListDriver.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\ListScreenModes.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\LoadCMO.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\PlayerActive.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\ReadArray.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\ReadRegistry.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\RestartCMO.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\SetBooleanValueToRegistry.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\SetFloatValueToRegistry.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\SetGameBonus.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\SetGameData.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\SetGameID.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\SetGameName.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\SetGameScore.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\SetIntegerValueToRegistry.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\SetLevelBonus.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\SetLevelData.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\SetLevelID.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\SetLevelName.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\SetLevelReached.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\SetLevelScore.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\SetRookie.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\SetStringValueToRegistry.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\SetTaskSwitchHandler.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\UninstallArray.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\WindowActivate.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\WriteArray.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\WriteRegistry.cpp
+# End Source File
+# End Group
 # Begin Source File
 
 SOURCE=.\InterfaceManager.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\IsRookie.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\LimitFramerate.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\ListDriver.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\ListScreenModes.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\LoadCMO.cpp
 # End Source File
 # Begin Source File
 
@@ -206,107 +311,7 @@ SOURCE=.\NemoArray.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\PlayerActive.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\ReadArray.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\ReadRegistry.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\RestartCMO.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\SetBooleanValueToRegistry.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\SetFloatValueToRegistry.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\SetGameBonus.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\SetGameData.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\SetGameID.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\SetGameName.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\SetGameScore.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\SetIntegerValueToRegistry.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\SetLevelBonus.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\SetLevelData.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\SetLevelID.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\SetLevelName.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\SetLevelReached.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\SetLevelScore.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\SetRookie.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\SetStringValueToRegistry.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\SetTaskSwitchHandler.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\TT_InterfaceManager_RT.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\UninstallArray.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\WindowActivate.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\WriteArray.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\WriteRegistry.cpp
 # End Source File
 # End Group
 # Begin Group "Header Files"
@@ -323,10 +328,6 @@ SOURCE=.\InterfaceManager.h
 # Begin Source File
 
 SOURCE=.\NemoArray.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\TT_InterfaceManager_RT.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"

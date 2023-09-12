@@ -1,10 +1,11 @@
-#ifndef BUILDINGBLOCKS_DEBUGMANAGER_H
-#define BUILDINGBLOCKS_DEBUGMANAGER_H
+#ifndef TOOLBOX_DEBUGMANAGER_H
+#define TOOLBOX_DEBUGMANAGER_H
 
 #include "CKBaseManager.h"
 #include "CKContext.h"
 
 #include <stdio.h>
+#include <stdarg.h>
 
 #define TT_DEBUG_MANAGER_GUID CKGUID(0x47510373, 0x711473D7)
 
@@ -32,6 +33,11 @@ public:
                CKMANAGER_FUNC_OnCKReset;
     }
 
+    bool IsInDebugMode() const { return m_DebugMode; }
+    void EnableDebugMode(bool enable = true) { m_DebugMode = enable; }
+
+    void WriteToLogFile(const char *filename, const char *format, ...);
+
     static DebugManager *GetManager(CKContext *context)
     {
         return (DebugManager *)context->GetManagerByGuid(TT_DEBUG_MANAGER_GUID);
@@ -43,4 +49,4 @@ protected:
     bool m_LogFileNotOpened;
 };
 
-#endif // BUILDINGBLOCKS_DEBUGMANAGER_H
+#endif // TOOLBOX_DEBUGMANAGER_H

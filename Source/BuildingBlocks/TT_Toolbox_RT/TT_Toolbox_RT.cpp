@@ -208,7 +208,7 @@ void RegisterBehaviorDeclarations(XObjectDeclarationArray *reg)
     RegisterBehavior(reg, FillBehaviorDebugOFFDecl);
     RegisterBehavior(reg, FillBehaviorDebugDecl);
 
-    RegisterBehavior(reg, FillBehaviorSet2DSpriteoldDecl);
+    RegisterBehavior(reg, FillBehaviorSet2DSpriteOldDecl);
     RegisterBehavior(reg, FillBehaviorSet2DSpriteDecl);
     RegisterBehavior(reg, FillBehaviorSet3DSpriteDecl);
     RegisterBehavior(reg, FillBehaviorGetUV2DSpriteDecl);

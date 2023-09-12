@@ -1,5 +1,3 @@
-#include "TT_DatabaseManager_RT.h"
-
 #include "DatabaseManager.h"
 
 #ifdef CK_LIB

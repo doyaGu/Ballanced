@@ -1,5 +1,5 @@
-#ifndef BUILDINGBLOCKS_DXMANAGER_H
-#define BUILDINGBLOCKS_DXMANAGER_H
+#ifndef TOOLBOX_DXMANAGER_H
+#define TOOLBOX_DXMANAGER_H
 
 #include "CKBaseManager.h"
 #include "CKContext.h"
@@ -39,4 +39,4 @@ protected:
 
 };
 
-#endif // BUILDINGBLOCKS_DXMANAGER_H
+#endif // TOOLBOX_DXMANAGER_H

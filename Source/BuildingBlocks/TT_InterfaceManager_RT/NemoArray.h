@@ -1,5 +1,5 @@
-#ifndef PLAYER_NEMOARRAY_H
-#define PLAYER_NEMOARRAY_H
+#ifndef TT_INTERFACEMANAGER_NEMOARRAY_H
+#define TT_INTERFACEMANAGER_NEMOARRAY_H
 
 #include "XClassArray.h"
 #include "CKDataArray.h"
@@ -69,6 +69,7 @@ class CNemoArrayList
 {
 public:
     CNemoArrayList();
+
     virtual ~CNemoArrayList();
 
     void Add(const char *cmoName, CKDataArray *array);
@@ -95,4 +96,4 @@ private:
     XClassArray<CNemoArray> m_Arrays;
 };
 
-#endif // PLAYER_NEMOARRAY_H
+#endif // TT_INTERFACEMANAGER_NEMOARRAY_H

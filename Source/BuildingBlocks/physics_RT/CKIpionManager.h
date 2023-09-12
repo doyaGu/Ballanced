@@ -4,7 +4,7 @@
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
-#include <windows.h>
+#include <Windows.h>
 
 #include "CKBaseManager.h"
 #include "CKContext.h"
@@ -21,6 +21,7 @@
 #include "ivp_surman_polygon.hxx"
 #include "ivu_string_hash.hxx"
 
+#define TERRATOOLS_GUID CKGUID(0x56495254, 0x4f4f4c53)
 #define TT_PHYSICS_MANAGER_GUID CKGUID(0x6BED328B, 0x141F5148)
 
 #define IVP_COMPACT_SURFACE_ID MAKEID('I', 'V', 'P', 'S')
@@ -47,68 +48,70 @@ typedef XNHashTable<PhysicsStruct, CK_ID> PhysicStructTable;
 class PhysicsCall
 {
 public:
-    PhysicsCall(CKIpionManager *pm, CKBehavior *beh) : m_PhysicsManager(pm), m_Value(2), m_Behavior(beh) {}
+    PhysicsCall(CKIpionManager *pm, CKBehavior *beh, int type) : m_IpionManager(pm), m_Type(type), m_Behavior(beh) {}
     virtual CKBOOL Call() = 0;
     virtual ~PhysicsCall();
 
-    CKIpionManager *m_PhysicsManager;
-    int m_Value;
+    CKIpionManager *m_IpionManager;
+    int m_Type;
     CKBehavior *m_Behavior;
 };
 
 class PhysicsForceCall : public PhysicsCall
 {
-    CKBOOL Call()
-    {
-    }
-};
-
-class PhysicsWakeUpCall : public PhysicsCall
-{
-    CKBOOL Call()
-    {
-    }
-};
-
-class PhysicsResetCall : public PhysicsCall
-{
-    CKBOOL Call()
+    virtual CKBOOL Call()
     {
     }
 };
 
 class PhysicsBallJointCall : public PhysicsCall
 {
-    CKBOOL Call()
+    virtual CKBOOL Call()
     {
     }
 };
 
 class PhysicsHingeCall : public PhysicsCall
 {
-    CKBOOL Call()
+    virtual CKBOOL Call()
     {
     }
 };
 
 class PhysicsSliderCall : public PhysicsCall
 {
-    CKBOOL Call()
+    virtual CKBOOL Call()
     {
     }
 };
 
 class PhysicsSpringCall : public PhysicsCall
 {
-    CKBOOL Call()
+    virtual CKBOOL Call()
     {
     }
 };
 
 struct PhysicsCallManager
 {
-    CKIpionManager *m_PhysicsManager;
-    BOOL m_HasPhysicsCalls;
+    void Process(PhysicsCall *physicsCall)
+    {
+        if (physicsCall->m_Behavior)
+        {
+            if (physicsCall->Call())
+            {
+                delete physicsCall;
+            }
+            else if (0 <= physicsCall->m_Type && physicsCall->m_Type < 3)
+            {
+                m_PhysicsCalls[physicsCall->m_Type].add(physicsCall);
+                m_HasPhysicsCall = TRUE;
+            }
+        }
+    }
+
+    CKIpionManager *m_IpionManager;
+    CKBOOL m_HasPhysicsCall;
     IVP_U_Vector<PhysicsCall> m_PhysicsCalls[3];
 };
 
@@ -211,6 +214,8 @@ public:
 
     void CreateEnvironment();
     void DeleteEnvironment();
+
+    virtual void Reset();
 
     static CKIpionManager *GetManager(CKContext *context)
     {

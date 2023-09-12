@@ -43,7 +43,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "TT_TOOLBOX_RT_EXPORTS" /YX /FD /c
-# ADD CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "TT_TOOLBOX_RT_EXPORTS" /FD /c
+# ADD CPP /nologo /MT /W3 /GX /O2 /I "./" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "TT_TOOLBOX_RT_EXPORTS" /FD /c
 # SUBTRACT CPP /YX
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
@@ -70,7 +70,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "TT_TOOLBOX_RT_EXPORTS" /YX /FD /GZ /c
-# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "TT_TOOLBOX_RT_EXPORTS" /FD /GZ /c
+# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I "./" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "TT_TOOLBOX_RT_EXPORTS" /FD /GZ /c
 # SUBTRACT CPP /YX
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
@@ -92,89 +92,393 @@ LINK32=link.exe
 # Begin Group "Source Files"
 
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
+# Begin Group "Behaviors"
+
+# PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\ActivateObject.cpp
+SOURCE=.\Behaviors\ActivateObject.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\AnisoMapping.cpp
+SOURCE=.\Behaviors\AnisoMapping.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\BitmapFont.cpp
+SOURCE=.\Behaviors\BitmapFont.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\BoundingSphereIntersection.cpp
+SOURCE=.\Behaviors\BoundingSphereIntersection.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\BumpMap.cpp
+SOURCE=.\Behaviors\BumpMap.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\CelShading.cpp
+SOURCE=.\Behaviors\CelShading.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\CheckCurveCollision.cpp
+SOURCE=.\Behaviors\CheckCurveCollision.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\ChildrenIterator.cpp
+SOURCE=.\Behaviors\ChildrenIterator.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\Chrono.cpp
+SOURCE=.\Behaviors\Chrono.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\ConvertBox.cpp
+SOURCE=.\Behaviors\ConvertBox.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\ConvertPixelHomogen.cpp
+SOURCE=.\Behaviors\ConvertPixelHomogen.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\ConvertTimeToString.cpp
+SOURCE=.\Behaviors\ConvertTimeToString.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\CopyFile.cpp
+SOURCE=.\Behaviors\CopyFile.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\Counter.cpp
+SOURCE=.\Behaviors\Counter.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\CreateDirectory.cpp
+SOURCE=.\Behaviors\CreateDirectory.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\CreateFontEx.cpp
+SOURCE=.\Behaviors\CreateFontEx.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\Debug.cpp
+SOURCE=.\Behaviors\Debug.cpp
 # End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\DebugOFF.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\DebugON.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\DeleteFile.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\ExistFile.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\FindSubString.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\FlushTextures.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\FollowCamera.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\FontCoordinatesToDataArray.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\GeneratePlane.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\GetCurrentDirectory.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\GetCurvePoint.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\GetEnvironmentVariable.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\GetFileNameFromPath.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\GetFullAngle.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\GetGroupBoundingBox.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\GetMemoryStatus.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\GetNearestCurvePosition.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\GetTime.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\GetUV2DSprite.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\GetZOrder.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\HighMapMeshform.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\HomingMissile.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\InputString.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\IsObjectActive.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\IsObjectVisible.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\IsScriptActive.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\JoystickVectorMapper.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\JoystickWaiter.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\KeySwitch.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\KeyWaiter.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\LensFlare.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\LinearVolume.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\ListAllCurrentUsedTextures.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\ListDir.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\LoadMotorSettings.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\LookAt.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\MagnetMeshForm.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\MotorSound.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\OperationSystem.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\ParameterMapper.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\PMSMeshdeform.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\PreloadTextures.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\PushButton.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\PushButton2.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\ReflectionMapping.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\RefractionMapping.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\RemoveDirectory.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\ReplaceInputparameter.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\ReplacePath.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\RestoreDynamicIC.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\RestoreIC.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\RippleWave.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\SaveAlpha.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\SaveIC.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\ScaleableProximity.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\SceneStencilShadow.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\SearchRow.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\Set2DSprite.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\Set2DSpriteOld.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\Set3DSprite.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\SetCurrentDirectory.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\SetDynamicPosition.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\SetFSAA.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\SetMapping.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\SetMaterialValues.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\SetMipMapping.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\ShadowMapping.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\ShadowPlane.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\ShowVector.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\SinusMeshdeform.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\SkyAround.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\SplitString.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\SwitchOnLayer.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\TestForJoystick.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\TextureInfo.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\Timer.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\ViewFrustumClipping.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\WriteBack.cpp
+# End Source File
+# End Group
 # Begin Source File
 
 SOURCE=.\DebugManager.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\DebugOFF.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\DebugON.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\DeleteFile.cpp
 # End Source File
 # Begin Source File
 
@@ -182,316 +486,24 @@ SOURCE=.\DXManager.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\ExistFile.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\FindSubString.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\FlushTextures.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\FollowCamera.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\FontCoordinatesToDataArray.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\GeneratePlane.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\GetCurrentDirectory.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\GetCurvePoint.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\GetEnvironmentVariable.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\GetFileNameFromPath.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\GetFullAngle.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\GetGroupBoundingBox.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\GetMemoryStatus.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\GetNearestCurvePosition.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\GetTime.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\GetUV2DSprite.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\GetZOrder.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\HighMapMeshform.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\HomingMissile.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\InputString.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\IsObjectActive.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\IsObjectVisible.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\IsScriptActive.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\JoystickVectorMapper.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\JoystickWaiter.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\KeySwitch.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\KeyWaiter.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\LensFlare.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\LinearVolume.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\ListAllCurrentUsedTextures.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\ListDir.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\LoadMotorSettings.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\LookAt.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\MagnetMeshForm.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\MotorSound.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\OperationSystem.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\ParameterMapper.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\PMSMeshdeform.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\PreloadTextures.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\PushButton.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\PushButton2.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\ReflectionMapping.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\RefractionMapping.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\RemoveDirectory.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\ReplaceInputparameter.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\ReplacePath.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\RestoreDynamicIC.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\RestoreIC.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\RippleWave.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\SaveAlpha.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\SaveIC.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\ScaleableProximity.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\SceneStencilShadow.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\SearchRow.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\Set2DSprite.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\Set2DSpriteold.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\Set3DSprite.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\SetCurrentDirectory.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\SetDynamicPosition.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\SetFSAA.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\SetMapping.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\SetMaterialValues.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\SetMipMapping.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\ShadowMapping.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\ShadowPlane.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\ShowVector.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\SinusMeshdeform.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\SkyAround.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\SplitString.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\SwitchOnLayer.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\TestForJoystick.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\TextureInfo.cpp
-# End Source File
-# Begin Source File
-
 SOURCE=.\TimeManager.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\Timer.cpp
 # End Source File
 # Begin Source File
 
 SOURCE=.\TT_Toolbox_RT.cpp
 # End Source File
-# Begin Source File
-
-SOURCE=.\ViewFrustumClipping.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\WriteBack.cpp
-# End Source File
 # End Group
 # Begin Group "Header Files"
 
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
+# Begin Source File
+
+SOURCE=.\CKFontManager.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\CKTextureFont.h
+# End Source File
 # Begin Source File
 
 SOURCE=.\DebugManager.h
@@ -503,6 +515,10 @@ SOURCE=.\DXManager.h
 # Begin Source File
 
 SOURCE=.\TimeManager.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\ToolboxGuids.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"

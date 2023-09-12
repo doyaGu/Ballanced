@@ -1,6 +1,6 @@
 #include "physics_RT.h"
 
-#include "PhysicsManager.h"
+#include "CKIpionManager.h"
 
 int ConvertConvexToLedge(IVP_SurfaceBuilder_Ledge_Soup *builder, CKMesh *convex, VxVector *scale)
 {
@@ -44,8 +44,8 @@ int ConvertConvexToLedge(IVP_SurfaceBuilder_Ledge_Soup *builder, CKMesh *convex,
     {
         for (int p = 0; p < vIndex; ++p)
         {
-            const VxVector *&v = vertices[p];
-            pts[p] = CKPhysicsManager::Cast(*v * s);
+            VxVector *&v = vertices[p];
+            pts[p] = CKIpionManager::Cast(*v * s);
 
             points.add(&pts[p]);
         }
@@ -95,9 +95,9 @@ void ConvertConcaveToLedge(IVP_SurfaceBuilder_Ledge_Soup *builder, CKMesh *conca
         concave->GetVertexPosition(vi1, &vertex1);
         concave->GetVertexPosition(vi2, &vertex2);
         concave->GetVertexPosition(vi3, &vertex3);
-        point1 = CKPhysicsManager::Cast(vertex1 * s);
-        point2 = CKPhysicsManager::Cast(vertex2 * s);
-        point3 = CKPhysicsManager::Cast(vertex3 * s);
+        point1 = CKIpionManager::Cast(vertex1 * s);
+        point2 = CKIpionManager::Cast(vertex2 * s);
+        point3 = CKIpionManager::Cast(vertex3 * s);
         IVP_Compact_Ledge *ledge = IVP_SurfaceBuilder_Pointsoup::convert_pointsoup_to_compact_ledge(&points);
         if (ledge)
         {
@@ -106,17 +106,17 @@ void ConvertConcaveToLedge(IVP_SurfaceBuilder_Ledge_Soup *builder, CKMesh *conca
     }
 }
 
-CKPhysicsManager::CKPhysicsManager(CKContext *context)
+CKIpionManager::CKIpionManager(CKContext *context)
     : CKBaseManager(context, TT_PHYSICS_MANAGER_GUID, "TT Physics Manager")
 {
     context->RegisterNewManager(this);
 }
 
-CKPhysicsManager::~CKPhysicsManager()
+CKIpionManager::~CKIpionManager()
 {
 }
 
-int CKPhysicsManager::Physicalize(CK3dEntity *target, int convexCount, CKMesh **convexes, int ballCount, int concaveCount, CKMesh **concaves, float ballRadius, CKSTRING collisionSurface, VxVector *shiftMassCenter, BOOL fixed, IVP_Material *material, float mass, CKSTRING collisionGroup, BOOL startFrozen, BOOL enableCollision, BOOL autoCalcMassCenter, float linearSpeedDampening, float rotSpeedDampening)
+int CKIpionManager::Physicalize(CK3dEntity *target, int convexCount, CKMesh **convexes, int ballCount, int concaveCount, CKMesh **concaves, float ballRadius, CKSTRING collisionSurface, VxVector *shiftMassCenter, BOOL fixed, IVP_Material *material, float mass, CKSTRING collisionGroup, BOOL startFrozen, BOOL enableCollision, BOOL autoCalcMassCenter, float linearSpeedDampening, float rotSpeedDampening)
 {
     VxVector scale;
     target->GetScale(&scale);
@@ -188,20 +188,20 @@ int CKPhysicsManager::Physicalize(CK3dEntity *target, int convexCount, CKMesh **
     m_Context->OutputToConsoleEx("Error: incorrect mesh for %s !\n", target->GetName());
 }
 
-IVP_Ball *CKPhysicsManager::CreatePhysicsBall(CKSTRING name, float mass, float ballRadius, IVP_Material *material, float linearSpeedDampening, float rotSpeedDampening, CK3dEntity *target, BOOL startFrozen, BOOL fixed, char *collisionGroup, BOOL enableCollision, VxVector *shiftMassCenter)
+IVP_Ball *CKIpionManager::CreatePhysicsBall(CKSTRING name, float mass, float ballRadius, IVP_Material *material, float linearSpeedDampening, float rotSpeedDampening, CK3dEntity *target, BOOL startFrozen, BOOL fixed, char *collisionGroup, BOOL enableCollision, VxVector *shiftMassCenter)
 {
 }
 
-IVP_Polygon *CKPhysicsManager::CreatePhysicsPolygon(CKSTRING name, float mass, IVP_Material *material, float linearSpeedDampening, float rotSpeedDampening, CK3dEntity *target, BOOL startFrozen, BOOL fixed, char *collisionGroup, BOOL enableCollision, IVP_SurfaceManager *surman, VxVector *shiftMassCenter)
+IVP_Polygon *CKIpionManager::CreatePhysicsPolygon(CKSTRING name, float mass, IVP_Material *material, float linearSpeedDampening, float rotSpeedDampening, CK3dEntity *target, BOOL startFrozen, BOOL fixed, char *collisionGroup, BOOL enableCollision, IVP_SurfaceManager *surman, VxVector *shiftMassCenter)
 {
 }
 
-IVP_SurfaceManager *CKPhysicsManager::GetSurfaceManager(const CKSTRING collisionSurface)
+IVP_SurfaceManager *CKIpionManager::GetSurfaceManager(const CKSTRING collisionSurface)
 {
     return (IVP_SurfaceManager *)m_SurfaceManagers->find(collisionSurface);
 }
 
-void CKPhysicsManager::AddSurfaceManager(const CKSTRING collisionSurface, IVP_SurfaceManager *surman)
+void CKIpionManager::AddSurfaceManager(const CKSTRING collisionSurface, IVP_SurfaceManager *surman)
 {
     m_SurfaceManagers->add(collisionSurface, surman);
 }
