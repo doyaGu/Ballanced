@@ -1,5 +1,5 @@
-#ifndef BUILDINGBLOCKS_INTERFACEMANAGER_H
-#define BUILDINGBLOCKS_INTERFACEMANAGER_H
+#ifndef TT_INTERFACEMANAGER_H
+#define TT_INTERFACEMANAGER_H
 
 #include "CKBaseManager.h"
 #include "CKContext.h"
@@ -7,6 +7,7 @@
 #include "GameInfo.h"
 #include "NemoArray.h"
 
+#define TERRATOOLS_GUID CKGUID(0x56495254, 0x4f4f4c53)
 #define TT_INTERFACE_MANAGER_GUID CKGUID(0x30833801, 0x6DEE620D)
 
 enum TT_MSG
@@ -106,16 +107,6 @@ public:
         strncpy(m_CmoName, name, sizeof(m_CmoName));
     }
 
-    char *GetIniName()
-    {
-        return &m_IniName[0];
-    }
-
-    void SetIniName(const char *name)
-    {
-        strncpy(m_IniName, name, sizeof(m_IniName));
-    }
-
     bool IsWindowActivated() const
     {
         return m_WindowActivated;
@@ -143,9 +134,9 @@ protected:
     bool m_Rookie;
     CGameInfo *m_GameInfo;
     char m_CmoName[512];
-    char m_IniName[128];
+    char m_Name[128];
     bool m_WindowActivated;
     CNemoArrayList m_ArrayList;
 };
 
-#endif // BUILDINGBLOCKS_INTERFACEMANAGER_H
+#endif // TT_INTERFACEMANAGER_H

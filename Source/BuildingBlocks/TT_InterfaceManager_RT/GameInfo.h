@@ -1,5 +1,5 @@
-#ifndef BUILDINGBLOCKS_GAMEINFO_H
-#define BUILDINGBLOCKS_GAMEINFO_H
+#ifndef TT_INTERFACEMANAGER_GAMEINFO_H
+#define TT_INTERFACEMANAGER_GAMEINFO_H
 
 #include <string.h>
 
@@ -52,4 +52,4 @@ public:
     virtual ~CGameInfo() {}
 };
 
-#endif // BUILDINGBLOCKS_GAMEINFO_H
+#endif // TT_INTERFACEMANAGER_GAMEINFO_H

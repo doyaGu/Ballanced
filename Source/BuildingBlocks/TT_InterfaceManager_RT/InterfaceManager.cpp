@@ -1,7 +1,11 @@
 #include "InterfaceManager.h"
 
-#include <stdio.h>
 #include <string.h>
+
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#include <Windows.h>
 
 InterfaceManager::InterfaceManager(CKContext *context)
     : CKBaseManager(context, TT_INTERFACE_MANAGER_GUID, "TT Interface Manager"),
@@ -15,7 +19,6 @@ InterfaceManager::InterfaceManager(CKContext *context)
 {
     context->RegisterNewManager(this);
     memset(m_CmoName, 0, sizeof(m_CmoName));
-    memset(m_IniName, 0, sizeof(m_IniName));
 
     char path[MAX_PATH];
     char drive[4];
@@ -23,7 +26,6 @@ InterfaceManager::InterfaceManager(CKContext *context)
     char filename[MAX_PATH];
     ::GetModuleFileNameA(NULL, path, MAX_PATH);
     _splitpath(path, drive, dir, filename, NULL);
-    sprintf(m_IniName, "%s%s%s.ini", drive, dir, filename);
 }
 
 InterfaceManager::~InterfaceManager() {}

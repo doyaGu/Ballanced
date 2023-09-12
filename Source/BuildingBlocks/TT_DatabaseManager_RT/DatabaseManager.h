@@ -4,6 +4,7 @@
 #include "CKBaseManager.h"
 #include "CKContext.h"
 
+#define TERRATOOLS_GUID CKGUID(0x56495254, 0x4F4F4C53)
 #define TT_DATABASE_MANAGER_GUID CKGUID(0x4DB6188E, 0x287E1410)
 
 class DatabaseManager : public CKBaseManager

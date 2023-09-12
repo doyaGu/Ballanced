@@ -1,5 +1,3 @@
-#include "TT_InterfaceManager_RT.h"
-
 #include "InterfaceManager.h"
 
 #define TT_INTERFACE_MANAGER_BEHAVIOR CKGUID(0x1B5171D8, 0x41B60E5F)

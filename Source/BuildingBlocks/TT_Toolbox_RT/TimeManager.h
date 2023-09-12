@@ -1,5 +1,5 @@
-#ifndef BUILDINGBLOCKS_TIMEMANAGER_H
-#define BUILDINGBLOCKS_TIMEMANAGER_H
+#ifndef TOOLBOX_TIMEMANAGER_H
+#define TOOLBOX_TIMEMANAGER_H
 
 #include "CKBaseManager.h"
 #include "CKContext.h"
@@ -30,13 +30,24 @@ public:
                CKMANAGER_FUNC_OnCKReset;
     }
 
+    void Reset() { m_Timing = true; m_Time = 0.0f; }
+
+    void Pause() { m_Timing = false; }
+
+    void Play() { m_Timing = true; }
+
+    float Now() const { return m_Time; }
+
+    void Elapse(float delta) { if (m_Timing) m_Time += delta; }
+
     static TimeManager *GetManager(CKContext *context)
     {
         return (TimeManager *)context->GetManagerByGuid(TT_TIME_MANAGER_GUID);
     }
 
 protected:
-
+    bool m_Timing;
+    float m_Time;
 };
 
-#endif // BUILDINGBLOCKS_TIMEMANAGER_H
+#endif // TOOLBOX_TIMEMANAGER_H

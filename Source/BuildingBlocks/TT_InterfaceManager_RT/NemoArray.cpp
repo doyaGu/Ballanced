@@ -143,7 +143,6 @@ CNemoElement &CNemoElement::operator=(const CNemoElement &rhs)
     }
 
     m_Type = rhs.m_Type;
-
 	return *this;
 }
 
@@ -417,13 +416,9 @@ void CNemoArray::Write(CKDataArray *array)
     }
 }
 
-CNemoArrayList::CNemoArrayList() : m_Flag(false), m_Arrays()
-{
-}
+CNemoArrayList::CNemoArrayList() : m_Flag(false), m_Arrays() {}
 
-CNemoArrayList::~CNemoArrayList()
-{
-}
+CNemoArrayList::~CNemoArrayList() {}
 
 void CNemoArrayList::Add(const char *cmoName, CKDataArray *array)
 {

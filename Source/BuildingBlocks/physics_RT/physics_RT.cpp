@@ -1,4 +1,4 @@
-#include "physics_RT.h"
+#include "CKAll.h"
 
 #include "CKIpionManager.h"
 
@@ -29,9 +29,7 @@ CKERROR ExitInstance(CKContext *context)
 {
     CKIpionManager *man = CKIpionManager::GetManager(context);
     if (man)
-    {
         delete man;
-    }
 
     return CK_OK;
 }

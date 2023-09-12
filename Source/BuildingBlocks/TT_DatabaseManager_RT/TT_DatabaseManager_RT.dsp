@@ -43,7 +43,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "TT_DATABASEMANAGER_RT_EXPORTS" /YX /FD /c
-# ADD CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "TT_DATABASEMANAGER_RT_EXPORTS" /FD /c
+# ADD CPP /nologo /MT /W3 /GX /O2 /I "./" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "TT_DATABASEMANAGER_RT_EXPORTS" /FD /c
 # SUBTRACT CPP /YX
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
@@ -70,7 +70,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "TT_DATABASEMANAGER_RT_EXPORTS" /YX /FD /GZ /c
-# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "TT_DATABASEMANAGER_RT_EXPORTS" /FD /GZ /c
+# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I "./" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "TT_DATABASEMANAGER_RT_EXPORTS" /FD /GZ /c
 # SUBTRACT CPP /YX
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
@@ -92,25 +92,29 @@ LINK32=link.exe
 # Begin Group "Source Files"
 
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
+# Begin Group "Behaviors"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\Behaviors\LoadDatabase.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\RegisterArray.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\SaveDatabase.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Behaviors\SetDatabaseProperties.cpp
+# End Source File
+# End Group
 # Begin Source File
 
 SOURCE=.\DatabaseManager.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\LoadDatabase.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\RegisterArray.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\SaveDatabase.cpp
-# End Source File
-# Begin Source File
-
-SOURCE=.\SetDatabaseProperties.cpp
 # End Source File
 # Begin Source File
 
@@ -123,10 +127,6 @@ SOURCE=.\TT_DatabaseManager_RT.cpp
 # Begin Source File
 
 SOURCE=.\DatabaseManager.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\TT_DatabaseManager_RT.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"
