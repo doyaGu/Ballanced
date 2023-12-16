@@ -33,10 +33,6 @@ CKERROR InitInstance(CKContext *context)
 
     pm->RegisterNewStructure(CKPGUID_SSHADOW, "SShadow", "Mesh-ID,Static, Shadow-Length, SelfShadow", CKPGUID_INT, CKPGUID_BOOL, CKPGUID_FLOAT, CKPGUID_BOOL);
 
-    new TimeManager(context);
-    new DebugManager(context);
-    new DXManager(context);
-
     return CK_OK;
 }
 
@@ -47,6 +43,51 @@ CKERROR ExitInstance(CKContext *context)
     pm->UnRegisterParameterType(CKPGUID_TTAXIS);
     pm->UnRegisterParameterType(CKPGUID_MAPPING);
     pm->UnRegisterParameterType(CKPGUID_SSHADOW);
+
+    return CK_OK;
+}
+
+CKERROR CreateTimeManager(CKContext *context)
+{
+    new TimeManager(context);
+
+    return CK_OK;
+}
+
+CKERROR RemoveTimeManager(CKContext *context)
+{
+    TimeManager *man = TimeManager::GetManager(context);
+    delete man;
+
+    return CK_OK;
+}
+
+CKERROR CreateDebugManager(CKContext *context)
+{
+    new DebugManager(context);
+
+    return CK_OK;
+}
+
+CKERROR RemoveDebugManager(CKContext *context)
+{
+    DebugManager *man = DebugManager::GetManager(context);
+    delete man;
+
+    return CK_OK;
+}
+
+CKERROR CreateDXManager(CKContext *context)
+{
+    new DXManager(context);
+
+    return CK_OK;
+}
+
+CKERROR RemoveDXManager(CKContext *context)
+{
+    DXManager *man = DXManager::GetManager(context);
+    delete man;
 
     return CK_OK;
 }
@@ -72,8 +113,8 @@ PLUGIN_EXPORT CKPluginInfo *CKGetPluginInfo(int Index)
     g_Toolbox_PluginInfo[1].m_Extension = "";
     g_Toolbox_PluginInfo[1].m_Type = CKPLUGIN_MANAGER_DLL;
     g_Toolbox_PluginInfo[1].m_Version = 0x000001;
-    g_Toolbox_PluginInfo[1].m_InitInstanceFct = InitInstance;
-    g_Toolbox_PluginInfo[1].m_ExitInstanceFct = ExitInstance;
+    g_Toolbox_PluginInfo[1].m_InitInstanceFct = CreateTimeManager;
+    g_Toolbox_PluginInfo[1].m_ExitInstanceFct = RemoveTimeManager;
     g_Toolbox_PluginInfo[1].m_GUID = TT_TIME_MANAGER_GUID;
     g_Toolbox_PluginInfo[1].m_Summary = "TT Time-Manager";
 
@@ -82,8 +123,8 @@ PLUGIN_EXPORT CKPluginInfo *CKGetPluginInfo(int Index)
     g_Toolbox_PluginInfo[2].m_Extension = "";
     g_Toolbox_PluginInfo[2].m_Type = CKPLUGIN_MANAGER_DLL;
     g_Toolbox_PluginInfo[2].m_Version = 0x000001;
-    g_Toolbox_PluginInfo[2].m_InitInstanceFct = InitInstance;
-    g_Toolbox_PluginInfo[2].m_ExitInstanceFct = ExitInstance;
+    g_Toolbox_PluginInfo[2].m_InitInstanceFct = CreateDebugManager;
+    g_Toolbox_PluginInfo[2].m_ExitInstanceFct = RemoveDebugManager;
     g_Toolbox_PluginInfo[2].m_GUID = TT_DEBUG_MANAGER_GUID;
     g_Toolbox_PluginInfo[2].m_Summary = "TT Debug-Manager";
 
@@ -92,8 +133,8 @@ PLUGIN_EXPORT CKPluginInfo *CKGetPluginInfo(int Index)
     g_Toolbox_PluginInfo[3].m_Extension = "";
     g_Toolbox_PluginInfo[3].m_Type = CKPLUGIN_MANAGER_DLL;
     g_Toolbox_PluginInfo[3].m_Version = 0x000001;
-    g_Toolbox_PluginInfo[3].m_InitInstanceFct = InitInstance;
-    g_Toolbox_PluginInfo[3].m_ExitInstanceFct = ExitInstance;
+    g_Toolbox_PluginInfo[3].m_InitInstanceFct = CreateDXManager;
+    g_Toolbox_PluginInfo[3].m_ExitInstanceFct = RemoveDXManager;
     g_Toolbox_PluginInfo[3].m_GUID = TT_DX_MANAGER_GUID;
     g_Toolbox_PluginInfo[3].m_Summary = "TT DXManager";
 
