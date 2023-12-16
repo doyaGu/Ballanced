@@ -53,6 +53,61 @@ CKERROR CreateReflectionMappingProto(CKBehaviorPrototype **pproto)
 int ReflectionMapping(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
-    // TODO: To be finished.
-    return CKBR_OK;
+
+    if (beh->IsInputActive(1))
+    {
+        beh->ActivateInput(1, FALSE);
+        beh->ActivateOutput(1, TRUE);
+        return CKBR_OK;
+    }
+
+    if (beh->IsInputActive(0))
+    {
+        beh->ActivateInput(0, FALSE);
+        beh->ActivateOutput(0, TRUE);
+    }
+
+    CK3dEntity *target = (CK3dEntity *)beh->GetTarget();
+    if (!target)
+    {
+        return CKBR_OWNERERROR;
+    }
+
+    int matChannel = -1;
+    beh->GetInputParameterValue(0, &matChannel);
+
+    CKCamera *camera = (CKCamera *)beh->GetInputParameterObject(1);
+    VxVector cameraPosition;
+    camera->GetPosition(&cameraPosition, target);
+
+    CKMesh *mesh = target->GetCurrentMesh();
+    if (!mesh)
+    {
+        return CKBR_OK;
+    }
+
+    CKDWORD uvStride = 0;
+    CKDWORD vertexStride = 0;
+    CKDWORD normalStride = 0;
+    CKBYTE *uvs = mesh->GetModifierUVs(&uvStride);
+    CKBYTE *vertices = mesh->GetModifierVertices(&vertexStride);
+    void *normals = mesh->GetNormalsPtr(&normalStride);
+
+    const int count = mesh->GetVertexCount();
+    for (int i = 0; i < count; ++i) {
+        VxVector *pos = (VxVector *)&vertices[i * vertexStride];
+        VxVector *normal = (VxVector *)&((CKBYTE*)normals)[i * normalStride];
+        Vx2DVector *uv = (Vx2DVector *)&uvs[i * uvStride];
+
+        VxVector e = cameraPosition - *pos;
+        e.Normalize();
+
+        VxVector r = 2 * normal->Dot(e) * *normal - *pos;
+        r.Normalize();
+        uv->x = (r.x + 1.0f) * 0.5f;
+        uv->y = (r.z + 1.0f) * 0.5f;
+    }
+
+    mesh->UVChanged();
+    return CKBR_ACTIVATENEXTFRAME;
 }
