@@ -80,7 +80,8 @@ int SetDynamicPosition(const CKBehaviorContext &behcontext)
 
     CKBOOL status = FALSE;
 
-    if (beh->IsInputActive(0)) {
+    if (beh->IsInputActive(0))
+    {
         beh->ActivateInput(0, FALSE);
         beh->ActivateOutput(0, FALSE);
 

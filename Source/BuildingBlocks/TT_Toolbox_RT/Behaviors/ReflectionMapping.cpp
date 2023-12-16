@@ -94,9 +94,10 @@ int ReflectionMapping(const CKBehaviorContext &behcontext)
     void *normals = mesh->GetNormalsPtr(&normalStride);
 
     const int count = mesh->GetVertexCount();
-    for (int i = 0; i < count; ++i) {
+    for (int i = 0; i < count; ++i)
+    {
         VxVector *pos = (VxVector *)&vertices[i * vertexStride];
-        VxVector *normal = (VxVector *)&((CKBYTE*)normals)[i * normalStride];
+        VxVector *normal = (VxVector *)&((CKBYTE *)normals)[i * normalStride];
         Vx2DVector *uv = (Vx2DVector *)&uvs[i * uvStride];
 
         VxVector e = cameraPosition - *pos;

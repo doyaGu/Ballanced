@@ -128,9 +128,8 @@ int ScaleableProximity(const CKBehaviorContext &behcontext)
     CK3dEntity *ckA = (CK3dEntity *)beh->GetInputParameterObject(1);
     // Get Object B
     CK3dEntity *ckB = (CK3dEntity *)beh->GetInputParameterObject(2);
-    if (!ckA || !ckB) {
+    if (!ckA || !ckB)
         return CKBR_PARAMETERERROR;
-    }
 
     VxVector posA, posB;
     if (barycenter)
@@ -162,19 +161,22 @@ int ScaleableProximity(const CKBehaviorContext &behcontext)
 
     VxVector aToB;
     float currentDistance = 0;
-    if ((checkAxis & 4) != 0) {
+    if ((checkAxis & 4) != 0)
+    {
         float z = posB.z - posA.z;
         aToB.z = z;
         currentDistance += z * z;
         checkAxis &= ~4;
     }
-    if ((checkAxis & 2) != 0) {
+    if ((checkAxis & 2) != 0)
+    {
         float y = posB.y - posA.y;
         aToB.y = y;
         currentDistance += y * y;
         checkAxis &= ~2;
     }
-    if ((checkAxis & 1) != 0) {
+    if ((checkAxis & 1) != 0)
+    {
         float x = posB.x - posA.x;
         aToB.x = x;
         currentDistance += x * x;
@@ -188,26 +190,35 @@ int ScaleableProximity(const CKBehaviorContext &behcontext)
     beh->GetInputParameterValue(6, &minFrameDelay);
     beh->GetInputParameterValue(7, &maxFrameDelay);
 
-    if (squaredDistance) {
+    if (squaredDistance)
+    {
         distance = distance * distance;
         minDistanceExactness = minDistanceExactness * minDistanceExactness;
         maxDistanceExactness = maxDistanceExactness * maxDistanceExactness;
-    } else {
+    }
+    else
+    {
         currentDistance = (float)pow(currentDistance, 0.5);
     }
 
     beh->SetOutputParameterValue(0, &currentDistance); // Set the current distance
     beh->SetOutputParameterValue(1, &aToB);
 
-    if (currentDistance < maxDistanceExactness) {
-        if (currentDistance > minDistanceExactness) {
-            lastCheck = (int) (minFrameDelay + (currentDistance - minDistanceExactness) /
-                                               (double) (maxDistanceExactness - minDistanceExactness) *
-                                               (maxFrameDelay - minFrameDelay));
-        } else {
+    if (currentDistance < maxDistanceExactness)
+    {
+        if (currentDistance > minDistanceExactness)
+        {
+            lastCheck = (int)(minFrameDelay + (currentDistance - minDistanceExactness) /
+                                                  (double)(maxDistanceExactness - minDistanceExactness) *
+                                                  (maxFrameDelay - minFrameDelay));
+        }
+        else
+        {
             lastCheck = maxFrameDelay;
         }
-    } else {
+    }
+    else
+    {
         lastCheck = maxFrameDelay;
     }
 
@@ -268,46 +279,46 @@ CKERROR ScaleableProximityCallBack(const CKBehaviorContext &behcontext)
 
     switch (behcontext.CallbackMessage)
     {
-        case CKM_BEHAVIORSETTINGSEDITED:
-            // Get old flag
-            int old_flag = 0;
-            CKBehaviorIO *io;
-            int a, b = 0;
-            for (a = 0; a < 4; ++a)
+    case CKM_BEHAVIORSETTINGSEDITED:
+        // Get old flag
+        int old_flag = 0;
+        CKBehaviorIO *io;
+        int a, b = 0;
+        for (a = 0; a < 4; ++a)
+        {
+            char *name = A_outputname[a];
+
+            io = beh->GetOutput(b);
+            if (!io)
+                break;
+
+            if (!strcmp(name, io->GetName()))
             {
-                char *name = A_outputname[a];
+                old_flag += 1 << a;
+                ++b;
+            }
+        }
 
-                io = beh->GetOutput(b);
-                if (!io)
-                    break;
+        // Get flag
+        int flag = A_ALL;
+        beh->GetLocalParameterValue(2, &flag);
 
-                if (!strcmp(name, io->GetName()))
+        if (old_flag != flag)
+        {
+            int count = beh->GetOutputCount();
+            for (a = 0; a < count; a++)
+                beh->DeleteOutput(0);
+
+            // Adding Outputs
+            for (a = 0; a < 4; a++)
+            {
+                if (flag & (1 << a))
                 {
-                    old_flag += 1 << a;
-                    ++b;
+                    beh->AddOutput(A_outputname[a]);
                 }
             }
-
-            // Get flag
-            int flag = A_ALL;
-            beh->GetLocalParameterValue(2, &flag);
-
-            if (old_flag != flag)
-            {
-                int count = beh->GetOutputCount();
-                for (a = 0; a < count; a++)
-                    beh->DeleteOutput(0);
-
-                // Adding Outputs
-                for (a = 0; a < 4; a++)
-                {
-                    if (flag & (1 << a))
-                    {
-                        beh->AddOutput(A_outputname[a]);
-                    }
-                }
-            }
-            break;
+        }
+        break;
     }
 
     return CKBR_OK;
