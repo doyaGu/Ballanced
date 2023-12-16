@@ -71,6 +71,115 @@ CKERROR CreateSetDynamicPositionProto(CKBehaviorPrototype **pproto)
 int SetDynamicPosition(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
-    // TODO: To be finished.
+
+    CK3dEntity *target = (CK3dEntity *)beh->GetTarget();
+    if (!target)
+        return CKBR_OWNERERROR;
+
+    CK3dEntity *coordinateSystem = (CK3dEntity *)beh->GetInputParameterObject(10);
+
+    CKBOOL status = FALSE;
+
+    if (beh->IsInputActive(0)) {
+        beh->ActivateInput(0, FALSE);
+        beh->ActivateOutput(0, FALSE);
+
+        status = TRUE;
+        beh->SetLocalParameterValue(0, &status);
+
+        VxVector targetPosition;
+        if (coordinateSystem)
+            target->GetPosition(&targetPosition, coordinateSystem);
+        else
+            target->GetPosition(&targetPosition);
+        beh->SetLocalParameterValue(1, &targetPosition);
+        return CKBR_ACTIVATENEXTFRAME;
+    }
+
+    if (beh->IsInputActive(1))
+    {
+        beh->ActivateInput(1, FALSE);
+        beh->SetLocalParameterValue(0, &status);
+    }
+    else
+    {
+        beh->GetLocalParameterValue(0, &status);
+    }
+
+    CK3dEntity *object = (CK3dEntity *)beh->GetInputParameterObject(0);
+    if (!object)
+        return CKBR_OWNERERROR;
+
+    VxVector objectPosition;
+    if (coordinateSystem)
+        object->GetPosition(&objectPosition, coordinateSystem);
+    else
+        object->GetPosition(&objectPosition);
+
+    VxVector oldTargetPosition;
+    beh->GetLocalParameterValue(1, &oldTargetPosition);
+
+    VxVector targetPosition;
+    if (coordinateSystem)
+        target->GetPosition(&targetPosition, coordinateSystem);
+    else
+        target->GetPosition(&targetPosition);
+    beh->SetLocalParameterValue(1, &targetPosition);
+
+    VxVector delta = targetPosition - oldTargetPosition;
+    VxVector position = objectPosition - targetPosition;
+
+    float forceX, forceY, forceZ;
+    beh->GetInputParameterValue(1, &forceX);
+    beh->GetInputParameterValue(2, &forceY);
+    beh->GetInputParameterValue(3, &forceZ);
+
+    float dampingX, dampingY, dampingZ;
+    beh->GetInputParameterValue(4, &dampingX);
+    beh->GetInputParameterValue(5, &dampingY);
+    beh->GetInputParameterValue(6, &dampingZ);
+
+    float offsetX, offsetY, offsetZ;
+    beh->GetInputParameterValue(7, &offsetX);
+    beh->GetInputParameterValue(8, &offsetY);
+    beh->GetInputParameterValue(9, &offsetZ);
+
+    float maxDistance2Target;
+    beh->GetInputParameterValue(11, &maxDistance2Target);
+
+    float cof = oldTargetPosition.y * 0.001f; // Not sure ??
+    forceX *= cof;
+    forceX *= cof;
+    forceX *= cof;
+
+    targetPosition.x += (position.x - offsetX) * forceX + delta.x * dampingX;
+    targetPosition.y += (position.y - offsetY) * forceY + delta.y * dampingY;
+    targetPosition.z += (position.z - offsetZ) * forceZ + delta.z * dampingZ;
+
+    objectPosition -= targetPosition;
+
+    float distance = (objectPosition != VxVector::axis0()) ? objectPosition.Magnitude() : 0.0f;
+
+    VxVector vector = objectPosition;
+    if (distance > maxDistance2Target && maxDistance2Target > 0.0f)
+    {
+        if (vector == VxVector::axis0())
+            vector.Normalize();
+        vector *= maxDistance2Target;
+        objectPosition = delta - vector;
+        targetPosition = objectPosition;
+    }
+
+    if (coordinateSystem)
+        target->SetPosition(targetPosition, coordinateSystem);
+    else
+        target->SetPosition(targetPosition);
+
+    beh->SetOutputParameterValue(0, &vector);
+
+    if (status)
+        return CKBR_ACTIVATENEXTFRAME;
+
+    beh->ActivateOutput(1, TRUE);
     return CKBR_OK;
 }

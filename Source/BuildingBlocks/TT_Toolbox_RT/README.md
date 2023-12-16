@@ -80,7 +80,7 @@
 | TT Set_2DSprite_old             | TODO      |           |
 | TT Set_3DSprite                 | TODO      |           |
 | TT_SetCurrentDirectory          | Completed |           |
-| **TT Set Dynamic Position**     | TODO      |           |
+| **TT Set Dynamic Position**     | Completed | Need Fix? |
 | TT_SetFSAA                      | Completed |           |
 | TT_SetMapping                   | TODO      |           |
 | TT_Set Material Values          | TODO      |           |
