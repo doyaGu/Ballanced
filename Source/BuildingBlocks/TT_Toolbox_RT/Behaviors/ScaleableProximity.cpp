@@ -88,7 +88,36 @@ int ScaleableProximity(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
 
-    beh->ActivateInput(0, FALSE);
+    int flag = A_ALL; // Original value is 17, may be wrong.
+    beh->GetLocalParameterValue(2, &flag);
+
+    int checkAxis = 0;
+    beh->GetLocalParameterValue(3, &checkAxis);
+
+    CKBOOL squaredDistance = TRUE;
+    beh->GetLocalParameterValue(4, &squaredDistance);
+
+    if (beh->IsInputActive(1))
+    {
+        beh->ActivateInput(1, FALSE);
+        return CKBR_OK;
+    }
+
+    if (beh->IsInputActive(0))
+    {
+        beh->ActivateInput(0, FALSE);
+        int wasin = A_OUTRANGE;
+        beh->SetLocalParameterValue(0, &wasin);
+    }
+
+    int lastCheck = 1;
+    beh->GetLocalParameterValue(1, &lastCheck);
+
+    if (lastCheck > 1)
+    {
+        beh->SetLocalParameterValue(1, &lastCheck);
+        return CKBR_ACTIVATENEXTFRAME;
+    }
 
     float distance;
     beh->GetInputParameterValue(0, &distance); // Get the distance
@@ -99,6 +128,9 @@ int ScaleableProximity(const CKBehaviorContext &behcontext)
     CK3dEntity *ckA = (CK3dEntity *)beh->GetInputParameterObject(1);
     // Get Object B
     CK3dEntity *ckB = (CK3dEntity *)beh->GetInputParameterObject(2);
+    if (!ckA || !ckB) {
+        return CKBR_PARAMETERERROR;
+    }
 
     VxVector posA, posB;
     if (barycenter)
@@ -128,20 +160,65 @@ int ScaleableProximity(const CKBehaviorContext &behcontext)
         ckB->GetPosition(&posB, NULL);
     }
 
-    float current_distance = Magnitude(posA - posB);
+    VxVector aToB;
+    float currentDistance = 0;
+    if ((checkAxis & 4) != 0) {
+        float z = posB.z - posA.z;
+        aToB.z = z;
+        currentDistance += z * z;
+        checkAxis &= ~4;
+    }
+    if ((checkAxis & 2) != 0) {
+        float y = posB.y - posA.y;
+        aToB.y = y;
+        currentDistance += y * y;
+        checkAxis &= ~2;
+    }
+    if ((checkAxis & 1) != 0) {
+        float x = posB.x - posA.x;
+        aToB.x = x;
+        currentDistance += x * x;
+        checkAxis &= ~1;
+    }
 
-    beh->SetOutputParameterValue(0, &current_distance); // Set the current distance
+    float minDistanceExactness, maxDistanceExactness;
+    int minFrameDelay, maxFrameDelay;
+    beh->GetInputParameterValue(4, &minDistanceExactness);
+    beh->GetInputParameterValue(5, &maxDistanceExactness);
+    beh->GetInputParameterValue(6, &minFrameDelay);
+    beh->GetInputParameterValue(7, &maxFrameDelay);
 
-    //___________________// Outputs
-    int flag = 15;
-    beh->GetLocalParameterValue(1, &flag); // Get settings flag
+    if (squaredDistance) {
+        distance = distance * distance;
+        minDistanceExactness = minDistanceExactness * minDistanceExactness;
+        maxDistanceExactness = maxDistanceExactness * maxDistanceExactness;
+    } else {
+        currentDistance = (float)pow(currentDistance, 0.5);
+    }
+
+    beh->SetOutputParameterValue(0, &currentDistance); // Set the current distance
+    beh->SetOutputParameterValue(1, &aToB);
+
+    if (currentDistance < maxDistanceExactness) {
+        if (currentDistance > minDistanceExactness) {
+            lastCheck = (int) (minFrameDelay + (currentDistance - minDistanceExactness) /
+                                               (double) (maxDistanceExactness - minDistanceExactness) *
+                                               (maxFrameDelay - minFrameDelay));
+        } else {
+            lastCheck = maxFrameDelay;
+        }
+    } else {
+        lastCheck = maxFrameDelay;
+    }
+
+    beh->SetLocalParameterValue(1, &lastCheck);
 
     int wasin;
     beh->GetLocalParameterValue(0, &wasin);
 
     int activation = 0;
 
-    if (current_distance < distance)
+    if (currentDistance < distance)
     {
 
         if ((wasin == WASOUT) && (flag & A_ENTERRANGE))
@@ -172,20 +249,17 @@ int ScaleableProximity(const CKBehaviorContext &behcontext)
     int a, b = 0;
     for (a = 0; a < 4; a++)
     {
-        if (flag & (1 << a))
+        if ((flag & (1 << a)) != 0)
         {
-            if (activation & (1 << a))
+            if ((activation & (1 << a)) != 0)
             {
                 beh->ActivateOutput(b);
-                return CKBR_OK;
             }
             ++b;
         }
     }
 
-    beh->ActivateOutput(b); // Else
-
-    return CKBR_OK;
+    return CKBR_ACTIVATENEXTFRAME;
 }
 
 CKERROR ScaleableProximityCallBack(const CKBehaviorContext &behcontext)
@@ -195,14 +269,12 @@ CKERROR ScaleableProximityCallBack(const CKBehaviorContext &behcontext)
     switch (behcontext.CallbackMessage)
     {
         case CKM_BEHAVIORSETTINGSEDITED:
-
-            //_________________________ Get old flag
+            // Get old flag
             int old_flag = 0;
             CKBehaviorIO *io;
             int a, b = 0;
             for (a = 0; a < 4; ++a)
             {
-
                 char *name = A_outputname[a];
 
                 io = beh->GetOutput(b);
@@ -216,9 +288,9 @@ CKERROR ScaleableProximityCallBack(const CKBehaviorContext &behcontext)
                 }
             }
 
-            //_________________________ Get flag
-            int flag = 15;
-            beh->GetLocalParameterValue(1, &flag);
+            // Get flag
+            int flag = A_ALL;
+            beh->GetLocalParameterValue(2, &flag);
 
             if (old_flag != flag)
             {
@@ -226,7 +298,7 @@ CKERROR ScaleableProximityCallBack(const CKBehaviorContext &behcontext)
                 for (a = 0; a < count; a++)
                     beh->DeleteOutput(0);
 
-                //__________________________ Adding Outputs
+                // Adding Outputs
                 for (a = 0; a < 4; a++)
                 {
                     if (flag & (1 << a))
@@ -234,13 +306,7 @@ CKERROR ScaleableProximityCallBack(const CKBehaviorContext &behcontext)
                         beh->AddOutput(A_outputname[a]);
                     }
                 }
-
-                if ((flag & 3) != 3)
-                {
-                    beh->AddOutput("Else");
-                }
             }
-
             break;
     }
 

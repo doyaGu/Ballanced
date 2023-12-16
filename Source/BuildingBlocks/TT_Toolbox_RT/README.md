@@ -73,7 +73,7 @@
 | TT_RippleWave                   | TODO      |           |
 | TT_SaveAlpha                    | TODO      |           |
 | **TT Save IC**                  | Completed |           |
-| **TT Scaleable Proximity**      | TODO      |           |
+| **TT Scaleable Proximity**      | Completed |           |
 | TT_SceneStencilShadow           | TODO      |           |
 | TT_SearchRow                    | TODO      |           |
 | **TT Set_2DSprite**             | Completed |           |
