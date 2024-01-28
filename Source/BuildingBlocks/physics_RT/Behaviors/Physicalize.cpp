@@ -164,24 +164,10 @@ int Physicalize(const CKBehaviorContext &behcontext)
             shiftMassCenterPtr = NULL;
         IVP_Material *material = new IVP_Material_Simple(friction, elasticity);
         man->m_Materials.add(material);
-        int ret = man->CreatePhysicObjectOnParameters(ent,
-                                                      convexCount,
-                                                      convexes,
-                                                      ballCount,
-                                                      concaveCount,
-                                                      concaves,
-                                                      ballRadius,
-                                                      collisionSurface,
-                                                      shiftMassCenterPtr,
-                                                      fixed,
-                                                      material,
-                                                      mass,
-                                                      collisionGroup,
-                                                      startFrozen,
-                                                      enableCollision,
-                                                      autoCalcMassCenter,
-                                                      linearSpeedDampening,
-                                                      rotSpeedDampening);
+        int ret = man->CreatePhysicsObjectOnParameters(ent, convexCount, convexes, ballCount, concaveCount, concaves,
+                                                      ballRadius, collisionSurface, shiftMassCenterPtr, fixed, material,
+                                                      mass, collisionGroup, startFrozen, enableCollision,
+                                                      autoCalcMassCenter, linearSpeedDampening, rotSpeedDampening);
 
         if (convexes)
             delete[] convexes;
@@ -197,8 +183,8 @@ int Physicalize(const CKBehaviorContext &behcontext)
         beh->ActivateInput(1, FALSE);
         if (ps)
         {
-            delete ps->m_PhysicsObject;
-            man->m_PhysicStructTable.Remove(ent->GetID());
+            ps->m_PhysicsObject->delete_silently();
+            man->m_PhysicsObjects.m_Table.Remove(ent->GetID());
         }
         beh->ActivateInput(1);
         return CKBR_OK;

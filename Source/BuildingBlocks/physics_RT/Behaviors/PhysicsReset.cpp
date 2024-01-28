@@ -49,7 +49,7 @@ class PhysicsResetCall : public PhysicsCall
 public:
     PhysicsResetCall(CKIpionManager *pm, CKBehavior *beh) : PhysicsCall(pm, beh, 2) {}
 
-    virtual CKBOOL Call()
+    virtual CKBOOL Execute()
     {
         m_IpionManager->Reset();
         return TRUE;
@@ -62,14 +62,9 @@ int PhysicsReset(const CKBehaviorContext &behcontext)
     CKContext *context = behcontext.Context;
 
     CKIpionManager *man = CKIpionManager::GetManager(context);
-    if (!man)
-    {
-        context->OutputToConsoleExBeep("TT_PhysicsReset: pm==NULL.");
-        return CKBR_OK;
-    }
 
     PhysicsResetCall *physicsCall = new PhysicsResetCall(man, beh);
-    man->m_PhysicsCallManager.Process(physicsCall);
+    man->m_PhysicsCallManager->Process(physicsCall);
 
     beh->ActivateInput(0, FALSE);
     beh->ActivateOutput(0);

@@ -1,6 +1,10 @@
-#include "physics_RT.h"
-
 #include "CKIpionManager.h"
+
+#include "CKTimeManager.h"
+#include "CKMesh.h"
+#include "CK3dEntity.h"
+
+#include "ivp_performancecounter.hxx"
 
 int ConvertConvexToLedge(IVP_SurfaceBuilder_Ledge_Soup *builder, CKMesh *convex, VxVector *scale)
 {
@@ -116,6 +120,79 @@ CKIpionManager::~CKIpionManager()
 {
 }
 
+CKERROR CKIpionManager::OnCKInit()
+{
+    m_SurfaceManagers = new IVP_U_String_Hash(4);
+    m_IVPEnv = NULL;
+    m_Factor = 0.001;
+    field_68 = 0;
+    return CK_OK;
+}
+
+CKERROR CKIpionManager::OnCKEnd()
+{
+    DestroyEnvironment();
+    DeleteCollisionSurface();
+
+    return CK_OK;
+}
+
+CKERROR CKIpionManager::OnCKPlay()
+{
+    if (m_Context->IsReseted())
+        CreateEnvironment();
+    return CK_OK;
+}
+
+CKERROR CKIpionManager::OnCKReset()
+{
+//    CKAttributeManager *am = m_Context->GetAttributeManager();
+    DestroyEnvironment();
+    m_IVPEnv = NULL;
+    m_Factor = 0.001;
+    field_68 = 0;
+    m_PhysicsObjects.m_Table.Clear();
+
+    return CK_OK;
+}
+
+CKERROR CKIpionManager::PostClearAll()
+{
+    DeleteCollisionSurface();
+    m_Vector4.clear();
+
+    if (m_SurfaceManagers)
+        delete m_SurfaceManagers;
+    m_SurfaceManagers = new IVP_U_String_Hash(64);
+}
+
+CKERROR CKIpionManager::PostProcess()
+{
+    CKTimeManager *tm = m_Context->GetTimeManager();
+    float time = (float)((tm->GetLastDeltaTime() + m_CurrentTime * 3.0) * 0.25);
+    m_CurrentTime = time;
+    m_PhysicsTimeFactor = time * m_Factor;
+    if (m_IVPEnv)
+    {
+        if (m_PhysicsCallManager->m_HasPhysicsCalls)
+        {
+            m_PhysicsCallManager->Process();
+        }
+
+        m_IVPEnv->simulate_dtime(m_PhysicsTimeFactor);
+
+        IVP_PerformanceCounter_Simple *pc = (IVP_PerformanceCounter_Simple *)m_IVPEnv->get_performancecounter();
+        m_UniversePSI += pc->counter[IVP_PE_PSI_UNIVERSE][IVP_PE_PSI_START];
+        m_ControllersPSI = pc->counter[IVP_PE_PSI_CONTROLLERS][IVP_PE_PSI_START] + m_ControllersPSI;
+        m_IntegratorsPSI = pc->counter[IVP_PE_PSI_INTEGRATORS][IVP_PE_PSI_START] + m_IntegratorsPSI;
+        m_HullPSI = pc->counter[IVP_PE_PSI_HULL][IVP_PE_PSI_START] + m_HullPSI;
+        m_ShortMindistsPSI = pc->counter[IVP_PE_PSI_SHORT_MINDISTS][IVP_PE_PSI_START]
+                             + m_ShortMindistsPSI;
+        m_CriticalMindistsPSI = pc->counter[IVP_PE_PSI_CRITICAL_MINDISTS][IVP_PE_PSI_START]
+                                      + m_CriticalMindistsPSI;
+    }
+}
+
 int CKIpionManager::Physicalize(CK3dEntity *target, int convexCount, CKMesh **convexes, int ballCount, int concaveCount, CKMesh **concaves, float ballRadius, CKSTRING collisionSurface, VxVector *shiftMassCenter, BOOL fixed, IVP_Material *material, float mass, CKSTRING collisionGroup, BOOL startFrozen, BOOL enableCollision, BOOL autoCalcMassCenter, float linearSpeedDampening, float rotSpeedDampening)
 {
     VxVector scale;
@@ -196,12 +273,63 @@ IVP_Polygon *CKIpionManager::CreatePhysicsPolygon(CKSTRING name, float mass, IVP
 {
 }
 
-IVP_SurfaceManager *CKIpionManager::GetSurfaceManager(const CKSTRING collisionSurface)
-{
-    return (IVP_SurfaceManager *)m_SurfaceManagers->find(collisionSurface);
-}
-
 void CKIpionManager::AddSurfaceManager(const CKSTRING collisionSurface, IVP_SurfaceManager *surman)
 {
     m_SurfaceManagers->add(collisionSurface, surman);
 }
+
+IVP_SurfaceManager *CKIpionManager::GetSurfaceManager(CKSTRING collisionSurface) const
+{
+    return (IVP_SurfaceManager *)m_SurfaceManagers->find(collisionSurface);
+}
+
+void CKIpionManager::CreateEnvironment() {
+    IVP_Application_Environment appEnv;
+    appEnv.material_manager = new IVP_Material_Manager(IVP_TRUE);
+    appEnv.env_active_float_manager = new IVP_U_Active_Value_Manager(IVP_TRUE);
+    appEnv.performancecounter = new IVP_PerformanceCounter_Simple();
+    appEnv.env_active_float_manager = new IVP_U_Active_Value_Manager(IVP_TRUE);
+
+    IVP_Collision_Filter_Coll_Group_Ident *groupCollisionFilter = new IVP_Collision_Filter_Coll_Group_Ident(IVP_TRUE);
+    m_CollisionFilterExclusivePair = new IVP_Collision_Filter_Exclusive_Pair;
+
+    IVP_Meta_Collision_Filter *collisionFilter = new IVP_Meta_Collision_Filter(IVP_TRUE);
+    collisionFilter->add_collision_filter(m_CollisionFilterExclusivePair);
+    collisionFilter->add_collision_filter(groupCollisionFilter);
+    appEnv.collision_filter = collisionFilter;
+
+    IVP_Environment_Manager *envManager = IVP_Environment_Manager::get_environment_manager();
+    IVP_Environment *env = envManager->create_environment(&appEnv, "NeMo", 0x7EFAD621);
+
+    IVP_U_Point gravity = IVP_U_Point(0.0, -9.81, 0.0);
+    env->set_gravity(&gravity);
+
+    m_PhysicsCallManager = new PhysicsCallManager(this);
+    m_PhysicsCallManager2 = new PhysicsCallManager(this);
+
+
+}
+
+void CKIpionManager::SetPhysicsTimeFactor(float factor)
+{
+    m_PhysicsTimeFactor = factor * 0.001f;
+}
+
+void CKIpionManager::SetGravity(const VxVector &gravity)
+{
+    IVP_U_Point gravityPoint(gravity.x, gravity.y, gravity.z);
+    m_IVPEnv->set_gravity(&gravityPoint);
+}
+
+void CKIpionManager::ResetProfiler()
+{
+    QueryPerformanceFrequency(&m_ProfilerResetTime);
+    memset(&m_HasPhysicsTime, 0, sizeof(LARGE_INTEGER));
+    memset(&m_DePhysicalizeTime, 0, sizeof(LARGE_INTEGER));
+    memset(&field_FC, 0, sizeof(LARGE_INTEGER));
+    memset(&field_104, 0, sizeof(LARGE_INTEGER));
+    m_HasPhysicsCalls = 0;
+    m_PhysicalizeCalls = 0;
+    m_DePhysicalizeCalls = 0;
+}
+

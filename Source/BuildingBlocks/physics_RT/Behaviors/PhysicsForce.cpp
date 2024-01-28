@@ -71,16 +71,9 @@ int PhysicsForce(const CKBehaviorContext &behcontext)
 
     CK3dEntity *ent = (CK3dEntity *)beh->GetTarget();
     if (!ent)
-    {
         return CKBR_OWNERERROR;
-    }
 
     CKIpionManager *man = CKIpionManager::GetManager(context);
-    if (!man)
-    {
-        context->OutputToConsoleExBeep("TT_PhysicsForce: pm==NULL.");
-        return CKBR_OK;
-    }
 
     // TODO
 
