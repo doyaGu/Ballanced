@@ -21,6 +21,8 @@
 #include "ivp_surman_polygon.hxx"
 #include "ivu_string_hash.hxx"
 
+#include "PhysicsCall.h"
+
 #define TERRATOOLS_GUID CKGUID(0x56495254, 0x4f4f4c53)
 #define TT_PHYSICS_MANAGER_GUID CKGUID(0x6BED328B, 0x141F5148)
 
@@ -33,86 +35,54 @@ class PhysicsStruct
 public:
     IVP_SurfaceManager *m_SurfaceManager;
     IVP_Real_Object *m_PhysicsObject;
-    DWORD field_8;
+    CKDWORD field_8;
     VxVector m_Scale;
-    DWORD field_18;
-    DWORD field_1C;
-    DWORD field_20;
-    DWORD field_24;
-    DWORD field_28;
+    CKDWORD field_18;
+    CKDWORD field_1C;
+    CKDWORD field_20;
+    CKDWORD field_24;
+    CKDWORD field_28;
     void *field_2C;
 };
 
 typedef XNHashTable<PhysicsStruct, CK_ID> PhysicStructTable;
 
-class PhysicsCall
+class PhysicsListenerCollision : IVP_Listener_Object
 {
 public:
-    PhysicsCall(CKIpionManager *pm, CKBehavior *beh, int type) : m_IpionManager(pm), m_Type(type), m_Behavior(beh) {}
-    virtual CKBOOL Call() = 0;
-    virtual ~PhysicsCall();
 
-    CKIpionManager *m_IpionManager;
-    int m_Type;
-    CKBehavior *m_Behavior;
-};
+    virtual void event_object_revived(IVP_Event_Object *object) {
 
-class PhysicsForceCall : public PhysicsCall
-{
-    virtual CKBOOL Call()
-    {
-    }
-};
-
-class PhysicsBallJointCall : public PhysicsCall
-{
-    virtual CKBOOL Call()
-    {
-    }
-};
-
-class PhysicsHingeCall : public PhysicsCall
-{
-    virtual CKBOOL Call()
-    {
-    }
-};
-
-class PhysicsSliderCall : public PhysicsCall
-{
-    virtual CKBOOL Call()
-    {
-    }
-};
-
-class PhysicsSpringCall : public PhysicsCall
-{
-    virtual CKBOOL Call()
-    {
-    }
-};
-
-struct PhysicsCallManager
-{
-    void Process(PhysicsCall *physicsCall)
-    {
-        if (physicsCall->m_Behavior)
-        {
-            if (physicsCall->Call())
-            {
-                delete physicsCall;
-            }
-            else if (0 <= physicsCall->m_Type && physicsCall->m_Type < 3)
-            {
-                m_PhysicsCalls[physicsCall->m_Type].add(physicsCall);
-                m_HasPhysicsCall = TRUE;
-            }
-        }
     }
 
-    CKIpionManager *m_IpionManager;
-    CKBOOL m_HasPhysicsCall;
-    IVP_U_Vector<PhysicsCall> m_PhysicsCalls[3];
+    virtual void event_object_frozen(IVP_Event_Object *object) {
+
+    }
+
+    CKIpionManager *m_PhysicsManager;
+};
+
+class PhysicsListenerObject : IVP_Listener_Object
+{
+public:
+    CKIpionManager *m_PhysicsManager;
+};
+
+class CKPMClass0x54
+{
+public:
+    PhysicsStruct *m_NumberGroupOutput;
+    IVP_U_Vector<int> field_4;
+    CKIpionManager *m_PhysicsManager;
+    CKDWORD m_ContinuousContactID;
+};
+
+struct CKPMClass0x110
+{
+    int field_110;
+    int field_114;
+    PhysicsStruct m_PhysicsStructs[200];
+    XNHashTable<PhysicsStruct, CK_ID> m_Table;
 };
 
 class CKIpionManager : public CKBaseManager
@@ -121,25 +91,27 @@ public:
     CKIpionManager(CKContext *context);
     ~CKIpionManager();
 
-    CKERROR OnCKInit() { return CK_OK; }
-    CKERROR OnCKEnd() { return CK_OK; }
-    CKERROR OnCKPlay() { return CK_OK; }
-    CKERROR OnCKPause() { return CK_OK; }
-    CKERROR OnCKReset() { return CK_OK; }
-    CKERROR PostClearAll() { return CK_OK; }
-    CKERROR PreProcess() { return CK_OK; }
-    CKERROR PostProcess() { return CK_OK; }
-    CKDWORD GetValidFunctionsMask()
+    virtual CKERROR OnCKInit();
+    virtual CKERROR OnCKEnd();
+    virtual CKERROR OnCKPlay();
+    virtual CKERROR OnCKReset();
+    virtual CKERROR PostClearAll();
+    virtual CKERROR PostProcess();
+    virtual CKDWORD GetValidFunctionsMask()
     {
-        return CKMANAGER_FUNC_PreProcess |
-               CKMANAGER_FUNC_PostProcess |
+        return CKMANAGER_FUNC_PostProcess |
                CKMANAGER_FUNC_PostClearAll |
                CKMANAGER_FUNC_OnCKInit |
                CKMANAGER_FUNC_OnCKEnd |
                CKMANAGER_FUNC_OnCKPlay |
-               CKMANAGER_FUNC_OnCKPause |
                CKMANAGER_FUNC_OnCKReset;
     }
+
+    int Physicalize(CK3dEntity *target, int convexCount, CKMesh **convexes, int ballCount, int concaveCount,
+                    CKMesh **concaves, float ballRadius, CKSTRING collisionSurface, VxVector *shiftMassCenter,
+                    BOOL fixed, IVP_Material *material, float mass, CKSTRING collisionGroup,
+                    BOOL startFrozen, BOOL enableCollision, BOOL autoCalcMassCenter,
+                    float linearSpeedDampening, float rotSpeedDampening);
 
     void AddSurfaceManager(CKSTRING collisionSurface, IVP_SurfaceManager *surfaceManager);
     IVP_SurfaceManager *GetSurfaceManager(CKSTRING collisionSurface) const;
@@ -162,7 +134,7 @@ public:
         IVP_U_Matrix *massCenterMatrix,
         VxVector *shiftMassCenter);
 
-    int CreatePhysicObjectOnParameters(
+    int CreatePhysicsObjectOnParameters(
         CK3dEntity *entity,
         int convexCount,
         CKMesh **convexes,
@@ -196,6 +168,12 @@ public:
         CKBOOL enableCollision,
         VxVector *shiftMassCenter);
 
+    IVP_Polygon *CreatePhysicsPolygon(CKSTRING name, float mass, IVP_Material *material,
+                                      float linearSpeedDampening, float rotSpeedDampening,
+                                      CK3dEntity *target, BOOL startFrozen, BOOL fixed,
+                                      char *collisionGroup, BOOL enableCollision,
+                                      IVP_SurfaceManager *surman, VxVector *shiftMassCenter);
+
     IVP_Polygon *CreatePhysicObject(
         CKSTRING name,
         float mass,
@@ -212,10 +190,18 @@ public:
 
     PhysicsStruct *HasPhysics(CK3dEntity *entity, CKBOOL logging = FALSE);
 
+    void SetPhysicsTimeFactor(float factor);
+    void SetGravity(const VxVector& gravity);
+
+    IVP_Environment *GetEnvironment() const { return m_IVPEnv; }
     void CreateEnvironment();
-    void DeleteEnvironment();
+    void DestroyEnvironment();
+
+    void DeleteCollisionSurface();
 
     virtual void Reset();
+
+    void ResetProfiler();
 
     static CKIpionManager *GetManager(CKContext *context)
     {
@@ -237,19 +223,22 @@ public:
     IVP_U_Vector<int> m_Vector2;
     IVP_U_Vector<IVP_Material> m_Materials;
     IVP_U_Vector<int> m_Vector4;
-    PhysicsCallManager m_PhysicsCallManager;
-    IVP_Listener_Collision *m_CollisionListener;
-    int field_5C;
+    PhysicsCallManager *m_PhysicsCallManager;
+    PhysicsCallManager *m_PhysicsCallManager2;
+    CKPMClass0x54 *field_54;
+    PhysicsListenerObject *m_PhysicsObjectListener;
     int m_CollDetectionID;
     IVP_Collision_Filter_Exclusive_Pair *m_CollisionFilterExclusivePair;
     int field_68;
-    LARGE_INTEGER *field_6C;
+    int field_6C;
     int field_70;
-    LARGE_INTEGER field_78;
-    int field_80;
-    int field_84;
-    int field_88;
-    int field_8C;
+    int field_74;
+    int m_UniversePSI;
+    int m_ControllersPSI;
+    int m_IntegratorsPSI;
+    int m_HullPSI;
+    int m_ShortMindistsPSI;
+    int m_CriticalMindistsPSI;
     int field_90;
     int field_94;
     int field_98;
@@ -274,14 +263,10 @@ public:
     int m_DePhysicalizeCalls;
     LARGE_INTEGER m_HasPhysicsTime;
     LARGE_INTEGER m_DePhysicalizeTime;
-    int field_FC;
-    int field_100;
-    int field_104;
-    LARGE_INTEGER field_108;
-    int field_110;
-    int field_114;
-    void *field_118[200];
-    PhysicStructTable m_PhysicStructTable;
+    LARGE_INTEGER field_FC;
+    LARGE_INTEGER field_104;
+    LARGE_INTEGER m_ProfilerResetTime;
+    CKPMClass0x110 m_PhysicsObjects;
 };
 
 #endif // BUILDINGBLOCKS_PHYSICSMANAGER_H

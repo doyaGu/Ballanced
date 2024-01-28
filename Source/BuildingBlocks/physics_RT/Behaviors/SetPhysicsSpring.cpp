@@ -79,9 +79,7 @@ int SetPhysicsSpring(const CKBehaviorContext &behcontext)
 
     CK3dEntity *ent = (CK3dEntity *)beh->GetTarget();
     if (!ent)
-    {
         return CKBR_OWNERERROR;
-    }
 
     CKIpionManager *man = CKIpionManager::GetManager(context);
 

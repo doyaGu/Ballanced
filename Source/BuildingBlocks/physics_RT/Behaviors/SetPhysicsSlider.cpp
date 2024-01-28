@@ -78,11 +78,6 @@ int SetPhysicsSlider(const CKBehaviorContext &behcontext)
     }
 
     CKIpionManager *man = CKIpionManager::GetManager(context);
-    if (!man)
-    {
-        context->OutputToConsoleExBeep("TT_SetPhysicsSlider: pm==NULL.");
-        return CKBR_OK;
-    }
 
     // TODO
 

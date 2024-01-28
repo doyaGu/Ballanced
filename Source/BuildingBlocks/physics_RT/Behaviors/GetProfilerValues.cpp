@@ -68,14 +68,14 @@ int GetProfilerValues(const CKBehaviorContext &behcontext)
 
     if (beh->IsInputActive(0))
     {
-        // sub_10008770
-
+        int HasPhysicsCalls = man->m_PhysicsObjects.m_Table.Size();
+        beh->SetOutputParameterValue(0, &HasPhysicsCalls);
         beh->ActivateInput(0, FALSE);
         beh->ActivateOutput(0);
     }
     else
     {
-        // QueryPerformanceFrequency();
+        man->ResetProfiler();
 
         beh->ActivateInput(1, FALSE);
         beh->ActivateOutput(1);
