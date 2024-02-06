@@ -7,10 +7,14 @@
 #include <Windows.h>
 
 #include "CKBaseManager.h"
+#include "CKAttributeManager.h"
 #include "CKContext.h"
 #include "XNHashTable.h"
 
 #include "ivp_physics.hxx"
+#include "ivp_real_object.hxx"
+#include "ivp_ball.hxx"
+#include "ivp_polygon.hxx"
 #include "ivp_material.hxx"
 #include "ivp_collision_filter.hxx"
 #include "ivp_listener_collision.hxx"
@@ -30,49 +34,77 @@
 
 class CKIpionManager;
 
-class PhysicsStruct
+struct PhysicsContactData;
+
+struct PhysicsStruct
 {
-public:
-    IVP_SurfaceManager *m_SurfaceManager;
+    CKBehavior *m_Behavior;
     IVP_Real_Object *m_PhysicsObject;
-    CKDWORD field_8;
+    PhysicsStruct *m_Struct;
     VxVector m_Scale;
-    CKDWORD field_18;
-    CKDWORD field_1C;
-    CKDWORD field_20;
-    CKDWORD field_24;
-    CKDWORD field_28;
-    void *field_2C;
+    DWORD m_FrictionCount;
+    DWORD field_1C;
+    IVP_Time m_CurrentTime;
+    DWORD field_28;
+    PhysicsContactData *m_ContactData;
+    PhysicsStruct *m_Next;
+    PhysicsContactData *m_ContactData2;
+};
+
+class CKPMClass0x54;
+
+struct PhysicsContactData
+{
+    float m_TimeDelayStart;
+    float m_TimeDelayEnd;
+    CKPMClass0x54 *m_Owner;
+    CKBehavior *m_Behavior;
+    void *m_GroupOutputs;
+    IVP_Listener_Collision *m_Listener;
 };
 
 typedef XNHashTable<PhysicsStruct, CK_ID> PhysicStructTable;
 
-class PhysicsListenerCollision : IVP_Listener_Object
+class PhysicsListenerCollision : IVP_Listener_Collision
 {
 public:
+    explicit PhysicsListenerCollision(CKIpionManager *manager) : IVP_Listener_Collision(5), m_PhysicsManager(manager) {}
 
-    virtual void event_object_revived(IVP_Event_Object *object) {
+    virtual void event_friction_created(IVP_Event_Friction *friction);
+    virtual void event_friction_deleted(IVP_Event_Friction *friction);
 
-    }
-
-    virtual void event_object_frozen(IVP_Event_Object *object) {
-
-    }
-
+private:
     CKIpionManager *m_PhysicsManager;
 };
 
 class PhysicsListenerObject : IVP_Listener_Object
 {
 public:
+    explicit PhysicsListenerObject(CKIpionManager *manager) : m_PhysicsManager(manager) {}
+
+    virtual void event_object_deleted(IVP_Event_Object *object);
+    virtual void event_object_created(IVP_Event_Object *object);
+    virtual void event_object_revived(IVP_Event_Object *object);
+    virtual void event_object_frozen(IVP_Event_Object *object);
+
+private:
     CKIpionManager *m_PhysicsManager;
 };
 
 class CKPMClass0x54
 {
 public:
-    PhysicsStruct *m_NumberGroupOutput;
-    IVP_U_Vector<int> field_4;
+    explicit CKPMClass0x54(CKIpionManager *manager)
+    {
+        m_PhysicsManager = manager;
+        m_NumberGroupOutput = 50;
+        m_ContinuousContactID = 0;
+    }
+
+    void GetContactID();
+
+    int m_NumberGroupOutput;
+    IVP_U_Vector<PhysicsContactData> m_Data;
     CKIpionManager *m_PhysicsManager;
     CKDWORD m_ContinuousContactID;
 };
@@ -88,8 +120,8 @@ struct CKPMClass0x110
 class CKIpionManager : public CKBaseManager
 {
 public:
-    CKIpionManager(CKContext *context);
-    ~CKIpionManager();
+    explicit CKIpionManager(CKContext *context);
+    virtual ~CKIpionManager();
 
     virtual CKERROR OnCKInit();
     virtual CKERROR OnCKEnd();
@@ -107,132 +139,72 @@ public:
                CKMANAGER_FUNC_OnCKReset;
     }
 
-    int Physicalize(CK3dEntity *target, int convexCount, CKMesh **convexes, int ballCount, int concaveCount,
-                    CKMesh **concaves, float ballRadius, CKSTRING collisionSurface, VxVector *shiftMassCenter,
-                    BOOL fixed, IVP_Material *material, float mass, CKSTRING collisionGroup,
-                    BOOL startFrozen, BOOL enableCollision, BOOL autoCalcMassCenter,
-                    float linearSpeedDampening, float rotSpeedDampening);
+    PhysicsStruct *HasPhysics(CK3dEntity *entity, CKBOOL logging = FALSE);
 
-    void AddSurfaceManager(CKSTRING collisionSurface, IVP_SurfaceManager *surfaceManager);
-    IVP_SurfaceManager *GetSurfaceManager(CKSTRING collisionSurface) const;
+    int CreatePhysicsObjectOnParameters(CK3dEntity *target, int convexCount, CKMesh **convexes,
+                                        int ballCount, int concaveCount, CKMesh **concaves, float ballRadius,
+                                        CKSTRING collisionSurface, VxVector *shiftMassCenter, CKBOOL fixed,
+                                        IVP_Material *material, float mass, CKSTRING collisionGroup,
+                                        CKBOOL startFrozen, CKBOOL enableCollision, CKBOOL autoCalcMassCenter,
+                                        float linearSpeedDampening, float rotSpeedDampening);
 
-    int AddConvexSurface(IVP_SurfaceBuilder_Ledge_Soup *builder, CKMesh *convex, VxVector *scale);
-    void AddConcaveSurface(IVP_SurfaceBuilder_Ledge_Soup *builder, CKMesh *concave, VxVector *scale);
-
-    void FillTemplateInfo(
-        IVP_Template_Real_Object *templ,
-        IVP_U_Point *position,
-        IVP_U_Quat *orientation,
-        CKSTRING name,
-        float mass,
-        IVP_Material *material,
-        float linearSpeedDampening,
-        float rotSpeedDampening,
-        CK3dEntity *target,
-        CKBOOL fixed,
-        CKSTRING collisionGroup,
-        IVP_U_Matrix *massCenterMatrix,
-        VxVector *shiftMassCenter);
-
-    int CreatePhysicsObjectOnParameters(
-        CK3dEntity *entity,
-        int convexCount,
-        CKMesh **convexes,
-        int ballCount,
-        int concaveCount,
-        CKMesh **concaves,
-        float ballRadius,
-        CKSTRING collisionSurface,
-        VxVector *shiftMassCenter,
-        CKBOOL fixed,
-        IVP_Material *material,
-        float mass,
-        CKSTRING collisionGroup,
-        CKBOOL startFrozen,
-        CKBOOL enableCollision,
-        CKBOOL autoCalcMassCenter,
-        float linearSpeedDampening,
-        float rotSpeedDampening);
-
-    IVP_Ball *CreatePhysicsBall(
-        CKSTRING name,
-        float mass,
-        float ballRadius,
-        IVP_Material *material,
-        float linearSpeedDampening,
-        float rotSpeedDampening,
-        CK3dEntity *entity,
-        CKBOOL startFrozen,
-        CKBOOL fixed,
-        CKSTRING collisionGroup,
-        CKBOOL enableCollision,
-        VxVector *shiftMassCenter);
+    IVP_Ball *CreatePhysicsBall(CKSTRING name, float mass, float ballRadius, IVP_Material *material,
+                                float linearSpeedDampening, float rotSpeedDampening, CK3dEntity *entity,
+                                CKBOOL startFrozen, CKBOOL fixed, CKSTRING collisionGroup,
+                                CKBOOL enableCollision, VxVector *shiftMassCenter);
 
     IVP_Polygon *CreatePhysicsPolygon(CKSTRING name, float mass, IVP_Material *material,
                                       float linearSpeedDampening, float rotSpeedDampening,
                                       CK3dEntity *target, BOOL startFrozen, BOOL fixed,
-                                      char *collisionGroup, BOOL enableCollision,
+                                      CKSTRING collisionGroup, BOOL enableCollision,
                                       IVP_SurfaceManager *surman, VxVector *shiftMassCenter);
 
-    IVP_Polygon *CreatePhysicObject(
-        CKSTRING name,
-        float mass,
-        IVP_Material *material,
-        float linearSpeedDampening,
-        float rotSpeedDampening,
-        CK3dEntity *target,
-        CKBOOL startFrozen,
-        CKBOOL fixed,
-        char *collisionGroup,
-        CKBOOL enableCollision,
-        IVP_SurfaceManager *surfaceManager,
-        VxVector *shiftMassCenter);
+    IVP_SurfaceManager *GetSurfaceManager(CKSTRING collisionSurface) const;
+    void AddSurfaceManager(CKSTRING collisionSurface, IVP_SurfaceManager *surfaceManager);
+    void DeleteCollisionSurface();
 
-    PhysicsStruct *HasPhysics(CK3dEntity *entity, CKBOOL logging = FALSE);
-
-    void SetPhysicsTimeFactor(float factor);
-    void SetGravity(const VxVector& gravity);
-
-    IVP_Environment *GetEnvironment() const { return m_IVPEnv; }
+    IVP_Environment *GetEnvironment() const { return m_Environment; }
     void CreateEnvironment();
+    void DeleteEnvironment();
     void DestroyEnvironment();
 
-    void DeleteCollisionSurface();
+    void SetTimeFactor(float factor);
+    void SetGravity(const VxVector &gravity);
+
+    void ResetProfiler();
 
     virtual void Reset();
 
-    void ResetProfiler();
+    static void FillTemplateInfo(IVP_Template_Real_Object *templ, IVP_U_Point *position, IVP_U_Quat *orientation,
+                                 CKSTRING name, float mass, IVP_Material *material,
+                                 float linearSpeedDampening, float rotSpeedDampening,
+                                 CK3dEntity *target, CKBOOL fixed, CKSTRING collisionGroup,
+                                 IVP_U_Matrix *massCenterMatrix, VxVector *shiftMassCenter);
+
+    static int AddConvexSurface(IVP_SurfaceBuilder_Ledge_Soup *builder, CKMesh *convex, VxVector *scale);
+    static void AddConcaveSurface(IVP_SurfaceBuilder_Ledge_Soup *builder, CKMesh *concave, VxVector *scale);
 
     static CKIpionManager *GetManager(CKContext *context)
     {
         return (CKIpionManager *)context->GetManagerByGuid(TT_PHYSICS_MANAGER_GUID);
     }
 
-    static IVP_U_Point Cast(const VxVector &v)
-    {
-        return IVP_U_Point(v.x, v.y, v.z);
-    }
-
-    static VxVector Cast(const IVP_U_Point &p)
-    {
-        return VxVector(p.k[0], p.k[1], p.k[2]);
-    }
-
-    IVP_U_Vector<int> m_Vector1;
+    IVP_U_Vector<IVP_Real_Object> m_RealObjects;
     int field_30;
-    IVP_U_Vector<int> m_Vector2;
+    IVP_U_Vector<CK3dEntity> m_Entities;
     IVP_U_Vector<IVP_Material> m_Materials;
     IVP_U_Vector<int> m_Vector4;
     PhysicsCallManager *m_PhysicsCallManager;
     PhysicsCallManager *m_PhysicsCallManager2;
     CKPMClass0x54 *field_54;
+    PhysicsListenerCollision *m_CollisionListener;
     PhysicsListenerObject *m_PhysicsObjectListener;
     int m_CollDetectionID;
     IVP_Collision_Filter_Exclusive_Pair *m_CollisionFilterExclusivePair;
     int field_68;
     int field_6C;
     int field_70;
-    int field_74;
+    int m_PerformanceCount;
     int m_UniversePSI;
     int m_ControllersPSI;
     int m_IntegratorsPSI;
@@ -251,10 +223,10 @@ public:
     int field_B4;
     IVP_U_String_Hash *m_StringHash1;
     IVP_U_String_Hash *m_SurfaceManagers;
-    IVP_Environment *m_IVPEnv;
+    IVP_Environment *m_Environment;
     int field_C8;
     float m_CurrentTime;
-    float m_PhysicsTimeFactor;
+    float m_TimeFactor;
     float m_Factor;
     int field_D8;
     int field_DC;
