@@ -32,7 +32,8 @@ CKObjectDeclaration *FillBehaviorPhysicsImpulseDecl()
 CKERROR CreatePhysicsImpulseProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("Physics Impulse");
-    if (!proto) return CKERR_OUTOFMEMORY;
+    if (!proto)
+        return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
 
@@ -92,7 +93,6 @@ int PhysicsImpulse(const CKBehaviorContext &behcontext)
 
     float impulse = 10.0f;
     beh->GetInputParameterValue(IMPULSE, &impulse);
-
     if (isConstantForce)
         impulse *= man->m_PhysicsDeltaTime;
 
@@ -102,62 +102,61 @@ int PhysicsImpulse(const CKBehaviorContext &behcontext)
 
     IVP_Real_Object *obj = po->m_RealObject;
     IVP_Core *core = obj->get_core();
-    if (!core->physical_unmoveable)
+    if (core->physical_unmoveable)
+        return CKBR_OK;
+
+    obj->ensure_in_simulation();
+
+    VxVector vec;
+    if (referential)
+        referential->Transform(&vec, &position);
+    else
+        vec = position;
+
+    IVP_U_Point pos(vec.x, vec.y, vec.z);
+
+    IVP_U_Point dir;
+    if (twoPosInsteadOfDir)
     {
-        obj->ensure_in_simulation();
-
-        VxVector vec;
-
-        IVP_U_Point pos;
-        if (referential)
-            referential->Transform(&vec, &position);
+        if (directionRef)
+            directionRef->Transform(&vec, &direction);
         else
-            vec = position;
-        pos.set(vec.x, vec.y, vec.z);
+            vec = direction;
 
-        IVP_U_Point dir;
-        if (twoPosInsteadOfDir)
-        {
-            if (directionRef)
-                directionRef->Transform(&vec, &direction);
-            else
-                vec = direction;
-
-            dir.set(vec.x, vec.y, vec.z);
-            dir.subtract(&pos);
-        }
-        else
-        {
-            if (directionRef)
-                directionRef->TransformVector(&vec, &direction);
-            else
-                vec = direction;
-            dir.set(vec.x, vec.y, vec.z);
-        }
-        dir.normize();
-        dir.mult(impulse);
-
-        if (referential == ent)
-        {
-            IVP_U_Matrix mat;
-            obj->get_m_world_f_object_AT(&mat);
-            IVP_U_Point ipz;
-            mat.vimult3(&dir, &ipz);
-
-            IVP_U_Float_Point p(&pos);
-            IVP_U_Float_Point i(&ipz);
-            IVP_U_Float_Point d(&dir);
-            core->async_push_core(&p, &i, &d);
-        }
-        else
-        {
-            IVP_U_Float_Point d(&dir);
-            obj->async_push_object_ws(&pos, &d);
-        }
-
-        beh->ActivateInput(0, FALSE);
-        beh->ActivateOutput(0, TRUE);
+        dir.set(vec.x, vec.y, vec.z);
+        dir.subtract(&pos);
     }
+    else
+    {
+        if (directionRef)
+            directionRef->TransformVector(&vec, &direction);
+        else
+            vec = direction;
+        dir.set(vec.x, vec.y, vec.z);
+    }
+    dir.normize();
+    dir.mult(impulse);
+
+    if (referential == ent)
+    {
+        IVP_U_Matrix mat;
+        obj->get_m_world_f_object_AT(&mat);
+        IVP_U_Point ipz;
+        mat.vimult3(&dir, &ipz);
+
+        IVP_U_Float_Point p(position.x, position.y, position.z);
+        IVP_U_Float_Point i(&ipz);
+        IVP_U_Float_Point d(&dir);
+        core->async_push_core(&p, &i, &d);
+    }
+    else
+    {
+        IVP_U_Float_Point d(&dir);
+        obj->async_push_object_ws(&pos, &d);
+    }
+
+    beh->ActivateInput(0, FALSE);
+    beh->ActivateOutput(0, TRUE);
 
     return CKBR_OK;
 }

@@ -32,7 +32,8 @@ CKObjectDeclaration *FillBehaviorSetPhysicsSliderDecl()
 CKERROR CreateSetPhysicsSliderProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("Set Physics Slider");
-    if (!proto) return CKERR_OUTOFMEMORY;
+    if (!proto)
+        return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("Create");
     proto->DeclareInput("Shutdown");
@@ -71,16 +72,17 @@ class PhysicsSliderCall : public PhysicsCallback
 public:
     PhysicsSliderCall(CKIpionManager *man, CKBehavior *beh) : PhysicsCallback(man, beh, 2) {}
 
-    virtual int Execute() {
+    virtual int Execute()
+    {
         CKBehavior *beh = m_Behavior;
 
-        CK3dEntity *ent = (CK3dEntity *) beh->GetTarget();
+        CK3dEntity *ent = (CK3dEntity *)beh->GetTarget();
         if (!ent)
-            return CKBR_ACTIVATENEXTFRAME;
+            return 1;
 
         CK3dEntity *object2 = (CK3dEntity *)beh->GetInputParameterObject(OBJECT2);
         if (!object2)
-            return CKBR_ACTIVATENEXTFRAME;
+            return 1;
 
         CK3dEntity *axisPoint1 = (CK3dEntity *)beh->GetInputParameterObject(AXIS_POINT1);
         CK3dEntity *axisPoint2 = (CK3dEntity *)beh->GetInputParameterObject(AXIS_POINT2);
@@ -96,13 +98,13 @@ public:
 
         PhysicsObject *poR = m_IpionManager->GetPhysicsObject(ent, TRUE);
         if (!poR)
-            return CKBR_OK;
+            return 0;
 
         IVP_Real_Object *objR = poR->m_RealObject;
 
         PhysicsObject *poA = m_IpionManager->GetPhysicsObject(object2, TRUE);
         if (!poA)
-            return CKBR_OK;
+            return 0;
 
         IVP_Real_Object *objA = poA->m_RealObject;
 
@@ -130,7 +132,7 @@ public:
         IVP_Constraint *constraint = m_IpionManager->CreateConstraint(&tmpl);
         m_Behavior->SetLocalParameterValue(0, &constraint);
 
-        return CKBR_ACTIVATENEXTFRAME;
+        return 1;
     }
 };
 
@@ -153,7 +155,7 @@ int SetPhysicsSlider(const CKBehaviorContext &behcontext)
             CKIpionManager *man = CKIpionManager::GetManager(context);
 
             PhysicsSliderCall *cb = new PhysicsSliderCall(man, beh);
-            man->m_PhysicsCallbackContainer->Process(cb);
+            man->m_PreSimulateCallbacks->Process(cb);
         }
 
         beh->ActivateInput(0, FALSE);

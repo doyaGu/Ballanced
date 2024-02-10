@@ -32,7 +32,8 @@ CKObjectDeclaration *FillBehaviorPhysicsBuoyancyDecl()
 CKERROR CreatePhysicsBuoyancyProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("PhysicsBuoyancy");
-    if (!proto) return CKERR_OUTOFMEMORY;
+    if (!proto)
+        return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
 
@@ -79,10 +80,11 @@ class PhysicsBuoyancyCallback : public PhysicsCallback
 public:
     PhysicsBuoyancyCallback(CKIpionManager *man, CKBehavior *beh) : PhysicsCallback(man, beh, 2) {}
 
-    virtual int Execute() {
+    virtual int Execute()
+    {
         CKBehavior *beh = m_Behavior;
 
-        CK3dEntity *ent = (CK3dEntity *) beh->GetTarget();
+        CK3dEntity *ent = (CK3dEntity *)beh->GetTarget();
         if (!ent)
             return CKBR_ACTIVATENEXTFRAME;
 
@@ -202,7 +204,7 @@ int PhysicsBuoyancy(const CKBehaviorContext &behcontext)
     CKIpionManager *man = CKIpionManager::GetManager(context);
 
     PhysicsBuoyancyCallback *cb = new PhysicsBuoyancyCallback(man, beh);
-    man->m_PhysicsCallbackContainer->Process(cb);
+    man->m_PreSimulateCallbacks->Process(cb);
 
     beh->ActivateOutput(0, TRUE);
     return CKBR_OK;

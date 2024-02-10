@@ -8,9 +8,6 @@
 #include "CKParameterOut.h"
 #include "VxMatrix.h"
 
-#include "ivp_templates.hxx"
-#include "ivp_performancecounter.hxx"
-
 CKIpionManager::CKIpionManager(CKContext *context)
     : CKBaseManager(context, TT_PHYSICS_MANAGER_GUID, "TT Physics Manager")
 {
@@ -25,8 +22,8 @@ CKIpionManager::CKIpionManager(CKContext *context)
 
     m_PerformanceCount = performanceCount.LowPart;
     m_CollisionFilterExclusivePair = NULL;
-    m_PhysicsCallbackContainer = NULL;
-    m_PhysicsCallbackContainer2 = NULL;
+    m_PreSimulateCallbacks = NULL;
+    m_PostSimulateCallbacks = NULL;
     m_CollisionListener = NULL;
     m_PhysicsObjectListener = NULL;
     field_30 = 0;
@@ -40,6 +37,8 @@ CKIpionManager::CKIpionManager(CKContext *context)
     field_98 = 0;
     field_A8 = 0;
     m_StringHash1 = NULL;
+    m_SurfaceManagers = NULL;
+    m_Environment = NULL;
     m_PerformanceCount = 0;
     m_UniversePSI = 0;
     m_ControllersPSI = 0;
@@ -86,7 +85,6 @@ CKERROR CKIpionManager::OnCKPlay()
 CKERROR CKIpionManager::OnCKReset()
 {
     DestroyEnvironment();
-    m_Environment = NULL;
     m_PhysicsTimeFactor = 0.001f;
     field_68 = 0;
     m_PhysicsObjectContainer.ClearObjects();
@@ -121,15 +119,15 @@ CKERROR CKIpionManager::PostProcess()
     m_PhysicsDeltaTime = time * m_PhysicsTimeFactor;
     if (m_Environment)
     {
-        if (m_PhysicsCallbackContainer->m_HasPhysicsCallback)
-            m_PhysicsCallbackContainer->Process();
+        if (m_PreSimulateCallbacks->m_HasPhysicsCallback)
+            m_PreSimulateCallbacks->Process();
 
         m_Environment->simulate_dtime(m_PhysicsDeltaTime);
 
         m_ContactManager->Process(m_Environment->get_current_time());
 
-        if (m_PhysicsCallbackContainer2->m_HasPhysicsCallback)
-            m_PhysicsCallbackContainer2->Process();
+        if (m_PostSimulateCallbacks->m_HasPhysicsCallback)
+            m_PostSimulateCallbacks->Process();
 
         IVP_PerformanceCounter_Simple *pc = (IVP_PerformanceCounter_Simple *)m_Environment->get_performancecounter();
         m_UniversePSI += pc->counter[IVP_PE_PSI_UNIVERSE][IVP_PE_PSI_START];
@@ -336,11 +334,14 @@ void CKIpionManager::CreateEnvironment()
     IVP_U_Point gravity = IVP_U_Point(0.0, -9.81, 0.0);
     m_Environment->set_gravity(&gravity);
 
-    m_PhysicsCallbackContainer = new PhysicsCallbackContainer(this);
-    m_PhysicsCallbackContainer2 = new PhysicsCallbackContainer(this);
+    m_PreSimulateCallbacks = new PhysicsCallbackContainer(this);
+    m_PostSimulateCallbacks = new PhysicsCallbackContainer(this);
 
     m_CollisionListener = new PhysicsCollisionListener(this);
+    m_Environment->add_listener_collision_global(m_CollisionListener);
+
     m_PhysicsObjectListener = new PhysicsListenerObject(this);
+    m_Environment->add_listener_object_global(m_PhysicsObjectListener);
 
     m_ContactManager = new PhysicsContactManager(this);
     m_ContactManager->SetupContactID();
@@ -368,16 +369,16 @@ void CKIpionManager::DestroyEnvironment()
 
     m_CollisionFilterExclusivePair = NULL;
 
-    if (m_PhysicsCallbackContainer)
+    if (m_PreSimulateCallbacks)
     {
-        delete m_PhysicsCallbackContainer;
-        m_PhysicsCallbackContainer = NULL;
+        delete m_PreSimulateCallbacks;
+        m_PreSimulateCallbacks = NULL;
     }
 
-    if (m_PhysicsCallbackContainer2)
+    if (m_PostSimulateCallbacks)
     {
-        delete m_PhysicsCallbackContainer2;
-        m_PhysicsCallbackContainer2 = NULL;
+        delete m_PostSimulateCallbacks;
+        m_PostSimulateCallbacks = NULL;
     }
 
     if (m_CollisionListener)
@@ -531,7 +532,7 @@ int CKIpionManager::AddConvexSurface(IVP_SurfaceBuilder_Ledge_Soup *builder, CKM
 
     int count = 0;
     VxVector **ptr = vertices;
-    for (int j = 0; j < vertexCount; ++j, pos = (VxVector*)((CKBYTE*)pos + stride))
+    for (int j = 0; j < vertexCount; ++j, pos = (VxVector *)((CKBYTE *)pos + stride))
     {
         int i = 0;
         if (count > 0)
@@ -622,39 +623,13 @@ void CKIpionManager::UpdateObjectWorldMatrix(IVP_Real_Object *obj)
     obj->get_m_world_f_object_AT(&mat);
 
     VxMatrix m;
-//    for (int i = 3; i >= 0; --i)
-//        for (int j = 3; j >= 0; --j)
-//            m[j][i] = (float)mat.get_elem(i,j);
-
-    VxMatrix *v1 = &m;
-    IVP_U_Matrix *v2 = &mat;
-    int v3 = 3;
-    double *v4;
-    float *v5;
-    int v6;
-    do
-    {
-        v4 = (double *)v2;
-        v5 = (float *)v1;
-        v6 = 3;
-        do
-        {
-            *v5 = (float)*v4++;
-            v5 += 4;
-            --v6;
-        }
-        while ( v6 );
-        v2 = (IVP_U_Matrix *)((char *)v2 + 32);
-        v1 = (VxMatrix *)((char *)v1 + 4);
-        --v3;
-    }
-    while ( v3 );
-
+    for (int i = 3; i >= 0; --i)
+        for (int j = 3; j >= 0; --j)
+            m[j][i] = (float)mat.get_elem(i, j);
     m[0][3] = 0.0f;
     m[1][3] = 0.0f;
     m[2][3] = 0.0f;
     m[3][3] = 1.0f;
-
     m[3][0] = (float)mat.vv.k[0];
     m[3][1] = (float)mat.vv.k[1];
     m[3][2] = (float)mat.vv.k[2];
@@ -663,19 +638,18 @@ void CKIpionManager::UpdateObjectWorldMatrix(IVP_Real_Object *obj)
 }
 
 PhysicsCollisionListener::PhysicsCollisionListener(CKIpionManager *man)
-        : IVP_Listener_Collision(IVP_LISTENER_COLLISION_CALLBACK_POST_COLLISION |
-                                 IVP_LISTENER_COLLISION_CALLBACK_FRICTION),
-          m_IpionManager(man)
-{
-    man->GetEnvironment()->add_listener_collision_global(this);
-}
+    : IVP_Listener_Collision(IVP_LISTENER_COLLISION_CALLBACK_POST_COLLISION |
+                             IVP_LISTENER_COLLISION_CALLBACK_FRICTION),
+      m_IpionManager(man) {}
 
 void PhysicsCollisionListener::event_friction_created(IVP_Event_Friction *friction)
 {
     if (!friction)
         return;
 
-    CK3dEntity *entity1 = (CK3dEntity *)friction->contact_situation->objects[0]->client_data;
+    IVP_Contact_Situation *situation = friction->contact_situation;
+
+    CK3dEntity *entity1 = (CK3dEntity *)situation->objects[0]->client_data;
     if (!entity1)
         return;
 
@@ -687,7 +661,7 @@ void PhysicsCollisionListener::event_friction_created(IVP_Event_Friction *fricti
         po1->m_CurrentTime = friction->environment->get_current_time();
     ++po1->m_FrictionCount;
 
-    CK3dEntity *entity2 = (CK3dEntity *)friction->contact_situation->objects[1]->client_data;
+    CK3dEntity *entity2 = (CK3dEntity *)situation->objects[1]->client_data;
     if (!entity2)
         return;
 
@@ -705,7 +679,9 @@ void PhysicsCollisionListener::event_friction_deleted(IVP_Event_Friction *fricti
     if (!friction)
         return;
 
-    CK3dEntity *entity1 = (CK3dEntity *)friction->contact_situation->objects[0]->client_data;
+    IVP_Contact_Situation *situation = friction->contact_situation;
+
+    CK3dEntity *entity1 = (CK3dEntity *)situation->objects[0]->client_data;
     if (!entity1)
         return;
 
@@ -715,7 +691,7 @@ void PhysicsCollisionListener::event_friction_deleted(IVP_Event_Friction *fricti
 
     --po1->m_FrictionCount;
 
-    CK3dEntity *entity2 = (CK3dEntity *)friction->contact_situation->objects[1]->client_data;
+    CK3dEntity *entity2 = (CK3dEntity *)situation->objects[1]->client_data;
     if (!entity2)
         return;
 
@@ -726,10 +702,7 @@ void PhysicsCollisionListener::event_friction_deleted(IVP_Event_Friction *fricti
     --po2->m_FrictionCount;
 }
 
-PhysicsListenerObject::PhysicsListenerObject(CKIpionManager *man) : m_IpionManager(man)
-{
-    man->GetEnvironment()->add_listener_object_global(this);
-}
+PhysicsListenerObject::PhysicsListenerObject(CKIpionManager *man) : m_IpionManager(man) {}
 
 void PhysicsListenerObject::event_object_deleted(IVP_Event_Object *object)
 {
@@ -738,9 +711,9 @@ void PhysicsListenerObject::event_object_deleted(IVP_Event_Object *object)
     IVP_Core *core = obj->get_core();
     if (!core->physical_unmoveable)
     {
-      int i = m_IpionManager->m_RealObjects.index_of(obj);
-      if (i != -1)
-          m_IpionManager->m_RealObjects.remove_at(i);
+        int i = m_IpionManager->m_RealObjects.index_of(obj);
+        if (i != -1)
+            m_IpionManager->m_RealObjects.remove_at(i);
     }
 
     CK3dEntity *entity = (CK3dEntity *)obj->client_data;
@@ -798,7 +771,8 @@ void PhysicsContactManager::AddRecord(PhysicsObject *obj, int id, IVP_Time time)
     }
 }
 
-void PhysicsContactManager::RemoveRecord(PhysicsObject *obj) {
+void PhysicsContactManager::RemoveRecord(PhysicsObject *obj)
+{
     if (!obj)
         return;
 
@@ -887,7 +861,8 @@ PhysicsContactData::PhysicsContactData(float timeDelayStart, float timeDelayEnd,
     m_Listener = NULL;
 }
 
-PhysicsContactData::~PhysicsContactData() {
+PhysicsContactData::~PhysicsContactData()
+{
     CKBehavior *beh = m_Behavior;
 
     CK3dEntity *ent = (CK3dEntity *)beh->GetTarget();

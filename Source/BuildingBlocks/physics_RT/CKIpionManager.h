@@ -11,24 +11,26 @@
 #include "CKContext.h"
 #include "XNHashTable.h"
 
+#include "ivu_string_hash.hxx"
 #include "ivp_physics.hxx"
 #include "ivp_real_object.hxx"
 #include "ivp_ball.hxx"
 #include "ivp_polygon.hxx"
 #include "ivp_material.hxx"
 #include "ivp_constraint.hxx"
+#include "ivp_templates.hxx"
+#include "ivp_template_constraint.hxx"
 #include "ivp_phantom.hxx"
 #include "ivp_controller_buoyancy.hxx"
 #include "ivp_liquid_surface_descript.hxx"
-#include "ivp_template_constraint.hxx"
-#include "ivp_collision_filter.hxx"
-#include "ivp_listener_collision.hxx"
 #include "ivp_listener_object.hxx"
+#include "ivp_listener_collision.hxx"
+#include "ivp_collision_filter.hxx"
 #include "ivp_compact_surface.hxx"
 #include "ivp_surbuild_pointsoup.hxx"
 #include "ivp_surbuild_ledge_soup.hxx"
 #include "ivp_surman_polygon.hxx"
-#include "ivu_string_hash.hxx"
+#include "ivp_performancecounter.hxx"
 
 #define TERRATOOLS_GUID CKGUID(0x56495254, 0x4f4f4c53)
 #define TT_PHYSICS_MANAGER_GUID CKGUID(0x6BED328B, 0x141F5148)
@@ -41,7 +43,7 @@ public:
     PhysicsCallback() : m_IpionManager(NULL), m_Type(0), m_Behavior(NULL) {}
     PhysicsCallback(CKIpionManager *pm, CKBehavior *beh, int type) : m_IpionManager(pm), m_Type(type), m_Behavior(beh) {}
     virtual int Execute() = 0;
-    virtual ~PhysicsCallback() {};
+    virtual ~PhysicsCallback(){};
 
     CKIpionManager *m_IpionManager;
     int m_Type;
@@ -51,7 +53,7 @@ public:
 class PhysicsCallbackContainer
 {
 public:
-    explicit PhysicsCallbackContainer(CKIpionManager *manager) : m_IpionManager(manager), m_HasPhysicsCallback(FALSE) { }
+    explicit PhysicsCallbackContainer(CKIpionManager *manager) : m_IpionManager(manager), m_HasPhysicsCallback(FALSE) {}
 
     void Process()
     {
@@ -361,8 +363,8 @@ public:
     IVP_U_Vector<CK3dEntity> m_Entities;
     IVP_U_Vector<IVP_Material> m_Materials;
     IVP_U_Vector<IVP_Liquid_Surface_Descriptor_Simple> m_Surfaces;
-    PhysicsCallbackContainer *m_PhysicsCallbackContainer;
-    PhysicsCallbackContainer *m_PhysicsCallbackContainer2;
+    PhysicsCallbackContainer *m_PreSimulateCallbacks;
+    PhysicsCallbackContainer *m_PostSimulateCallbacks;
     PhysicsContactManager *m_ContactManager;
     PhysicsCollisionListener *m_CollisionListener;
     PhysicsListenerObject *m_PhysicsObjectListener;

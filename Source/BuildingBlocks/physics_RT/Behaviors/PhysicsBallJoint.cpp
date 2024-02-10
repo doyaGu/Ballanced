@@ -32,7 +32,8 @@ CKObjectDeclaration *FillBehaviorPhysicsBallJointDecl()
 CKERROR CreatePhysicsBallJointProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("Set Physics Ball Joint");
-    if (!proto) return CKERR_OUTOFMEMORY;
+    if (!proto)
+        return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("Create");
     proto->DeclareInput("Shutdown");
@@ -67,10 +68,11 @@ class PhysicsBallJointCallback : public PhysicsCallback
 public:
     PhysicsBallJointCallback(CKIpionManager *man, CKBehavior *beh) : PhysicsCallback(man, beh, 2) {}
 
-    virtual int Execute() {
+    virtual int Execute()
+    {
         CKBehavior *beh = m_Behavior;
 
-        CK3dEntity *ent = (CK3dEntity *) beh->GetTarget();
+        CK3dEntity *ent = (CK3dEntity *)beh->GetTarget();
         if (!ent)
             return CKBR_ACTIVATENEXTFRAME;
 
@@ -132,7 +134,7 @@ int PhysicsBallJoint(const CKBehaviorContext &behcontext)
             CKIpionManager *man = CKIpionManager::GetManager(context);
 
             PhysicsBallJointCallback *cb = new PhysicsBallJointCallback(man, beh);
-            man->m_PhysicsCallbackContainer->Process(cb);
+            man->m_PreSimulateCallbacks->Process(cb);
         }
 
         beh->ActivateInput(0, FALSE);
@@ -163,26 +165,26 @@ CKERROR PhysicsBallJointCallBack(const CKBehaviorContext &behcontext)
 
     switch (behcontext.CallbackMessage)
     {
-        case CKM_BEHAVIORRESET:
-        {
-            void *handle = NULL;
-            beh->SetLocalParameterValue(0, handle);
+    case CKM_BEHAVIORRESET:
+    {
+        void *handle = NULL;
+        beh->SetLocalParameterValue(0, handle);
+        return CKBR_OK;
+    }
+    case CKM_BEHAVIORSETTINGSEDITED:
+    {
+        int count = beh->GetInputParameterCount();
+        if (count == 3)
             return CKBR_OK;
-        }
-        case CKM_BEHAVIORSETTINGSEDITED:
-        {
-            int count = beh->GetInputParameterCount();
-            if (count == 3)
-                return CKBR_OK;
 
-            for (int i = count - 1; i >= 3; --i)
-            {
-                CKParameterIn *pin = beh->RemoveInputParameter(i);
-                CKDestroyObject(pin);
-            }
+        for (int i = count - 1; i >= 3; --i)
+        {
+            CKParameterIn *pin = beh->RemoveInputParameter(i);
+            CKDestroyObject(pin);
         }
-        default:
-            break;
+    }
+    default:
+        break;
     }
 
     return CKBR_OK;

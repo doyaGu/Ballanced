@@ -32,7 +32,8 @@ CKObjectDeclaration *FillBehaviorSetPhysicsSpringDecl()
 CKERROR CreateSetPhysicsSpringProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("Set Physics Spring");
-    if (!proto) return CKERR_OUTOFMEMORY;
+    if (!proto)
+        return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("Create");
     proto->DeclareInput("Shutdown");
@@ -77,26 +78,27 @@ class PhysicsSpringCall : public PhysicsCallback
 public:
     PhysicsSpringCall(CKIpionManager *man, CKBehavior *beh) : PhysicsCallback(man, beh, 2) {}
 
-    virtual int Execute() {
+    virtual int Execute()
+    {
         CKBehavior *beh = m_Behavior;
 
-        CK3dEntity *ent = (CK3dEntity *) beh->GetTarget();
+        CK3dEntity *ent = (CK3dEntity *)beh->GetTarget();
         if (!ent)
-            return CKBR_OWNERERROR;
+            return 1;
 
         CK3dEntity *object2 = (CK3dEntity *)beh->GetInputParameterObject(OBJECT2);
         if (!object2)
-            return CKBR_OK;
+            return 0;
 
         PhysicsObject *poR = m_IpionManager->GetPhysicsObject(ent, TRUE);
         if (!poR)
-            return FALSE;
+            return 0;
 
         IVP_Real_Object *objR = poR->m_RealObject;
 
         PhysicsObject *poA = m_IpionManager->GetPhysicsObject(object2, TRUE);
         if (!poA)
-            return CKBR_OK;
+            return 0;
 
         IVP_Real_Object *objA = poA->m_RealObject;
 
@@ -157,7 +159,7 @@ public:
         IVP_Actuator_Spring *spring = m_IpionManager->CreateSpring(&tmpl);
         m_Behavior->SetLocalParameterValue(0, &spring);
 
-        return CKBR_ACTIVATENEXTFRAME;
+        return 1;
     }
 };
 
@@ -180,7 +182,7 @@ int SetPhysicsSpring(const CKBehaviorContext &behcontext)
             CKIpionManager *man = CKIpionManager::GetManager(context);
 
             PhysicsSpringCall *cb = new PhysicsSpringCall(man, beh);
-            man->m_PhysicsCallbackContainer->Process(cb);
+            man->m_PreSimulateCallbacks->Process(cb);
         }
 
         beh->ActivateInput(0, FALSE);

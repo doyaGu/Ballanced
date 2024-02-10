@@ -31,7 +31,8 @@ CKObjectDeclaration *FillBehaviorDeleteCollisionSurfacesDecl()
 CKERROR CreateDeleteCollisionSurfacesProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("DeleteCollisionSurfaces");
-    if (!proto) return CKERR_OUTOFMEMORY;
+    if (!proto)
+        return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
 
@@ -72,7 +73,7 @@ int DeleteCollisionSurfaces(const CKBehaviorContext &behcontext)
     CKIpionManager *man = CKIpionManager::GetManager(context);
 
     DeleteCollisionSurfacesCallback *cb = new DeleteCollisionSurfacesCallback(man, beh);
-    man->m_PhysicsCallbackContainer->Process(cb);
+    man->m_PreSimulateCallbacks->Process(cb);
 
     beh->ActivateInput(0, FALSE);
     beh->ActivateOutput(0, TRUE);

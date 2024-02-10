@@ -32,7 +32,8 @@ CKObjectDeclaration *FillBehaviorPhysicsForceDecl()
 CKERROR CreatePhysicsForceProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("SetPhysicsForce");
-    if (!proto) return CKERR_OUTOFMEMORY;
+    if (!proto)
+        return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("Create");
     proto->DeclareInput("Shutdown");
@@ -67,7 +68,8 @@ CKERROR CreatePhysicsForceProto(CKBehaviorPrototype **pproto)
 class PhysicsControllerForce : public IVP_Controller_Independent
 {
 public:
-    PhysicsControllerForce(IVP_Real_Object *obj, CKIpionManager *man) : m_IpionManager(man) {
+    PhysicsControllerForce(IVP_Real_Object *obj, CKIpionManager *man) : m_IpionManager(man)
+    {
         m_Core = obj->get_core();
         IVP_Environment *env = m_IpionManager->GetEnvironment();
         env->get_controller_manager()->add_controller_to_core(this, m_Core);
@@ -123,7 +125,7 @@ public:
 
         CK3dEntity *ent = (CK3dEntity *)beh->GetTarget();
         if (!ent)
-            return CKBR_ACTIVATENEXTFRAME;
+            return 1;
 
         VxVector position;
         beh->GetInputParameterValue(POSITION, &position);
@@ -140,7 +142,7 @@ public:
 
         PhysicsObject *po = m_IpionManager->GetPhysicsObject(ent);
         if (!po)
-            return CKBR_OK;
+            return 0;
 
         IVP_Real_Object *obj = po->m_RealObject;
 
@@ -181,7 +183,7 @@ public:
 
         beh->SetLocalParameterValue(0, &controller);
 
-        return CKBR_ACTIVATENEXTFRAME;
+        return 1;
     }
 };
 
@@ -204,7 +206,7 @@ int PhysicsForce(const CKBehaviorContext &behcontext)
             CKIpionManager *man = CKIpionManager::GetManager(context);
 
             PhysicsForceCallback *cb = new PhysicsForceCallback(man, beh);
-            man->m_PhysicsCallbackContainer->Process(cb);
+            man->m_PreSimulateCallbacks->Process(cb);
         }
 
         beh->ActivateInput(0, FALSE);

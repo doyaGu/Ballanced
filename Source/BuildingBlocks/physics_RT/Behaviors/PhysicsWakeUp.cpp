@@ -31,7 +31,8 @@ CKObjectDeclaration *FillBehaviorPhysicsWakeUpDecl()
 CKERROR CreatePhysicsWakeUpProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("Physics WakeUp");
-    if (!proto) return CKERR_OUTOFMEMORY;
+    if (!proto)
+        return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
 
@@ -55,15 +56,15 @@ public:
     {
         CK3dEntity *ent = (CK3dEntity *)m_Behavior->GetTarget();
         if (!ent)
-            return CKBR_ACTIVATENEXTFRAME;
+            return 1;
 
         PhysicsObject *po = m_IpionManager->GetPhysicsObject(ent);
         if (!po)
-            return CKBR_OK;
+            return 0;
 
         po->m_RealObject->ensure_in_simulation();
 
-        return CKBR_ACTIVATENEXTFRAME;
+        return 1;
     }
 };
 
@@ -79,7 +80,7 @@ int PhysicsWakeUp(const CKBehaviorContext &behcontext)
     CKIpionManager *man = CKIpionManager::GetManager(context);
 
     PhysicsWakeUpCallback *cb = new PhysicsWakeUpCallback(man, beh);
-    man->m_PhysicsCallbackContainer->Process(cb);
+    man->m_PreSimulateCallbacks->Process(cb);
 
     beh->ActivateInput(0, FALSE);
     beh->ActivateOutput(0, TRUE);
