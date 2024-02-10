@@ -17,7 +17,8 @@ int PhysicsCollDetection(const CKBehaviorContext &behcontext);
 
 CKERROR PhysicsCollDetectionCallBack(const CKBehaviorContext &behcontext);
 
-CKObjectDeclaration *FillBehaviorPhysicsCollDetectionDecl() {
+CKObjectDeclaration *FillBehaviorPhysicsCollDetectionDecl()
+{
     CKObjectDeclaration *od = CreateCKObjectDeclaration("PhysicsCollDetection");
     od->SetDescription("PhysicsCollDetection");
     od->SetCategory("Physics");
@@ -31,9 +32,11 @@ CKObjectDeclaration *FillBehaviorPhysicsCollDetectionDecl() {
     return od;
 }
 
-CKERROR CreatePhysicsCollDetectionProto(CKBehaviorPrototype **pproto) {
+CKERROR CreatePhysicsCollDetectionProto(CKBehaviorPrototype **pproto)
+{
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("PhysicsCollDetection");
-    if (!proto) return CKERR_OUTOFMEMORY;
+    if (!proto)
+        return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("Create");
     proto->DeclareInput("Stop");
@@ -78,16 +81,16 @@ class PhysicsCollDetectionListener : public IVP_Listener_Collision
 public:
     PhysicsCollDetectionListener(float sleepAfterwards, float minSpeed, float maxSpeed,
                                  IVP_Real_Object *obj, CKIpionManager *manager, CKBehavior *beh, int collisionID)
-            : IVP_Listener_Collision(IVP_LISTENER_COLLISION_CALLBACK_POST_COLLISION |
-                                     IVP_LISTENER_COLLISION_CALLBACK_FRICTION),
-              m_Time(0),
-              m_SleepAfterwards(sleepAfterwards),
-              m_MinSpeed(minSpeed),
-              m_MaxSpeed(maxSpeed),
-              m_RealObject(obj),
-              m_IpionManager(manager),
-              m_Behavior(beh),
-              m_CollisionID(collisionID) {}
+        : IVP_Listener_Collision(IVP_LISTENER_COLLISION_CALLBACK_POST_COLLISION |
+                                 IVP_LISTENER_COLLISION_CALLBACK_FRICTION),
+          m_Time(0),
+          m_SleepAfterwards(sleepAfterwards),
+          m_MinSpeed(minSpeed),
+          m_MaxSpeed(maxSpeed),
+          m_RealObject(obj),
+          m_IpionManager(manager),
+          m_Behavior(beh),
+          m_CollisionID(collisionID) {}
 
     ~PhysicsCollDetectionListener()
     {
@@ -176,16 +179,18 @@ public:
     int field_2C;
 };
 
-class PhysicsCollDetectionCallback : public PhysicsCallback {
+class PhysicsCollDetectionCallback : public PhysicsCallback
+{
 public:
     PhysicsCollDetectionCallback(CKIpionManager *pm, CKBehavior *beh) : PhysicsCallback(pm, beh, 2) {}
 
-    virtual int Execute() {
+    virtual int Execute()
+    {
         CKBehavior *beh = m_Behavior;
 
-        CK3dEntity *ent = (CK3dEntity *) m_Behavior->GetTarget();
+        CK3dEntity *ent = (CK3dEntity *)m_Behavior->GetTarget();
         if (!ent)
-            return TRUE;
+            return 1;
 
         float minSpeed = 0.3f;
         beh->GetInputParameterValue(MIN_SPEED, &minSpeed);
@@ -200,14 +205,19 @@ public:
         beh->GetInputParameterValue(COLLISION_ID, &collisionID);
 
         PhysicsObject *po = m_IpionManager->GetPhysicsObject(ent, TRUE);
-        if (po) {
-            IVP_Real_Object *obj = po->m_RealObject;
-            PhysicsCollDetectionListener *listener = new PhysicsCollDetectionListener(sleepAfterwards, minSpeed, maxSpeed,obj, m_IpionManager, m_Behavior, collisionID);
-            obj->add_listener_collision(listener);
+        if (!po)
+            return 0;
 
-            beh->SetLocalParameterValue(0, &listener);
-        }
-        return TRUE;
+        IVP_Real_Object *obj = po->m_RealObject;
+
+        PhysicsCollDetectionListener *listener = new PhysicsCollDetectionListener(sleepAfterwards, minSpeed, maxSpeed,
+                                                                                  obj, m_IpionManager, m_Behavior,
+                                                                                  collisionID);
+        obj->add_listener_collision(listener);
+
+        beh->SetLocalParameterValue(0, &listener);
+
+        return 1;
     }
 };
 
@@ -220,8 +230,9 @@ int PhysicsCollDetection(const CKBehaviorContext &behcontext)
     {
         PhysicsCollDetectionListener *listener = NULL;
         beh->GetLocalParameterValue(0, &listener);
-        if (!listener) {
-            CK3dEntity *ent = (CK3dEntity *) beh->GetTarget();
+        if (!listener)
+        {
+            CK3dEntity *ent = (CK3dEntity *)beh->GetTarget();
             if (!ent)
                 return CKBR_OWNERERROR;
 
@@ -229,7 +240,7 @@ int PhysicsCollDetection(const CKBehaviorContext &behcontext)
             man->GetPhysicsObject(ent, TRUE);
 
             PhysicsCollDetectionCallback *physicsCall = new PhysicsCollDetectionCallback(man, beh);
-            man->m_PhysicsCallbackContainer->Process(physicsCall);
+            man->m_PreSimulateCallbacks->Process(physicsCall);
         }
 
         beh->ActivateInput(0, FALSE);

@@ -31,7 +31,8 @@ CKObjectDeclaration *FillBehaviorPhysicsResetDecl()
 CKERROR CreatePhysicsResetProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("Physics Reset");
-    if (!proto) return CKERR_OUTOFMEMORY;
+    if (!proto)
+        return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
 
@@ -52,7 +53,7 @@ public:
     virtual int Execute()
     {
         m_IpionManager->Reset();
-        return CKBR_ACTIVATENEXTFRAME;
+        return 1;
     }
 };
 
@@ -64,7 +65,7 @@ int PhysicsReset(const CKBehaviorContext &behcontext)
     CKIpionManager *man = CKIpionManager::GetManager(context);
 
     PhysicsResetCall *physicsCall = new PhysicsResetCall(man, beh);
-    man->m_PhysicsCallbackContainer->Process(physicsCall);
+    man->m_PreSimulateCallbacks->Process(physicsCall);
 
     beh->ActivateInput(0, FALSE);
     beh->ActivateOutput(0);

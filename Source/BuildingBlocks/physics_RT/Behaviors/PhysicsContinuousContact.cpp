@@ -32,7 +32,8 @@ CKObjectDeclaration *FillBehaviorPhysicsContinuousContactDecl()
 CKERROR CreatePhysicsContinuousContactProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("PhysicsContinuousContact");
-    if (!proto) return CKERR_OUTOFMEMORY;
+    if (!proto)
+        return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("Create");
     proto->DeclareInput("Stop");
@@ -77,13 +78,13 @@ CKERROR CreatePhysicsContinuousContactProto(CKBehaviorPrototype **pproto)
 #define TIME_DELAY_START 0
 #define TIME_DELAY_END 1
 
-class PhysicsContactListener: public IVP_Listener_Collision
+class PhysicsContactListener : public IVP_Listener_Collision
 {
 public:
     PhysicsContactListener(IVP_Real_Object *obj, CKIpionManager *man)
-            : IVP_Listener_Collision(
-            IVP_LISTENER_COLLISION_CALLBACK_POST_COLLISION | IVP_LISTENER_COLLISION_CALLBACK_FRICTION),
-              m_RealObject(obj), m_IpionManager(man) {}
+        : IVP_Listener_Collision(IVP_LISTENER_COLLISION_CALLBACK_POST_COLLISION |
+                                 IVP_LISTENER_COLLISION_CALLBACK_FRICTION),
+          m_RealObject(obj), m_IpionManager(man) {}
 
     virtual void event_friction_created(IVP_Event_Friction *friction)
     {
@@ -209,7 +210,7 @@ public:
 
         CK3dEntity *ent = (CK3dEntity *)beh->GetTarget();
         if (!ent)
-            return CKBR_ACTIVATENEXTFRAME;
+            return 1;
 
         float timeDelayStart = 0.1f;
         beh->GetInputParameterValue(TIME_DELAY_START, &timeDelayStart);
@@ -222,7 +223,7 @@ public:
 
         PhysicsObject *po = m_IpionManager->GetPhysicsObject(ent);
         if (!po)
-            return CKBR_OK;
+            return 0;
 
         IVP_Real_Object *obj = po->m_RealObject;
 
@@ -238,7 +239,7 @@ public:
             beh->SetLocalParameterValue(1, &data);
         }
 
-        return CKBR_ACTIVATENEXTFRAME;
+        return 1;
     }
 };
 
@@ -260,7 +261,7 @@ int PhysicsContinuousContact(const CKBehaviorContext &behcontext)
                 return CKBR_OWNERERROR;
 
             PhysicsContinuousContactCallback *cb = new PhysicsContinuousContactCallback(man, beh);
-            man->m_PhysicsCallbackContainer->Process(cb);
+            man->m_PreSimulateCallbacks->Process(cb);
         }
 
         beh->ActivateInput(0, FALSE);
@@ -272,7 +273,7 @@ int PhysicsContinuousContact(const CKBehaviorContext &behcontext)
         beh->GetLocalParameterValue(1, &data);
         if (data)
         {
-            CK3dEntity *ent = (CK3dEntity *) beh->GetTarget();
+            CK3dEntity *ent = (CK3dEntity *)beh->GetTarget();
             if (ent)
             {
                 PhysicsObject *po = man->GetPhysicsObject(ent);
@@ -310,7 +311,7 @@ CKERROR PhysicsContinuousContactCallBack(const CKBehaviorContext &behcontext)
             beh->DeleteOutput(0);
 
         char buf[256];
-        for(int i = 0; i < numberGroupOutput; ++i)
+        for (int i = 0; i < numberGroupOutput; ++i)
         {
             sprintf(buf, "contact on %d", i);
             beh->AddOutput(buf);
