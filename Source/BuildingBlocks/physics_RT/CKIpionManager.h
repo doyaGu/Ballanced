@@ -53,13 +53,13 @@ public:
 class PhysicsCallbackContainer
 {
 public:
-    explicit PhysicsCallbackContainer(CKIpionManager *manager) : m_IpionManager(manager), m_HasPhysicsCallback(FALSE) {}
+    explicit PhysicsCallbackContainer(CKIpionManager *manager) : m_IpionManager(manager), m_HasCallbacks(FALSE) {}
 
     void Process()
     {
         for (int i = 0; i < 3; ++i)
         {
-            IVP_U_Vector<PhysicsCallback> &cbs = m_PhysicsCallbacks[i];
+            IVP_U_Vector<PhysicsCallback> &cbs = m_Callbacks[i];
             for (int j = cbs.len() - 1; j >= 0; --j)
             {
                 PhysicsCallback *pc = cbs.element_at(j);
@@ -82,15 +82,15 @@ public:
             }
             else if (0 <= pc->m_Type && pc->m_Type < 3)
             {
-                m_PhysicsCallbacks[pc->m_Type].add(pc);
-                m_HasPhysicsCallback = TRUE;
+                m_Callbacks[pc->m_Type].add(pc);
+                m_HasCallbacks = TRUE;
             }
         }
     }
 
     CKIpionManager *m_IpionManager;
-    CKBOOL m_HasPhysicsCallback;
-    IVP_U_Vector<PhysicsCallback> m_PhysicsCallbacks[3];
+    CKBOOL m_HasCallbacks;
+    IVP_U_Vector<PhysicsCallback> m_Callbacks[3];
 };
 
 class PhysicsCollisionListener : public IVP_Listener_Collision
@@ -328,7 +328,6 @@ public:
 
     IVP_Environment *GetEnvironment() const { return m_Environment; }
     void CreateEnvironment();
-    void DeleteEnvironment();
     void DestroyEnvironment();
 
     void SetTimeFactor(float factor);
