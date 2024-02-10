@@ -73,110 +73,191 @@ CKERROR CreatePhysicsCollDetectionProto(CKBehaviorPrototype **pproto) {
 #define COLLISION_NORMAL_WORLD 6
 #define POSITION_WORLD 7
 
-class PhysicsCollDetectionListener : public IVP_Listener_Collision {
+class PhysicsCollDetectionListener : public IVP_Listener_Collision
+{
 public:
     PhysicsCollDetectionListener(float sleepAfterwards, float minSpeed, float maxSpeed,
                                  IVP_Real_Object *obj, CKIpionManager *manager, CKBehavior *beh, int collisionID)
             : IVP_Listener_Collision(IVP_LISTENER_COLLISION_CALLBACK_POST_COLLISION |
                                      IVP_LISTENER_COLLISION_CALLBACK_FRICTION),
-                                     m_CurrentTime(0),
-                                     m_SleepAfterwards(sleepAfterwards),
-                                     m_MinSpeed(minSpeed),
-                                     m_MaxSpeed(maxSpeed),
-                                     m_PhysicsObject(obj),
-                                     m_IpionManager(manager),
-                                     m_Behavior(beh),
-                                     m_CollisionID(collisionID)
-                                     {}
+              m_Time(0),
+              m_SleepAfterwards(sleepAfterwards),
+              m_MinSpeed(minSpeed),
+              m_MaxSpeed(maxSpeed),
+              m_RealObject(obj),
+              m_IpionManager(manager),
+              m_Behavior(beh),
+              m_CollisionID(collisionID) {}
 
-    void event_pre_collision(IVP_Event_Collision *collision) override {
-
+    ~PhysicsCollDetectionListener()
+    {
+        PhysicsCollDetectionListener *listener = NULL;
+        m_Behavior->SetLocalParameterValue(0, &listener);
     }
 
-    void event_friction_deleted(IVP_Event_Friction *friction) override {
-        IVP_Listener_Collision::event_friction_deleted(friction);
+    void event_pre_collision(IVP_Event_Collision *collision)
+    {
+        IVP_Contact_Situation *situation = collision->contact_situation;
+        IVP_Real_Object *obj = situation->objects[0];
+        if (obj == m_RealObject)
+            obj = situation->objects[1];
+
+        CK3dEntity *ent = (CK3dEntity *)obj->client_data;
+
+        int collisionID = -1;
+        if (m_IpionManager->m_CollisionDetectionID != -1)
+        {
+            CKParameterOut *pa = ent->GetAttributeParameter(m_IpionManager->m_CollisionDetectionID);
+            if (pa)
+                pa->GetValue(&collisionID);
+        }
+
+        CKBOOL useCollisionID = FALSE;
+        m_Behavior->GetLocalParameterValue(1, &useCollisionID);
+        if (useCollisionID && m_CollisionID != collisionID)
+            return;
+
+        PhysicsObject *po = m_IpionManager->GetPhysicsObject(ent);
+        if (!po)
+            return;
+
+        if (!m_Behavior->IsOutputActive(0) &&
+            m_IpionManager->GetEnvironment()->get_current_time() - m_Time >= m_SleepAfterwards)
+        {
+            float speed;
+            double sl = situation->speed.real_length();
+            if (sl > m_MinSpeed)
+            {
+                if (sl <= 0.0001f)
+                {
+                    speed = 0.0001f;
+                }
+                else
+                {
+                    if (m_MaxSpeed < 0.0001f || ((float)sl / m_MaxSpeed) > 1.0f)
+                        speed = 1.0f;
+                    else
+                        speed = (float)sl / m_MaxSpeed;
+                }
+
+                m_Behavior->SetOutputParameterObject(0, ent);
+                m_Behavior->SetOutputParameterValue(1, &speed);
+
+                if (situation->objects[0] != m_RealObject)
+                {
+                    situation->surf_normal.mult(-1.0f);
+                }
+
+                VxVector collisionNormalWorld(situation->surf_normal.k[0],
+                                              situation->surf_normal.k[1],
+                                              situation->surf_normal.k[2]);
+                m_Behavior->SetOutputParameterValue(2, &collisionNormalWorld);
+
+                VxVector positionWorld((float)situation->contact_point_ws.k[0],
+                                       (float)situation->contact_point_ws.k[1],
+                                       (float)situation->contact_point_ws.k[2]);
+                m_Behavior->SetOutputParameterValue(2, &collisionNormalWorld);
+
+                m_Time = m_IpionManager->GetEnvironment()->get_current_time();
+
+                m_Behavior->ActivateOutput(0, TRUE);
+            }
+        }
     }
 
-    double m_CurrentTime;
+    IVP_Time m_Time;
     float m_SleepAfterwards;
     float m_MinSpeed;
     float m_MaxSpeed;
-    IVP_Real_Object *m_PhysicsObject;
+    IVP_Real_Object *m_RealObject;
     CKIpionManager *m_IpionManager;
     CKBehavior *m_Behavior;
     int m_CollisionID;
     int field_2C;
 };
 
-class PhysicsCollDetectionCall : public PhysicsCall {
+class PhysicsCollDetectionCallback : public PhysicsCallback {
 public:
-    PhysicsCollDetectionCall(CKIpionManager *pm, CKBehavior *beh) : PhysicsCall(pm, beh, 2) {}
+    PhysicsCollDetectionCallback(CKIpionManager *pm, CKBehavior *beh) : PhysicsCallback(pm, beh, 2) {}
 
-    virtual CKBOOL Execute() {
+    virtual int Execute() {
+        CKBehavior *beh = m_Behavior;
+
         CK3dEntity *ent = (CK3dEntity *) m_Behavior->GetTarget();
         if (!ent)
             return TRUE;
 
         float minSpeed = 0.3f;
-        float maxSpeed = 0.3f;
-        float sleepAfterwards = 0.5f;
-        int collisionID = 1;
-        m_Behavior->GetInputParameterValue(MIN_SPEED, &minSpeed);
-        m_Behavior->GetInputParameterValue(MAX_SPEED, &maxSpeed);
-        m_Behavior->GetInputParameterValue(SLEEP_AFTERWARDS, &sleepAfterwards);
-        m_Behavior->GetInputParameterValue(COLLISION_ID, &collisionID);
+        beh->GetInputParameterValue(MIN_SPEED, &minSpeed);
 
-        PhysicsStruct *ps = m_IpionManager->HasPhysics(ent, TRUE);
-        if (ps) {
-            IVP_Real_Object *obj = ps->m_PhysicsObject;
-            PhysicsCollDetectionListener *listener = new PhysicsCollDetectionListener(sleepAfterwards, minSpeed, maxSpeed,
-                                                                                      obj, m_IpionManager, m_Behavior, collisionID);
+        float maxSpeed = 0.3f;
+        beh->GetInputParameterValue(MAX_SPEED, &maxSpeed);
+
+        float sleepAfterwards = 0.5f;
+        beh->GetInputParameterValue(SLEEP_AFTERWARDS, &sleepAfterwards);
+
+        int collisionID = 1;
+        beh->GetInputParameterValue(COLLISION_ID, &collisionID);
+
+        PhysicsObject *po = m_IpionManager->GetPhysicsObject(ent, TRUE);
+        if (po) {
+            IVP_Real_Object *obj = po->m_RealObject;
+            PhysicsCollDetectionListener *listener = new PhysicsCollDetectionListener(sleepAfterwards, minSpeed, maxSpeed,obj, m_IpionManager, m_Behavior, collisionID);
             obj->add_listener_collision(listener);
-            m_Behavior->SetLocalParameterValue(0, &listener);
+
+            beh->SetLocalParameterValue(0, &listener);
         }
         return TRUE;
     }
 };
 
-int PhysicsCollDetection(const CKBehaviorContext &behcontext) {
+int PhysicsCollDetection(const CKBehaviorContext &behcontext)
+{
     CKBehavior *beh = behcontext.Behavior;
     CKContext *context = behcontext.Context;
 
-    if (beh->IsInputActive(0)) {
-        void *handle = NULL;
-        beh->GetLocalParameterValue(0, &handle);
-        if (!handle) {
+    if (beh->IsInputActive(0))
+    {
+        PhysicsCollDetectionListener *listener = NULL;
+        beh->GetLocalParameterValue(0, &listener);
+        if (!listener) {
             CK3dEntity *ent = (CK3dEntity *) beh->GetTarget();
             if (!ent)
                 return CKBR_OWNERERROR;
 
             CKIpionManager *man = CKIpionManager::GetManager(context);
-            man->HasPhysics(ent, TRUE);
+            man->GetPhysicsObject(ent, TRUE);
 
-            PhysicsCollDetectionCall *physicsCall = new PhysicsCollDetectionCall(man, beh);
-            man->m_PhysicsCallManager->Process(physicsCall);
+            PhysicsCollDetectionCallback *physicsCall = new PhysicsCollDetectionCallback(man, beh);
+            man->m_PhysicsCallbackContainer->Process(physicsCall);
         }
 
         beh->ActivateInput(0, FALSE);
         return CKBR_ACTIVATENEXTFRAME;
     }
+    else if (beh->IsInputActive(1))
+    {
+        beh->ActivateInput(1, FALSE);
 
-    if (!beh->IsInputActive(1))
-        return CKBR_ACTIVATENEXTFRAME;
+        PhysicsCollDetectionListener *listener = NULL;
+        beh->GetLocalParameterValue(0, &listener);
+        if (listener)
+        {
+            listener->m_RealObject->remove_listener_collision(listener);
+            delete listener;
+        }
 
-    beh->ActivateInput(1, FALSE);
-
-    void *handle = NULL;
-    beh->GetLocalParameterValue(0, &handle);
-    if (handle) {
-
+        beh->ActivateInput(1, FALSE);
+        return CKBR_OK;
     }
 
-    return CKBR_OK;
+    return CKBR_ACTIVATENEXTFRAME;
 }
 
-CKERROR PhysicsCollDetectionCallBack(const CKBehaviorContext &behcontext) {
-    if (behcontext.CallbackMessage == CKM_BEHAVIORRESET) {
+CKERROR PhysicsCollDetectionCallBack(const CKBehaviorContext &behcontext)
+{
+    if (behcontext.CallbackMessage == CKM_BEHAVIORRESET)
+    {
         CKBehavior *beh = behcontext.Behavior;
         void *handle = NULL;
         beh->SetLocalParameterValue(0, &handle);

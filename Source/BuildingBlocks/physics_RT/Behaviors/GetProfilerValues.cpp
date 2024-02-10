@@ -60,25 +60,20 @@ int GetProfilerValues(const CKBehaviorContext &behcontext)
     CKContext *context = behcontext.Context;
 
     CKIpionManager *man = CKIpionManager::GetManager(context);
-    if (!man)
-    {
-        context->OutputToConsoleExBeep("TT_GetProfilerValues: pm==NULL.");
-        return CKBR_OK;
-    }
 
-    if (beh->IsInputActive(0))
-    {
-        int HasPhysicsCalls = man->m_PhysicsObjects.m_Table.Size();
-        beh->SetOutputParameterValue(0, &HasPhysicsCalls);
-        beh->ActivateInput(0, FALSE);
-        beh->ActivateOutput(0);
-    }
-    else
+    if (beh->IsInputActive(1))
     {
         man->ResetProfiler();
 
         beh->ActivateInput(1, FALSE);
-        beh->ActivateOutput(1);
+        beh->ActivateOutput(1, TRUE);
+    }
+    else
+    {
+        int HasPhysicsCalls = man->m_PhysicsObjectContainer.GetObjectCount();
+        beh->SetOutputParameterValue(0, &HasPhysicsCalls);
+        beh->ActivateInput(0, FALSE);
+        beh->ActivateOutput(0, TRUE);
     }
 
     return CKBR_OK;

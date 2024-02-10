@@ -59,32 +59,133 @@ CKERROR CreatePhysicsHingeProto(CKBehaviorPrototype **pproto)
 }
 
 #define OBJECT2 0
-#define JOINT_REFERENTIAL 1
+#define REFERENTIAL 1
 #define LIMITATIONS 2
 #define LOWER_LIMIT 3
 #define UPPER_LIMIT 4
+
+class PhysicsHingeCallback : public PhysicsCallback {
+public:
+    PhysicsHingeCallback(CKIpionManager *man, CKBehavior *beh) : PhysicsCallback(man, beh, 2) {}
+
+    virtual int Execute() {
+        CKBehavior *beh = m_Behavior;
+
+        CK3dEntity *ent = (CK3dEntity *) beh->GetTarget();
+        if (!ent)
+            return CKBR_ACTIVATENEXTFRAME;
+
+        CK3dEntity *object2 = (CK3dEntity *)beh->GetInputParameterObject(OBJECT2);
+        if (!object2)
+            return CKBR_ACTIVATENEXTFRAME;
+
+        CK3dEntity *referential = (CK3dEntity *)beh->GetInputParameterObject(REFERENTIAL);
+
+        CKBOOL limitations = FALSE;
+        beh->GetInputParameterValue(LIMITATIONS, &limitations);
+
+        float lowerLimit;
+        beh->GetInputParameterValue(LOWER_LIMIT, &lowerLimit);
+
+        float upperLimit;
+        beh->GetInputParameterValue(UPPER_LIMIT, &upperLimit);
+
+        PhysicsObject *poR = m_IpionManager->GetPhysicsObject(ent, TRUE);
+        if (!poR)
+            return CKBR_OK;
+
+        IVP_Real_Object *objR = poR->m_RealObject;
+
+        PhysicsObject *poA = m_IpionManager->GetPhysicsObject(object2, TRUE);
+        if (!poA)
+            return CKBR_OK;
+
+        IVP_Real_Object *objA = poA->m_RealObject;
+
+        IVP_Template_Constraint tmpl;
+
+        VxVector dir;
+        VxVector pos;
+        if (referential)
+        {
+            referential->GetOrientation(&dir, &pos);
+            referential->GetPosition(&pos);
+        }
+
+        IVP_U_Point anchor(pos.x, pos.y, pos.z);
+        IVP_U_Point axis(dir.x, dir.y, dir.z);
+
+        tmpl.set_hinge_ws(objR, &anchor, &axis, objA);
+
+        if (limitations)
+        {
+            float ll = lowerLimit * (PI / 180);
+            float ul = upperLimit * (PI / 180);
+            tmpl.limit_rotation_axis(IVP_INDEX_Z, ll, ul);
+        }
+
+        IVP_Constraint *constraint = m_IpionManager->CreateConstraint(&tmpl);
+        m_Behavior->SetLocalParameterValue(0, &constraint);
+
+        return CKBR_ACTIVATENEXTFRAME;
+    }
+};
 
 int PhysicsHinge(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
     CKContext *context = behcontext.Context;
 
-    CK3dEntity *ent = (CK3dEntity *)beh->GetTarget();
-    if (!ent)
-        return CKBR_OWNERERROR;
+    IVP_Constraint *constraint = NULL;
+    beh->GetLocalParameterValue(0, &constraint);
 
-    CKIpionManager *man = CKIpionManager::GetManager(context);
+    if (beh->IsInputActive(0))
+    {
+        if (constraint)
+        {
+            delete constraint;
+            constraint = NULL;
+            beh->SetLocalParameterValue(0, &constraint);
+        }
+        else
+        {
+            CK3dEntity *ent = (CK3dEntity *)beh->GetTarget();
+            if (!ent)
+                return CKBR_OWNERERROR;
 
-    // TODO
+            CKIpionManager *man = CKIpionManager::GetManager(context);
+
+            PhysicsHingeCallback *cb = new PhysicsHingeCallback(man, beh);
+            man->m_PhysicsCallbackContainer->Process(cb);
+        }
+
+        beh->ActivateInput(0, FALSE);
+        beh->ActivateOutput(0, TRUE);
+    }
+    else
+    {
+        if (constraint)
+        {
+            delete constraint;
+            constraint = NULL;
+            beh->SetLocalParameterValue(0, &constraint);
+        }
+
+        beh->ActivateInput(1, FALSE);
+        beh->ActivateOutput(1, TRUE);
+    }
 
     return CKBR_OK;
 }
 
 CKERROR PhysicsHingeCallBack(const CKBehaviorContext &behcontext)
 {
-    CKBehavior *beh = behcontext.Behavior;
-
-    // TODO
+    if (behcontext.CallbackMessage == CKM_BEHAVIORRESET)
+    {
+        CKBehavior *beh = behcontext.Behavior;
+        void *handle = NULL;
+        beh->SetLocalParameterValue(0, &handle);
+    }
 
     return CKBR_OK;
 }

@@ -1,5 +1,5 @@
 set(GAME_BUILDING_BLOCKS
-        # physics_RT
+        physics_RT
         TT_DatabaseManager_RT
         TT_Gravity_RT
         TT_InterfaceManager_RT

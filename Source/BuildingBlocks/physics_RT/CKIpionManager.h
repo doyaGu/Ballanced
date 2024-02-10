@@ -16,6 +16,11 @@
 #include "ivp_ball.hxx"
 #include "ivp_polygon.hxx"
 #include "ivp_material.hxx"
+#include "ivp_constraint.hxx"
+#include "ivp_phantom.hxx"
+#include "ivp_controller_buoyancy.hxx"
+#include "ivp_liquid_surface_descript.hxx"
+#include "ivp_template_constraint.hxx"
 #include "ivp_collision_filter.hxx"
 #include "ivp_listener_collision.hxx"
 #include "ivp_listener_object.hxx"
@@ -25,62 +30,83 @@
 #include "ivp_surman_polygon.hxx"
 #include "ivu_string_hash.hxx"
 
-#include "PhysicsCall.h"
-
 #define TERRATOOLS_GUID CKGUID(0x56495254, 0x4f4f4c53)
 #define TT_PHYSICS_MANAGER_GUID CKGUID(0x6BED328B, 0x141F5148)
 
-#define IVP_COMPACT_SURFACE_ID MAKEID('I', 'V', 'P', 'S')
-
 class CKIpionManager;
 
-struct PhysicsContactData;
-
-struct PhysicsStruct
-{
-    CKBehavior *m_Behavior;
-    IVP_Real_Object *m_PhysicsObject;
-    PhysicsStruct *m_Struct;
-    VxVector m_Scale;
-    DWORD m_FrictionCount;
-    DWORD field_1C;
-    IVP_Time m_CurrentTime;
-    DWORD field_28;
-    PhysicsContactData *m_ContactData;
-    PhysicsStruct *m_Next;
-    PhysicsContactData *m_ContactData2;
-};
-
-class CKPMClass0x54;
-
-struct PhysicsContactData
-{
-    float m_TimeDelayStart;
-    float m_TimeDelayEnd;
-    CKPMClass0x54 *m_Owner;
-    CKBehavior *m_Behavior;
-    void *m_GroupOutputs;
-    IVP_Listener_Collision *m_Listener;
-};
-
-typedef XNHashTable<PhysicsStruct, CK_ID> PhysicStructTable;
-
-class PhysicsListenerCollision : IVP_Listener_Collision
+class PhysicsCallback
 {
 public:
-    explicit PhysicsListenerCollision(CKIpionManager *manager) : IVP_Listener_Collision(5), m_PhysicsManager(manager) {}
+    PhysicsCallback() : m_IpionManager(NULL), m_Type(0), m_Behavior(NULL) {}
+    PhysicsCallback(CKIpionManager *pm, CKBehavior *beh, int type) : m_IpionManager(pm), m_Type(type), m_Behavior(beh) {}
+    virtual int Execute() = 0;
+    virtual ~PhysicsCallback() {};
+
+    CKIpionManager *m_IpionManager;
+    int m_Type;
+    CKBehavior *m_Behavior;
+};
+
+class PhysicsCallbackContainer
+{
+public:
+    explicit PhysicsCallbackContainer(CKIpionManager *manager) : m_IpionManager(manager), m_HasPhysicsCallback(FALSE) { }
+
+    void Process()
+    {
+        for (int i = 0; i < 3; ++i)
+        {
+            IVP_U_Vector<PhysicsCallback> &cbs = m_PhysicsCallbacks[i];
+            for (int j = cbs.len() - 1; j >= 0; --j)
+            {
+                PhysicsCallback *pc = cbs.element_at(j);
+                if (pc && pc->m_Behavior && pc->Execute() != 0)
+                {
+                    delete pc;
+                    cbs.remove_at(j);
+                }
+            }
+        }
+    }
+
+    void Process(PhysicsCallback *pc)
+    {
+        if (pc->m_Behavior)
+        {
+            if (pc->Execute() != 0)
+            {
+                delete pc;
+            }
+            else if (0 <= pc->m_Type && pc->m_Type < 3)
+            {
+                m_PhysicsCallbacks[pc->m_Type].add(pc);
+                m_HasPhysicsCallback = TRUE;
+            }
+        }
+    }
+
+    CKIpionManager *m_IpionManager;
+    CKBOOL m_HasPhysicsCallback;
+    IVP_U_Vector<PhysicsCallback> m_PhysicsCallbacks[3];
+};
+
+class PhysicsCollisionListener : public IVP_Listener_Collision
+{
+public:
+    explicit PhysicsCollisionListener(CKIpionManager *man);
 
     virtual void event_friction_created(IVP_Event_Friction *friction);
     virtual void event_friction_deleted(IVP_Event_Friction *friction);
 
 private:
-    CKIpionManager *m_PhysicsManager;
+    CKIpionManager *m_IpionManager;
 };
 
-class PhysicsListenerObject : IVP_Listener_Object
+class PhysicsListenerObject : public IVP_Listener_Object
 {
 public:
-    explicit PhysicsListenerObject(CKIpionManager *manager) : m_PhysicsManager(manager) {}
+    explicit PhysicsListenerObject(CKIpionManager *man);
 
     virtual void event_object_deleted(IVP_Event_Object *object);
     virtual void event_object_created(IVP_Event_Object *object);
@@ -88,33 +114,160 @@ public:
     virtual void event_object_frozen(IVP_Event_Object *object);
 
 private:
-    CKIpionManager *m_PhysicsManager;
+    CKIpionManager *m_IpionManager;
 };
 
-class CKPMClass0x54
+class PhysicsObject;
+class PhysicsContactManager;
+
+class PhysicsContactData
 {
 public:
-    explicit CKPMClass0x54(CKIpionManager *manager)
+    struct GroupOutput
     {
-        m_PhysicsManager = manager;
-        m_NumberGroupOutput = 50;
-        m_ContinuousContactID = 0;
-    }
+        CKBOOL active;
+        int number;
+    };
 
-    void GetContactID();
+    PhysicsContactData(float timeDelayStart, float timeDelayEnd, PhysicsContactManager *man, CKBehavior *beh);
+    ~PhysicsContactData();
 
-    int m_NumberGroupOutput;
-    IVP_U_Vector<PhysicsContactData> m_Data;
-    CKIpionManager *m_PhysicsManager;
-    CKDWORD m_ContinuousContactID;
+    float m_TimeDelayStart;
+    float m_TimeDelayEnd;
+    PhysicsContactManager *m_Manager;
+    CKBehavior *m_Behavior;
+    GroupOutput *m_GroupOutputs;
+    IVP_Listener_Collision *m_Listener;
 };
 
-struct CKPMClass0x110
+struct PhysicsContactRecord
 {
-    int field_110;
-    int field_114;
-    PhysicsStruct m_PhysicsStructs[200];
-    XNHashTable<PhysicsStruct, CK_ID> m_Table;
+    IVP_Time m_Time;
+    int m_ID;
+    PhysicsObject *m_PhysicsObject;
+};
+
+class PhysicsContactManager
+{
+public:
+    explicit PhysicsContactManager(CKIpionManager *man)
+        : m_IpionManager(man), m_NumberGroupOutput(50), m_ContactID(0) {}
+
+    int GetRecordCount() const;
+    void AddRecord(PhysicsObject *obj, int id, IVP_Time time);
+    void RemoveRecord(PhysicsObject *obj);
+    void RemoveRecord(PhysicsObject *obj, int id);
+
+    void Process(IVP_Time time);
+
+    void SetupContactID();
+
+    int m_NumberGroupOutput;
+    IVP_U_Vector<PhysicsContactRecord> m_Records;
+    CKIpionManager *m_IpionManager;
+    CKDWORD m_ContactID;
+};
+
+class PhysicsObject
+{
+public:
+    ~PhysicsObject()
+    {
+        if (m_ContactData)
+        {
+            m_ContactData->m_Manager->RemoveRecord(this);
+            if (m_ContactData)
+                delete m_ContactData;
+            m_ContactData = NULL;
+        }
+    }
+
+    CKBehavior *m_Behavior = NULL;
+    IVP_Real_Object *m_RealObject = NULL;
+    PhysicsObject *m_PhysicsObject = NULL;
+    VxVector m_Scale;
+    DWORD m_FrictionCount = 0;
+    DWORD m_ID = 0;
+    IVP_Time m_CurrentTime;
+    DWORD field_28 = 0;
+    PhysicsContactData *m_ContactData = NULL;
+};
+
+typedef XNHashTable<PhysicsObject, CK_ID> PhysicsObjectTable;
+
+class PhysicsStruct
+{
+public:
+    ~PhysicsStruct()
+    {
+        if (m_ContactData2)
+        {
+            m_ContactData2->m_Manager->RemoveRecord(m_PhysicsObject);
+            PhysicsContactData *data = m_PhysicsObject->m_ContactData;
+            if (data)
+                delete data;
+            m_PhysicsObject->m_ContactData = NULL;
+        }
+    }
+
+    CKBehavior *m_Behavior = NULL;
+    IVP_Real_Object *m_RealObject = NULL;
+    PhysicsObject *m_PhysicsObject = NULL;
+    VxVector m_Scale;
+    DWORD m_FrictionCount = 0;
+    DWORD m_ID = 0;
+    IVP_Time m_CurrentTime;
+    DWORD field_28 = 0;
+    PhysicsContactData *m_ContactData = NULL;
+    PhysicsStruct *m_Next = NULL;
+    PhysicsContactData *m_ContactData2 = NULL;
+};
+
+class PhysicsObjectContainer
+{
+public:
+    PhysicsObjectContainer()
+    {
+        m_Table.Clear();
+    }
+
+    ~PhysicsObjectContainer()
+    {
+        m_Table.Clear();
+    }
+
+    int GetObjectCount() const
+    {
+        return m_Table.Size();
+    }
+
+    PhysicsObject *GetPhysicsObject(CK_ID id)
+    {
+        PhysicsObjectTable ::Iterator it = m_Table.Find(id);
+        if (it == m_Table.End())
+            return NULL;
+        return it;
+    }
+
+    void AddObject(CK_ID id, const PhysicsObject &obj)
+    {
+        m_Table.Insert(id, obj);
+    }
+
+    void RemoveObject(CK_ID id)
+    {
+        m_Table.Remove(id);
+    }
+
+    void ClearObjects()
+    {
+        m_Table.Clear();
+    }
+
+    PhysicsStruct **m_Begin;
+    PhysicsStruct **m_End;
+    PhysicsStruct m_Data[200];
+    PhysicsObjectTable m_Table;
 };
 
 class CKIpionManager : public CKBaseManager
@@ -139,7 +292,9 @@ public:
                CKMANAGER_FUNC_OnCKReset;
     }
 
-    PhysicsStruct *HasPhysics(CK3dEntity *entity, CKBOOL logging = FALSE);
+    virtual void Reset();
+
+    PhysicsObject *GetPhysicsObject(CK3dEntity *entity, CKBOOL logging = FALSE);
 
     int CreatePhysicsObjectOnParameters(CK3dEntity *target, int convexCount, CKMesh **convexes,
                                         int ballCount, int concaveCount, CKMesh **concaves, float ballRadius,
@@ -159,9 +314,15 @@ public:
                                       CKSTRING collisionGroup, BOOL enableCollision,
                                       IVP_SurfaceManager *surman, VxVector *shiftMassCenter);
 
-    IVP_SurfaceManager *GetSurfaceManager(CKSTRING collisionSurface) const;
-    void AddSurfaceManager(CKSTRING collisionSurface, IVP_SurfaceManager *surfaceManager);
-    void DeleteCollisionSurface();
+    IVP_Constraint *CreateConstraint(const IVP_Template_Constraint *tmpl)
+    {
+        return m_Environment->create_constraint(tmpl);
+    }
+
+    IVP_Actuator_Spring *CreateSpring(IVP_Template_Spring *tmpl)
+    {
+        return m_Environment->create_spring(tmpl);
+    }
 
     IVP_Environment *GetEnvironment() const { return m_Environment; }
     void CreateEnvironment();
@@ -171,9 +332,13 @@ public:
     void SetTimeFactor(float factor);
     void SetGravity(const VxVector &gravity);
 
-    void ResetProfiler();
+    IVP_SurfaceManager *GetSurfaceManager(CKSTRING collisionSurface) const;
+    void AddSurfaceManager(CKSTRING collisionSurface, IVP_SurfaceManager *surfaceManager);
 
-    virtual void Reset();
+    void SetupCollisionDetectID();
+    void DeleteCollisionSurface();
+
+    void ResetProfiler();
 
     static void FillTemplateInfo(IVP_Template_Real_Object *templ, IVP_U_Point *position, IVP_U_Quat *orientation,
                                  CKSTRING name, float mass, IVP_Material *material,
@@ -184,6 +349,8 @@ public:
     static int AddConvexSurface(IVP_SurfaceBuilder_Ledge_Soup *builder, CKMesh *convex, VxVector *scale);
     static void AddConcaveSurface(IVP_SurfaceBuilder_Ledge_Soup *builder, CKMesh *concave, VxVector *scale);
 
+    static void UpdateObjectWorldMatrix(IVP_Real_Object *obj);
+
     static CKIpionManager *GetManager(CKContext *context)
     {
         return (CKIpionManager *)context->GetManagerByGuid(TT_PHYSICS_MANAGER_GUID);
@@ -193,13 +360,13 @@ public:
     int field_30;
     IVP_U_Vector<CK3dEntity> m_Entities;
     IVP_U_Vector<IVP_Material> m_Materials;
-    IVP_U_Vector<int> m_Vector4;
-    PhysicsCallManager *m_PhysicsCallManager;
-    PhysicsCallManager *m_PhysicsCallManager2;
-    CKPMClass0x54 *field_54;
-    PhysicsListenerCollision *m_CollisionListener;
+    IVP_U_Vector<IVP_Liquid_Surface_Descriptor_Simple> m_Surfaces;
+    PhysicsCallbackContainer *m_PhysicsCallbackContainer;
+    PhysicsCallbackContainer *m_PhysicsCallbackContainer2;
+    PhysicsContactManager *m_ContactManager;
+    PhysicsCollisionListener *m_CollisionListener;
     PhysicsListenerObject *m_PhysicsObjectListener;
-    int m_CollDetectionID;
+    int m_CollisionDetectionID;
     IVP_Collision_Filter_Exclusive_Pair *m_CollisionFilterExclusivePair;
     int field_68;
     int field_6C;
@@ -225,20 +392,20 @@ public:
     IVP_U_String_Hash *m_SurfaceManagers;
     IVP_Environment *m_Environment;
     int field_C8;
-    float m_CurrentTime;
-    float m_TimeFactor;
-    float m_Factor;
+    float m_DeltaTime;
+    float m_PhysicsDeltaTime;
+    float m_PhysicsTimeFactor;
     int field_D8;
     int field_DC;
-    int m_HasPhysicsCalls;
-    int m_PhysicalizeCalls;
-    int m_DePhysicalizeCalls;
+    int m_PhysicsObjectAccessTimes;
+    int m_PhysicalizeTimes;
+    int m_DePhysicalizeTimes;
     LARGE_INTEGER m_HasPhysicsTime;
     LARGE_INTEGER m_DePhysicalizeTime;
     LARGE_INTEGER field_FC;
     LARGE_INTEGER field_104;
-    LARGE_INTEGER m_ProfilerResetTime;
-    CKPMClass0x110 m_PhysicsObjects;
+    LARGE_INTEGER m_ProfilerCounter;
+    PhysicsObjectContainer m_PhysicsObjectContainer;
 };
 
 #endif // BUILDINGBLOCKS_PHYSICSMANAGER_H

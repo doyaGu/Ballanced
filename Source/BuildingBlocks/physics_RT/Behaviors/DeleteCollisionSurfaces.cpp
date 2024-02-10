@@ -44,22 +44,38 @@ CKERROR CreateDeleteCollisionSurfacesProto(CKBehaviorPrototype **pproto)
     return CK_OK;
 }
 
+class DeleteCollisionSurfacesCallback : public PhysicsCallback
+{
+public:
+    DeleteCollisionSurfacesCallback(CKIpionManager *man, CKBehavior *beh) : PhysicsCallback(man, beh, 2) {}
+
+    virtual int Execute()
+    {
+        if (m_IpionManager->m_PhysicsObjectContainer.GetObjectCount() != 0)
+        {
+            m_IpionManager->m_Context->OutputToConsole("Please dephysicalize all objects before calling DeleteCollisionSurfaces!!!");
+            return CKBR_OK;
+        }
+
+        m_IpionManager->DeleteCollisionSurface();
+        m_IpionManager->m_SurfaceManagers = new IVP_U_String_Hash(64);
+
+        return CKBR_ACTIVATENEXTFRAME;
+    }
+};
+
 int DeleteCollisionSurfaces(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
     CKContext *context = behcontext.Context;
 
     CKIpionManager *man = CKIpionManager::GetManager(context);
-    if (!man)
-    {
-        context->OutputToConsoleExBeep("TT_DeleteCollisionSurfaces: pm==NULL.");
-        return CKBR_OK;
-    }
 
-    // TODO
+    DeleteCollisionSurfacesCallback *cb = new DeleteCollisionSurfacesCallback(man, beh);
+    man->m_PhysicsCallbackContainer->Process(cb);
 
     beh->ActivateInput(0, FALSE);
-    beh->ActivateOutput(0);
+    beh->ActivateOutput(0, TRUE);
 
     return CKBR_OK;
 }
