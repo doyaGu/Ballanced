@@ -31,7 +31,8 @@ CKObjectDeclaration *FillBehaviorSetPhysicsGlobalsDecl()
 CKERROR CreateSetPhysicsGlobalsProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("Set Physics Globals");
-    if (!proto) return CKERR_OUTOFMEMORY;
+    if (!proto)
+        return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("Set Values");
     proto->DeclareInput("Clean Physics World");
@@ -77,7 +78,7 @@ int SetPhysicsGlobals(const CKBehaviorContext &behcontext)
         beh->ActivateInput(1, FALSE);
         if (man)
         {
-            man->DeleteEnvironment();
+            man->DestroyEnvironment();
             man->CreateEnvironment();
         }
     }

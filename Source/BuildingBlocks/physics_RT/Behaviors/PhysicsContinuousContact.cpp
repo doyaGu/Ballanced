@@ -38,24 +38,6 @@ CKERROR CreatePhysicsContinuousContactProto(CKBehaviorPrototype **pproto)
     proto->DeclareInput("Create");
     proto->DeclareInput("Stop");
 
-    proto->DeclareOutput("contact on 1");
-    proto->DeclareOutput("contact off 1");
-    proto->DeclareOutput("contact on 2");
-    proto->DeclareOutput("contact off 2");
-    proto->DeclareOutput("contact on 3");
-    proto->DeclareOutput("contact off 3");
-    proto->DeclareOutput("contact on 4");
-    proto->DeclareOutput("contact off 4");
-    proto->DeclareOutput("contact on 5");
-    proto->DeclareOutput("contact off 5");
-
-    proto->DeclareInParameter("Time Delay Start", CKPGUID_FLOAT, "0.1");
-    proto->DeclareInParameter("Time Delay End", CKPGUID_FLOAT, "0.1");
-
-    proto->DeclareSetting("Number Group Output", CKPGUID_INT, "5");
-
-    proto->DeclareLocalParameter("IVP_Handle", CKPGUID_POINTER, "NULL");
-
     char buf[256];
     for (int i = 1; i <= 5; ++i)
     {
@@ -64,6 +46,13 @@ CKERROR CreatePhysicsContinuousContactProto(CKBehaviorPrototype **pproto)
         sprintf(buf, "contact off %d", i);
         proto->DeclareOutput(buf);
     }
+
+    proto->DeclareInParameter("Time Delay Start", CKPGUID_FLOAT, "0.1");
+    proto->DeclareInParameter("Time Delay End", CKPGUID_FLOAT, "0.1");
+
+    proto->DeclareSetting("Number Group Output", CKPGUID_INT, "5");
+
+    proto->DeclareLocalParameter("IVP_Handle", CKPGUID_POINTER, "NULL");
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
     proto->SetFunction(PhysicsContinuousContact);
@@ -93,11 +82,10 @@ public:
         if (obj == m_RealObject)
             obj = situation->objects[1];
 
-        CK3dEntity *ent = (CK3dEntity *)obj->client_data;
-
         if (m_IpionManager->m_ContactManager->m_ContactID == 0)
             return;
 
+        CK3dEntity *ent = (CK3dEntity *)obj->client_data;
         CKParameterOut *pa = ent->GetAttributeParameter(m_IpionManager->m_ContactManager->m_ContactID);
         if (!pa)
             return;
@@ -106,9 +94,10 @@ public:
         pa->GetValue(&contactID);
 
         int id = contactID - 1;
-        if (id <= 0)
+        if (id < 0)
             return;
 
+        ent = (CK3dEntity *)m_RealObject->client_data;
         PhysicsObject *po = m_IpionManager->GetPhysicsObject(ent);
         if (!po)
             return;
@@ -122,11 +111,7 @@ public:
         if (output.number != 1)
             return;
 
-        if (output.active)
-        {
-            m_IpionManager->m_ContactManager->RemoveRecord(po, id);
-        }
-        else
+        if (!output.active)
         {
             bool activated = false;
             IVP_Time time = m_IpionManager->m_Environment->get_current_time();
@@ -152,6 +137,10 @@ public:
             if (!activated)
                 m_IpionManager->m_ContactManager->AddRecord(po, id, time);
         }
+        else
+        {
+            m_IpionManager->m_ContactManager->RemoveRecord(po, id);
+        }
     }
 
     virtual void event_friction_deleted(IVP_Event_Friction *friction)
@@ -161,11 +150,10 @@ public:
         if (obj == m_RealObject)
             obj = situation->objects[1];
 
-        CK3dEntity *ent = (CK3dEntity *)obj->client_data;
-
         if (m_IpionManager->m_ContactManager->m_ContactID == 0)
             return;
 
+        CK3dEntity *ent = (CK3dEntity *)obj->client_data;
         CKParameterOut *pa = ent->GetAttributeParameter(m_IpionManager->m_ContactManager->m_ContactID);
         if (!pa)
             return;
@@ -174,9 +162,10 @@ public:
         pa->GetValue(&contactID);
 
         int id = contactID - 1;
-        if (id <= 0)
+        if (id < 0)
             return;
 
+        ent = (CK3dEntity *)m_RealObject->client_data;
         PhysicsObject *po = m_IpionManager->GetPhysicsObject(ent);
         if (!po)
             return;
@@ -190,7 +179,7 @@ public:
         if (output.number < 0)
             output.number = 0;
 
-        if (output.number != 0 && output.active == TRUE)
+        if (output.number == 0 && output.active == TRUE)
             m_IpionManager->m_ContactManager->AddRecord(po, id, m_IpionManager->m_Environment->get_current_time());
     }
 

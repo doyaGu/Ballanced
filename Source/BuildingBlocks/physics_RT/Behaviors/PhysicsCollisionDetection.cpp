@@ -124,48 +124,51 @@ public:
         if (!po)
             return;
 
-        if (!m_Behavior->IsOutputActive(0) &&
-            m_IpionManager->GetEnvironment()->get_current_time() - m_Time >= m_SleepAfterwards)
+        if (m_Behavior->IsOutputActive(0) ||
+            m_IpionManager->GetEnvironment()->get_current_time() - m_Time < m_SleepAfterwards)
+            return;
+
+        double sl = situation->speed.real_length();
+        if (sl <= m_MinSpeed)
+            return;
+
+        float speed;
+        if (sl <= 0.0001f)
         {
-            float speed;
-            double sl = situation->speed.real_length();
-            if (sl > m_MinSpeed)
-            {
-                if (sl <= 0.0001f)
-                {
-                    speed = 0.0001f;
-                }
-                else
-                {
-                    if (m_MaxSpeed < 0.0001f || ((float)sl / m_MaxSpeed) > 1.0f)
-                        speed = 1.0f;
-                    else
-                        speed = (float)sl / m_MaxSpeed;
-                }
-
-                m_Behavior->SetOutputParameterObject(0, ent);
-                m_Behavior->SetOutputParameterValue(1, &speed);
-
-                if (situation->objects[0] != m_RealObject)
-                {
-                    situation->surf_normal.mult(-1.0f);
-                }
-
-                VxVector collisionNormalWorld(situation->surf_normal.k[0],
-                                              situation->surf_normal.k[1],
-                                              situation->surf_normal.k[2]);
-                m_Behavior->SetOutputParameterValue(2, &collisionNormalWorld);
-
-                VxVector positionWorld((float)situation->contact_point_ws.k[0],
-                                       (float)situation->contact_point_ws.k[1],
-                                       (float)situation->contact_point_ws.k[2]);
-                m_Behavior->SetOutputParameterValue(2, &collisionNormalWorld);
-
-                m_Time = m_IpionManager->GetEnvironment()->get_current_time();
-
-                m_Behavior->ActivateOutput(0, TRUE);
-            }
+            speed = 0.0001f;
         }
+        else if (m_MaxSpeed >= 0.0001f)
+        {
+            speed = (float)sl / m_MaxSpeed;
+            if (speed > 1.0f)
+                speed = 1.0f;
+        }
+        else
+        {
+            speed = 1.0f;
+        }
+
+        m_Behavior->SetOutputParameterObject(0, ent);
+        m_Behavior->SetOutputParameterValue(1, &speed);
+
+        if (situation->objects[0] != m_RealObject)
+        {
+            situation->surf_normal.mult(-1.0f);
+        }
+
+        VxVector collisionNormalWorld(situation->surf_normal.k[0],
+                                      situation->surf_normal.k[1],
+                                      situation->surf_normal.k[2]);
+        m_Behavior->SetOutputParameterValue(2, &collisionNormalWorld);
+
+        VxVector positionWorld((float)situation->contact_point_ws.k[0],
+                               (float)situation->contact_point_ws.k[1],
+                               (float)situation->contact_point_ws.k[2]);
+        m_Behavior->SetOutputParameterValue(3, &collisionNormalWorld);
+
+        m_Time = m_IpionManager->GetEnvironment()->get_current_time();
+
+        m_Behavior->ActivateOutput(0, TRUE);
     }
 
     IVP_Time m_Time;
