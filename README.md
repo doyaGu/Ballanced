@@ -12,7 +12,7 @@ The current progress is shown as follows.
 | ----------------------------------------- | :---------------- |
 | Bin/Player.exe                            | Completed         |
 | Bin/ResDll.dll                            | Completed         |
-| BuildingBlocks/physics_RT.dll             | In Progress       |
+| BuildingBlocks/physics_RT.dll             | Completed         |
 | BuildingBlocks/TT_DatabaseManager_RT.dll  | Completed         |
 | BuildingBlocks/TT_Gravity_RT.dll          | In Progress       |
 | BuildingBlocks/TT_InterfaceManager_RT.dll | Completed         |
