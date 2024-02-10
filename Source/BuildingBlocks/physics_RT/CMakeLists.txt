@@ -263,14 +263,13 @@ target_include_directories(ivp_physics PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/havana/havok
 )
 target_compile_definitions(ivp_physics PRIVATE
-        HAVANA_CONSTRAINTS
-        HAVOK_MOPP
         IVP_VERSION_SDK
 )
 
 set(IVP_COMPACT_BUILDER_DIR ${IVP_DIR}/ivp_compact_builder)
 
 set(IVP_COMPACT_BUILDER_SOURCES
+        ${IVP_COMPACT_BUILDER_DIR}/ivp_compact_ledge_gen.cxx
         ${IVP_COMPACT_BUILDER_DIR}/ivp_compact_ledge_gen.hxx
         ${IVP_COMPACT_BUILDER_DIR}/ivp_compact_modify.cxx
         ${IVP_COMPACT_BUILDER_DIR}/ivp_compact_modify.hxx
@@ -353,7 +352,6 @@ set(IVP_GEOMPACK_SOURCES
 
 set(IVP_3D_STUDIO_OBJECT_READER_SOURCES
         ${IVP_COMPACT_BUILDER_DIR}/3dsimport_co.cxx
-        ${IVP_COMPACT_BUILDER_DIR}/3dsimport_load.cxx
         ${IVP_COMPACT_BUILDER_DIR}/3dsimport_load.hxx
 )
 
@@ -372,13 +370,8 @@ target_include_directories(ivp_compact_builder PUBLIC
         ${IVP_PHYSICS_DIR}
         ${IVP_SURFACEMANAGER_DIR}
         ${IVP_UTILITY_DIR}
-        ${CMAKE_CURRENT_SOURCE_DIR}/havana
-        ${CMAKE_CURRENT_SOURCE_DIR}/havana/havok
 )
-target_compile_definitions(ivp_compact_builder PRIVATE
-        HAVOK_MOPP
-        IVP_VERSION_SDK
-)
+target_compile_definitions(ivp_compact_builder PRIVATE IVP_VERSION_SDK)
 
 add_library(physics_RT SHARED physics_RT.cpp)
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/Behaviors PHYSICS_RT_BEHAVIORS_SOURCES)

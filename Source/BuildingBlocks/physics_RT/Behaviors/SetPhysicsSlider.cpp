@@ -52,7 +52,7 @@ CKERROR CreateSetPhysicsSliderProto(CKBehaviorPrototype **pproto)
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
     proto->SetFunction(SetPhysicsSlider);
 
-    proto->SetBehaviorFlags((CKBEHAVIOR_TARGETABLE);
+    proto->SetBehaviorFlags(CKBEHAVIOR_TARGETABLE);
     proto->SetBehaviorCallbackFct(SetPhysicsSliderCallBack);
 
     *pproto = proto;
@@ -66,29 +66,123 @@ CKERROR CreateSetPhysicsSliderProto(CKBehaviorPrototype **pproto)
 #define LOWER_LIMIT 4
 #define UPPER_LIMIT 5
 
+class PhysicsSliderCall : public PhysicsCallback
+{
+public:
+    PhysicsSliderCall(CKIpionManager *man, CKBehavior *beh) : PhysicsCallback(man, beh, 2) {}
+
+    virtual int Execute() {
+        CKBehavior *beh = m_Behavior;
+
+        CK3dEntity *ent = (CK3dEntity *) beh->GetTarget();
+        if (!ent)
+            return CKBR_ACTIVATENEXTFRAME;
+
+        CK3dEntity *object2 = (CK3dEntity *)beh->GetInputParameterObject(OBJECT2);
+        if (!object2)
+            return CKBR_ACTIVATENEXTFRAME;
+
+        CK3dEntity *axisPoint1 = (CK3dEntity *)beh->GetInputParameterObject(AXIS_POINT1);
+        CK3dEntity *axisPoint2 = (CK3dEntity *)beh->GetInputParameterObject(AXIS_POINT2);
+
+        CKBOOL limitations = FALSE;
+        beh->GetInputParameterValue(LIMITATIONS, &limitations);
+
+        float lowerLimit;
+        beh->GetInputParameterValue(LOWER_LIMIT, &lowerLimit);
+
+        float upperLimit;
+        beh->GetInputParameterValue(UPPER_LIMIT, &upperLimit);
+
+        PhysicsObject *poR = m_IpionManager->GetPhysicsObject(ent, TRUE);
+        if (!poR)
+            return CKBR_OK;
+
+        IVP_Real_Object *objR = poR->m_RealObject;
+
+        PhysicsObject *poA = m_IpionManager->GetPhysicsObject(object2, TRUE);
+        if (!poA)
+            return CKBR_OK;
+
+        IVP_Real_Object *objA = poA->m_RealObject;
+
+        IVP_Template_Constraint tmpl;
+
+        VxVector axisPosition1;
+        VxVector axisPosition2;
+
+        if (axisPoint1)
+            axisPoint1->GetPosition(&axisPosition1);
+
+        if (axisPoint2)
+            axisPoint2->GetPosition(&axisPosition2);
+
+        IVP_U_Point anchor(axisPosition1.x, axisPosition1.y, axisPosition1.z);
+        VxVector ax = axisPosition2 - axisPosition1;
+        IVP_U_Point axis(ax.x, ax.y, ax.z);
+
+        tmpl.set_constraint_ws(objR, &anchor, &axis, 3, 2, objA, NULL);
+        tmpl.set_constraint_ws(objR, &anchor, &axis, 2, 3, objA, NULL);
+
+        if (limitations)
+            tmpl.limit_rotation_axis(IVP_INDEX_Z, lowerLimit, upperLimit);
+
+        IVP_Constraint *constraint = m_IpionManager->CreateConstraint(&tmpl);
+        m_Behavior->SetLocalParameterValue(0, &constraint);
+
+        return CKBR_ACTIVATENEXTFRAME;
+    }
+};
+
 int SetPhysicsSlider(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
     CKContext *context = behcontext.Context;
 
-    CK3dEntity *ent = (CK3dEntity *)beh->GetTarget();
-    if (!ent)
+    IVP_Constraint *constraint = NULL;
+    beh->GetLocalParameterValue(0, &constraint);
+
+    if (beh->IsInputActive(0))
     {
-        return CKBR_OWNERERROR;
+        if (!constraint)
+        {
+            CK3dEntity *ent = (CK3dEntity *)beh->GetTarget();
+            if (!ent)
+                return CKBR_OWNERERROR;
+
+            CKIpionManager *man = CKIpionManager::GetManager(context);
+
+            PhysicsSliderCall *cb = new PhysicsSliderCall(man, beh);
+            man->m_PhysicsCallbackContainer->Process(cb);
+        }
+
+        beh->ActivateInput(0, FALSE);
+        beh->ActivateOutput(0, TRUE);
     }
+    else
+    {
+        if (constraint)
+        {
+            delete constraint;
+            constraint = NULL;
+            beh->SetLocalParameterValue(0, &constraint);
+        }
 
-    CKIpionManager *man = CKIpionManager::GetManager(context);
-
-    // TODO
+        beh->ActivateInput(1, FALSE);
+        beh->ActivateOutput(1, TRUE);
+    }
 
     return CKBR_OK;
 }
 
 CKERROR SetPhysicsSliderCallBack(const CKBehaviorContext &behcontext)
 {
-    CKBehavior *beh = behcontext.Behavior;
-
-    // TODO
+    if (behcontext.CallbackMessage == CKM_BEHAVIORRESET)
+    {
+        CKBehavior *beh = behcontext.Behavior;
+        void *handle = NULL;
+        beh->SetLocalParameterValue(0, &handle);
+    }
 
     return CKBR_OK;
 }

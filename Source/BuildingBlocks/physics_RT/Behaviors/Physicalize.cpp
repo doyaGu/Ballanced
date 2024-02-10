@@ -90,103 +90,109 @@ int Physicalize(const CKBehaviorContext &behcontext)
 
     CK3dEntity *ent = (CK3dEntity *)beh->GetTarget();
     if (!ent)
-    {
         return CKBR_OWNERERROR;
-    }
 
     CKIpionManager *man = CKIpionManager::GetManager(context);
-    if (!man)
-    {
-        context->OutputToConsoleExBeep("TT_Physicalize: pm==NULL.");
-        return CKBR_OK;
-    }
 
-    PhysicsStruct *ps = man->HasPhysics(ent);
+    PhysicsObject *po = man->GetPhysicsObject(ent);
+
     if (beh->IsInputActive(0)) // Physicalize
     {
-        ++man->m_PhysicalizeCalls;
+        ++man->m_PhysicalizeTimes;
         beh->ActivateInput(0, FALSE);
-        if (ps)
+        if (po)
         {
-            beh->ActivateInput(0, TRUE);
+            beh->ActivateOutput(0, TRUE);
             return CKBR_OK;
         }
 
-        CKBOOL fixed;
+        CKBOOL fixed = FALSE;
         beh->GetInputParameterValue(FIXED, &fixed);
-        float friction;
+
+        float friction = 0.4f;
         beh->GetInputParameterValue(FRICTION, &friction);
-        float elasticity;
+
+        float elasticity = 0.5f;
         beh->GetInputParameterValue(ELASTICITY, &elasticity);
-        float mass;
+
+        float mass = 1.0f;
         beh->GetInputParameterValue(MASS, &mass);
+
         CKSTRING collisionGroup = (CKSTRING)beh->GetInputParameterReadDataPtr(COLLISION_GROUP);
-        CKBOOL startFrozen;
+
+        CKBOOL startFrozen = FALSE;
         beh->GetInputParameterValue(START_FROZEN, &startFrozen);
-        CKBOOL enableCollision;
+
+        CKBOOL enableCollision = TRUE;
         beh->GetInputParameterValue(ENABLE_COLLISION, &enableCollision);
-        CKBOOL autoCalcMassCenter;
+
+        CKBOOL autoCalcMassCenter = TRUE;
         beh->GetInputParameterValue(AUTOMATIC_CALCULATE_MASS_CENTER, &autoCalcMassCenter);
-        float linearSpeedDampening;
+
+        float linearSpeedDampening = 0.1f;
         beh->GetInputParameterValue(LINEAR_SPEED_DAMPENING, &linearSpeedDampening);
-        float rotSpeedDampening;
+
+        float rotSpeedDampening = 0.1f;
         beh->GetInputParameterValue(ROT_SPEED_DAMPENING, &rotSpeedDampening);
+
         CKSTRING collisionSurface = (CKSTRING)beh->GetInputParameterReadDataPtr(COLLISION_SURFACE);
 
-        int convexCount;
+        int convexCount = 1;
         beh->GetLocalParameterValue(0, &convexCount);
-        int ballCount;
+
+        int ballCount = 0;
         beh->GetLocalParameterValue(1, &ballCount);
-        int concaveCount;
+
+        int concaveCount = 0;
         beh->GetLocalParameterValue(2, &concaveCount);
 
-        CKMesh **convexes = (convexCount > 0) ? new CKMesh *[convexCount] : NULL;
-        float ballRadius = 1.0f;
-        CKMesh **concaves = (concaveCount > 0) ? new CKMesh *[concaveCount] : NULL;
-
         int pos = CONVEX;
+        CKMesh **convexMeshes = (convexCount > 0) ? new CKMesh *[convexCount] : NULL;
+        CKMesh **concaveMeshes = (concaveCount > 0) ? new CKMesh *[concaveCount] : NULL;
+        float ballRadius = 1.0f;
+
         for (int i = 0; i < convexCount; ++i)
-            convexes[i] = (CKMesh *)beh->GetInputParameterReadDataPtr(pos + i);
+            convexMeshes[i] = (CKMesh *)beh->GetInputParameterObject(pos + i);
         pos += convexCount;
 
-        for (int j = 0; j < ballCount; ++j)
+        for (int j = 0; j < ballCount; ++j) {
             beh->GetInputParameterValue(pos + 2 * j + 1, &ballRadius);
+        }
         pos += ballCount * 2;
 
         for (int k = 0; k < concaveCount; ++k)
-            concaves[k] = (CKMesh *)beh->GetInputParameterReadDataPtr(pos + k);
+            concaveMeshes[k] = (CKMesh *)beh->GetInputParameterObject(pos + k);
         pos += concaveCount;
 
         VxVector shiftMassCenter;
-        VxVector *shiftMassCenterPtr = &shiftMassCenter;
         beh->GetLocalParameterValue(0, &shiftMassCenter);
-        if (autoCalcMassCenter)
-            shiftMassCenterPtr = NULL;
+        VxVector *shiftMassCenterPtr = (!autoCalcMassCenter) ? &shiftMassCenter : NULL;
+
         IVP_Material *material = new IVP_Material_Simple(friction, elasticity);
         man->m_Materials.add(material);
-        int ret = man->CreatePhysicsObjectOnParameters(ent, convexCount, convexes, ballCount, concaveCount, concaves,
+        int ret = man->CreatePhysicsObjectOnParameters(ent, convexCount, convexMeshes, ballCount, concaveCount, concaveMeshes,
                                                       ballRadius, collisionSurface, shiftMassCenterPtr, fixed, material,
                                                       mass, collisionGroup, startFrozen, enableCollision,
                                                       autoCalcMassCenter, linearSpeedDampening, rotSpeedDampening);
 
-        if (convexes)
-            delete[] convexes;
-        if (concaves)
-            delete[] concaves;
+        if (convexMeshes)
+            delete[] convexMeshes;
+        if (concaveMeshes)
+            delete[] concaveMeshes;
 
-        beh->ActivateInput(0);
+        beh->ActivateOutput(0, TRUE);
         return ret;
     }
     else // Unphysicalize
     {
-        ++man->m_DePhysicalizeCalls;
+        ++man->m_DePhysicalizeTimes;
         beh->ActivateInput(1, FALSE);
-        if (ps)
+        if (po)
         {
-            ps->m_PhysicsObject->delete_silently();
-            man->m_PhysicsObjects.m_Table.Remove(ent->GetID());
+            po->m_RealObject->delete_silently();
+            man->m_PhysicsObjectContainer.RemoveObject(ent->GetID());
         }
-        beh->ActivateInput(1);
+        beh->ActivateOutput(1, TRUE);
         return CKBR_OK;
     }
 }
@@ -194,12 +200,15 @@ int Physicalize(const CKBehaviorContext &behcontext)
 CKERROR PhysicalizeCallBack(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
+    if (!beh)
+        return CKERR_INVALIDPARAMETER;
 
     CK3dEntity *eno = (CK3dEntity *)beh->GetOwner();
     if (!eno)
         return CKBR_OWNERERROR;
 
     char buffer[128];
+
     switch (behcontext.CallbackMessage)
     {
     case CKM_BEHAVIORATTACH:
@@ -211,29 +220,32 @@ CKERROR PhysicalizeCallBack(const CKBehaviorContext &behcontext)
         CKParameterIn *convexParamIn = beh->GetInputParameter(CONVEX);
         if (!convexParamIn)
             return CKBR_OK;
+
         CKParameter *convexParam = convexParamIn->GetRealSource();
         if (!convexParam)
             return CKBR_OK;
+
         CKMesh *mesh = eno->GetCurrentMesh();
         if (!mesh)
             return CKBR_OK;
+
         CK_ID id = mesh->GetID();
         convexParam->SetValue(&id);
 
         CKParameterIn *collSurfaceParamIn = beh->GetInputParameter(COLLISION_SURFACE);
         if (!collSurfaceParamIn)
             return CKBR_OK;
+
         CKParameter *collSurfaceParam = collSurfaceParamIn->GetRealSource();
         if (!collSurfaceParam)
             return CKBR_OK;
+
         strcpy(buffer, mesh->GetName());
         collSurfaceParam->SetValue(buffer, strlen(buffer) + 1);
     }
     break;
     case CKM_BEHAVIORSETTINGSEDITED:
     {
-        if (!beh)
-            return CKERR_INVALIDPARAMETER;
         int inputParamCount = beh->GetInputParameterCount();
         while (inputParamCount > CONVEX)
         {
@@ -243,32 +255,29 @@ CKERROR PhysicalizeCallBack(const CKBehaviorContext &behcontext)
 
         int convexCount = 1;
         beh->GetLocalParameterValue(0, &convexCount);
-        if (convexCount > 0)
-            for (int i = 0; i < convexCount; ++i)
-            {
-                sprintf(buffer, "convex %d", i + 1);
-                beh->CreateInputParameter(buffer, CKPGUID_MESH);
-            }
+        for (int i = 0; i < convexCount; ++i)
+        {
+            sprintf(buffer, "convex %d", i + 1);
+            beh->CreateInputParameter(buffer, CKPGUID_MESH);
+        }
 
         int ballCount = 0;
         beh->GetLocalParameterValue(1, &ballCount);
-        if (ballCount > 0)
-            for (int j = 0; j < ballCount; ++j)
-            {
-                sprintf(buffer, "ball position %d", j + 1);
-                beh->CreateInputParameter(buffer, CKPGUID_VECTOR);
-                sprintf(buffer, "ball radius %d", j + 1);
-                beh->CreateInputParameter(buffer, CKPGUID_FLOAT);
-            }
+        for (int j = 0; j < ballCount; ++j)
+        {
+            sprintf(buffer, "ball position %d", j + 1);
+            beh->CreateInputParameter(buffer, CKPGUID_VECTOR);
+            sprintf(buffer, "ball radius %d", j + 1);
+            beh->CreateInputParameter(buffer, CKPGUID_FLOAT);
+        }
 
         int concaveCount = 0;
         beh->GetLocalParameterValue(2, &concaveCount);
-        if (concaveCount > 0)
-            for (int k = 0; k < concaveCount; ++k)
-            {
-                sprintf(buffer, "concave %d", k + 1);
-                beh->CreateInputParameter(buffer, CKPGUID_MESH);
-            }
+        for (int k = 0; k < concaveCount; ++k)
+        {
+            sprintf(buffer, "concave %d", k + 1);
+            beh->CreateInputParameter(buffer, CKPGUID_MESH);
+        }
     }
     break;
     default:

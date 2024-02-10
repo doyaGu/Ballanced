@@ -46,6 +46,8 @@ add_compile_definitions(
         $<$<C_COMPILER_ID:MSVC>:_CRT_NONSTDC_NO_WARNINGS>
 )
 
+add_compile_definitions($<$<CONFIG:DEBUG>:DEBUG>)
+
 find_package(VirtoolsSDK REQUIRED)
 
 add_subdirectory(Source)

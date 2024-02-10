@@ -46,20 +46,24 @@ CKERROR CreatePhysicsWakeUpProto(CKBehaviorPrototype **pproto)
     return CK_OK;
 }
 
-class PhysicsWakeUpCall : public PhysicsCall
+class PhysicsWakeUpCallback : public PhysicsCallback
 {
 public:
-    PhysicsWakeUpCall(CKIpionManager *pm, CKBehavior *beh) : PhysicsCall(pm, beh, 2) {}
+    PhysicsWakeUpCallback(CKIpionManager *man, CKBehavior *beh) : PhysicsCallback(man, beh, 2) {}
 
-    virtual CKBOOL Execute()
+    virtual int Execute()
     {
         CK3dEntity *ent = (CK3dEntity *)m_Behavior->GetTarget();
         if (!ent)
-            return TRUE;
-        PhysicsStruct *ps = m_IpionManager->HasPhysics(ent);
-        if (!ps)
-            return FALSE;
-        ps->m_PhysicsObject->ensure_in_simulation();
+            return CKBR_ACTIVATENEXTFRAME;
+
+        PhysicsObject *po = m_IpionManager->GetPhysicsObject(ent);
+        if (!po)
+            return CKBR_OK;
+
+        po->m_RealObject->ensure_in_simulation();
+
+        return CKBR_ACTIVATENEXTFRAME;
     }
 };
 
@@ -73,16 +77,11 @@ int PhysicsWakeUp(const CKBehaviorContext &behcontext)
         return CKBR_OWNERERROR;
 
     CKIpionManager *man = CKIpionManager::GetManager(context);
-    if (!man)
-    {
-        context->OutputToConsoleExBeep("TT_PhysicsWakeUp: pm==NULL.");
-        return CKBR_OK;
-    }
 
-    PhysicsWakeUpCall *physicsCall = new PhysicsWakeUpCall(man, beh);
-    man->m_PhysicsCallManager->Process(physicsCall);
+    PhysicsWakeUpCallback *cb = new PhysicsWakeUpCallback(man, beh);
+    man->m_PhysicsCallbackContainer->Process(cb);
 
     beh->ActivateInput(0, FALSE);
-    beh->ActivateOutput(0);
+    beh->ActivateOutput(0, TRUE);
     return CKBR_OK;
 }
