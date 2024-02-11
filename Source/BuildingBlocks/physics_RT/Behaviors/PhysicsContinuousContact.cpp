@@ -71,9 +71,24 @@ class PhysicsContactListener : public IVP_Listener_Collision
 {
 public:
     PhysicsContactListener(IVP_Real_Object *obj, CKIpionManager *man)
-        : IVP_Listener_Collision(IVP_LISTENER_COLLISION_CALLBACK_POST_COLLISION |
+        : IVP_Listener_Collision(IVP_LISTENER_COLLISION_CALLBACK_OBJECT_DELETED |
                                  IVP_LISTENER_COLLISION_CALLBACK_FRICTION),
           m_RealObject(obj), m_IpionManager(man) {}
+
+    ~PhysicsContactListener()
+    {
+        if (m_RealObject)
+            m_RealObject->remove_listener_collision(this);
+    }
+
+    void event_collision_object_deleted(IVP_Real_Object *obj)
+    {
+        if (obj == m_RealObject)
+        {
+            m_RealObject->remove_listener_collision(this);
+            m_RealObject = NULL;
+        }
+    }
 
     virtual void event_friction_created(IVP_Event_Friction *friction)
     {
@@ -268,7 +283,6 @@ int PhysicsContinuousContact(const CKBehaviorContext &behcontext)
                 PhysicsObject *po = man->GetPhysicsObject(ent);
                 if (po)
                 {
-                    po->m_RealObject->remove_listener_collision(data->m_Listener);
                     delete data->m_Listener;
                     po->m_ContactData = NULL;
                     data->m_Manager->RemoveRecord(po);

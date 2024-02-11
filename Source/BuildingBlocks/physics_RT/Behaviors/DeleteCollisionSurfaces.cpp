@@ -52,7 +52,7 @@ public:
 
     virtual int Execute()
     {
-        if (m_IpionManager->m_PhysicsObjectContainer.GetObjectCount() != 0)
+        if (m_IpionManager->m_PhysicsObjects.GetObjectCount() != 0)
         {
             m_IpionManager->m_Context->OutputToConsole("Please dephysicalize all objects before calling DeleteCollisionSurfaces!!!");
             return CKBR_OK;

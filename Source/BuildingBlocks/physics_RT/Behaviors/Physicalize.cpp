@@ -34,7 +34,8 @@ CKObjectDeclaration *FillBehaviorPhysicalizeDecl()
 CKERROR CreatePhysicalizeProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("Physicalize");
-    if (!proto) return CKERR_OUTOFMEMORY;
+    if (!proto)
+        return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("Physicalize");
     proto->DeclareInput("Unphysicalize");
@@ -98,7 +99,7 @@ int Physicalize(const CKBehaviorContext &behcontext)
 
     if (beh->IsInputActive(0)) // Physicalize
     {
-        ++man->m_PhysicalizeTimes;
+        ++man->m_PhysicalizeCalls;
         beh->ActivateInput(0, FALSE);
         if (po)
         {
@@ -155,7 +156,8 @@ int Physicalize(const CKBehaviorContext &behcontext)
             convexMeshes[i] = (CKMesh *)beh->GetInputParameterObject(pos + i);
         pos += convexCount;
 
-        for (int j = 0; j < ballCount; ++j) {
+        for (int j = 0; j < ballCount; ++j)
+        {
             beh->GetInputParameterValue(pos + 2 * j + 1, &ballRadius);
         }
         pos += ballCount * 2;
@@ -171,9 +173,9 @@ int Physicalize(const CKBehaviorContext &behcontext)
         IVP_Material *material = new IVP_Material_Simple(friction, elasticity);
         man->m_Materials.add(material);
         int ret = man->CreatePhysicsObjectOnParameters(ent, convexCount, convexMeshes, ballCount, concaveCount, concaveMeshes,
-                                                      ballRadius, collisionSurface, shiftMassCenterPtr, fixed, material,
-                                                      mass, collisionGroup, startFrozen, enableCollision,
-                                                      autoCalcMassCenter, linearSpeedDampening, rotSpeedDampening);
+                                                       ballRadius, collisionSurface, shiftMassCenterPtr, fixed, material,
+                                                       mass, collisionGroup, startFrozen, enableCollision,
+                                                       autoCalcMassCenter, linearSpeedDampening, rotSpeedDampening);
 
         if (convexMeshes)
             delete[] convexMeshes;
@@ -185,12 +187,12 @@ int Physicalize(const CKBehaviorContext &behcontext)
     }
     else // Unphysicalize
     {
-        ++man->m_DePhysicalizeTimes;
+        ++man->m_DePhysicalizeCalls;
         beh->ActivateInput(1, FALSE);
         if (po)
         {
             po->m_RealObject->delete_silently();
-            man->m_PhysicsObjectContainer.RemoveObject(ent->GetID());
+            man->m_PhysicsObjects.RemoveObject(ent->GetID());
         }
         beh->ActivateOutput(1, TRUE);
         return CKBR_OK;
