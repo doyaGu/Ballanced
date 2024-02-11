@@ -111,10 +111,10 @@ public:
 
         CK3dEntity *ent = (CK3dEntity *)obj->client_data;
 
-        int collisionID = -1;
-        if (m_IpionManager->m_CollisionDetectionID != -1)
+        int collisionID = m_IpionManager->GetCollisionDetectID();
+        if (collisionID != -1)
         {
-            CKParameterOut *pa = ent->GetAttributeParameter(m_IpionManager->m_CollisionDetectionID);
+            CKParameterOut *pa = ent->GetAttributeParameter(collisionID);
             if (pa)
                 pa->GetValue(&collisionID);
         }
@@ -129,7 +129,7 @@ public:
             return;
 
         if (m_Behavior->IsOutputActive(0) ||
-            m_IpionManager->GetEnvironment()->get_current_time() - m_Time < m_SleepAfterwards)
+            m_IpionManager->GetSimulationTime() - m_Time < m_SleepAfterwards)
             return;
 
         double sl = situation->speed.real_length();
@@ -170,7 +170,7 @@ public:
                                (float)situation->contact_point_ws.k[2]);
         m_Behavior->SetOutputParameterValue(3, &collisionNormalWorld);
 
-        m_Time = m_IpionManager->GetEnvironment()->get_current_time();
+        m_Time = m_IpionManager->GetSimulationTime();
 
         m_Behavior->ActivateOutput(0, TRUE);
     }

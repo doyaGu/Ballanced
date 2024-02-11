@@ -31,7 +31,8 @@ CKObjectDeclaration *FillBehaviorGetProfilerValuesDecl()
 CKERROR CreateGetProfilerValuesProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("Get Profiler Values");
-    if (!proto) return CKERR_OUTOFMEMORY;
+    if (!proto)
+        return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("Start");
     proto->DeclareInput("Reset");
@@ -70,7 +71,7 @@ int GetProfilerValues(const CKBehaviorContext &behcontext)
     }
     else
     {
-        int HasPhysicsCalls = man->m_PhysicsObjects.GetObjectCount();
+        int HasPhysicsCalls = man->GetPhysicsObjectCount();
         beh->SetOutputParameterValue(0, &HasPhysicsCalls);
         beh->ActivateInput(0, FALSE);
         beh->ActivateOutput(0, TRUE);

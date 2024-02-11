@@ -68,9 +68,12 @@ CKERROR CreatePhysicsForceProto(CKBehaviorPrototype **pproto)
 class PhysicsControllerForce : public IVP_Controller_Independent
 {
 public:
-    PhysicsControllerForce(IVP_Real_Object *obj)
+    PhysicsControllerForce(IVP_Real_Object *obj, const IVP_U_Point &pos, const IVP_U_Point &force)
     {
         m_Core = obj->get_core();
+        m_Position = pos;
+        m_Force = force;
+
         if (m_Core)
             IVP_Controller_Manager::add_controller_to_core(this, m_Core);
     }
@@ -146,41 +149,35 @@ public:
 
         IVP_Real_Object *obj = po->m_RealObject;
 
-        PhysicsControllerForce *controller = new PhysicsControllerForce(obj);
-
-        VxVector dir;
+        VxVector vec;
         if (directionRef)
-            directionRef->TransformVector(&dir, &direction);
+            directionRef->TransformVector(&vec, &direction);
         else
-            dir = direction;
+            vec = direction;
 
-        IVP_U_Point force(dir.x, dir.y, dir.z);
-        if (force.quad_length() < 0.0001f)
-            force.set(1.0f, 0.0f, 0.0f);
+        IVP_U_Point force(vec.x, vec.y, vec.z);
+        if (force.quad_length() <= 0.0001)
+            force.set(1.0, 0.0, 0.0);
         else
             force.normize();
-
         force.mult(forceValue);
-        controller->m_Force = force;
 
-        if (referential == ent)
+        IVP_U_Point pos(position.x, position.y, position.z);
+        if (referential != ent)
         {
-            controller->m_Position.set(position.x, position.y, position.z);
-        }
-        else
-        {
-            VxVector pos;
+            VxVector p;
             if (referential)
-                referential->Transform(&pos, position);
+                referential->Transform(&p, position);
             else
-                pos = position;
+                p = position;
 
-            IVP_U_Point p(pos.x, pos.y, pos.z);
+            IVP_U_Point p1(p.x, p.y, p.z);
             IVP_U_Matrix mat;
             obj->get_core()->calc_at_matrix(obj->get_environment()->get_current_time(), &mat);
-            mat.vimult4(&p, &controller->m_Position);
+            mat.vimult4(&p1, &pos);
         }
 
+        PhysicsControllerForce *controller = new PhysicsControllerForce(obj, pos, force);
         beh->SetLocalParameterValue(0, &controller);
 
         return 1;

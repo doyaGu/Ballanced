@@ -192,7 +192,7 @@ int Physicalize(const CKBehaviorContext &behcontext)
         if (po)
         {
             po->m_RealObject->delete_silently();
-            man->m_PhysicsObjects.RemoveObject(ent->GetID());
+            man->RemovePhysicsObject(ent);
         }
         beh->ActivateOutput(1, TRUE);
         return CKBR_OK;

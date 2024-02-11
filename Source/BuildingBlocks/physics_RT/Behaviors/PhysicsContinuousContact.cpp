@@ -97,11 +97,12 @@ public:
         if (obj == m_RealObject)
             obj = situation->objects[1];
 
-        if (m_IpionManager->m_ContactManager->m_ContactID == 0)
+        int attributeType = m_IpionManager->m_ContactManager->GetContactIDAttributeType();
+        if (attributeType == 0)
             return;
 
         CK3dEntity *ent = (CK3dEntity *)obj->client_data;
-        CKParameterOut *pa = ent->GetAttributeParameter(m_IpionManager->m_ContactManager->m_ContactID);
+        CKParameterOut *pa = ent->GetAttributeParameter(attributeType);
         if (!pa)
             return;
 
@@ -129,10 +130,10 @@ public:
         if (!output.active)
         {
             bool activated = false;
-            IVP_Time time = m_IpionManager->m_Environment->get_current_time();
-            if (m_IpionManager->m_ContactManager->GetRecordCount() != 0)
+            IVP_Time time = m_IpionManager->GetSimulationTime();
+            if (m_IpionManager->GetContactManager()->GetRecordCount() != 0)
             {
-                IVP_U_Vector<PhysicsContactRecord> &records = m_IpionManager->m_ContactManager->m_Records;
+                IVP_U_Vector<PhysicsContactRecord> &records = m_IpionManager->GetContactManager()->m_Records;
                 const int len = records.len();
                 for (int i = 0; i < len; ++i)
                 {
@@ -150,11 +151,11 @@ public:
             }
 
             if (!activated)
-                m_IpionManager->m_ContactManager->AddRecord(po, id, time);
+                m_IpionManager->GetContactManager()->AddRecord(po, id, time);
         }
         else
         {
-            m_IpionManager->m_ContactManager->RemoveRecord(po, id);
+            m_IpionManager->GetContactManager()->RemoveRecord(po, id);
         }
     }
 
@@ -165,11 +166,12 @@ public:
         if (obj == m_RealObject)
             obj = situation->objects[1];
 
-        if (m_IpionManager->m_ContactManager->m_ContactID == 0)
+        int attributeType = m_IpionManager->m_ContactManager->GetContactIDAttributeType();
+        if (attributeType == 0)
             return;
 
         CK3dEntity *ent = (CK3dEntity *)obj->client_data;
-        CKParameterOut *pa = ent->GetAttributeParameter(m_IpionManager->m_ContactManager->m_ContactID);
+        CKParameterOut *pa = ent->GetAttributeParameter(attributeType);
         if (!pa)
             return;
 
@@ -195,7 +197,7 @@ public:
             output.number = 0;
 
         if (output.number == 0 && output.active == TRUE)
-            m_IpionManager->m_ContactManager->AddRecord(po, id, m_IpionManager->m_Environment->get_current_time());
+            m_IpionManager->GetContactManager()->AddRecord(po, id, m_IpionManager->GetSimulationTime());
     }
 
 private:
@@ -234,7 +236,7 @@ public:
         if (!po->m_ContactData)
         {
             PhysicsContactData *data = new PhysicsContactData(timeDelayStart, timeDelayEnd,
-                                                              m_IpionManager->m_ContactManager, beh);
+                                                              m_IpionManager->GetContactManager(), beh);
             po->m_ContactData = data;
 
             PhysicsContactListener *listener = new PhysicsContactListener(obj, m_IpionManager);
