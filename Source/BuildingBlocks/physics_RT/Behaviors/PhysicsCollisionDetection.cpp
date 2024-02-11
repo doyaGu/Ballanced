@@ -82,6 +82,7 @@ public:
     PhysicsCollDetectionListener(float sleepAfterwards, float minSpeed, float maxSpeed,
                                  IVP_Real_Object *obj, CKIpionManager *manager, CKBehavior *beh, int collisionID)
         : IVP_Listener_Collision(IVP_LISTENER_COLLISION_CALLBACK_POST_COLLISION |
+                                 IVP_LISTENER_COLLISION_CALLBACK_OBJECT_DELETED |
                                  IVP_LISTENER_COLLISION_CALLBACK_FRICTION),
           m_Time(0),
           m_SleepAfterwards(sleepAfterwards),
@@ -94,6 +95,9 @@ public:
 
     ~PhysicsCollDetectionListener()
     {
+        if (m_RealObject)
+            m_RealObject->remove_listener_collision(this);
+
         PhysicsCollDetectionListener *listener = NULL;
         m_Behavior->SetLocalParameterValue(0, &listener);
     }
@@ -169,6 +173,15 @@ public:
         m_Time = m_IpionManager->GetEnvironment()->get_current_time();
 
         m_Behavior->ActivateOutput(0, TRUE);
+    }
+
+    void event_collision_object_deleted(IVP_Real_Object *obj)
+    {
+        if (obj == m_RealObject)
+        {
+            m_RealObject->remove_listener_collision(this);
+            m_RealObject = NULL;
+        }
     }
 
     IVP_Time m_Time;
@@ -251,13 +264,10 @@ int PhysicsCollDetection(const CKBehaviorContext &behcontext)
     }
     else if (beh->IsInputActive(1))
     {
-        beh->ActivateInput(1, FALSE);
-
         PhysicsCollDetectionListener *listener = NULL;
         beh->GetLocalParameterValue(0, &listener);
         if (listener)
         {
-            listener->m_RealObject->remove_listener_collision(listener);
             delete listener;
         }
 

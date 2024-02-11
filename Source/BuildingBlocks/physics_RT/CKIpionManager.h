@@ -11,6 +11,7 @@
 #include "CKContext.h"
 #include "XNHashTable.h"
 
+#include "ivu_types.hxx"
 #include "ivu_string_hash.hxx"
 #include "ivp_physics.hxx"
 #include "ivp_real_object.hxx"
@@ -18,18 +19,16 @@
 #include "ivp_polygon.hxx"
 #include "ivp_material.hxx"
 #include "ivp_constraint.hxx"
+#include "ivp_phantom.hxx"
 #include "ivp_templates.hxx"
 #include "ivp_template_constraint.hxx"
-#include "ivp_phantom.hxx"
-#include "ivp_controller_buoyancy.hxx"
-#include "ivp_liquid_surface_descript.hxx"
 #include "ivp_listener_object.hxx"
 #include "ivp_listener_collision.hxx"
 #include "ivp_collision_filter.hxx"
-#include "ivp_compact_surface.hxx"
 #include "ivp_surbuild_pointsoup.hxx"
 #include "ivp_surbuild_ledge_soup.hxx"
-#include "ivp_surman_polygon.hxx"
+#include "ivp_controller_buoyancy.hxx"
+#include "ivp_liquid_surface_descript.hxx"
 #include "ivp_performancecounter.hxx"
 
 #define TERRATOOLS_GUID CKGUID(0x56495254, 0x4f4f4c53)
@@ -295,6 +294,7 @@ public:
     }
 
     virtual void Reset();
+    virtual void ResetSimulationClock();
 
     PhysicsObject *GetPhysicsObject(CK3dEntity *entity, CKBOOL logging = FALSE);
 
@@ -330,6 +330,12 @@ public:
     void CreateEnvironment();
     void DestroyEnvironment();
 
+    float GetSimulationTime();
+
+    float GetSimulationTimeStep();
+    void SetSimulationTimeStep(float step);
+
+    void SetDeltaTime(float delta);
     void SetTimeFactor(float factor);
     void SetGravity(const VxVector &gravity);
 
@@ -357,7 +363,7 @@ public:
         return (CKIpionManager *)context->GetManagerByGuid(TT_PHYSICS_MANAGER_GUID);
     }
 
-    IVP_U_Vector<IVP_Real_Object> m_RealObjects;
+    IVP_U_Vector<IVP_Real_Object> m_MoveableObjects;
     int field_30;
     IVP_U_Vector<CK3dEntity> m_Entities;
     IVP_U_Vector<IVP_Material> m_Materials;
@@ -369,44 +375,24 @@ public:
     PhysicsObjectListener *m_ObjectListener;
     int m_CollisionDetectionID;
     IVP_Collision_Filter_Exclusive_Pair *m_CollisionFilterExclusivePair;
-    int field_68;
-    int field_6C;
-    int field_70;
-    int m_PerformanceCount;
-    int m_UniversePSI;
-    int m_ControllersPSI;
-    int m_IntegratorsPSI;
-    int m_HullPSI;
-    int m_ShortMindistsPSI;
-    int m_CriticalMindistsPSI;
-    int field_90;
-    int field_94;
-    int field_98;
-    int field_9C;
-    int field_A0;
-    int field_A4;
-    int field_A8;
-    int field_AC;
-    int field_B0;
-    int field_B4;
-    IVP_U_String_Hash *m_StringHash1;
+    IVP_PerformanceCounter_Simple m_PerformanceCounter;
     IVP_U_String_Hash *m_SurfaceManagers;
     IVP_Environment *m_Environment;
-    int field_C8;
+    CKTimeManager *m_TimeManager;
     float m_DeltaTime;
     float m_PhysicsDeltaTime;
     float m_PhysicsTimeFactor;
     int field_D8;
     int field_DC;
-    int m_PhysicsObjectAccessTimes;
-    int m_PhysicalizeTimes;
-    int m_DePhysicalizeTimes;
+    int m_HasPhysicsCalls;
+    int m_PhysicalizeCalls;
+    int m_DePhysicalizeCalls;
     LARGE_INTEGER m_HasPhysicsTime;
     LARGE_INTEGER m_DePhysicalizeTime;
     LARGE_INTEGER field_FC;
     LARGE_INTEGER field_104;
     LARGE_INTEGER m_ProfilerCounter;
-    PhysicsObjectContainer m_PhysicsObjectContainer;
+    PhysicsObjectContainer m_PhysicsObjects;
 };
 
 #endif // BUILDINGBLOCKS_PHYSICSMANAGER_H

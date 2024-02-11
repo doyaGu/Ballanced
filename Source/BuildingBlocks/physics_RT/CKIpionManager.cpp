@@ -8,6 +8,10 @@
 #include "CKParameterOut.h"
 #include "VxMatrix.h"
 
+#include "ivp_time.hxx"
+#include "ivp_surman_polygon.hxx"
+#include "ivp_compact_surface.hxx"
+
 PhysicsCollisionListener::PhysicsCollisionListener(CKIpionManager *man)
     : IVP_Listener_Collision(IVP_LISTENER_COLLISION_CALLBACK_POST_COLLISION |
                              IVP_LISTENER_COLLISION_CALLBACK_FRICTION),
@@ -82,9 +86,9 @@ void PhysicsObjectListener::event_object_deleted(IVP_Event_Object *object)
     IVP_Core *core = obj->get_core();
     if (!core->physical_unmoveable)
     {
-        int i = m_IpionManager->m_RealObjects.index_of(obj);
+        int i = m_IpionManager->m_MoveableObjects.index_of(obj);
         if (i != -1)
-            m_IpionManager->m_RealObjects.remove_at(i);
+            m_IpionManager->m_MoveableObjects.remove_at(i);
     }
 
     CK3dEntity *entity = (CK3dEntity *)obj->client_data;
@@ -104,13 +108,13 @@ void PhysicsObjectListener::event_object_created(IVP_Event_Object *object) {}
 void PhysicsObjectListener::event_object_revived(IVP_Event_Object *object)
 {
     IVP_Real_Object *obj = object->real_object;
-    m_IpionManager->m_RealObjects.add(obj);
+    m_IpionManager->m_MoveableObjects.add(obj);
 }
 
 void PhysicsObjectListener::event_object_frozen(IVP_Event_Object *object)
 {
     IVP_Real_Object *obj = object->real_object;
-    m_IpionManager->m_RealObjects.remove(obj);
+    m_IpionManager->m_MoveableObjects.remove(obj);
 }
 
 int PhysicsContactManager::GetRecordCount() const
@@ -247,13 +251,13 @@ PhysicsContactData::~PhysicsContactData()
     beh->SetLocalParameterValue(1, &data);
 
     const int count = m_Manager->m_NumberGroupOutput;
-    for (int i = 0, pos = 1; i < count; ++i, pos += 2)
+    for (int i = 0; i < count; ++i)
     {
         GroupOutput *output = &m_GroupOutputs[i];
-        if (output->active)
+        if (output->active == TRUE)
         {
             output->active = FALSE;
-            beh->ActivateOutput(pos, TRUE);
+            beh->ActivateOutput(2 * i + 1, TRUE);
         }
     }
 
@@ -263,47 +267,27 @@ PhysicsContactData::~PhysicsContactData()
 CKIpionManager::CKIpionManager(CKContext *context)
     : CKBaseManager(context, TT_PHYSICS_MANAGER_GUID, "TT Physics Manager")
 {
-    m_PhysicsObjectAccessTimes = 0;
-    m_PhysicalizeTimes = 0;
-    m_DePhysicalizeTimes = 0;
+    m_HasPhysicsCalls = 0;
+    m_PhysicalizeCalls = 0;
+    m_DePhysicalizeCalls = 0;
 
-    LARGE_INTEGER frequency;
-    LARGE_INTEGER performanceCount;
-    ::QueryPerformanceFrequency(&frequency);
-    ::QueryPerformanceCounter(&performanceCount);
+    m_PerformanceCounter.pcount(IVP_PE_PSI_START);
 
-    m_PerformanceCount = performanceCount.LowPart;
     m_CollisionFilterExclusivePair = NULL;
     m_PreSimulateCallbacks = NULL;
     m_PostSimulateCallbacks = NULL;
     m_CollisionListener = NULL;
     m_ObjectListener = NULL;
     field_30 = 0;
-    field_C8 = 0;
-    m_DeltaTime = 0.0;
+    m_Environment = NULL;
+    m_TimeManager = NULL;
+    m_DeltaTime = 0.0f;
+    m_PhysicsDeltaTime = 0.0f;
 
     if (context->RegisterNewManager(this) == CKERR_MANAGERALREADYEXISTS)
         ::OutputDebugStringA("Manager already exists");
 
-    field_90 = 0;
-    field_98 = 0;
-    field_A8 = 0;
-    m_StringHash1 = NULL;
     m_SurfaceManagers = NULL;
-    m_Environment = NULL;
-    m_PerformanceCount = 0;
-    m_UniversePSI = 0;
-    m_ControllersPSI = 0;
-    m_IntegratorsPSI = 0;
-    m_HullPSI = 0;
-    m_ShortMindistsPSI = 0;
-    m_CriticalMindistsPSI = 0;
-    field_94 = 0;
-    field_9C = 0;
-    field_A0 = 0;
-    field_AC = 0;
-    field_B4 = 0;
-    field_B0 = 0;
     m_CollisionDetectionID = -1;
 }
 
@@ -312,9 +296,11 @@ CKIpionManager::~CKIpionManager() {}
 CKERROR CKIpionManager::OnCKInit()
 {
     m_SurfaceManagers = new IVP_U_String_Hash(4);
-    m_Environment = NULL;
+
+    m_TimeManager = m_Context->GetTimeManager();
     m_PhysicsTimeFactor = 0.001f;
-    field_68 = 0;
+    m_PerformanceCounter.start_pcount();
+
     return CK_OK;
 }
 
@@ -322,6 +308,8 @@ CKERROR CKIpionManager::OnCKEnd()
 {
     DestroyEnvironment();
     DeleteCollisionSurface();
+
+    m_TimeManager = NULL;
 
     return CK_OK;
 }
@@ -337,10 +325,10 @@ CKERROR CKIpionManager::OnCKPlay()
 CKERROR CKIpionManager::OnCKReset()
 {
     DestroyEnvironment();
-    m_Environment = NULL;
+
     m_PhysicsTimeFactor = 0.001f;
-    field_68 = 0;
-    m_PhysicsObjectContainer.ClearObjects();
+    m_PerformanceCounter.start_pcount();
+    m_PhysicsObjects.ClearObjects();
 
     return CK_OK;
 }
@@ -366,10 +354,9 @@ CKERROR CKIpionManager::PostClearAll()
 
 CKERROR CKIpionManager::PostProcess()
 {
-    float delta = m_Context->GetTimeManager()->GetLastDeltaTime();
-    float time = (delta + m_DeltaTime * 3.0f) * 0.25f;
-    m_DeltaTime = time;
-    m_PhysicsDeltaTime = time * m_PhysicsTimeFactor;
+    float delta = m_TimeManager->GetLastDeltaTime();
+    SetDeltaTime(delta);
+
     if (m_Environment)
     {
         if (m_PreSimulateCallbacks->m_HasCallbacks)
@@ -383,19 +370,19 @@ CKERROR CKIpionManager::PostProcess()
             m_PostSimulateCallbacks->Process();
 
         IVP_PerformanceCounter_Simple *pc = (IVP_PerformanceCounter_Simple *)m_Environment->get_performancecounter();
-        m_UniversePSI += pc->counter[IVP_PE_PSI_UNIVERSE][IVP_PE_PSI_START];
-        m_ControllersPSI = pc->counter[IVP_PE_PSI_CONTROLLERS][IVP_PE_PSI_START] + m_ControllersPSI;
-        m_IntegratorsPSI = pc->counter[IVP_PE_PSI_INTEGRATORS][IVP_PE_PSI_START] + m_IntegratorsPSI;
-        m_HullPSI = pc->counter[IVP_PE_PSI_HULL][IVP_PE_PSI_START] + m_HullPSI;
-        m_ShortMindistsPSI = pc->counter[IVP_PE_PSI_SHORT_MINDISTS][IVP_PE_PSI_START] + m_ShortMindistsPSI;
-        m_CriticalMindistsPSI = pc->counter[IVP_PE_PSI_CRITICAL_MINDISTS][IVP_PE_PSI_START] + m_CriticalMindistsPSI;
+        m_PerformanceCounter.counter[IVP_PE_PSI_UNIVERSE][0] += pc->counter[IVP_PE_PSI_UNIVERSE][0];
+        m_PerformanceCounter.counter[IVP_PE_PSI_CONTROLLERS][0] += pc->counter[IVP_PE_PSI_CONTROLLERS][0];
+        m_PerformanceCounter.counter[IVP_PE_PSI_INTEGRATORS][0] += pc->counter[IVP_PE_PSI_INTEGRATORS][0];
+        m_PerformanceCounter.counter[IVP_PE_PSI_HULL][0] += pc->counter[IVP_PE_PSI_HULL][0];
+        m_PerformanceCounter.counter[IVP_PE_PSI_SHORT_MINDISTS][0] += pc->counter[IVP_PE_PSI_SHORT_MINDISTS][0];
+        m_PerformanceCounter.counter[IVP_PE_PSI_CRITICAL_MINDISTS][0] += pc->counter[IVP_PE_PSI_CRITICAL_MINDISTS][0];
 
         pc->reset_and_print_performance_counters(m_Environment->get_current_time());
 
-        const int len = m_RealObjects.len();
+        const int len = m_MoveableObjects.len();
         for (int i = len - 1; i >= 0; --i)
         {
-            IVP_Real_Object *obj = m_RealObjects.element_at(i);
+            IVP_Real_Object *obj = m_MoveableObjects.element_at(i);
             UpdateObjectWorldMatrix(obj);
         }
     }
@@ -407,12 +394,18 @@ void CKIpionManager::Reset()
 {
     DestroyEnvironment();
 
-    m_Environment = NULL;
     m_PhysicsTimeFactor = 0.001f;
-    field_68 = 0;
-    m_PhysicsObjectContainer.ClearObjects();
+    m_PerformanceCounter.start_pcount();
+    m_PhysicsObjects.ClearObjects();
 
     CreateEnvironment();
+}
+
+void CKIpionManager::ResetSimulationClock()
+{
+    m_Environment->reset_time();
+    m_Environment->get_time_manager()->env_set_current_time(m_Environment, IVP_Time(0));
+    m_Environment->reset_time();
 }
 
 PhysicsObject *CKIpionManager::GetPhysicsObject(CK3dEntity *entity, CKBOOL logging)
@@ -420,8 +413,8 @@ PhysicsObject *CKIpionManager::GetPhysicsObject(CK3dEntity *entity, CKBOOL loggi
     LARGE_INTEGER begin;
     ::QueryPerformanceCounter(&begin);
 
-    ++m_PhysicsObjectAccessTimes;
-    PhysicsObject *obj = m_PhysicsObjectContainer.GetPhysicsObject(entity->GetID());
+    ++m_HasPhysicsCalls;
+    PhysicsObject *obj = m_PhysicsObjects.GetPhysicsObject(entity->GetID());
     if (!obj && logging)
         m_Context->OutputToConsoleEx("You must Physicalize %s ...", entity->GetName());
 
@@ -507,7 +500,7 @@ int CKIpionManager::CreatePhysicsObjectOnParameters(CK3dEntity *target, int conv
 
     PhysicsObject po;
     po.m_RealObject = obj;
-    m_PhysicsObjectContainer.AddObject(target->GetID(), po);
+    m_PhysicsObjects.AddObject(target->GetID(), po);
 
     return CK_OK;
 }
@@ -655,6 +648,28 @@ void CKIpionManager::DestroyEnvironment()
     }
 }
 
+float CKIpionManager::GetSimulationTime()
+{
+    return (float)m_Environment->get_current_time().get_time();
+}
+
+float CKIpionManager::GetSimulationTimeStep()
+{
+    return m_Environment->get_delta_PSI_time();
+}
+
+void CKIpionManager::SetSimulationTimeStep(float step)
+{
+    m_Environment->set_delta_PSI_time(step);
+}
+
+void CKIpionManager::SetDeltaTime(float delta)
+{
+    float time = (m_DeltaTime * 3.0f + delta) / 4;
+    m_DeltaTime = time;
+    m_PhysicsDeltaTime = time * m_PhysicsTimeFactor;
+}
+
 void CKIpionManager::SetTimeFactor(float factor)
 {
     m_PhysicsTimeFactor = factor * 0.001f;
@@ -718,9 +733,9 @@ void CKIpionManager::ResetProfiler()
     memset(&m_DePhysicalizeTime, 0, sizeof(LARGE_INTEGER));
     memset(&field_FC, 0, sizeof(LARGE_INTEGER));
     memset(&field_104, 0, sizeof(LARGE_INTEGER));
-    m_PhysicsObjectAccessTimes = 0;
-    m_PhysicalizeTimes = 0;
-    m_DePhysicalizeTimes = 0;
+    m_HasPhysicsCalls = 0;
+    m_PhysicalizeCalls = 0;
+    m_DePhysicalizeCalls = 0;
 }
 
 void CKIpionManager::FillTemplateInfo(IVP_Template_Real_Object *templ, IVP_U_Point *position, IVP_U_Quat *orientation,

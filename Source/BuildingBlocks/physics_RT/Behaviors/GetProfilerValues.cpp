@@ -70,7 +70,7 @@ int GetProfilerValues(const CKBehaviorContext &behcontext)
     }
     else
     {
-        int HasPhysicsCalls = man->m_PhysicsObjectContainer.GetObjectCount();
+        int HasPhysicsCalls = man->m_PhysicsObjects.GetObjectCount();
         beh->SetOutputParameterValue(0, &HasPhysicsCalls);
         beh->ActivateInput(0, FALSE);
         beh->ActivateOutput(0, TRUE);

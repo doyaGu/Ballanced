@@ -68,23 +68,26 @@ CKERROR CreatePhysicsForceProto(CKBehaviorPrototype **pproto)
 class PhysicsControllerForce : public IVP_Controller_Independent
 {
 public:
-    PhysicsControllerForce(IVP_Real_Object *obj, CKIpionManager *man) : m_IpionManager(man)
+    PhysicsControllerForce(IVP_Real_Object *obj)
     {
         m_Core = obj->get_core();
-        IVP_Environment *env = m_IpionManager->GetEnvironment();
-        env->get_controller_manager()->add_controller_to_core(this, m_Core);
+        if (m_Core)
+            IVP_Controller_Manager::add_controller_to_core(this, m_Core);
     }
 
     ~PhysicsControllerForce()
     {
-        IVP_Environment *env = m_IpionManager->GetEnvironment();
-        if (env)
-            env->get_controller_manager()->remove_controller_from_core(this, m_Core);
+        if (m_Core)
+            IVP_Controller_Manager::remove_controller_from_core(this, m_Core);
     }
 
     void core_is_going_to_be_deleted_event(IVP_Core *my_core)
     {
-        my_core->rem_core_controller(this);
+        if (my_core == m_Core)
+        {
+            my_core->rem_core_controller(this);
+            m_Core = NULL;
+        }
     }
 
     void do_simulation_controller(IVP_Event_Sim *es, IVP_U_Vector<IVP_Core> *core_list)
@@ -106,12 +109,9 @@ public:
 
     IVP_CONTROLLER_PRIORITY get_controller_priority() { return IVP_CP_ACTUATOR; };
 
-    CKIpionManager *m_IpionManager;
     IVP_Core *m_Core;
-    DWORD field_C;
     IVP_U_Point m_Position;
     IVP_U_Point m_Force;
-    DWORD field_3C;
 };
 
 class PhysicsForceCallback : public PhysicsCallback
@@ -146,7 +146,7 @@ public:
 
         IVP_Real_Object *obj = po->m_RealObject;
 
-        PhysicsControllerForce *controller = new PhysicsControllerForce(obj, m_IpionManager);
+        PhysicsControllerForce *controller = new PhysicsControllerForce(obj);
 
         VxVector dir;
         if (directionRef)
