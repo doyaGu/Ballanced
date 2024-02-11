@@ -165,7 +165,7 @@ int Physicalize(const CKBehaviorContext &behcontext)
         pos += concaveCount;
 
         VxVector shiftMassCenter;
-        beh->GetLocalParameterValue(0, &shiftMassCenter);
+        beh->GetLocalParameterValue(3, &shiftMassCenter);
         VxVector *shiftMassCenterPtr = (!autoCalcMassCenter) ? &shiftMassCenter : NULL;
 
         IVP_Material *material = new IVP_Material_Simple(friction, elasticity);
