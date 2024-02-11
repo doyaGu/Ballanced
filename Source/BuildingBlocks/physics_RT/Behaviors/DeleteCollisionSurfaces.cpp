@@ -52,14 +52,13 @@ public:
 
     virtual int Execute()
     {
-        if (m_IpionManager->m_PhysicsObjects.GetObjectCount() != 0)
+        if (m_IpionManager->GetPhysicsObjectCount() != 0)
         {
             m_IpionManager->m_Context->OutputToConsole("Please dephysicalize all objects before calling DeleteCollisionSurfaces!!!");
             return CKBR_OK;
         }
 
-        m_IpionManager->DeleteCollisionSurface();
-        m_IpionManager->m_SurfaceManagers = new IVP_U_String_Hash(64);
+        m_IpionManager->ClearCollisionSurfaces();
 
         return CKBR_ACTIVATENEXTFRAME;
     }

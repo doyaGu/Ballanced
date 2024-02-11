@@ -152,26 +152,32 @@ class PhysicsContactManager
 {
 public:
     explicit PhysicsContactManager(CKIpionManager *man)
-        : m_IpionManager(man), m_NumberGroupOutput(50), m_ContactID(0) {}
+        : m_IpionManager(man), m_NumberGroupOutput(50), m_ContactIDAttributeType(0) {}
+
+    void Setup();
+    void Process(IVP_Time time);
 
     int GetRecordCount() const;
     void AddRecord(PhysicsObject *obj, int id, IVP_Time time);
     void RemoveRecord(PhysicsObject *obj);
     void RemoveRecord(PhysicsObject *obj, int id);
 
-    void Process(IVP_Time time);
-
-    void SetupContactID();
+    int GetContactIDAttributeType() const { return m_ContactIDAttributeType; }
+    int GetNumberGroupOutput() const { return m_NumberGroupOutput; }
 
     int m_NumberGroupOutput;
     IVP_U_Vector<PhysicsContactRecord> m_Records;
     CKIpionManager *m_IpionManager;
-    CKDWORD m_ContactID;
+    int m_ContactIDAttributeType;
 };
 
 class PhysicsObject
 {
 public:
+    PhysicsObject() : m_Behavior(NULL), m_RealObject(NULL),
+                      m_FrictionCount(0), m_FrictionTime(0),
+                      m_ContactData(NULL) {}
+
     ~PhysicsObject()
     {
         if (m_ContactData)
@@ -183,93 +189,14 @@ public:
         }
     }
 
-    CKBehavior *m_Behavior = NULL;
-    IVP_Real_Object *m_RealObject = NULL;
-    PhysicsObject *m_PhysicsObject = NULL;
-    VxVector m_Scale;
-    DWORD m_FrictionCount = 0;
-    DWORD m_ID = 0;
-    IVP_Time m_CurrentTime;
-    DWORD field_28 = 0;
-    PhysicsContactData *m_ContactData = NULL;
+    CKBehavior *m_Behavior;
+    IVP_Real_Object *m_RealObject;
+    int m_FrictionCount;
+    IVP_Time m_FrictionTime;
+    PhysicsContactData *m_ContactData;
 };
 
 typedef XNHashTable<PhysicsObject, CK_ID> PhysicsObjectTable;
-
-class PhysicsStruct
-{
-public:
-    ~PhysicsStruct()
-    {
-        if (m_ContactData2)
-        {
-            m_ContactData2->m_Manager->RemoveRecord(m_PhysicsObject);
-            PhysicsContactData *data = m_PhysicsObject->m_ContactData;
-            if (data)
-                delete data;
-            m_PhysicsObject->m_ContactData = NULL;
-        }
-    }
-
-    CKBehavior *m_Behavior = NULL;
-    IVP_Real_Object *m_RealObject = NULL;
-    PhysicsObject *m_PhysicsObject = NULL;
-    VxVector m_Scale;
-    DWORD m_FrictionCount = 0;
-    DWORD m_ID = 0;
-    IVP_Time m_CurrentTime;
-    DWORD field_28 = 0;
-    PhysicsContactData *m_ContactData = NULL;
-    PhysicsStruct *m_Next = NULL;
-    PhysicsContactData *m_ContactData2 = NULL;
-};
-
-class PhysicsObjectContainer
-{
-public:
-    PhysicsObjectContainer()
-    {
-        m_Table.Clear();
-    }
-
-    ~PhysicsObjectContainer()
-    {
-        m_Table.Clear();
-    }
-
-    int GetObjectCount() const
-    {
-        return m_Table.Size();
-    }
-
-    PhysicsObject *GetPhysicsObject(CK_ID id)
-    {
-        PhysicsObjectTable ::Iterator it = m_Table.Find(id);
-        if (it == m_Table.End())
-            return NULL;
-        return it;
-    }
-
-    void AddObject(CK_ID id, const PhysicsObject &obj)
-    {
-        m_Table.Insert(id, obj);
-    }
-
-    void RemoveObject(CK_ID id)
-    {
-        m_Table.Remove(id);
-    }
-
-    void ClearObjects()
-    {
-        m_Table.Clear();
-    }
-
-    PhysicsStruct **m_Begin;
-    PhysicsStruct **m_End;
-    PhysicsStruct m_Data[200];
-    PhysicsObjectTable m_Table;
-};
 
 class CKIpionManager : public CKBaseManager
 {
@@ -294,9 +221,10 @@ public:
     }
 
     virtual void Reset();
-    virtual void ResetSimulationClock();
 
+    int GetPhysicsObjectCount() const;
     PhysicsObject *GetPhysicsObject(CK3dEntity *entity, CKBOOL logging = FALSE);
+    void RemovePhysicsObject(CK3dEntity *entity);
 
     int CreatePhysicsObjectOnParameters(CK3dEntity *target, int convexCount, CKMesh **convexes,
                                         int ballCount, int concaveCount, CKMesh **concaves, float ballRadius,
@@ -330,7 +258,7 @@ public:
     void CreateEnvironment();
     void DestroyEnvironment();
 
-    float GetSimulationTime();
+    IVP_Time GetSimulationTime();
 
     float GetSimulationTimeStep();
     void SetSimulationTimeStep(float step);
@@ -342,8 +270,13 @@ public:
     IVP_SurfaceManager *GetSurfaceManager(CKSTRING collisionSurface) const;
     void AddSurfaceManager(CKSTRING collisionSurface, IVP_SurfaceManager *surfaceManager);
 
+    PhysicsContactManager *GetContactManager() const { return m_ContactManager; }
+
     void SetupCollisionDetectID();
-    void DeleteCollisionSurface();
+    int GetCollisionDetectID() const { return m_CollisionDetectionID; }
+
+    void DeleteCollisionSurfaces();
+    void ClearCollisionSurfaces();
 
     void ResetProfiler();
 
@@ -363,7 +296,7 @@ public:
         return (CKIpionManager *)context->GetManagerByGuid(TT_PHYSICS_MANAGER_GUID);
     }
 
-    IVP_U_Vector<IVP_Real_Object> m_MoveableObjects;
+    IVP_U_Vector<IVP_Real_Object> m_MovableObjects;
     int field_30;
     IVP_U_Vector<CK3dEntity> m_Entities;
     IVP_U_Vector<IVP_Material> m_Materials;
@@ -392,7 +325,7 @@ public:
     LARGE_INTEGER field_FC;
     LARGE_INTEGER field_104;
     LARGE_INTEGER m_ProfilerCounter;
-    PhysicsObjectContainer m_PhysicsObjects;
+    PhysicsObjectTable m_PhysicsObjects;
 };
 
 #endif // BUILDINGBLOCKS_PHYSICSMANAGER_H
