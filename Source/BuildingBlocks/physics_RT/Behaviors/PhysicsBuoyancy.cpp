@@ -162,7 +162,7 @@ public:
         surface.normize();
 
         IVP_Liquid_Surface_Descriptor_Simple *descriptor = new IVP_Liquid_Surface_Descriptor_Simple(&surface, &speed);
-        m_IpionManager->m_Surfaces.add(descriptor);
+        m_IpionManager->m_LiquidSurfaces.add(descriptor);
 
         IVP_Template_Buoyancy tmpl;
         tmpl.simulate_wing_behavior = IVP_FALSE;

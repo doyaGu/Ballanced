@@ -73,9 +73,9 @@ void PhysicsCollisionListener::event_friction_deleted(IVP_Event_Friction *fricti
     --po2->m_FrictionCount;
 }
 
-PhysicsListenerObject::PhysicsListenerObject(CKIpionManager *man) : m_IpionManager(man) {}
+PhysicsObjectListener::PhysicsObjectListener(CKIpionManager *man) : m_IpionManager(man) {}
 
-void PhysicsListenerObject::event_object_deleted(IVP_Event_Object *object)
+void PhysicsObjectListener::event_object_deleted(IVP_Event_Object *object)
 {
     IVP_Real_Object *obj = object->real_object;
 
@@ -99,15 +99,15 @@ void PhysicsListenerObject::event_object_deleted(IVP_Event_Object *object)
     }
 }
 
-void PhysicsListenerObject::event_object_created(IVP_Event_Object *object) {}
+void PhysicsObjectListener::event_object_created(IVP_Event_Object *object) {}
 
-void PhysicsListenerObject::event_object_revived(IVP_Event_Object *object)
+void PhysicsObjectListener::event_object_revived(IVP_Event_Object *object)
 {
     IVP_Real_Object *obj = object->real_object;
     m_IpionManager->m_RealObjects.add(obj);
 }
 
-void PhysicsListenerObject::event_object_frozen(IVP_Event_Object *object)
+void PhysicsObjectListener::event_object_frozen(IVP_Event_Object *object)
 {
     IVP_Real_Object *obj = object->real_object;
     m_IpionManager->m_RealObjects.remove(obj);
@@ -277,7 +277,7 @@ CKIpionManager::CKIpionManager(CKContext *context)
     m_PreSimulateCallbacks = NULL;
     m_PostSimulateCallbacks = NULL;
     m_CollisionListener = NULL;
-    m_PhysicsObjectListener = NULL;
+    m_ObjectListener = NULL;
     field_30 = 0;
     field_C8 = 0;
     m_DeltaTime = 0.0;
@@ -349,11 +349,11 @@ CKERROR CKIpionManager::PostClearAll()
 {
     DeleteCollisionSurface();
 
-    const int len = m_Surfaces.len();
+    const int len = m_LiquidSurfaces.len();
     for (int i = len - 1; i >= 0; --i)
     {
-        IVP_Liquid_Surface_Descriptor_Simple *surface = m_Surfaces.element_at(i);
-        m_Surfaces.remove_at(i);
+        IVP_Liquid_Surface_Descriptor_Simple *surface = m_LiquidSurfaces.element_at(i);
+        m_LiquidSurfaces.remove_at(i);
         delete surface;
     }
 
@@ -594,8 +594,8 @@ void CKIpionManager::CreateEnvironment()
     m_CollisionListener = new PhysicsCollisionListener(this);
     m_Environment->add_listener_collision_global(m_CollisionListener);
 
-    m_PhysicsObjectListener = new PhysicsListenerObject(this);
-    m_Environment->add_listener_object_global(m_PhysicsObjectListener);
+    m_ObjectListener = new PhysicsObjectListener(this);
+    m_Environment->add_listener_object_global(m_ObjectListener);
 
     m_ContactManager = new PhysicsContactManager(this);
     m_ContactManager->SetupContactID();
@@ -618,12 +618,12 @@ void CKIpionManager::DestroyEnvironment()
         m_PostSimulateCallbacks = NULL;
     }
 
-    if (m_PhysicsObjectListener)
+    if (m_ObjectListener)
     {
-        m_Environment->remove_listener_object_global(m_PhysicsObjectListener);
+        m_Environment->remove_listener_object_global(m_ObjectListener);
 
-        delete m_PhysicsObjectListener;
-        m_PhysicsObjectListener = NULL;
+        delete m_ObjectListener;
+        m_ObjectListener = NULL;
     }
 
     if (m_CollisionListener)

@@ -105,10 +105,10 @@ private:
     CKIpionManager *m_IpionManager;
 };
 
-class PhysicsListenerObject : public IVP_Listener_Object
+class PhysicsObjectListener : public IVP_Listener_Object
 {
 public:
-    explicit PhysicsListenerObject(CKIpionManager *man);
+    explicit PhysicsObjectListener(CKIpionManager *man);
 
     virtual void event_object_deleted(IVP_Event_Object *object);
     virtual void event_object_created(IVP_Event_Object *object);
@@ -361,12 +361,12 @@ public:
     int field_30;
     IVP_U_Vector<CK3dEntity> m_Entities;
     IVP_U_Vector<IVP_Material> m_Materials;
-    IVP_U_Vector<IVP_Liquid_Surface_Descriptor_Simple> m_Surfaces;
+    IVP_U_Vector<IVP_Liquid_Surface_Descriptor_Simple> m_LiquidSurfaces;
     PhysicsCallbackContainer *m_PreSimulateCallbacks;
     PhysicsCallbackContainer *m_PostSimulateCallbacks;
     PhysicsContactManager *m_ContactManager;
     PhysicsCollisionListener *m_CollisionListener;
-    PhysicsListenerObject *m_PhysicsObjectListener;
+    PhysicsObjectListener *m_ObjectListener;
     int m_CollisionDetectionID;
     IVP_Collision_Filter_Exclusive_Pair *m_CollisionFilterExclusivePair;
     int field_68;
