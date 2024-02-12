@@ -125,8 +125,8 @@ public:
         beh->GetInputParameterValue(GLOBAL_DAMPENING, &globalDampening);
 
         IVP_Template_Spring tmpl;
-        tmpl.break_max_len = 1.0e20;
         tmpl.spring_constant = constant;
+        tmpl.spring_values_are_relative = IVP_FALSE;
         tmpl.spring_force_only_on_stretch = IVP_FALSE;
         tmpl.spring_damp = linearDampening;
         tmpl.spring_len = length;
