@@ -209,8 +209,6 @@ CKERROR PhysicalizeCallBack(const CKBehaviorContext &behcontext)
     if (!eno)
         return CKBR_OWNERERROR;
 
-    char buffer[128];
-
     switch (behcontext.CallbackMessage)
     {
     case CKM_BEHAVIORATTACH:
@@ -218,7 +216,6 @@ CKERROR PhysicalizeCallBack(const CKBehaviorContext &behcontext)
         if (eno->GetClassID() != CKCID_3DOBJECT)
             return CKBR_OK;
 
-        sprintf(buffer, "Convex Mesh");
         CKParameterIn *convexParamIn = beh->GetInputParameter(CONVEX);
         if (!convexParamIn)
             return CKBR_OK;
@@ -242,12 +239,13 @@ CKERROR PhysicalizeCallBack(const CKBehaviorContext &behcontext)
         if (!collSurfaceParam)
             return CKBR_OK;
 
-        strcpy(buffer, mesh->GetName());
-        collSurfaceParam->SetValue(buffer, strlen(buffer) + 1);
+        collSurfaceParam->SetValue(mesh->GetName(), strlen(mesh->GetName()) + 1);
     }
     break;
     case CKM_BEHAVIORSETTINGSEDITED:
     {
+        char buffer[128];
+
         int inputParamCount = beh->GetInputParameterCount();
         while (inputParamCount > CONVEX)
         {
@@ -259,7 +257,7 @@ CKERROR PhysicalizeCallBack(const CKBehaviorContext &behcontext)
         beh->GetLocalParameterValue(0, &convexCount);
         for (int i = 0; i < convexCount; ++i)
         {
-            sprintf(buffer, "convex %d", i + 1);
+            snprintf(buffer, sizeof(buffer), "convex %d", i + 1);
             beh->CreateInputParameter(buffer, CKPGUID_MESH);
         }
 
@@ -267,9 +265,9 @@ CKERROR PhysicalizeCallBack(const CKBehaviorContext &behcontext)
         beh->GetLocalParameterValue(1, &ballCount);
         for (int j = 0; j < ballCount; ++j)
         {
-            sprintf(buffer, "ball position %d", j + 1);
+            snprintf(buffer, sizeof(buffer), "ball position %d", j + 1);
             beh->CreateInputParameter(buffer, CKPGUID_VECTOR);
-            sprintf(buffer, "ball radius %d", j + 1);
+            snprintf(buffer, sizeof(buffer), "ball radius %d", j + 1);
             beh->CreateInputParameter(buffer, CKPGUID_FLOAT);
         }
 
@@ -277,7 +275,7 @@ CKERROR PhysicalizeCallBack(const CKBehaviorContext &behcontext)
         beh->GetLocalParameterValue(2, &concaveCount);
         for (int k = 0; k < concaveCount; ++k)
         {
-            sprintf(buffer, "concave %d", k + 1);
+            snprintf(buffer, sizeof(buffer), "concave %d", k + 1);
             beh->CreateInputParameter(buffer, CKPGUID_MESH);
         }
     }
