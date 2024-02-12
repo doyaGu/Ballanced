@@ -308,7 +308,6 @@ public:
     PhysicsObjectListener *m_ObjectListener;
     int m_CollisionDetectionID;
     IVP_Collision_Filter_Exclusive_Pair *m_CollisionFilterExclusivePair;
-    IVP_PerformanceCounter_Simple m_PerformanceCounter;
     IVP_U_String_Hash *m_SurfaceManagers;
     IVP_Environment *m_Environment;
     CKTimeManager *m_TimeManager;

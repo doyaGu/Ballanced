@@ -271,8 +271,6 @@ CKIpionManager::CKIpionManager(CKContext *context)
     m_PhysicalizeCalls = 0;
     m_DePhysicalizeCalls = 0;
 
-    m_PerformanceCounter.pcount(IVP_PE_PSI_START);
-
     m_CollisionFilterExclusivePair = NULL;
     m_PreSimulateCallbacks = NULL;
     m_PostSimulateCallbacks = NULL;
@@ -299,7 +297,6 @@ CKERROR CKIpionManager::OnCKInit()
 
     m_TimeManager = m_Context->GetTimeManager();
     m_PhysicsTimeFactor = 0.001f;
-    m_PerformanceCounter.start_pcount();
 
     return CK_OK;
 }
@@ -327,7 +324,6 @@ CKERROR CKIpionManager::OnCKReset()
     DestroyEnvironment();
 
     m_PhysicsTimeFactor = 0.001f;
-    m_PerformanceCounter.start_pcount();
     m_PhysicsObjects.Clear();
 
     return CK_OK;
@@ -369,16 +365,6 @@ CKERROR CKIpionManager::PostProcess()
         if (m_PostSimulateCallbacks->m_HasCallbacks)
             m_PostSimulateCallbacks->Process();
 
-        IVP_PerformanceCounter_Simple *pc = (IVP_PerformanceCounter_Simple *)m_Environment->get_performancecounter();
-        m_PerformanceCounter.counter[IVP_PE_PSI_UNIVERSE][0] += pc->counter[IVP_PE_PSI_UNIVERSE][0];
-        m_PerformanceCounter.counter[IVP_PE_PSI_CONTROLLERS][0] += pc->counter[IVP_PE_PSI_CONTROLLERS][0];
-        m_PerformanceCounter.counter[IVP_PE_PSI_INTEGRATORS][0] += pc->counter[IVP_PE_PSI_INTEGRATORS][0];
-        m_PerformanceCounter.counter[IVP_PE_PSI_HULL][0] += pc->counter[IVP_PE_PSI_HULL][0];
-        m_PerformanceCounter.counter[IVP_PE_PSI_SHORT_MINDISTS][0] += pc->counter[IVP_PE_PSI_SHORT_MINDISTS][0];
-        m_PerformanceCounter.counter[IVP_PE_PSI_CRITICAL_MINDISTS][0] += pc->counter[IVP_PE_PSI_CRITICAL_MINDISTS][0];
-
-        pc->reset_and_print_performance_counters(m_Environment->get_current_time());
-
         const int len = m_MovableObjects.len();
         for (int i = len - 1; i >= 0; --i)
         {
@@ -395,7 +381,6 @@ void CKIpionManager::Reset()
     DestroyEnvironment();
 
     m_PhysicsTimeFactor = 0.001f;
-    m_PerformanceCounter.start_pcount();
     m_PhysicsObjects.Clear();
 
     CreateEnvironment();
@@ -579,7 +564,6 @@ void CKIpionManager::CreateEnvironment()
 {
     IVP_Application_Environment appEnv;
     appEnv.material_manager = new IVP_Material_Manager(IVP_TRUE);
-    appEnv.env_active_float_manager = new IVP_U_Active_Value_Manager(IVP_TRUE);
     appEnv.performancecounter = new IVP_PerformanceCounter_Simple();
     appEnv.env_active_float_manager = new IVP_U_Active_Value_Manager(IVP_TRUE);
 
