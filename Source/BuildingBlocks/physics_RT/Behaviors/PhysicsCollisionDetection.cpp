@@ -91,7 +91,10 @@ public:
           m_RealObject(obj),
           m_IpionManager(manager),
           m_Behavior(beh),
-          m_CollisionID(collisionID) {}
+          m_CollisionID(collisionID)
+    {
+        obj->add_listener_collision(this);
+    }
 
     ~PhysicsCollDetectionListener()
     {
@@ -229,7 +232,6 @@ public:
         PhysicsCollDetectionListener *listener = new PhysicsCollDetectionListener(sleepAfterwards, minSpeed, maxSpeed,
                                                                                   obj, m_IpionManager, m_Behavior,
                                                                                   collisionID);
-        obj->add_listener_collision(listener);
 
         beh->SetLocalParameterValue(0, &listener);
 

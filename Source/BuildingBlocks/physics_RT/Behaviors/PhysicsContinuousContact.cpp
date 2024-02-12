@@ -73,7 +73,10 @@ public:
     PhysicsContactListener(IVP_Real_Object *obj, CKIpionManager *man)
         : IVP_Listener_Collision(IVP_LISTENER_COLLISION_CALLBACK_OBJECT_DELETED |
                                  IVP_LISTENER_COLLISION_CALLBACK_FRICTION),
-          m_RealObject(obj), m_IpionManager(man) {}
+          m_RealObject(obj), m_IpionManager(man)
+    {
+        obj->add_listener_collision(this);
+    }
 
     ~PhysicsContactListener()
     {
@@ -240,7 +243,6 @@ public:
             po->m_ContactData = data;
 
             PhysicsContactListener *listener = new PhysicsContactListener(obj, m_IpionManager);
-            obj->add_listener_collision(listener);
             data->m_Listener = listener;
             beh->SetLocalParameterValue(1, &data);
         }

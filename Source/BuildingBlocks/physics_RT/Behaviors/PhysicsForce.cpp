@@ -167,7 +167,7 @@ public:
         {
             VxVector p;
             if (referential)
-                referential->Transform(&p, position);
+                referential->Transform(&p, &position);
             else
                 p = position;
 

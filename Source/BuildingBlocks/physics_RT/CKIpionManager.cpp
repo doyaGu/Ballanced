@@ -271,8 +271,6 @@ CKIpionManager::CKIpionManager(CKContext *context)
     m_PhysicalizeCalls = 0;
     m_DePhysicalizeCalls = 0;
 
-    m_PhysicsObjects.Clear();
-
     m_PerformanceCounter.pcount(IVP_PE_PSI_START);
 
     m_CollisionFilterExclusivePair = NULL;
@@ -293,10 +291,7 @@ CKIpionManager::CKIpionManager(CKContext *context)
     m_CollisionDetectionID = -1;
 }
 
-CKIpionManager::~CKIpionManager()
-{
-    m_PhysicsObjects.Clear();
-}
+CKIpionManager::~CKIpionManager() {}
 
 CKERROR CKIpionManager::OnCKInit()
 {
