@@ -127,7 +127,7 @@ public:
         tmpl.set_constraint_ws(objR, &anchor, &axis, 2, 3, objA, NULL);
 
         if (limitations)
-            tmpl.limit_rotation_axis(IVP_INDEX_Z, lowerLimit, upperLimit);
+            tmpl.limit_translation_axis(IVP_INDEX_Z, lowerLimit, upperLimit);
 
         IVP_Constraint *constraint = m_IpionManager->CreateConstraint(&tmpl);
         m_Behavior->SetLocalParameterValue(0, &constraint);
