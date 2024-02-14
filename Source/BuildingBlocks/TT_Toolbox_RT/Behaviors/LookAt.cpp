@@ -177,7 +177,7 @@ VxVector BB_Orientate(CK3dEntity *ent, VxVector dir, int dirMode, float roll, Vx
 
         ent->SetOrientation(&dir, &up, &right, NULL, k);
         if (roll != 0.0f)
-            ent->Rotate(0, 0, 1, roll, ent, k);
+            ent->Rotate3f(0, 0, 1, roll, ent, k);
     }
     break;
 
@@ -199,7 +199,7 @@ VxVector BB_Orientate(CK3dEntity *ent, VxVector dir, int dirMode, float roll, Vx
 
         ent->SetOrientation(&right, &up, &dir, NULL, k);
         if (roll != 0.0f)
-            ent->Rotate(1, 0, 0, roll, ent, k);
+            ent->Rotate3f(1, 0, 0, roll, ent, k);
     }
     break;
 
@@ -220,7 +220,7 @@ VxVector BB_Orientate(CK3dEntity *ent, VxVector dir, int dirMode, float roll, Vx
 
         ent->SetOrientation(&right, &dir, &up, NULL, k);
         if (roll != 0.0f)
-            ent->Rotate(0, 1, 0, roll, ent, k);
+            ent->Rotate3f(0, 1, 0, roll, ent, k);
     }
     break;
     }

@@ -87,8 +87,8 @@ int TextureInfo(const CKBehaviorContext &behcontext)
         else
             sysTexSize += texDesc.BytesPerLine * texDesc.Height;
     }
-    int usedSystemMemory = sysTexSize * 0.00000095367432;
-    int usedVideoTextureMemory = videoTexSize * 0.00000095367432;
+    int usedSystemMemory = sysTexSize / 1024;
+    int usedVideoTextureMemory = videoTexSize / 1024;
 
     beh->SetOutputParameterValue(1, &numberOfTextures);
     beh->SetOutputParameterValue(2, &usedSystemMemory);

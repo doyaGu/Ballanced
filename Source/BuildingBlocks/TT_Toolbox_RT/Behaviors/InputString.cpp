@@ -88,7 +88,6 @@ CKERROR CreateInputStringProto(CKBehaviorPrototype **pproto)
 
 #define ESC					    27
 
-#define CKPGUID_KEYBOARDPART	CKGUID(0x7a4347dd,0x59a82cce)
 #define DISABLE_NUMPAD			1
 #define DISABLE_ARROWS			2
 

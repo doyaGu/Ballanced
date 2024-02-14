@@ -41,7 +41,7 @@ CKERROR CreateSet2DSpriteProto(CKBehaviorPrototype **pproto)
     proto->DeclareInParameter("Size", CKPGUID_2DVECTOR, "0.1,0.1");
     proto->DeclareInParameter("UV-Rect", CKPGUID_RECT, "0,0,1,1");
 
-    proto->DeclareSetting("Add Input:", CKPGUID_2DSPRITEINPUT, "Position,Size,UV-Mapping");
+    proto->DeclareSetting("Add Input:", CKPGUID_2DSPRITEINPUT, "UV-Mapping,Size,Position");
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
     proto->SetFunction(Set2DSprite);
@@ -75,29 +75,28 @@ int Set2DSprite(const CKBehaviorContext &behcontext)
     beh->GetLocalParameterValue(0, &input);
 
     Vx2DVector pos;
-    if (input < INPUT_POSITION)
+    if (input & INPUT_POSITION)
+    {
+        beh->GetInputParameterValue(0, &pos);
+    }
+    else
     {
         target->GetPosition(pos, TRUE);
     }
-    else
-    {
-        input -= INPUT_POSITION;
-        beh->GetInputParameterValue(0, &pos);
-    }
 
     Vx2DVector size;
-    if (input < INPUT_SIZE)
-    {
-        target->GetSize(size, TRUE);
-    }
-    else
+    if (input & INPUT_SIZE)
     {
         input -= INPUT_SIZE;
         beh->GetInputParameterValue(1, &size);
     }
+    else
+    {
+        target->GetSize(size, TRUE);
+    }
 
     VxRect uv;
-    if (input >= INPUT_UV)
+    if (input & INPUT_UV)
     {
         uv.Clear();
         beh->GetInputParameterValue(2, &uv);
@@ -119,25 +118,23 @@ CKERROR Set2DSpriteCallBack(const CKBehaviorContext &behcontext)
     {
         int input = 0;
         beh->GetLocalParameterValue(0, &input);
-        for (int i = beh->GetInputCount(); i != -1; --i)
+        for (int i = beh->GetInputCount() - 1; i >= 0; --i)
         {
             CKParameterIn *pin = beh->RemoveInputParameter(i);
             CKDestroyObject(pin);
         }
 
-        if (input >= INPUT_POSITION)
+        if (input & INPUT_POSITION)
         {
-            input -= INPUT_POSITION;
             beh->CreateInputParameter("Position", CKPGUID_2DVECTOR);
         }
 
-        if (input >= INPUT_SIZE)
+        if (input & INPUT_SIZE)
         {
-            input -= INPUT_SIZE;
             beh->CreateInputParameter("Size", CKPGUID_2DVECTOR);
         }
 
-        if (input >= INPUT_UV)
+        if (input & INPUT_UV)
         {
             beh->CreateInputParameter("UV-Rect", CKPGUID_RECT);
         }

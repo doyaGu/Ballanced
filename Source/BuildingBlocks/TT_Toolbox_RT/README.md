@@ -1,7 +1,7 @@
 # TT_Toolbox_RT
 
 | Building Block                  | Status    | Note      |
-| ------------------------------- | --------- | --------- |
+| ------------------------------- | --------- |-----------|
 | TT Activate Object              | Completed |           |
 | TT_AnisoMapping                 | TODO      |           |
 | TT_BitmapFont                   | TODO      |           |
@@ -67,7 +67,7 @@
 | TT_RefractionMapping            | TODO      |           |
 | TT_RemoveDirectory              | Completed |           |
 | TT ReplaceInputparameter        | TODO      |           |
-| **TT_ReplacePath**              | Completed | Need Fix? |
+| **TT_ReplacePath**              | Completed |           |
 | TT Restore Dynamic IC           | TODO      |           |
 | **TT Restore IC**               | Copied    |           |
 | TT_RippleWave                   | TODO      |           |
@@ -80,7 +80,7 @@
 | TT Set_2DSprite_old             | TODO      |           |
 | TT Set_3DSprite                 | TODO      |           |
 | TT_SetCurrentDirectory          | Completed |           |
-| **TT Set Dynamic Position**     | Completed | Need Fix? |
+| **TT Set Dynamic Position**     | Completed |           |
 | TT_SetFSAA                      | Completed |           |
 | TT_SetMapping                   | TODO      |           |
 | TT_Set Material Values          | TODO      |           |

@@ -67,9 +67,9 @@ int GetFullAngle(const CKBehaviorContext &behcontext)
 
     if (rad > 1.0f)
         rad = 1.0f;
-    rad = (cp >= 0.0f && cp <= 1.0f) ? acos(rad) : PI - acos(rad) + PI;
+    rad = (cp <= 0.0f) ? acos(rad) : 2 * PI - acos(rad);
 
-    float degree = rad * 57.295776f;
+    float degree = (float)(rad * (180 / PI));
 
     beh->SetOutputParameterValue(0, &rad);
     beh->SetOutputParameterValue(1, &degree);
