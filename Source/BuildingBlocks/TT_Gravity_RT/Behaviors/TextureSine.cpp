@@ -32,7 +32,8 @@ CKObjectDeclaration *FillBehaviorTextureSineDecl()
 CKERROR CreateTextureSineProto(CKBehaviorPrototype **pproto)
 {
     CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("TT_TextureSine");
-    if (!proto) return CKERR_OUTOFMEMORY;
+    if (!proto)
+        return CKERR_OUTOFMEMORY;
 
     proto->DeclareInput("In");
 
@@ -112,7 +113,7 @@ int TextureSine(const CKBehaviorContext &behcontext)
     return CKBR_OK;
 }
 
-CKERROR TextureSinusCallBack(const CKBehaviorContext &behcontext)
+CKERROR TextureSineCallBack(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
 
