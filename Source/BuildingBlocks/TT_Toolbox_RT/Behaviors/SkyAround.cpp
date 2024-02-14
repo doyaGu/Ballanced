@@ -124,7 +124,7 @@ int SkyAround(const CKBehaviorContext &behcontext)
             texture = (CKTexture *)beh->GetInputParameterObject(a);
             mat = mesh->GetFaceMaterial(a * 2);
 
-            mat->SetTexture(texture);
+            mat->SetTexture0(texture);
         }
         beh->ActivateInput(0, FALSE);
         beh->ActivateOutput(0, TRUE);
@@ -166,7 +166,7 @@ int SkyAround(const CKBehaviorContext &behcontext)
     VxVector pos_cam;
     cam->GetPosition(&pos_cam, NULL);
 
-    ent->SetPosition(0.0f, 0.0f, 0.0f, cam);
+    ent->SetPosition3f(0.0f, 0.0f, 0.0f, cam);
 
     return CKBR_ACTIVATENEXTFRAME;
 }
@@ -288,7 +288,7 @@ CKERROR SkyAroundCallBack(const CKBehaviorContext &behcontext)
             mesh->SetFaceMaterial(a * 2 + 1, mat);
 
             texture = (CKTexture *)beh->GetInputParameterObject(a);
-            mat->SetTexture(texture);
+            mat->SetTexture0(texture);
             mat->SetTextureAddressMode(VXTEXTURE_ADDRESSCLAMP);
         }
 

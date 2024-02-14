@@ -89,11 +89,12 @@ int ReplacePath(const CKBehaviorContext &behcontext)
     {
         pm->GetPathName(catIdx, pathIdx, pathName);
         if (pathName == path1)
+        {
+            pathName = path2;
+            pm->RenamePath(catIdx, pathIdx, pathName);
             break;
+        }
     }
-
-    pathName = path2;
-    pm->RenamePath(catIdx, pathIdx, pathName);
 
     beh->ActivateOutput(0, TRUE);
     return CKBR_OK;

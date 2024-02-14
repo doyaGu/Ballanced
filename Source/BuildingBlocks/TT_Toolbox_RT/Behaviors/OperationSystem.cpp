@@ -61,9 +61,27 @@ int OperationSystem(const CKBehaviorContext &behcontext)
     osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
     ::GetVersionEx(&osvi);
 
-    beh->SetOutputParameterValue(0, &osvi.dwPlatformId, sizeof(DWORD));
-    beh->SetOutputParameterValue(1, &osvi.dwMinorVersion, sizeof(DWORD));
-    beh->SetOutputParameterValue(2, &osvi.dwMajorVersion, sizeof(DWORD));
+    if (osvi.dwPlatformId == 1)
+    {
+        int id = 1;
+        beh->SetOutputParameterValue(0, &id, sizeof(DWORD));
+        beh->SetOutputParameterValue(1, &osvi.dwMinorVersion, sizeof(DWORD));
+        beh->SetOutputParameterValue(2, &osvi.dwMajorVersion, sizeof(DWORD));
+    }
+    else if (osvi.dwPlatformId == 2)
+    {
+        int id = 2;
+        beh->SetOutputParameterValue(0, &id, sizeof(DWORD));
+        beh->SetOutputParameterValue(1, &osvi.dwMinorVersion, sizeof(DWORD));
+        beh->SetOutputParameterValue(2, &osvi.dwMajorVersion, sizeof(DWORD));
+    }
+    else
+    {
+        int id = 0;
+        beh->SetOutputParameterValue(0, &id, sizeof(DWORD));
+        beh->SetOutputParameterValue(1, &id, sizeof(DWORD));
+        beh->SetOutputParameterValue(2, &id, sizeof(DWORD));
+    }
 
     beh->ActivateOutput(0, TRUE);
     return CKBR_OK;

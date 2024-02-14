@@ -40,7 +40,6 @@ struct CharacterTextureCoordinates {
 };
 
 class CKFontManager;
-class CompiledTextData;
 
 class CKTextureFont {
 public:
@@ -78,78 +77,11 @@ public:
 
     ~CKTextureFont() { CKDeletePointer(m_FontName); }
 
-    // Font Access
-    char *GetFontName() const { return m_FontName; }
-
-    CKTexture *GetFontTexture() { return (CKTexture *) m_Context->GetObject(m_FontTexture); }
-
-    // String Calculation
-    float GetStringWidth(CKSTRING string) {
-        if (!string)
-            return 0.0f;
-
-        float scale = m_Scale.x * m_ScreenExtents.x;
-        float leading = m_Leading.x / scale;
-        float italic = m_ItalicOffset / scale;
-
-        float sw = 0.0f;
-        while ((*string > 0) && *string != '\n') {
-            // We add the character width (relative to the texture)
-            CharacterTextureCoordinates *ctc = &m_FontCoordinates[(unsigned char) *string];
-            sw += (ctc->uprewidth + ctc->uwidth + ctc->upostwidth);
-            // We add the leading
-            sw += leading;
-
-            string++;
-        }
-
-        // No space after last character of the line
-        sw -= leading;
-        // Italic offset at the end
-        sw += italic;
-
-        return sw * scale;
-    }
-
-    int GetTextExtents(float &width, float &height) {
-        int linecount = m_FontManager->GetLineCount();
-
-        float vspace = m_FontCoordinates[0].vwidth * (m_Scale.y * m_ScreenExtents.y) + m_Leading.y;
-        for (int i = 0; i < linecount; ++i) {
-            // current line
-            LineData *data = m_FontManager->GetLine(i);
-
-            if (data->stringwidth > width) {
-                width = data->stringwidth;
-            }
-
-            // Paragraph Indentation
-            if ((data->len < 0) && (i != 0)) {
-                height += m_ParagraphIndentation.y * m_FontCoordinates[0].vwidth * (m_Scale.y * m_ScreenExtents.y);
-            }
-
-            // We add the Y space
-            height += vspace;
-        }
-
-        return linecount;
-    }
-
-    CKBOOL IsFontSimilar(CKTexture *fonttexture, Vx2DVector &charnumber, CKBOOL fixed = TRUE) const {
-        if (fixed) {
-            if (!(m_SpacingProperties & FIXED))
-                return FALSE;
-        } else {
-            if (m_SpacingProperties & FIXED)
-                return FALSE;
-        }
-        if (m_FontTexture != CKOBJID(fonttexture))
-            return FALSE;
-
-        return TRUE;
-    }
-
     virtual void DrawCKText(CKRenderContext *dev, CKBeObject *obj, CKSTRING string, int align, VxRect &textzone, CKMaterial *mat, int options, CKBOOL reallyDraw);
+
+#if CKVERSION != 0x13022002
+    virtual void DrawStringEx(CKRenderContext* iRC, const char* iString, const VxRect& iTextZone, int iOptions);
+#endif
 
 public:
     // The Font Name

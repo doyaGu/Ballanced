@@ -80,23 +80,6 @@ int SetDynamicPosition(const CKBehaviorContext &behcontext)
 
     CKBOOL status = FALSE;
 
-    if (beh->IsInputActive(0))
-    {
-        beh->ActivateInput(0, FALSE);
-        beh->ActivateOutput(0, FALSE);
-
-        status = TRUE;
-        beh->SetLocalParameterValue(0, &status);
-
-        VxVector targetPosition;
-        if (coordinateSystem)
-            target->GetPosition(&targetPosition, coordinateSystem);
-        else
-            target->GetPosition(&targetPosition);
-        beh->SetLocalParameterValue(1, &targetPosition);
-        return CKBR_ACTIVATENEXTFRAME;
-    }
-
     if (beh->IsInputActive(1))
     {
         beh->ActivateInput(1, FALSE);
@@ -104,6 +87,23 @@ int SetDynamicPosition(const CKBehaviorContext &behcontext)
     }
     else
     {
+        if (beh->IsInputActive(0))
+        {
+            beh->ActivateInput(0, FALSE);
+            beh->ActivateOutput(0, TRUE);
+
+            status = TRUE;
+            beh->SetLocalParameterValue(0, &status);
+
+            VxVector targetPosition;
+            if (coordinateSystem)
+                target->GetPosition(&targetPosition, coordinateSystem);
+            else
+                target->GetPosition(&targetPosition);
+            beh->SetLocalParameterValue(1, &targetPosition);
+            return CKBR_ACTIVATENEXTFRAME;
+        }
+
         beh->GetLocalParameterValue(0, &status);
     }
 
@@ -148,7 +148,7 @@ int SetDynamicPosition(const CKBehaviorContext &behcontext)
     float maxDistance2Target;
     beh->GetInputParameterValue(11, &maxDistance2Target);
 
-    float cof = oldTargetPosition.y * 0.001f; // Not sure ??
+    float cof = behcontext.DeltaTime * 0.001f;
     forceX *= cof;
     forceX *= cof;
     forceX *= cof;
@@ -172,9 +172,9 @@ int SetDynamicPosition(const CKBehaviorContext &behcontext)
     }
 
     if (coordinateSystem)
-        target->SetPosition(targetPosition, coordinateSystem);
+        target->SetPosition(&targetPosition, coordinateSystem);
     else
-        target->SetPosition(targetPosition);
+        target->SetPosition(&targetPosition);
 
     beh->SetOutputParameterValue(0, &vector);
 

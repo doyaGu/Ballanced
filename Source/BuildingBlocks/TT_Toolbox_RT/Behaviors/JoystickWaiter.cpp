@@ -593,7 +593,7 @@ CKERROR JoystickWaiterCallBack(const CKBehaviorContext &behcontext)
             beh->GetLocalParameterValue(2, &f);
 
             int mask = 1;
-            CKSTRING buffer = behcontext.Context->GetStringBuffer(32);
+            char buffer[32];
             for (int i = 0; i < 32; ++i, mask *= 2)
             {
                 if (f & mask)

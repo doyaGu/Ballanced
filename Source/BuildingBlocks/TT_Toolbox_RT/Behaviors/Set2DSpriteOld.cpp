@@ -42,7 +42,7 @@ CKERROR CreateSet2DSpriteOldProto(CKBehaviorPrototype **pproto)
     proto->DeclareInParameter("UV Left,Rigth", CKPGUID_2DVECTOR, "0,1");
     proto->DeclareInParameter("UV Top,Bottom", CKPGUID_2DVECTOR, "0,1");
 
-    proto->DeclareSetting("Add Input:", CKPGUID_2DSPRITEINPUT, "Position,Size,UV-Mapping");
+    proto->DeclareSetting("Add Input:", CKPGUID_2DSPRITEINPUT, "UV-Mapping,Size,Position");
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
     proto->SetFunction(Set2DSpriteOld);

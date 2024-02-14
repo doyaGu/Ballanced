@@ -62,19 +62,20 @@ int GetMemoryStatus(const CKBehaviorContext &behcontext)
     statex.dwLength = sizeof(statex);
     ::GlobalMemoryStatus(&statex);
 
-    beh->SetOutputParameterValue(0, &statex.dwMemoryLoad, sizeof(DWORD));
+    int memoryLoad = statex.dwMemoryLoad;
+    beh->SetOutputParameterValue(0, &memoryLoad, sizeof(int));
 
-    DWORD dwTotalPhys = statex.dwTotalPhys / (1024 * 1024);
-    beh->SetOutputParameterValue(1, &dwTotalPhys, sizeof(DWORD));
+    float dwTotalPhys = statex.dwTotalPhys / (1024.0 * 1024.0);
+    beh->SetOutputParameterValue(1, &dwTotalPhys, sizeof(float));
 
-    DWORD dwAvailPhys = statex.dwAvailPhys / (1024 * 1024);
-    beh->SetOutputParameterValue(2, &dwAvailPhys, sizeof(DWORD));
+    float dwAvailPhys = statex.dwAvailPhys / (1024.0 * 1024.0);
+    beh->SetOutputParameterValue(2, &dwAvailPhys, sizeof(float));
 
-    DWORD dwTotalVirtual = statex.dwTotalVirtual / (1024 * 1024);
-    beh->SetOutputParameterValue(3, &dwTotalVirtual, sizeof(DWORD));
+    float dwTotalVirtual = statex.dwTotalVirtual / (1024.0 * 1024.0);
+    beh->SetOutputParameterValue(3, &dwTotalVirtual, sizeof(float));
 
-    DWORD dwAvailVirtual = statex.dwAvailVirtual / (1024 * 1024);
-    beh->SetOutputParameterValue(4, &dwAvailVirtual, sizeof(DWORD));
+    float dwAvailVirtual = statex.dwAvailVirtual / (1024.0 * 1024.0);
+    beh->SetOutputParameterValue(4, &dwAvailVirtual, sizeof(float));
 
     beh->ActivateOutput(0, TRUE);
     return CKBR_OK;

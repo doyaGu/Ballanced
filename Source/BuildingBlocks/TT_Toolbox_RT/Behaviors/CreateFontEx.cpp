@@ -86,8 +86,8 @@ int CreateFontEx(const CKBehaviorContext &behcontext)
     beh->GetInputParameterValue(3, &proportional);
 
     VxRect fontBounds;
-    fontBounds.right = texture->GetWidth();
-    fontBounds.bottom = texture->GetHeight();
+    fontBounds.right = (float)texture->GetWidth();
+    fontBounds.bottom = (float)texture->GetHeight();
     beh->GetInputParameterValue(4, &fontBounds);
 
     int firstCharacter = 0;
