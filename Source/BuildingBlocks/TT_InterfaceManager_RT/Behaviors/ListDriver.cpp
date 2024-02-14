@@ -83,9 +83,15 @@ int ListDriver(const CKBehaviorContext &behcontext)
     {
         VxDriverDesc *drDesc = context->GetRenderManager()->GetRenderDriverDescription(i);
         drivers->InsertRow();
+#if CKVERSION == 0x13022002
         drivers->SetElementStringValue(i, 0, drDesc->DriverName);
         drivers->SetElementValue(i, 1, &i, sizeof(int));
         drivers->SetElementStringValue(i, 2, drDesc->DriverDesc);
+#else
+        drivers->SetElementStringValue(i, 0, drDesc->DriverName.Str());
+        drivers->SetElementValue(i, 1, &i, sizeof(int));
+        drivers->SetElementStringValue(i, 2, drDesc->DriverDesc.Str());
+#endif
     }
 
     int driver = man->GetDriver();

@@ -82,8 +82,13 @@ int ListScreenModes(const CKBehaviorContext &behcontext)
         return CKBR_OK;
     }
 
+#if CKVERSION == 0x13022002
     VxDisplayMode *dm = drDesc->DisplayModes;
     const int dmCount = drDesc->DisplayModeCount;
+#else
+    VxDisplayMode *dm = drDesc->DisplayModes.Begin();
+    const int dmCount = drDesc->DisplayModes.Size();
+#endif
     int i = 0, row = 0;
     while (i < dmCount)
     {

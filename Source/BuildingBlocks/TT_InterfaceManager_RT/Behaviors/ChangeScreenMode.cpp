@@ -78,7 +78,11 @@ int ChangeScreenMode(const CKBehaviorContext &behcontext)
         return CKBR_OK;
     }
 
+#if CKVERSION == 0x13022002
     if (screenMode < 0 || screenMode >= drDesc->DisplayModeCount ||
+#else
+    if (screenMode < 0 || screenMode >= drDesc->DisplayModes.Size() ||
+#endif
         drDesc->DisplayModes[screenMode].Bpp < 16)
     {
         context->OutputToConsoleExBeep("Change Screen Mode: ScreenMode is not exist");
