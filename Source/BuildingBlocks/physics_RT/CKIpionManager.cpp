@@ -285,7 +285,7 @@ CKIpionManager::CKIpionManager(CKContext *context)
     if (context->RegisterNewManager(this) == CKERR_MANAGERALREADYEXISTS)
         ::OutputDebugStringA("Manager already exists");
 
-    m_SurfaceManagers = NULL;
+    m_CollisionSurfaces = NULL;
     m_CollisionDetectionID = -1;
 }
 
@@ -293,7 +293,7 @@ CKIpionManager::~CKIpionManager() {}
 
 CKERROR CKIpionManager::OnCKInit()
 {
-    m_SurfaceManagers = new IVP_U_String_Hash(4);
+    m_CollisionSurfaces = new IVP_U_String_Hash(64);
 
     m_TimeManager = m_Context->GetTimeManager();
     m_PhysicsTimeFactor = 0.001f;
@@ -331,7 +331,7 @@ CKERROR CKIpionManager::OnCKReset()
 
 CKERROR CKIpionManager::PostClearAll()
 {
-    DeleteCollisionSurfaces();
+    ClearCollisionSurfaces();
 
     const int len = m_LiquidSurfaces.len();
     for (int i = len - 1; i >= 0; --i)
@@ -340,10 +340,6 @@ CKERROR CKIpionManager::PostClearAll()
         m_LiquidSurfaces.remove_at(i);
         delete surface;
     }
-
-    if (m_SurfaceManagers)
-        delete m_SurfaceManagers;
-    m_SurfaceManagers = new IVP_U_String_Hash(64);
 
     return CK_OK;
 }
@@ -452,7 +448,7 @@ int CKIpionManager::CreatePhysicsObjectOnParameters(CK3dEntity *target, int conv
     }
     else
     {
-        IVP_SurfaceManager *surman = GetSurfaceManager(collisionSurface);
+        IVP_SurfaceManager *surman = GetCollisionSurface(collisionSurface);
         if (!surman)
         {
             IVP_SurfaceBuilder_Ledge_Soup builder;
@@ -481,15 +477,15 @@ int CKIpionManager::CreatePhysicsObjectOnParameters(CK3dEntity *target, int conv
                 }
             }
 
-            if (ledgeCount == 0)
-            {
-                m_Context->OutputToConsoleEx("Error: incorrect mesh for %s !\n", target->GetName());
-            }
-            else
+            if (ledgeCount != 0)
             {
                 IVP_Compact_Surface *compactSurface = builder.compile();
                 surman = new IVP_SurfaceManager_Polygon(compactSurface);
-                AddSurfaceManager(collisionSurface, surman);
+                AddCollisionSurface(collisionSurface, surman);
+            }
+            else
+            {
+                m_Context->OutputToConsoleEx("Error: incorrect mesh for %s !\n", target->GetName());
             }
         }
 
@@ -681,14 +677,30 @@ void CKIpionManager::SetGravity(const VxVector &gravity)
     m_Environment->set_gravity(&gravityPoint);
 }
 
-IVP_SurfaceManager *CKIpionManager::GetSurfaceManager(CKSTRING collisionSurface) const
+IVP_SurfaceManager *CKIpionManager::GetCollisionSurface(const char *name) const
 {
-    return (IVP_SurfaceManager *)m_SurfaceManagers->find(collisionSurface);
+    if (!name)
+        return NULL;
+
+    return (IVP_SurfaceManager *)m_CollisionSurfaces->find(name);
 }
 
-void CKIpionManager::AddSurfaceManager(const CKSTRING collisionSurface, IVP_SurfaceManager *surman)
+void CKIpionManager::AddCollisionSurface(const char *name, IVP_SurfaceManager *collisionSurface)
 {
-    m_SurfaceManagers->add(collisionSurface, surman);
+    if (name)
+        m_CollisionSurfaces->add(name, collisionSurface);
+}
+
+void CKIpionManager::DeleteCollisionSurfaces()
+{
+    delete m_CollisionSurfaces;
+    m_CollisionSurfaces = NULL;
+}
+
+void CKIpionManager::ClearCollisionSurfaces()
+{
+    DeleteCollisionSurfaces();
+    m_CollisionSurfaces = new IVP_U_String_Hash(64);
 }
 
 void CKIpionManager::SetupCollisionDetectID()
@@ -718,18 +730,6 @@ void CKIpionManager::SetupCollisionDetectID()
             }
         }
     }
-}
-
-void CKIpionManager::DeleteCollisionSurfaces()
-{
-    delete m_SurfaceManagers;
-    m_SurfaceManagers = NULL;
-}
-
-void CKIpionManager::ClearCollisionSurfaces()
-{
-    DeleteCollisionSurfaces();
-    m_SurfaceManagers = new IVP_U_String_Hash(64);
 }
 
 void CKIpionManager::ResetProfiler()
