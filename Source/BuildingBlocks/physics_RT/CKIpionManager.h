@@ -267,16 +267,16 @@ public:
     void SetTimeFactor(float factor);
     void SetGravity(const VxVector &gravity);
 
-    IVP_SurfaceManager *GetSurfaceManager(CKSTRING collisionSurface) const;
-    void AddSurfaceManager(CKSTRING collisionSurface, IVP_SurfaceManager *surfaceManager);
-
     PhysicsContactManager *GetContactManager() const { return m_ContactManager; }
 
-    void SetupCollisionDetectID();
-    int GetCollisionDetectID() const { return m_CollisionDetectionID; }
+    IVP_SurfaceManager *GetCollisionSurface(const char *name) const;
+    void AddCollisionSurface(const char *name, IVP_SurfaceManager *collisionSurface);
 
     void DeleteCollisionSurfaces();
     void ClearCollisionSurfaces();
+
+    void SetupCollisionDetectID();
+    int GetCollisionDetectID() const { return m_CollisionDetectionID; }
 
     void ResetProfiler();
 
@@ -308,7 +308,7 @@ public:
     PhysicsObjectListener *m_ObjectListener;
     int m_CollisionDetectionID;
     IVP_Collision_Filter_Exclusive_Pair *m_CollisionFilterExclusivePair;
-    IVP_U_String_Hash *m_SurfaceManagers;
+    IVP_U_String_Hash *m_CollisionSurfaces;
     IVP_Environment *m_Environment;
     CKTimeManager *m_TimeManager;
     float m_DeltaTime;
