@@ -182,9 +182,7 @@ public:
     {
         if (m_ContactData)
         {
-            m_ContactData->m_Manager->RemoveRecord(this);
-            if (m_ContactData)
-                delete m_ContactData;
+            delete m_ContactData;
             m_ContactData = NULL;
         }
     }
