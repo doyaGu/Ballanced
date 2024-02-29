@@ -286,7 +286,7 @@ CKIpionManager::CKIpionManager(CKContext *context)
         ::OutputDebugStringA("Manager already exists");
 
     m_CollisionSurfaces = NULL;
-    m_CollisionDetectionID = -1;
+    m_CollDetectionIDAttribType = -1;
 }
 
 CKIpionManager::~CKIpionManager() {}
@@ -705,7 +705,7 @@ void CKIpionManager::ClearCollisionSurfaces()
 
 void CKIpionManager::SetupCollisionDetectID()
 {
-    m_CollisionDetectionID = -1;
+    m_CollDetectionIDAttribType = -1;
 
     bool found = false;
     CKAttributeManager *am = m_Context->GetAttributeManager();
@@ -721,15 +721,26 @@ void CKIpionManager::SetupCollisionDetectID()
         {
             int type = obj->GetAttributeType(i);
             CKSTRING typeName = am->GetAttributeNameByType(type);
-            if (strcmp(typeName, "Coll Detection ID") == 0)
+            if (strcmp(typeName, "Coll Detection ID") == 0 && obj->GetAttributeParameter(type) != NULL)
             {
-                CKParameterOut *pa = obj->GetAttributeParameter(type);
-                pa->GetValue(&m_CollisionDetectionID);
+                m_CollDetectionIDAttribType = type;
                 found = true;
                 break;
             }
         }
     }
+}
+
+int CKIpionManager::GetCollisionDetectID(CK3dEntity *entity) const
+{
+    int collisionID = -1;
+    if (m_CollDetectionIDAttribType != -1 && entity)
+    {
+        CKParameterOut *pa = entity->GetAttributeParameter(m_CollDetectionIDAttribType);
+        if (pa)
+            pa->GetValue(&collisionID);
+    }
+    return collisionID;
 }
 
 void CKIpionManager::ResetProfiler()
