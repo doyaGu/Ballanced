@@ -274,7 +274,7 @@ public:
     void ClearCollisionSurfaces();
 
     void SetupCollisionDetectID();
-    int GetCollisionDetectID() const { return m_CollisionDetectionID; }
+    int GetCollisionDetectID(CK3dEntity *entity) const;
 
     void ResetProfiler();
 
@@ -304,7 +304,7 @@ public:
     PhysicsContactManager *m_ContactManager;
     PhysicsCollisionListener *m_CollisionListener;
     PhysicsObjectListener *m_ObjectListener;
-    int m_CollisionDetectionID;
+    int m_CollDetectionIDAttribType;
     IVP_Collision_Filter_Exclusive_Pair *m_CollisionFilterExclusivePair;
     IVP_U_String_Hash *m_CollisionSurfaces;
     IVP_Environment *m_Environment;

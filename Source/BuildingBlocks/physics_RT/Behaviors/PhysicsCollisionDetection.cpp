@@ -71,10 +71,11 @@ CKERROR CreatePhysicsCollDetectionProto(CKBehaviorPrototype **pproto)
 #define MAX_SPEED 1
 #define SLEEP_AFTERWARDS 2
 #define COLLISION_ID 3
-#define ENTITY 4
-#define SPEED 5
-#define COLLISION_NORMAL_WORLD 6
-#define POSITION_WORLD 7
+
+#define ENTITY 0
+#define SPEED 1
+#define COLLISION_NORMAL_WORLD 2
+#define POSITION_WORLD 3
 
 class PhysicsCollDetectionListener : public IVP_Listener_Collision
 {
@@ -82,8 +83,7 @@ public:
     PhysicsCollDetectionListener(float sleepAfterwards, float minSpeed, float maxSpeed,
                                  IVP_Real_Object *obj, CKIpionManager *manager, CKBehavior *beh, int collisionID)
         : IVP_Listener_Collision(IVP_LISTENER_COLLISION_CALLBACK_POST_COLLISION |
-                                 IVP_LISTENER_COLLISION_CALLBACK_OBJECT_DELETED |
-                                 IVP_LISTENER_COLLISION_CALLBACK_FRICTION),
+                                 IVP_LISTENER_COLLISION_CALLBACK_OBJECT_DELETED),
           m_Time(0),
           m_SleepAfterwards(sleepAfterwards),
           m_MinSpeed(minSpeed),
@@ -105,7 +105,7 @@ public:
         m_Behavior->SetLocalParameterValue(0, &listener);
     }
 
-    void event_pre_collision(IVP_Event_Collision *collision)
+    void event_post_collision(IVP_Event_Collision *collision)
     {
         IVP_Contact_Situation *situation = collision->contact_situation;
         IVP_Real_Object *obj = situation->objects[0];
@@ -114,13 +114,7 @@ public:
 
         CK3dEntity *ent = (CK3dEntity *)obj->client_data;
 
-        int collisionID = m_IpionManager->GetCollisionDetectID();
-        if (collisionID != -1)
-        {
-            CKParameterOut *pa = ent->GetAttributeParameter(collisionID);
-            if (pa)
-                pa->GetValue(&collisionID);
-        }
+        int collisionID = m_IpionManager->GetCollisionDetectID(ent);
 
         CKBOOL useCollisionID = FALSE;
         m_Behavior->GetLocalParameterValue(1, &useCollisionID);
@@ -140,23 +134,23 @@ public:
             return;
 
         float speed;
-        if (sl <= 0.0001f)
+        if (sl < 0.0001f)
         {
             speed = 0.0001f;
         }
-        else if (m_MaxSpeed >= 0.0001f)
+        else if (m_MaxSpeed < 0.0001f)
+        {
+            speed = 1.0f;
+        }
+        else
         {
             speed = (float)sl / m_MaxSpeed;
             if (speed > 1.0f)
                 speed = 1.0f;
         }
-        else
-        {
-            speed = 1.0f;
-        }
 
-        m_Behavior->SetOutputParameterObject(0, ent);
-        m_Behavior->SetOutputParameterValue(1, &speed);
+        m_Behavior->SetOutputParameterObject(ENTITY, ent);
+        m_Behavior->SetOutputParameterValue(SPEED, &speed);
 
         if (situation->objects[0] != m_RealObject)
         {
@@ -166,12 +160,12 @@ public:
         VxVector collisionNormalWorld(situation->surf_normal.k[0],
                                       situation->surf_normal.k[1],
                                       situation->surf_normal.k[2]);
-        m_Behavior->SetOutputParameterValue(2, &collisionNormalWorld);
+        m_Behavior->SetOutputParameterValue(COLLISION_NORMAL_WORLD, &collisionNormalWorld);
 
         VxVector positionWorld((float)situation->contact_point_ws.k[0],
                                (float)situation->contact_point_ws.k[1],
                                (float)situation->contact_point_ws.k[2]);
-        m_Behavior->SetOutputParameterValue(3, &collisionNormalWorld);
+        m_Behavior->SetOutputParameterValue(POSITION_WORLD, &collisionNormalWorld);
 
         m_Time = m_IpionManager->GetSimulationTime();
 
