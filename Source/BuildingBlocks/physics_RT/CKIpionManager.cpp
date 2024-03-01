@@ -117,12 +117,6 @@ void PhysicsObjectListener::event_object_frozen(IVP_Event_Object *object)
     m_IpionManager->m_MovableObjects.remove(obj);
 }
 
-void PhysicsContactManager::Setup()
-{
-    CKAttributeManager *am = m_IpionManager->m_Context->GetAttributeManager();
-    m_ContactIDAttributeType = am->GetAttributeTypeByName("Continuous Contact ID");
-}
-
 void PhysicsContactManager::Process(IVP_Time time)
 {
     const int len = m_Records.len();
@@ -133,34 +127,38 @@ void PhysicsContactManager::Process(IVP_Time time)
         PhysicsContactData *data = po->m_ContactData;
 
         double delta = time - record->m_Time;
-        int id = record->m_ID;
+        int index = record->m_Index;
         PhysicsContactData::GroupOutput *output = data->m_GroupOutputs;
 
-        if (output[id].active)
+        if (output[index].active)
         {
-            if (output[id].number == 0 && delta > data->m_TimeDelayEnd)
+            if (output[index].number != 0)
             {
-                output[id].active = FALSE;
-                data->m_Behavior->ActivateOutput(2 * id + 1, TRUE);
+                m_Records.remove_at(i);
+                delete record;
             }
-
+            else if (delta > data->m_TimeDelayEnd)
+            {
+                output[index].active = FALSE;
+                data->m_Behavior->ActivateOutput(2 * index + 1, TRUE);
+                m_Records.remove_at(i);
+                delete record;
+            }
+        }
+        else if (output[index].number <= 0)
+        {
+            if (delta * 0.5 > data->m_TimeDelayStart)
+            {
+                m_Records.remove_at(i);
+                delete record;
+            }
+        }
+        else if (delta > data->m_TimeDelayStart)
+        {
+            output[index].active = TRUE;
+            data->m_Behavior->ActivateOutput(2 * index, TRUE);
             m_Records.remove_at(i);
             delete record;
-        }
-        else
-        {
-            if (output[id].number == 0 && data->m_TimeDelayStart < delta * 0.5)
-            {
-                m_Records.remove_at(i);
-                delete record;
-            }
-            else if (data->m_TimeDelayStart < delta)
-            {
-                output[id].active = TRUE;
-                data->m_Behavior->ActivateOutput(2 * id, TRUE);
-                m_Records.remove_at(i);
-                delete record;
-            }
         }
     }
 }
@@ -170,14 +168,19 @@ int PhysicsContactManager::GetRecordCount() const
     return m_Records.len();
 }
 
-void PhysicsContactManager::AddRecord(PhysicsObject *obj, int id, IVP_Time time)
+PhysicsContactRecord *PhysicsContactManager::GetRecord(int index)
+{
+    return m_Records.element_at(index);
+}
+
+void PhysicsContactManager::AddRecord(PhysicsObject *obj, int index, IVP_Time time)
 {
     bool found = false;
     const int len = m_Records.len();
     for (int i = 0; i < len; ++i)
     {
         PhysicsContactRecord *record = m_Records.element_at(i);
-        if (record->m_PhysicsObject == obj && record->m_ID == id)
+        if (record->m_PhysicsObject == obj && record->m_Index == index)
         {
             found = true;
             break;
@@ -188,10 +191,17 @@ void PhysicsContactManager::AddRecord(PhysicsObject *obj, int id, IVP_Time time)
     {
         PhysicsContactRecord *record = new PhysicsContactRecord;
         record->m_PhysicsObject = obj;
-        record->m_ID = id;
+        record->m_Index = index;
         record->m_Time = time;
         m_Records.add(record);
     }
+}
+
+void PhysicsContactManager::RemoveRecord(int index)
+{
+    PhysicsContactRecord *record = m_Records.element_at(index);
+    m_Records.remove_at(index);
+    delete record;
 }
 
 void PhysicsContactManager::RemoveRecord(PhysicsObject *obj)
@@ -211,7 +221,7 @@ void PhysicsContactManager::RemoveRecord(PhysicsObject *obj)
     }
 }
 
-void PhysicsContactManager::RemoveRecord(PhysicsObject *obj, int id)
+void PhysicsContactManager::RemoveRecord(PhysicsObject *obj, int index)
 {
     if (!obj)
         return;
@@ -220,12 +230,30 @@ void PhysicsContactManager::RemoveRecord(PhysicsObject *obj, int id)
     for (int i = len - 1; i >= 0; --i)
     {
         PhysicsContactRecord *record = m_Records.element_at(i);
-        if (record->m_PhysicsObject == obj && record->m_ID == id)
+        if (record->m_PhysicsObject == obj && record->m_Index == index)
         {
             m_Records.remove_at(i);
             delete record;
         }
     }
+}
+
+void PhysicsContactManager::SetupContactID()
+{
+    CKAttributeManager *am = m_IpionManager->m_Context->GetAttributeManager();
+    m_ContactIDAttribType = am->GetAttributeTypeByName("Continuous Contact ID");
+}
+
+int PhysicsContactManager::GetContactID(CK3dEntity *entity) const
+{
+    int contactID = -1;
+    if (m_ContactIDAttribType != -1 && entity)
+    {
+        CKParameterOut *pa = entity->GetAttributeParameter(m_ContactIDAttribType);
+        if (pa)
+            pa->GetValue(&contactID);
+    }
+    return contactID;
 }
 
 PhysicsContactData::PhysicsContactData(float timeDelayStart, float timeDelayEnd,
@@ -587,7 +615,7 @@ void CKIpionManager::CreateEnvironment()
     m_Environment->add_listener_object_global(m_ObjectListener);
 
     m_ContactManager = new PhysicsContactManager(this);
-    m_ContactManager->Setup();
+    m_ContactManager->SetupContactID();
     SetupCollisionDetectID();
 }
 

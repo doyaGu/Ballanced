@@ -126,8 +126,8 @@ class PhysicsContactData
 public:
     struct GroupOutput
     {
-        CKBOOL active;
-        int number;
+        CKBOOL active = FALSE;
+        int number = 0;
     };
 
     PhysicsContactData(float timeDelayStart, float timeDelayEnd, PhysicsContactManager *man, CKBehavior *beh);
@@ -144,7 +144,7 @@ public:
 struct PhysicsContactRecord
 {
     IVP_Time m_Time;
-    int m_ID;
+    int m_Index;
     PhysicsObject *m_PhysicsObject;
 };
 
@@ -152,23 +152,25 @@ class PhysicsContactManager
 {
 public:
     explicit PhysicsContactManager(CKIpionManager *man)
-        : m_IpionManager(man), m_NumberGroupOutput(50), m_ContactIDAttributeType(0) {}
+        : m_IpionManager(man), m_NumberGroupOutput(50), m_ContactIDAttribType(0) {}
 
-    void Setup();
     void Process(IVP_Time time);
 
     int GetRecordCount() const;
-    void AddRecord(PhysicsObject *obj, int id, IVP_Time time);
+    PhysicsContactRecord *GetRecord(int index);
+    void AddRecord(PhysicsObject *obj, int index, IVP_Time time);
+    void RemoveRecord(int index);
     void RemoveRecord(PhysicsObject *obj);
-    void RemoveRecord(PhysicsObject *obj, int id);
+    void RemoveRecord(PhysicsObject *obj, int index);
 
-    int GetContactIDAttributeType() const { return m_ContactIDAttributeType; }
+    void SetupContactID();
+    int GetContactID(CK3dEntity *entity) const;
     int GetNumberGroupOutput() const { return m_NumberGroupOutput; }
 
     int m_NumberGroupOutput;
     IVP_U_Vector<PhysicsContactRecord> m_Records;
     CKIpionManager *m_IpionManager;
-    int m_ContactIDAttributeType;
+    int m_ContactIDAttribType;
 };
 
 class PhysicsObject
