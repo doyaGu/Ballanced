@@ -130,20 +130,16 @@ public:
             bool activated = false;
             IVP_Time time = m_IpionManager->GetSimulationTime();
             PhysicsContactManager *contactManager = m_IpionManager->GetContactManager();
-            if (contactManager->GetRecordCount() != 0)
+            for (int i = 0; i < contactManager->GetRecordCount(); ++i)
             {
-                const int count = contactManager->GetRecordCount();
-                for (int i = 0; i < count; ++i)
+                PhysicsContactRecord *record = contactManager->GetRecord(i);
+                if (record->m_PhysicsObject == po && record->m_Index == index &&
+                    data->m_TimeDelayStart < time - record->m_Time)
                 {
-                    PhysicsContactRecord *record = contactManager->GetRecord(i);
-                    if (record->m_PhysicsObject == po && record->m_Index == index &&
-                        data->m_TimeDelayStart < time - record->m_Time)
-                    {
-                        contactManager->RemoveRecord(i);
-                        data->m_GroupOutputs[index].active = TRUE;
-                        data->m_Behavior->ActivateOutput(2 * index, TRUE);
-                        activated = true;
-                    }
+                    contactManager->RemoveRecord(i);
+                    data->m_GroupOutputs[index].active = TRUE;
+                    data->m_Behavior->ActivateOutput(2 * index, TRUE);
+                    activated = true;
                 }
             }
 
