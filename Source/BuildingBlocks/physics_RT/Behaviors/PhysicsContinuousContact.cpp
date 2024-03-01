@@ -41,9 +41,9 @@ CKERROR CreatePhysicsContinuousContactProto(CKBehaviorPrototype **pproto)
     char buf[256];
     for (int i = 1; i <= 5; ++i)
     {
-        sprintf(buf, "contact on %d", i);
+        snprintf(buf, sizeof(buf), "contact on %d", i);
         proto->DeclareOutput(buf);
-        sprintf(buf, "contact off %d", i);
+        snprintf(buf, sizeof(buf), "contact off %d", i);
         proto->DeclareOutput(buf);
     }
 
@@ -95,26 +95,21 @@ public:
 
     virtual void event_friction_created(IVP_Event_Friction *friction)
     {
+        if (!friction)
+            return;
+
         IVP_Contact_Situation *situation = friction->contact_situation;
         IVP_Real_Object *obj = situation->objects[0];
         if (obj == m_RealObject)
             obj = situation->objects[1];
 
-        int attributeType = m_IpionManager->m_ContactManager->GetContactIDAttributeType();
-        if (attributeType == 0)
-            return;
-
         CK3dEntity *ent = (CK3dEntity *)obj->client_data;
-        CKParameterOut *pa = ent->GetAttributeParameter(attributeType);
-        if (!pa)
+
+        int contactID = m_IpionManager->m_ContactManager->GetContactID(ent);
+        if (contactID == -1)
             return;
 
-        int contactID;
-        pa->GetValue(&contactID);
-
-        int id = contactID - 1;
-        if (id < 0)
-            return;
+        int index = contactID - 1;
 
         ent = (CK3dEntity *)m_RealObject->client_data;
         PhysicsObject *po = m_IpionManager->GetPhysicsObject(ent);
@@ -125,7 +120,7 @@ public:
         if (!data)
             return;
 
-        PhysicsContactData::GroupOutput &output = data->m_GroupOutputs[id];
+        PhysicsContactData::GroupOutput &output = data->m_GroupOutputs[index];
         output.number += 1;
         if (output.number != 1)
             return;
@@ -134,56 +129,50 @@ public:
         {
             bool activated = false;
             IVP_Time time = m_IpionManager->GetSimulationTime();
-            if (m_IpionManager->GetContactManager()->GetRecordCount() != 0)
+            PhysicsContactManager *contactManager = m_IpionManager->GetContactManager();
+            if (contactManager->GetRecordCount() != 0)
             {
-                IVP_U_Vector<PhysicsContactRecord> &records = m_IpionManager->GetContactManager()->m_Records;
-                const int len = records.len();
-                for (int i = 0; i < len; ++i)
+                const int count = contactManager->GetRecordCount();
+                for (int i = 0; i < count; ++i)
                 {
-                    PhysicsContactRecord *record = records.element_at(i);
-                    if (record->m_PhysicsObject == po && record->m_ID == id &&
+                    PhysicsContactRecord *record = contactManager->GetRecord(i);
+                    if (record->m_PhysicsObject == po && record->m_Index == index &&
                         data->m_TimeDelayStart < time - record->m_Time)
                     {
-                        records.remove_at(i);
-                        delete record;
-                        data->m_GroupOutputs[id].active = TRUE;
-                        data->m_Behavior->ActivateOutput(2 * id, TRUE);
+                        contactManager->RemoveRecord(i);
+                        data->m_GroupOutputs[index].active = TRUE;
+                        data->m_Behavior->ActivateOutput(2 * index, TRUE);
                         activated = true;
                     }
                 }
             }
 
             if (!activated)
-                m_IpionManager->GetContactManager()->AddRecord(po, id, time);
+                m_IpionManager->GetContactManager()->AddRecord(po, index, time);
         }
         else
         {
-            m_IpionManager->GetContactManager()->RemoveRecord(po, id);
+            m_IpionManager->GetContactManager()->RemoveRecord(po, index);
         }
     }
 
     virtual void event_friction_deleted(IVP_Event_Friction *friction)
     {
+        if (!friction)
+            return;
+
         IVP_Contact_Situation *situation = friction->contact_situation;
         IVP_Real_Object *obj = situation->objects[0];
         if (obj == m_RealObject)
             obj = situation->objects[1];
 
-        int attributeType = m_IpionManager->m_ContactManager->GetContactIDAttributeType();
-        if (attributeType == 0)
-            return;
-
         CK3dEntity *ent = (CK3dEntity *)obj->client_data;
-        CKParameterOut *pa = ent->GetAttributeParameter(attributeType);
-        if (!pa)
+
+        int contactID = m_IpionManager->m_ContactManager->GetContactID(ent);
+        if (contactID == -1)
             return;
 
-        int contactID;
-        pa->GetValue(&contactID);
-
-        int id = contactID - 1;
-        if (id < 0)
-            return;
+        int index = contactID - 1;
 
         ent = (CK3dEntity *)m_RealObject->client_data;
         PhysicsObject *po = m_IpionManager->GetPhysicsObject(ent);
@@ -194,13 +183,13 @@ public:
         if (!data)
             return;
 
-        PhysicsContactData::GroupOutput &output = data->m_GroupOutputs[id];
+        PhysicsContactData::GroupOutput &output = data->m_GroupOutputs[index];
         --output.number;
         if (output.number < 0)
             output.number = 0;
 
-        if (output.number == 0 && output.active == TRUE)
-            m_IpionManager->GetContactManager()->AddRecord(po, id, m_IpionManager->GetSimulationTime());
+        if (output.number == 0 && output.active)
+            m_IpionManager->GetContactManager()->AddRecord(po, index, m_IpionManager->GetSimulationTime());
     }
 
 private:
@@ -232,20 +221,20 @@ public:
 
         PhysicsObject *po = m_IpionManager->GetPhysicsObject(ent);
         if (!po)
-            return 0;
+            return 1;
 
         IVP_Real_Object *obj = po->m_RealObject;
 
-        if (!po->m_ContactData)
-        {
-            PhysicsContactData *data = new PhysicsContactData(timeDelayStart, timeDelayEnd,
-                                                              m_IpionManager->GetContactManager(), beh);
-            po->m_ContactData = data;
+        if (po->m_ContactData)
+            return 1;
 
-            PhysicsContactListener *listener = new PhysicsContactListener(obj, m_IpionManager);
-            data->m_Listener = listener;
-            beh->SetLocalParameterValue(1, &data);
-        }
+        PhysicsContactData *data = new PhysicsContactData(timeDelayStart, timeDelayEnd,
+                                                          m_IpionManager->GetContactManager(), beh);
+        po->m_ContactData = data;
+
+        PhysicsContactListener *listener = new PhysicsContactListener(obj, m_IpionManager);
+        data->m_Listener = listener;
+        beh->SetLocalParameterValue(1, &data);
 
         return 1;
     }
@@ -320,9 +309,9 @@ CKERROR PhysicsContinuousContactCallBack(const CKBehaviorContext &behcontext)
         char buf[256];
         for (int i = 0; i < numberGroupOutput; ++i)
         {
-            sprintf(buf, "contact on %d", i);
+            snprintf(buf, sizeof(buf), "contact on %d", i);
             beh->AddOutput(buf);
-            sprintf(buf, "contact off %d", i);
+            snprintf(buf, sizeof(buf), "contact off %d", i);
             beh->AddOutput(buf);
         }
     }
