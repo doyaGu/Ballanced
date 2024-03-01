@@ -304,7 +304,6 @@ CKIpionManager::CKIpionManager(CKContext *context)
     m_PostSimulateCallbacks = NULL;
     m_CollisionListener = NULL;
     m_ObjectListener = NULL;
-    field_30 = 0;
     m_Environment = NULL;
     m_TimeManager = NULL;
     m_DeltaTime = 0.0f;
@@ -374,28 +373,7 @@ CKERROR CKIpionManager::PostClearAll()
 
 CKERROR CKIpionManager::PostProcess()
 {
-    float delta = m_TimeManager->GetLastDeltaTime();
-    SetDeltaTime(delta);
-
-    if (m_Environment)
-    {
-        if (m_PreSimulateCallbacks->m_HasCallbacks)
-            m_PreSimulateCallbacks->Process();
-
-        m_Environment->simulate_dtime(m_PhysicsDeltaTime);
-
-        m_ContactManager->Process(m_Environment->get_current_time());
-
-        if (m_PostSimulateCallbacks->m_HasCallbacks)
-            m_PostSimulateCallbacks->Process();
-
-        const int len = m_MovableObjects.len();
-        for (int i = len - 1; i >= 0; --i)
-        {
-            IVP_Real_Object *obj = m_MovableObjects.element_at(i);
-            UpdateObjectWorldMatrix(obj);
-        }
-    }
+    Simulate(m_TimeManager->GetLastDeltaTime());
 
     return CK_OK;
 }
@@ -672,12 +650,44 @@ void CKIpionManager::DestroyEnvironment()
     }
 }
 
-IVP_Time CKIpionManager::GetSimulationTime()
+void CKIpionManager::Simulate(float deltaTime)
+{
+    SetDeltaTime(deltaTime);
+
+    if (m_Environment)
+    {
+        if (m_PreSimulateCallbacks->m_HasCallbacks)
+            m_PreSimulateCallbacks->Process();
+
+        m_Environment->simulate_dtime(m_PhysicsDeltaTime);
+
+        m_ContactManager->Process(m_Environment->get_current_time());
+
+        if (m_PostSimulateCallbacks->m_HasCallbacks)
+            m_PostSimulateCallbacks->Process();
+
+        const int len = m_MovableObjects.len();
+        for (int i = len - 1; i >= 0; --i)
+        {
+            IVP_Real_Object *obj = m_MovableObjects.element_at(i);
+            UpdateObjectWorldMatrix(obj);
+        }
+    }
+}
+
+void CKIpionManager::ResetSimulationClock()
+{
+    m_Environment->reset_time();
+    m_Environment->get_time_manager()->env_set_current_time(m_Environment, IVP_Time(0));
+    m_Environment->reset_time();
+}
+
+IVP_Time CKIpionManager::GetSimulationTime() const
 {
     return m_Environment->get_current_time();
 }
 
-float CKIpionManager::GetSimulationTimeStep()
+float CKIpionManager::GetSimulationTimeStep() const
 {
     return m_Environment->get_delta_PSI_time();
 }
@@ -689,9 +699,8 @@ void CKIpionManager::SetSimulationTimeStep(float step)
 
 void CKIpionManager::SetDeltaTime(float delta)
 {
-    float time = (m_DeltaTime * 3.0f + delta) / 4;
-    m_DeltaTime = time;
-    m_PhysicsDeltaTime = time * m_PhysicsTimeFactor;
+    m_DeltaTime = (m_DeltaTime * 3.0f + delta) / 4;
+    m_PhysicsDeltaTime = m_DeltaTime * m_PhysicsTimeFactor;
 }
 
 void CKIpionManager::SetTimeFactor(float factor)
@@ -699,10 +708,16 @@ void CKIpionManager::SetTimeFactor(float factor)
     m_PhysicsTimeFactor = factor * 0.001f;
 }
 
+void CKIpionManager::GetGravity(VxVector &gravity) const
+{
+    const IVP_U_Point *g = m_Environment->get_gravity();
+    gravity.Set((float)g->k[0], (float)g->k[1], (float)g->k[2]);
+}
+
 void CKIpionManager::SetGravity(const VxVector &gravity)
 {
-    IVP_U_Point gravityPoint(gravity.x, gravity.y, gravity.z);
-    m_Environment->set_gravity(&gravityPoint);
+    IVP_U_Point g(gravity.x, gravity.y, gravity.z);
+    m_Environment->set_gravity(&g);
 }
 
 IVP_SurfaceManager *CKIpionManager::GetCollisionSurface(const char *name) const

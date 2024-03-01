@@ -258,13 +258,19 @@ public:
     void CreateEnvironment();
     void DestroyEnvironment();
 
-    IVP_Time GetSimulationTime();
+    void Simulate(float deltaTime);
 
-    float GetSimulationTimeStep();
+    void ResetSimulationClock();
+
+    IVP_Time GetSimulationTime() const;
+
+    float GetSimulationTimeStep() const;
     void SetSimulationTimeStep(float step);
 
     void SetDeltaTime(float delta);
     void SetTimeFactor(float factor);
+
+    void GetGravity(VxVector &gravity) const;
     void SetGravity(const VxVector &gravity);
 
     PhysicsContactManager *GetContactManager() const { return m_ContactManager; }
@@ -297,7 +303,6 @@ public:
     }
 
     IVP_U_Vector<IVP_Real_Object> m_MovableObjects;
-    int field_30;
     IVP_U_Vector<CK3dEntity> m_Entities;
     IVP_U_Vector<IVP_Material> m_Materials;
     IVP_U_Vector<IVP_Liquid_Surface_Descriptor_Simple> m_LiquidSurfaces;
@@ -314,8 +319,6 @@ public:
     float m_DeltaTime;
     float m_PhysicsDeltaTime;
     float m_PhysicsTimeFactor;
-    int field_D8;
-    int field_DC;
     int m_HasPhysicsCalls;
     int m_PhysicalizeCalls;
     int m_DePhysicalizeCalls;
