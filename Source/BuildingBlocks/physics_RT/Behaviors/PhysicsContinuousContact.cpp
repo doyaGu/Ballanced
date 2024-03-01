@@ -130,7 +130,7 @@ public:
             bool activated = false;
             IVP_Time time = m_IpionManager->GetSimulationTime();
             PhysicsContactManager *contactManager = m_IpionManager->GetContactManager();
-            for (int i = 0; i < contactManager->GetRecordCount(); ++i)
+            for (int i = contactManager->GetRecordCount() - 1; i >= 0; --i)
             {
                 PhysicsContactRecord *record = contactManager->GetRecord(i);
                 if (record->m_PhysicsObject == po && record->m_Index == index &&
