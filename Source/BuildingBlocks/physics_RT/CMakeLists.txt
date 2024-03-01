@@ -378,6 +378,10 @@ aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/Behaviors PHYSICS_RT_BEHAVIORS_
 target_sources(physics_RT PRIVATE
         CKIpionManager.cpp
         CKIpionManager.h
+        PhysicsCallback.cpp
+        PhysicsCallback.h
+        PhysicsContact.cpp
+        PhysicsContact.h
         ${PHYSICS_RT_BEHAVIORS_SOURCES}
 )
 target_include_directories(physics_RT PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
