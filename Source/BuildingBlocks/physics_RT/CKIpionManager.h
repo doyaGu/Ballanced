@@ -105,8 +105,8 @@ public:
 
     IVP_Polygon *CreatePhysicsPolygon(CKSTRING name, float mass, IVP_Material *material,
                                       float linearSpeedDampening, float rotSpeedDampening,
-                                      CK3dEntity *target, BOOL startFrozen, BOOL fixed,
-                                      CKSTRING collisionGroup, BOOL enableCollision,
+                                      CK3dEntity *target, CKBOOL startFrozen, CKBOOL fixed,
+                                      CKSTRING collisionGroup, CKBOOL enableCollision,
                                       IVP_SurfaceManager *surman, VxVector *shiftMassCenter);
 
     IVP_Constraint *CreateConstraint(const IVP_Template_Constraint *tmpl)
