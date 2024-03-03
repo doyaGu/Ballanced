@@ -34,33 +34,33 @@ CKERROR ExitInstance(CKContext *context)
     return CK_OK;
 }
 
-CKPluginInfo g_Physics_PluginInfo[2];
+CKPluginInfo g_PluginInfo[2];
 
 PLUGIN_EXPORT int CKGetPluginInfoCount() { return 2; }
 
 PLUGIN_EXPORT CKPluginInfo *CKGetPluginInfo(int Index)
 {
-    g_Physics_PluginInfo[0].m_Author = "TERRATOOLS";
-    g_Physics_PluginInfo[0].m_Description = "Physics Building Blocks";
-    g_Physics_PluginInfo[0].m_Extension = "";
-    g_Physics_PluginInfo[0].m_Type = CKPLUGIN_BEHAVIOR_DLL;
-    g_Physics_PluginInfo[0].m_Version = 0x000001;
-    g_Physics_PluginInfo[0].m_InitInstanceFct = NULL;
-    g_Physics_PluginInfo[0].m_ExitInstanceFct = NULL;
-    g_Physics_PluginInfo[0].m_GUID = CKGUID(0x2FA687D, 0x22814521);
-    g_Physics_PluginInfo[0].m_Summary = "Physics Building Blocks";
+    g_PluginInfo[0].m_Author = "TERRATOOLS";
+    g_PluginInfo[0].m_Description = "Physics Building Blocks";
+    g_PluginInfo[0].m_Extension = "";
+    g_PluginInfo[0].m_Type = CKPLUGIN_BEHAVIOR_DLL;
+    g_PluginInfo[0].m_Version = 0x000001;
+    g_PluginInfo[0].m_InitInstanceFct = NULL;
+    g_PluginInfo[0].m_ExitInstanceFct = NULL;
+    g_PluginInfo[0].m_GUID = CKGUID(0x2FA687D, 0x22814521);
+    g_PluginInfo[0].m_Summary = "Physics Building Blocks";
 
-    g_Physics_PluginInfo[1].m_Author = "TERRATOOLS";
-    g_Physics_PluginInfo[1].m_Description = "Physics Manager";
-    g_Physics_PluginInfo[1].m_Extension = "";
-    g_Physics_PluginInfo[1].m_Type = CKPLUGIN_MANAGER_DLL;
-    g_Physics_PluginInfo[1].m_Version = 0x000001;
-    g_Physics_PluginInfo[1].m_InitInstanceFct = InitInstance;
-    g_Physics_PluginInfo[1].m_ExitInstanceFct = ExitInstance;
-    g_Physics_PluginInfo[1].m_GUID = TT_PHYSICS_MANAGER_GUID;
-    g_Physics_PluginInfo[1].m_Summary = "Physics Manager";
+    g_PluginInfo[1].m_Author = "TERRATOOLS";
+    g_PluginInfo[1].m_Description = "Physics Manager";
+    g_PluginInfo[1].m_Extension = "";
+    g_PluginInfo[1].m_Type = CKPLUGIN_MANAGER_DLL;
+    g_PluginInfo[1].m_Version = 0x000001;
+    g_PluginInfo[1].m_InitInstanceFct = InitInstance;
+    g_PluginInfo[1].m_ExitInstanceFct = ExitInstance;
+    g_PluginInfo[1].m_GUID = TT_PHYSICS_MANAGER_GUID;
+    g_PluginInfo[1].m_Summary = "Physics Manager";
 
-    return &g_Physics_PluginInfo[Index];
+    return &g_PluginInfo[Index];
 }
 
 //	This function should be present and exported for Nemo
