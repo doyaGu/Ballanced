@@ -151,7 +151,7 @@ public:
 
     void ResetProfiler();
 
-    static void FillTemplateInfo(IVP_Template_Real_Object *templ, IVP_U_Point *position, IVP_U_Quat *orientation,
+    static void FillTemplateInfo(IVP_Template_Real_Object *templ, IVP_U_Point *position, IVP_U_Quat *quaternion,
                                  CKSTRING name, float mass, IVP_Material *material,
                                  float linearSpeedDampening, float rotSpeedDampening,
                                  CK3dEntity *target, CKBOOL fixed, CKSTRING collisionGroup,

@@ -355,16 +355,16 @@ IVP_Ball *CKIpionManager::CreatePhysicsBall(CKSTRING name, float mass, float bal
 {
     IVP_Template_Real_Object objectTemplate;
     IVP_U_Point position;
-    IVP_U_Quat orientation;
+    IVP_U_Quat quaternion;
     IVP_U_Matrix massCenter;
 
-    FillTemplateInfo(&objectTemplate, &position, &orientation, name, mass, material, linearSpeedDampening, rotSpeedDampening,
+    FillTemplateInfo(&objectTemplate, &position, &quaternion, name, mass, material, linearSpeedDampening, rotSpeedDampening,
                      target, fixed, collisionGroup, &massCenter, shiftMassCenter);
 
     IVP_Template_Ball ballTemplate;
     ballTemplate.radius = ballRadius;
 
-    IVP_Ball *ball = m_Environment->create_ball(&ballTemplate, &objectTemplate, &orientation, &position);
+    IVP_Ball *ball = m_Environment->create_ball(&ballTemplate, &objectTemplate, &quaternion, &position);
     if (ball)
     {
         if (!startFrozen)
@@ -384,13 +384,13 @@ IVP_Polygon *CKIpionManager::CreatePhysicsPolygon(CKSTRING name, float mass, IVP
 {
     IVP_Template_Real_Object objectTemplate;
     IVP_U_Point position;
-    IVP_U_Quat orientation;
+    IVP_U_Quat quaternion;
     IVP_U_Matrix massCenter;
 
-    FillTemplateInfo(&objectTemplate, &position, &orientation, name, mass, material, linearSpeedDampening, rotSpeedDampening,
+    FillTemplateInfo(&objectTemplate, &position, &quaternion, name, mass, material, linearSpeedDampening, rotSpeedDampening,
                      target, fixed, collisionGroup, &massCenter, shiftMassCenter);
 
-    IVP_Polygon *polygon = m_Environment->create_polygon(surman, &objectTemplate, &orientation, &position);
+    IVP_Polygon *polygon = m_Environment->create_polygon(surman, &objectTemplate, &quaternion, &position);
     if (polygon)
     {
         if (!startFrozen)
@@ -638,7 +638,7 @@ void CKIpionManager::ResetProfiler()
     m_DePhysicalizeCalls = 0;
 }
 
-void CKIpionManager::FillTemplateInfo(IVP_Template_Real_Object *templ, IVP_U_Point *position, IVP_U_Quat *orientation,
+void CKIpionManager::FillTemplateInfo(IVP_Template_Real_Object *templ, IVP_U_Point *position, IVP_U_Quat *quaternion,
                                       CKSTRING name, float mass, IVP_Material *material, float linearSpeedDampening,
                                       float rotSpeedDampening, CK3dEntity *target, CKBOOL fixed,
                                       CKSTRING collisionGroup, IVP_U_Matrix *massCenterMatrix,
@@ -661,15 +661,11 @@ void CKIpionManager::FillTemplateInfo(IVP_Template_Real_Object *templ, IVP_U_Poi
     }
 
     VxMatrix mat = target->GetWorldMatrix();
-    float m10 = mat[1][0];
-    mat[1][0] = mat[0][1];
-    mat[0][1] = m10;
-    float m20 = mat[2][0];
-    mat[2][0] = mat[0][2];
-    mat[0][2] = m20;
-    float m21 = mat[2][1];
-    mat[2][1] = mat[1][2];
-    mat[1][2] = m21;
+
+    // Transpose
+    XSwap(mat[0][1], mat[1][0]);
+    XSwap(mat[0][2], mat[2][0]);
+    XSwap(mat[1][2], mat[2][1]);
 
     position->k[0] = mat[3][0];
     position->k[1] = mat[3][1];
@@ -678,10 +674,10 @@ void CKIpionManager::FillTemplateInfo(IVP_Template_Real_Object *templ, IVP_U_Poi
     VxQuaternion quat;
     quat.FromMatrix(mat);
 
-    orientation->x = quat.x;
-    orientation->y = quat.y;
-    orientation->z = quat.z;
-    orientation->w = quat.w;
+    quaternion->x = quat.x;
+    quaternion->y = quat.y;
+    quaternion->z = quat.z;
+    quaternion->w = quat.w;
 }
 
 int CKIpionManager::AddConvexSurface(IVP_SurfaceBuilder_Ledge_Soup *builder, CKMesh *convex, VxVector *scale)
@@ -785,16 +781,19 @@ void CKIpionManager::UpdateObjectWorldMatrix(IVP_Real_Object *obj)
     obj->get_m_world_f_object_AT(&mat);
 
     VxMatrix m;
+
+    // Transpose
     for (int i = 3; i >= 0; --i)
         for (int j = 3; j >= 0; --j)
             m[j][i] = (float)mat.get_elem(i, j);
     m[0][3] = 0.0f;
     m[1][3] = 0.0f;
     m[2][3] = 0.0f;
-    m[3][3] = 1.0f;
+
     m[3][0] = (float)mat.vv.k[0];
     m[3][1] = (float)mat.vv.k[1];
     m[3][2] = (float)mat.vv.k[2];
+    m[3][3] = 1.0f;
 
     ent->SetWorldMatrix(m);
 }
