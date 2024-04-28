@@ -67,7 +67,7 @@ int GetFullAngle(const CKBehaviorContext &behcontext)
 
     if (rad > 1.0f)
         rad = 1.0f;
-    rad = (cp <= 0.0f) ? acos(rad) : 2 * PI - acos(rad);
+    rad = (cp <= 0.0f) ? (float)acos(rad) : (float)(2 * PI - acos(rad));
 
     float degree = (float)(rad * (180 / PI));
 
