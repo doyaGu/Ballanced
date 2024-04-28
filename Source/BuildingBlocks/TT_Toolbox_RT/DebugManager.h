@@ -12,7 +12,7 @@
 class DebugManager : public CKBaseManager
 {
 public:
-    DebugManager(CKContext *ctx);
+    explicit DebugManager(CKContext *ctx);
     ~DebugManager();
 
     CKERROR OnCKInit() { return CK_OK; }
