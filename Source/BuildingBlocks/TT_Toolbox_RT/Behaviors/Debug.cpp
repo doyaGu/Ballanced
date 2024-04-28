@@ -56,7 +56,7 @@ void sub_10027870(char *buf, CKBehavior *beh, CKBehavior *ownerScript)
 
     CKBehavior *parent = beh->GetParent();
     strcpy(v6, parent->GetName());
-    while ( parent != ownerScript )
+    while (parent != ownerScript)
     {
         strcpy(v5, "/");
         strcat(v5, v6);
@@ -101,7 +101,7 @@ int Debug(const CKBehaviorContext &behcontext)
 
             if (logfile)
             {
-                dm->WriteToLogFile("Debug.log", "Debug Output Behavior \n Location \t: %s \n Owner \t\t: %s \n Comment \t: %s",
+                dm->WriteToLogFile("Debug.log", "Debug Output Behavior \n Location \t: %s \n Owner \t\t: %s \n Comment \t: %s\n",
                                    buf, owner->GetName(), text);
             }
 
