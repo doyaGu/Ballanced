@@ -74,20 +74,22 @@ int Set2DSprite(const CKBehaviorContext &behcontext)
     int input = 0;
     beh->GetLocalParameterValue(0, &input);
 
-    Vx2DVector pos;
+    int inPos = 0;
+
+    Vx2DVector position;
     if (input & INPUT_POSITION)
     {
-        beh->GetInputParameterValue(0, &pos);
+        beh->GetInputParameterValue(inPos++, &position);
     }
     else
     {
-        target->GetPosition(pos, TRUE);
+        target->GetPosition(position, TRUE);
     }
 
     Vx2DVector size;
     if (input & INPUT_SIZE)
     {
-        beh->GetInputParameterValue(1, &size);
+        beh->GetInputParameterValue(inPos++, &size);
     }
     else
     {
@@ -97,11 +99,11 @@ int Set2DSprite(const CKBehaviorContext &behcontext)
     if (input & INPUT_UV)
     {
         VxRect uv;
-        beh->GetInputParameterValue(2, &uv);
+        beh->GetInputParameterValue(inPos++, &uv);
         target->SetSourceRect(uv);
     }
 
-    VxRect rect(pos.x, pos.y, pos.x + size.x, pos.y + size.y);
+    VxRect rect(position.x, position.y, position.x + size.x, position.y + size.y);
     target->SetHomogeneousCoordinates();
     target->SetHomogeneousRect(rect);
 
