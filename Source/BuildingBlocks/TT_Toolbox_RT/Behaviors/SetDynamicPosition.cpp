@@ -150,8 +150,8 @@ int SetDynamicPosition(const CKBehaviorContext &behcontext)
 
     float cof = behcontext.DeltaTime * 0.001f;
     forceX *= cof;
-    forceX *= cof;
-    forceX *= cof;
+    forceY *= cof;
+    forceZ *= cof;
 
     targetPosition.x += (position.x - offsetX) * forceX + delta.x * dampingX;
     targetPosition.y += (position.y - offsetY) * forceY + delta.y * dampingY;
@@ -161,9 +161,10 @@ int SetDynamicPosition(const CKBehaviorContext &behcontext)
 
     float distance = (objectPosition != VxVector::axis0()) ? objectPosition.Magnitude() : 0.0f;
 
-    VxVector vector = objectPosition;
+    VxVector vector(0.0f, 0.0f, 0.0f);
     if (distance > maxDistance2Target && maxDistance2Target > 0.0f)
     {
+        vector = objectPosition;
         if (vector == VxVector::axis0())
             vector.Normalize();
         vector *= maxDistance2Target;
