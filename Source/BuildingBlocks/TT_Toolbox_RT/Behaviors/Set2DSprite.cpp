@@ -87,7 +87,6 @@ int Set2DSprite(const CKBehaviorContext &behcontext)
     Vx2DVector size;
     if (input & INPUT_SIZE)
     {
-        input -= INPUT_SIZE;
         beh->GetInputParameterValue(1, &size);
     }
     else
@@ -95,10 +94,9 @@ int Set2DSprite(const CKBehaviorContext &behcontext)
         target->GetSize(size, TRUE);
     }
 
-    VxRect uv;
     if (input & INPUT_UV)
     {
-        uv.Clear();
+        VxRect uv;
         beh->GetInputParameterValue(2, &uv);
         target->SetSourceRect(uv);
     }

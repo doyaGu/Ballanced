@@ -191,7 +191,7 @@ void RegisterBehaviorDeclarations(XObjectDeclarationArray *reg)
     RegisterBehavior(reg, FillBehaviorReflectionMappingDecl);
 //    RegisterBehavior(reg, FillBehaviorRefractionMappingDecl);
 //    RegisterBehavior(reg, FillBehaviorSetMaterialValuesDecl);
-//    RegisterBehavior(reg, FillBehaviorSetMipMappingDecl);
+   RegisterBehavior(reg, FillBehaviorSetMipMappingDecl);
 //    RegisterBehavior(reg, FillBehaviorAnisoMappingDecl);
 //    RegisterBehavior(reg, FillBehaviorSaveAlphaDecl);
 

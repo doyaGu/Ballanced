@@ -68,17 +68,17 @@ int SaveIC(const CKBehaviorContext &behcontext)
         scene->SetObjectInitialValue(target, chunk);
     }
 
-    if (target->GetClassID() == CKCID_3DENTITY
-        || target->GetClassID() == CKCID_CAMERA
-        || target->GetClassID() == CKCID_TARGETCAMERA
-        || target->GetClassID() == CKCID_CURVEPOINT
-        || target->GetClassID() == CKCID_SPRITE3D
-        || target->GetClassID() == CKCID_LIGHT
-        || target->GetClassID() == CKCID_TARGETLIGHT
-        || target->GetClassID() == CKCID_CHARACTER
-        || target->GetClassID() == CKCID_3DOBJECT
-        || target->GetClassID() == CKCID_BODYPART
-        || target->GetClassID() == CKCID_CURVE)
+    if (target->GetClassID() == CKCID_3DENTITY ||
+        target->GetClassID() == CKCID_CAMERA ||
+        target->GetClassID() == CKCID_TARGETCAMERA ||
+        target->GetClassID() == CKCID_CURVEPOINT ||
+        target->GetClassID() == CKCID_SPRITE3D ||
+        target->GetClassID() == CKCID_LIGHT ||
+        target->GetClassID() == CKCID_TARGETLIGHT ||
+        target->GetClassID() == CKCID_CHARACTER ||
+        target->GetClassID() == CKCID_3DOBJECT ||
+        target->GetClassID() == CKCID_BODYPART ||
+        target->GetClassID() == CKCID_CURVE)
     {
         CKBOOL hierarchy = FALSE;
         beh->GetInputParameterValue(0, &hierarchy);
