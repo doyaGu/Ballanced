@@ -73,5 +73,36 @@ int RestoreIC(const CKBehaviorContext &behcontext)
         }
     }
 
+    if (bo->GetClassID() == CKCID_3DENTITY ||
+        bo->GetClassID() == CKCID_CAMERA ||
+        bo->GetClassID() == CKCID_TARGETCAMERA ||
+        bo->GetClassID() == CKCID_CURVEPOINT ||
+        bo->GetClassID() == CKCID_SPRITE3D ||
+        bo->GetClassID() == CKCID_LIGHT ||
+        bo->GetClassID() == CKCID_TARGETLIGHT ||
+        bo->GetClassID() == CKCID_CHARACTER ||
+        bo->GetClassID() == CKCID_3DOBJECT ||
+        bo->GetClassID() == CKCID_BODYPART ||
+        bo->GetClassID() == CKCID_CURVE)
+    {
+        CKBOOL hierarchy = FALSE;
+        beh->GetInputParameterValue(0, &hierarchy);
+        if (hierarchy)
+        {
+            CK3dEntity *ent = (CK3dEntity *)bo;
+            for (CK3dEntity *child = ent->HierarchyParser(NULL); child != NULL; child = ent->HierarchyParser(child))
+            {
+                if (child->IsInScene(scn))
+                {
+                    CKStateChunk *chunk = scn->GetObjectInitialValue(child);
+                    if (chunk)
+                    {
+                        CKReadObjectState(child, chunk);
+                    }
+                }
+            }
+        }
+    }
+
     return CKBR_OK;
 }
