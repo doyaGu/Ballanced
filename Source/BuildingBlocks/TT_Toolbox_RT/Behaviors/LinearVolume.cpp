@@ -49,9 +49,9 @@ CKERROR CreateLinearVolumeProto(CKBehaviorPrototype **pproto)
 
 double linearize(double val)
 {
-    if ( val > 1.0 )
+    if (val > 1.0)
         return 1.0;
-    if ( val > 0.01 )
+    if (val > 0.01)
         return pow(50.0, val) * 0.02;
     return 0.0;
 }

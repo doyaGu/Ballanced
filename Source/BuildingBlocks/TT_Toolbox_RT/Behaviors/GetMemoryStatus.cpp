@@ -65,16 +65,16 @@ int GetMemoryStatus(const CKBehaviorContext &behcontext)
     int memoryLoad = statex.dwMemoryLoad;
     beh->SetOutputParameterValue(0, &memoryLoad, sizeof(int));
 
-    float dwTotalPhys = statex.dwTotalPhys / (1024.0 * 1024.0);
+    float dwTotalPhys = statex.dwTotalPhys / (1024.0f * 1024.0f);
     beh->SetOutputParameterValue(1, &dwTotalPhys, sizeof(float));
 
-    float dwAvailPhys = statex.dwAvailPhys / (1024.0 * 1024.0);
+    float dwAvailPhys = statex.dwAvailPhys / (1024.0f * 1024.0f);
     beh->SetOutputParameterValue(2, &dwAvailPhys, sizeof(float));
 
-    float dwTotalVirtual = statex.dwTotalVirtual / (1024.0 * 1024.0);
+    float dwTotalVirtual = statex.dwTotalVirtual / (1024.0f * 1024.0f);
     beh->SetOutputParameterValue(3, &dwTotalVirtual, sizeof(float));
 
-    float dwAvailVirtual = statex.dwAvailVirtual / (1024.0 * 1024.0);
+    float dwAvailVirtual = statex.dwAvailVirtual / (1024.0f * 1024.0f);
     beh->SetOutputParameterValue(4, &dwAvailVirtual, sizeof(float));
 
     beh->ActivateOutput(0, TRUE);

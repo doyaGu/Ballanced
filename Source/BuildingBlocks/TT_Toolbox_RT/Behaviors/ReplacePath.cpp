@@ -77,15 +77,14 @@ int ReplacePath(const CKBehaviorContext &behcontext)
     strcat(path2, newPath);
 
     int pathCount = pm->GetPathCount(catIdx);
-    if (pathCount == 0)
+    if (pathCount <= 0)
     {
         beh->ActivateOutput(1, TRUE);
         return CKBR_OK;
     }
 
     XString pathName(260);
-    int pathIdx;
-    for (pathIdx = 0; pathIdx < pathCount; ++pathIdx)
+    for (int pathIdx = 0; pathIdx < pathCount; ++pathIdx)
     {
         pm->GetPathName(catIdx, pathIdx, pathName);
         if (pathName == path1)
