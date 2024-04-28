@@ -2,6 +2,9 @@
 
 DebugManager::DebugManager(CKContext *context) : CKBaseManager(context, TT_DEBUG_MANAGER_GUID, "TT_DebugManager")
 {
+    m_LogFile = NULL;
+    m_DebugMode = false;
+    m_LogFileNotOpened = true;
     context->RegisterNewManager(this);
 }
 
