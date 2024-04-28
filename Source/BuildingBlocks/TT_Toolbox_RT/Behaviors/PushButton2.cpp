@@ -80,52 +80,54 @@ int PushButton2(const CKBehaviorContext &behcontext)
     if (!im)
         return CKBR_ACTIVATENEXTFRAME;
 
-    CKRenderContext *dev = context->GetPlayerRenderContext();
-    if (!dev)
+    CKRenderContext *rc = context->GetPlayerRenderContext();
+    if (!rc)
         return CKBR_ACTIVATENEXTFRAME;
 
     Vx2DVector mousePos;
     im->GetMousePosition(mousePos, FALSE);
 
-    VxRect winRect;
-    dev->GetWindowRect(winRect, FALSE);
+    VxRect screen;
+    rc->GetWindowRect(screen, FALSE);
+    mousePos += screen.GetTopLeft();
 
-    CKBOOL mouseStateChanged = FALSE;
     int state = 0;
-    int oldState = 0;
-    beh->GetLocalParameterValue(0, &oldState);
-    CKBOOL mouseDown = FALSE;
-    beh->GetLocalParameterValue(1, &mouseDown);
-
-    CK2dEntity *picked = dev->Pick2D(mousePos);
+    CK2dEntity *picked = rc->Pick2D(mousePos);
     if (target == picked && im->GetCursorVisibility())
         state |= 1;
 
-    CKBOOL isClicked = im->IsMouseButtonDown(CK_MOUSEBUTTON_LEFT);
-    if (isClicked && !mouseDown)
+    int oldState = 0;
+    beh->GetLocalParameterValue(0, &oldState);
+    CKBOOL oldMouseDown = FALSE;
+    beh->GetLocalParameterValue(1, &oldMouseDown);
+
+    CKBOOL mouseStateChanged = FALSE;
+
+    CKBOOL mouseDown = im->IsMouseButtonDown(CK_MOUSEBUTTON_LEFT);
+    if (mouseDown && !oldMouseDown)
     {
-        mouseDown = TRUE;
-        beh->SetLocalParameterValue(1, &mouseDown);
+        oldMouseDown = TRUE;
+        beh->SetLocalParameterValue(1, &oldMouseDown);
         mouseStateChanged = TRUE;
     }
-    else if (!isClicked && mouseDown)
+    else if (!mouseDown && oldMouseDown)
     {
-        mouseDown = FALSE;
-        beh->SetLocalParameterValue(1, &mouseDown);
+        oldMouseDown = FALSE;
+        beh->SetLocalParameterValue(1, &oldMouseDown);
         mouseStateChanged = TRUE;
     }
 
     if (state != oldState)
     {
         beh->SetLocalParameterValue(0, &state);
-        if ((oldState & 1) == 0 && (state & 1) != 0)
-            beh->ActivateOutput(1, TRUE);
-        else if ((oldState & 1) != 0 && (state & 1) == 0)
+        if ((oldState & 1) != 0 && (state & 1) == 0)
             beh->ActivateOutput(0, TRUE);
+        else if ((oldState & 1) == 0 && (state & 1) != 0)
+            beh->ActivateOutput(1, TRUE);
     }
 
-    if (mouseStateChanged && state == 1 && isClicked)
+    if (mouseStateChanged && (state & 1) != 0 && mouseDown)
         beh->ActivateOutput(2, TRUE);
 
-    return CKBR_OK;
+    return CKBR_ACTIVATENEXTFRAME;
 }
