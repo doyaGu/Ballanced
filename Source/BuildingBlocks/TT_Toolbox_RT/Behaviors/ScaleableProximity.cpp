@@ -84,12 +84,16 @@ CKERROR CreateScaleableProximityProto(CKBehaviorPrototype **pproto)
 #define A_ENTERRANGE 4
 #define A_EXITRANGE 8
 
+#define A_X 1
+#define A_Y 2
+#define A_Z 4
+
 int ScaleableProximity(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
 
-    int flag = A_ALL; // Original value is 17, may be wrong.
-    beh->GetLocalParameterValue(2, &flag);
+    int outputs = A_ALL;
+    beh->GetLocalParameterValue(2, &outputs);
 
     int checkAxis = 0;
     beh->GetLocalParameterValue(3, &checkAxis);
@@ -113,74 +117,72 @@ int ScaleableProximity(const CKBehaviorContext &behcontext)
     int lastCheck = 1;
     beh->GetLocalParameterValue(1, &lastCheck);
 
-    if (lastCheck > 1)
+    if (--lastCheck > 0)
     {
         beh->SetLocalParameterValue(1, &lastCheck);
         return CKBR_ACTIVATENEXTFRAME;
     }
 
     float distance;
-    beh->GetInputParameterValue(0, &distance); // Get the distance
+    beh->GetInputParameterValue(0, &distance);
     CKBOOL barycenter = FALSE;
-    beh->GetInputParameterValue(3, &barycenter); // Get the distance
+    beh->GetInputParameterValue(3, &barycenter);
 
     // Get Object A
-    CK3dEntity *ckA = (CK3dEntity *)beh->GetInputParameterObject(1);
+    CK3dEntity *entA = (CK3dEntity *)beh->GetInputParameterObject(1);
     // Get Object B
-    CK3dEntity *ckB = (CK3dEntity *)beh->GetInputParameterObject(2);
-    if (!ckA || !ckB)
+    CK3dEntity *entB = (CK3dEntity *)beh->GetInputParameterObject(2);
+    if (!entA || !entB)
         return CKBR_PARAMETERERROR;
 
     VxVector posA, posB;
     if (barycenter)
     {
-        if (ckA->GetClassID() == CKCID_CHARACTER)
+        if (entA->GetClassID() == CKCID_CHARACTER)
         {
-            const VxBbox &box = ckA->GetBoundingBox(FALSE);
+            const VxBbox &box = entA->GetBoundingBox();
             posA = (box.Min + box.Max) * 0.5f;
         }
         else
         {
-            ckA->GetBaryCenter(&posA);
+            entA->GetBaryCenter(&posA);
         }
-        if (ckB->GetClassID() == CKCID_CHARACTER)
+
+        if (entB->GetClassID() == CKCID_CHARACTER)
         {
-            const VxBbox &box = ckB->GetBoundingBox(FALSE);
+            const VxBbox &box = entB->GetBoundingBox();
             posB = (box.Min + box.Max) * 0.5f;
         }
         else
         {
-            ckB->GetBaryCenter(&posB);
+            entB->GetBaryCenter(&posB);
         }
     }
     else
     {
-        ckA->GetPosition(&posA, NULL);
-        ckB->GetPosition(&posB, NULL);
+        entA->GetPosition(&posA);
+        entB->GetPosition(&posB);
     }
 
     VxVector aToB;
     float currentDistance = 0;
-    if ((checkAxis & 4) != 0)
+    if ((checkAxis & A_Z) != 0)
     {
         float z = posB.z - posA.z;
         aToB.z = z;
         currentDistance += z * z;
-        checkAxis &= ~4;
     }
-    if ((checkAxis & 2) != 0)
+    if ((checkAxis & A_Y) != 0)
     {
         float y = posB.y - posA.y;
         aToB.y = y;
         currentDistance += y * y;
-        checkAxis &= ~2;
     }
-    if ((checkAxis & 1) != 0)
+    if ((checkAxis & A_X) != 0)
     {
         float x = posB.x - posA.x;
         aToB.x = x;
         currentDistance += x * x;
-        checkAxis &= ~1;
     }
 
     float minDistanceExactness, maxDistanceExactness;
@@ -201,20 +203,17 @@ int ScaleableProximity(const CKBehaviorContext &behcontext)
         currentDistance = (float)pow(currentDistance, 0.5);
     }
 
-    beh->SetOutputParameterValue(0, &currentDistance); // Set the current distance
+    beh->SetOutputParameterValue(0, &currentDistance);
     beh->SetOutputParameterValue(1, &aToB);
 
     if (currentDistance < maxDistanceExactness)
     {
+        lastCheck = minFrameDelay;
         if (currentDistance > minDistanceExactness)
         {
-            lastCheck = (int)(minFrameDelay + (currentDistance - minDistanceExactness) /
-                                                  (double)(maxDistanceExactness - minDistanceExactness) *
-                                                  (maxFrameDelay - minFrameDelay));
-        }
-        else
-        {
-            lastCheck = maxFrameDelay;
+            lastCheck += (int) ((currentDistance - minDistanceExactness) /
+                                (double) (maxDistanceExactness - minDistanceExactness) *
+                                (maxFrameDelay - minFrameDelay));
         }
     }
     else
@@ -222,17 +221,18 @@ int ScaleableProximity(const CKBehaviorContext &behcontext)
         lastCheck = maxFrameDelay;
     }
 
+    if (lastCheck < 1)
+        lastCheck = 1;
+
     beh->SetLocalParameterValue(1, &lastCheck);
 
     int wasin;
     beh->GetLocalParameterValue(0, &wasin);
 
-    int activation = 0;
-
+    int activation;
     if (currentDistance < distance)
     {
-
-        if ((wasin == WASOUT) && (flag & A_ENTERRANGE))
+        if (wasin == WASOUT || wasin == 2)
         {
             activation = A_ENTERRANGE;
         }
@@ -244,8 +244,7 @@ int ScaleableProximity(const CKBehaviorContext &behcontext)
     }
     else
     {
-
-        if ((wasin == WASIN) && (flag & A_EXITRANGE))
+        if (wasin == WASIN || wasin == 2)
         {
             activation = A_EXITRANGE;
         }
@@ -255,18 +254,19 @@ int ScaleableProximity(const CKBehaviorContext &behcontext)
         }
         wasin = WASOUT;
     }
+
     beh->SetLocalParameterValue(0, &wasin);
 
-    int a, b = 0;
-    for (a = 0; a < 4; a++)
+    int pos = 0;
+    for (int i = 0; i < 4; ++i)
     {
-        if ((flag & (1 << a)) != 0)
+        if ((outputs & (1 << i)) != 0)
         {
-            if ((activation & (1 << a)) != 0)
+            if ((activation & (1 << i)) != 0)
             {
-                beh->ActivateOutput(b);
+                beh->ActivateOutput(pos);
             }
-            ++b;
+            ++pos;
         }
     }
 
