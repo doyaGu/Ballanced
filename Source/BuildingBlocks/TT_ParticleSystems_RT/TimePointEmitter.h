@@ -15,6 +15,10 @@ public:
     VxVector m_Vector;
     float m_EmissionDelay;
     CKDWORD m_Unknown;
+
+protected:
+    // add a particle
+    void InitiateParticle(Particle *p);
 };
 
 #endif

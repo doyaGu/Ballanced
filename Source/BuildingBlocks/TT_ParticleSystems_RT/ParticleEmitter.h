@@ -31,7 +31,7 @@ public:
 
     void SetState(CKRenderContext *dev, CKBOOL gouraud = FALSE);
 
-    Particle *getParticles() { return particles; }
+    Particle *GetParticles() { return particles; }
 
     // the emitter 3d entity
     CK_ID m_Entity;

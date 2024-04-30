@@ -50,7 +50,7 @@ int RenderParticles_P(CKRenderContext *dev, CKRenderObject *obj, void *arg)
     int activity = 0;
     beh->GetLocalParameterValue(1, &activity);
 
-    if (!activity && !(em->getParticles()))
+    if (!activity && !(em->GetParticles()))
     {
         ShowParticles(beh, FALSE);
         beh->ActivateOutput(1);
@@ -76,7 +76,7 @@ int RenderParticles_P(CKRenderContext *dev, CKRenderObject *obj, void *arg)
         dev->SetState(VXRENDERSTATE_ALPHABLENDENABLE, FALSE);
     dev->SetTextureStageState(CKRST_TSS_STAGEBLEND, 0, 1);
 
-    Particle *p = em->getParticles();
+    Particle *p = em->GetParticles();
 
     VxVector *positions = (VxVector *)data->PositionPtr;
     CKDWORD *colors = (CKDWORD *)data->ColorPtr;
@@ -120,7 +120,7 @@ int RenderParticles_L(CKRenderContext *dev, CKRenderObject *obj, void *arg)
     int activity = 0;
     beh->GetLocalParameterValue(1, &activity);
 
-    if (!activity && !(em->getParticles()))
+    if (!activity && !(em->GetParticles()))
     {
         ShowParticles(beh, FALSE);
         beh->ActivateOutput(1);
@@ -145,7 +145,7 @@ int RenderParticles_L(CKRenderContext *dev, CKRenderObject *obj, void *arg)
         dev->SetState(VXRENDERSTATE_ALPHABLENDENABLE, FALSE);
     dev->SetTextureStageState(CKRST_TSS_STAGEBLEND, 0, 1);
 
-    Particle *p = em->getParticles();
+    Particle *p = em->GetParticles();
     VxColor oldColor;
 
     VxVector *positions = (VxVector *)data->PositionPtr;
@@ -204,7 +204,7 @@ int RenderParticles_LL(CKRenderContext *dev, CKRenderObject *obj, void *arg)
     int activity = 0;
     beh->GetLocalParameterValue(1, &activity);
 
-    if (!activity && !(em->getParticles()))
+    if (!activity && !(em->GetParticles()))
     {
         ShowParticles(beh, FALSE);
         beh->ActivateOutput(1);
@@ -230,7 +230,7 @@ int RenderParticles_LL(CKRenderContext *dev, CKRenderObject *obj, void *arg)
         dev->SetState(VXRENDERSTATE_ALPHABLENDENABLE, FALSE);
     dev->SetTextureStageState(CKRST_TSS_STAGEBLEND, 0, 1);
 
-    Particle *p = em->getParticles();
+    Particle *p = em->GetParticles();
     int i = 0;
     VxColor oldColor;
 
@@ -338,7 +338,7 @@ int RenderParticles_S(CKRenderContext *dev, CKRenderObject *obj, void *arg)
     int activity = 0;
     beh->GetLocalParameterValue(1, &activity);
 
-    if (!activity && !(em->getParticles()))
+    if (!activity && !(em->GetParticles()))
     {
         ShowParticles(beh, FALSE);
         beh->ActivateOutput(1);
@@ -407,7 +407,7 @@ int RenderParticles_S(CKRenderContext *dev, CKRenderObject *obj, void *arg)
         step = 1.0f / framehc;
     }
 
-    Particle *p = em->getParticles();
+    Particle *p = em->GetParticles();
 
     VxVector cr, cu;
     VxVector rcr, rcu;
@@ -546,7 +546,7 @@ int RenderParticles_LS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
     int activity = 0;
     beh->GetLocalParameterValue(1, &activity);
 
-    if (!activity && !(em->getParticles()))
+    if (!activity && !(em->GetParticles()))
     {
         ShowParticles(beh, FALSE);
         beh->ActivateOutput(1);
@@ -616,7 +616,7 @@ int RenderParticles_LS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
         step = 1.0f / framehc;
     }
 
-    Particle *p = em->getParticles();
+    Particle *p = em->GetParticles();
 
     int np = 0;
     int remaining = 4 * pc;
@@ -778,7 +778,7 @@ int RenderParticles_FS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
     int activity = 0;
     beh->GetLocalParameterValue(1, &activity);
 
-    if (!activity && !(em->getParticles()))
+    if (!activity && !(em->GetParticles()))
     {
         ShowParticles(beh, FALSE);
         beh->ActivateOutput(1);
@@ -817,7 +817,7 @@ int RenderParticles_FS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
         step = 1.0f / framehc;
     }
 
-    Particle *p = em->getParticles();
+    Particle *p = em->GetParticles();
 
     VxVector cr, cu;
     VxVector rcr, rcu;
@@ -919,7 +919,7 @@ int RenderParticles_OS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
         int activity = 0;
         beh->GetLocalParameterValue(1, &activity);
 
-        if (!activity && !(em->getParticles()))
+        if (!activity && !(em->GetParticles()))
         {
             ShowParticles(beh, FALSE);
             beh->ActivateOutput(1);
@@ -989,7 +989,7 @@ int RenderParticles_OS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
         step = 1.0f / framehc;
     }
 
-    Particle *p = em->getParticles();
+    Particle *p = em->GetParticles();
 
     VxVector pos, dir, old, vv(0, 0, 0), ww(0, 0, 0);
     float oldsize;
@@ -1108,7 +1108,7 @@ int RenderParticles_LOS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
     int activity = 0;
     beh->GetLocalParameterValue(1, &activity);
 
-    if (!activity && !(em->getParticles()))
+    if (!activity && !(em->GetParticles()))
     {
         ShowParticles(beh, FALSE);
         beh->ActivateOutput(1);
@@ -1159,7 +1159,7 @@ int RenderParticles_LOS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
         step = 1.0f / framehc;
     }
 
-    Particle *p = em->getParticles();
+    Particle *p = em->GetParticles();
 
     int remaining = num_vtx_max * pc;
     int fi = 0; // face index
@@ -1309,7 +1309,7 @@ int RenderParticles_CS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
     int activity = 0;
     beh->GetLocalParameterValue(1, &activity);
 
-    if (!activity && !(em->getParticles()))
+    if (!activity && !(em->GetParticles()))
     {
         ShowParticles(beh, FALSE);
         beh->ActivateOutput(1);
@@ -1373,7 +1373,7 @@ int RenderParticles_CS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
         step = 1.0f / framehc;
     }
 
-    Particle *p = em->getParticles();
+    Particle *p = em->GetParticles();
 
     VxVector pos, dir, center, old, vv(0, 0, 0), ww(0, 0, 0);
     VxColor oldColor;
@@ -1491,7 +1491,7 @@ int RenderParticles_RS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
     int activity = 0;
     beh->GetLocalParameterValue(1, &activity);
 
-    if (!activity && !(em->getParticles()))
+    if (!activity && !(em->GetParticles()))
     {
         ShowParticles(beh, FALSE);
         beh->ActivateOutput(1);
@@ -1548,7 +1548,7 @@ int RenderParticles_RS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
         step = 1.0f / framehc;
     }
 
-    Particle *p = em->getParticles();
+    Particle *p = em->GetParticles();
 
     VxVector pos, old(0, 0, 0), vv(0, 0, 0), ww(0, 0, 0);
 
@@ -1662,7 +1662,7 @@ int RenderParticles_O(CKRenderContext *dev, CKRenderObject *obj, void *arg)
     int activity = 0;
     beh->GetLocalParameterValue(1, &activity);
 
-    if (!activity && !(em->getParticles()))
+    if (!activity && !(em->GetParticles()))
     {
         ShowParticles(beh, FALSE);
         beh->ActivateOutput(1);
@@ -1675,7 +1675,7 @@ int RenderParticles_O(CKRenderContext *dev, CKRenderObject *obj, void *arg)
     CK3dEntity *ent;
     CKMaterial *mat;
     CKMesh *mesh;
-    Particle *p = em->getParticles();
+    Particle *p = em->GetParticles();
     VxVector dir, up, right;
     int oc = group->GetObjectCount();
     while (p)
