@@ -189,9 +189,13 @@ void RealShadowMappingRenderCallBack(CKRenderContext *dev, void *arg)
     //////////////////////////////////////////////////
     int old_nb_floors_under = tss->nb_floors_under;
 
+#if CKVERSION == 0x13022002
     CKMemoryPool memoryPool(context, old_nb_floors_under);
-
     CK_ID *old_floor = (CK_ID *)memoryPool.Mem();
+#else
+    VxScratch memoryPool(old_nb_floors_under * sizeof(float));
+    CK_ID* old_floor = (CK_ID*)memoryPool.Mem();
+#endif
 
     memcpy(old_floor, tss->floor, old_nb_floors_under * sizeof(CK_ID));
 
