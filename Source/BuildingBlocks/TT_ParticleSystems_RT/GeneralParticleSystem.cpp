@@ -443,7 +443,7 @@ int GeneralParticleSystem(const CKBehaviorContext &behcontext)
     // This section of code can go into the render call back, and return premature
     // if particle is shutdown
     // if there is no more particles and the behavior is inactive
-    if (!activity && !(pe->getParticles()))
+    if (!activity && !(pe->GetParticles()))
     {
         ShowParticles(beh, FALSE);
         beh->ActivateOutput(1);
@@ -507,8 +507,6 @@ CKERROR GeneralParticleSystemCallback(const CKBehaviorContext &behcontext)
         em->ReadSettings(beh);
 
         // We read the inputs
-        if (guid == TIMEPOINTSYSTEM_GUID)
-            beh->GetInputParameterValue(EMISSIONDELAY, &((TimePointEmitter*)em)->m_EmissionDelay);
         em->ReadInputs(beh);
 
         // we initialize the time

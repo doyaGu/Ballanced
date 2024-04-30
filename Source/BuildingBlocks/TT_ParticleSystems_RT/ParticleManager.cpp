@@ -351,7 +351,10 @@ ParticleEmitter *ParticleManager::CreateNewEmitter(CKGUID guid, CK_ID entity)
     }
     else if (guid == TIMEPOINTSYSTEM_GUID)
     {
-        em = new TimePointEmitter(m_Context, entity, "TimePointEmitter");
+        em = new PointEmitter(m_Context, entity, "TimePointEmitter");
+        // POINT MESH
+        CreatePointMesh();
+        em->m_Mesh = m_PointMesh;
     }
     else if (guid == WAVESYSTEM_GUID)
     {
