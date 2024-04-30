@@ -157,10 +157,10 @@ int Sky(const CKBehaviorContext &behcontext)
 
         if (quadraticSideFaces)
         {
-            double s = (2 * PI) / (double)sideMaterials;
-            double cr = cos(s) * radius;
-            double sr = sin(s) * radius;
-            sideFaceHeight = (float)sqrt(sr * sr + (radius - cr) * (radius - cr));
+            float s = (2 * PI) / (float)sideMaterials;
+            float cr = cosf(s) * radius;
+            float sr = sinf(s) * radius;
+            sideFaceHeight = sqrtf(sr * sr + (radius - cr) * (radius - cr));
         }
 
         int vertexCount = sideMaterials * sideVertexCount;
@@ -174,20 +174,20 @@ int Sky(const CKBehaviorContext &behcontext)
         VxVector vertex;
         for (int i = 0; i < vertexCount; i += sideVertexCount)
         {
-            double s = 2 * PI / (double)sideMaterials;
-            double bpi = s * b + 1.25 * PI;
-            double api = s * (a + 1) + 1.25 * PI;
+            float s = 2 * PI / (float)sideMaterials;
+            float bpi = s * (float)b + 1.25f * PI;
+            float api = s * (float)(a + 1) + 1.25f * PI;
             b = a + 1;
             a = b;
 
-            double cb = cos(bpi) * radius;
-            double ca = cos(api) * radius;
+            float cb = cosf(bpi) * radius;
+            float ca = cosf(api) * radius;
 
-            double sb = sin(bpi) * radius;
-            double sa = sin(api) * radius;
+            float sb = sinf(bpi) * radius;
+            float sa = sinf(api) * radius;
 
-            double yt = skyY + sideFaceHeight * 0.5;
-            double yb = skyY - sideFaceHeight * 0.5;
+            float yt = skyY + sideFaceHeight * 0.5f;
+            float yb = skyY - sideFaceHeight * 0.5f;
 
             vertex.x = cb;
             vertex.y = yb;
@@ -217,8 +217,8 @@ int Sky(const CKBehaviorContext &behcontext)
 
             if (topMaterial)
             {
-                const double r = sin(PI / 4);
-                double inv;
+                const float r = sinf(PI / 4);
+                float inv;
                 float u, v;
 
                 vertex.x = cb;
@@ -226,9 +226,9 @@ int Sky(const CKBehaviorContext &behcontext)
                 vertex.z = sb;
                 mesh->SetVertexPosition(j, &vertex);
 
-                inv = 1.0 / sqrt(sb * sb + cb * cb);
-                u = cb * inv * r + 0.5;
-                v = -sb * inv * r + 0.5;
+                inv = 1.0f / sqrtf(sb * sb + cb * cb);
+                u = cb * inv * r + 0.5f;
+                v = -sb * inv * r + 0.5f;
                 mesh->SetVertexTextureCoordinates(j, u, v);
 
                 ++j;
@@ -238,9 +238,9 @@ int Sky(const CKBehaviorContext &behcontext)
                 vertex.z = sa;
                 mesh->SetVertexPosition(j, &vertex);
 
-                inv = 1.0 / sqrt(sa * sa + ca * ca);
-                u = ca * inv * r + 0.5;
-                v = -sa * inv * r + 0.5;
+                inv = 1.0f / sqrtf(sa * sa + ca * ca);
+                u = ca * inv * r + 0.5f;
+                v = -sa * inv * r + 0.5f;
                 mesh->SetVertexTextureCoordinates(j, u, v);
 
                 ++j;
@@ -256,8 +256,8 @@ int Sky(const CKBehaviorContext &behcontext)
 
             if (bottomMaterial)
             {
-                const double r = sin(PI / 4);
-                double inv;
+                const float r = sinf(PI / 4);
+                float inv;
                 float u, v;
 
                 vertex.x = cb;
@@ -265,9 +265,9 @@ int Sky(const CKBehaviorContext &behcontext)
                 vertex.z = sb;
                 mesh->SetVertexPosition(j, &vertex);
 
-                inv = 1.0 / sqrt(sb * sb + cb * cb);
-                u = cb * inv * r + 0.5;
-                v = -sb * inv * r + 0.5;
+                inv = 1.0f / sqrtf(sb * sb + cb * cb);
+                u = cb * inv * r + 0.5f;
+                v = -sb * inv * r + 0.5f;
                 mesh->SetVertexTextureCoordinates(j, u, v);
 
                 ++j;
@@ -285,9 +285,9 @@ int Sky(const CKBehaviorContext &behcontext)
                 vertex.z = sa;
                 mesh->SetVertexPosition(j, &vertex);
 
-                inv = 1.0 / sqrt(sa * sa + ca * ca);
-                u = ca * inv * r + 0.5;
-                v = -sa * inv * r + 0.5;
+                inv = 1.0f / sqrtf(sa * sa + ca * ca);
+                u = ca * inv * r + 0.5f;
+                v = -sa * inv * r + 0.5f;
                 mesh->SetVertexTextureCoordinates(j, u, v);
             }
         }
@@ -461,7 +461,7 @@ int Sky(const CKBehaviorContext &behcontext)
         worldMatrix = VxMatrix::Identity();
 
     ent->SetWorldMatrix(worldMatrix);
-    ent->SetPosition(pos);
+    ent->SetPosition(&pos);
 
     return CKBR_ACTIVATENEXTFRAME;
 }
@@ -519,7 +519,7 @@ CKERROR SkyCallBack(const CKBehaviorContext &behcontext)
         char buffer[256];
         for (int j = 0; j < sideMaterials; ++j)
         {
-            sprintf(buffer, "%d.Side-Mat", ++j);
+            sprintf(buffer, "%d.Side-Mat", j);
             beh->CreateInputParameter(buffer, CKPGUID_MATERIAL);
         }
 
@@ -586,8 +586,8 @@ int SkyPreRenderCallback(CKRenderContext *dev, CKRenderObject *obj, void *arg)
 
     efp->projmat = dev->GetProjectionTransformationMatrix();
 
-    float current_fov = (float)fabs(2.0f * (float)atanf(1.0f / efp->projmat[0][0]));
-    float fov = (float)(current_fov + efp->effect * (PI - current_fov));
+    float current_fov = fabsf(2.0f * atanf(1.0f / efp->projmat[0][0]));
+    float fov = current_fov + efp->effect * (PI - current_fov);
     memset(mat, 0, sizeof(VxMatrix));
     float denom = 1.0f / (far_plane - near_plane);
     mat[0][0] = cosf(fov * 0.5f) / sinf(fov * 0.5f);
