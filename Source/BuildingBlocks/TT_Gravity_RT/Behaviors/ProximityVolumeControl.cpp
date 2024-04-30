@@ -59,7 +59,7 @@ static float CalcGain(float distance)
     if (distance > 1.0f)
         return 1.0f;
     else if (distance >= 0.0f)
-        return pow(50.0f, distance) * 0.02f;
+        return powf(50.0f, distance) * 0.02f;
     else
         return 0.0f;
 }
