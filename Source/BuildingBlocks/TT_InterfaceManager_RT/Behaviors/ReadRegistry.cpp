@@ -248,8 +248,7 @@ CKERROR ReadRegistryCallBack(const CKBehaviorContext &behcontext)
 int ReadIntegerFromRegistry(const char *subKey, CKBehavior *beh, CKContext *context, const char *valueName)
 {
     HKEY hkResult;
-    DWORD dwDisposition;
-    if (::RegCreateKeyExA(HKEY_LOCAL_MACHINE, subKey, 0, 0, 0, KEY_ALL_ACCESS, 0, &hkResult, &dwDisposition) != ERROR_SUCCESS)
+    if (::RegOpenKeyExA(HKEY_LOCAL_MACHINE, subKey, 0, KEY_ALL_ACCESS, &hkResult) != ERROR_SUCCESS)
     {
         ::RegCloseKey(hkResult);
         context->OutputToConsoleExBeep("TT_ReadRegistry: failed to open : %s\\%s", HKEY_LOCAL_MACHINE, subKey);
@@ -263,7 +262,7 @@ int ReadIntegerFromRegistry(const char *subKey, CKBehavior *beh, CKContext *cont
     if (::RegQueryValueExA(hkResult, valueName, NULL, &dwType, (LPBYTE)&value, &cbData) != ERROR_SUCCESS)
     {
         ::RegCloseKey(hkResult);
-        context->OutputToConsoleExBeep("TT_ReadRegistry:  ReadError: %s %d.", valueName, value);
+        context->OutputToConsoleExBeep("TT_ReadRegistry:  ReadError: %s.", valueName);
         beh->ActivateOutput(1);
         return 0;
     }
@@ -275,8 +274,7 @@ int ReadIntegerFromRegistry(const char *subKey, CKBehavior *beh, CKContext *cont
 float ReadFloatFromRegistry(const char *subKey, CKBehavior *beh, CKContext *context, const char *valueName)
 {
     HKEY hkResult;
-    DWORD dwDisposition;
-    if (::RegCreateKeyExA(HKEY_LOCAL_MACHINE, subKey, 0, 0, 0, KEY_ALL_ACCESS, 0, &hkResult, &dwDisposition) != ERROR_SUCCESS)
+    if (::RegOpenKeyExA(HKEY_LOCAL_MACHINE, subKey, 0, KEY_ALL_ACCESS, &hkResult) != ERROR_SUCCESS)
     {
         ::RegCloseKey(hkResult);
         context->OutputToConsoleExBeep("TT_ReadRegistry: failed to open : %s\\%s", HKEY_LOCAL_MACHINE, subKey);
@@ -290,7 +288,7 @@ float ReadFloatFromRegistry(const char *subKey, CKBehavior *beh, CKContext *cont
     if (::RegQueryValueExA(hkResult, valueName, NULL, &dwType, (LPBYTE)&value, &cbData) != ERROR_SUCCESS)
     {
         ::RegCloseKey(hkResult);
-        context->OutputToConsoleExBeep("TT_ReadRegistry:  ReadError: %s %f.", valueName, value);
+        context->OutputToConsoleExBeep("TT_ReadRegistry:  ReadError: %s.", valueName);
         beh->ActivateOutput(1);
         return 0;
     }
@@ -302,8 +300,7 @@ float ReadFloatFromRegistry(const char *subKey, CKBehavior *beh, CKContext *cont
 char *ReadStringFromRegistry(const char *subKey, CKBehavior *beh, CKContext *context, const char *valueName)
 {
     HKEY hkResult;
-    DWORD dwDisposition;
-    if (::RegCreateKeyExA(HKEY_LOCAL_MACHINE, subKey, 0, 0, 0, KEY_ALL_ACCESS, 0, &hkResult, &dwDisposition) != ERROR_SUCCESS)
+    if (::RegOpenKeyExA(HKEY_LOCAL_MACHINE, subKey, 0, KEY_ALL_ACCESS, &hkResult) != ERROR_SUCCESS)
     {
         ::RegCloseKey(hkResult);
         context->OutputToConsoleExBeep("TT_ReadRegistry: failed to open : %s\\%s", HKEY_LOCAL_MACHINE, subKey);
@@ -317,7 +314,7 @@ char *ReadStringFromRegistry(const char *subKey, CKBehavior *beh, CKContext *con
     if (::RegQueryValueExA(hkResult, valueName, NULL, &dwType, (LPBYTE)str, &cbData) != ERROR_SUCCESS)
     {
         ::RegCloseKey(hkResult);
-        context->OutputToConsoleExBeep("TT_ReadRegistry:  ReadError: %s %s.", valueName, str);
+        context->OutputToConsoleExBeep("TT_ReadRegistry:  ReadError: %s.", valueName);
         beh->ActivateOutput(1);
         return NULL;
     }
