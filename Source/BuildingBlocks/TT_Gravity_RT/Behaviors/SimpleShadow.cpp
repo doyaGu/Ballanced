@@ -100,7 +100,7 @@ int SimpleShadow(const CKBehaviorContext &behcontext)
             if (shadow == mat)
             {
                 A_Delete_SoftShadow_From_Floors(tss->floor, mat, tss->nb_floors_under);
-                mat->SetTexture(NULL);
+                mat->SetTexture0(NULL);
                 context->DestroyObject(mat);
             }
         }
@@ -118,13 +118,13 @@ int SimpleShadow(const CKBehaviorContext &behcontext)
         CKMaterial *shadow = (CKMaterial *)context->GetObjectByNameAndClass("TT_SimpleShadow Material", CKCID_MATERIAL);
         if (shadow)
         {
-            shadow->SetTexture(NULL);
+            shadow->SetTexture0(NULL);
             context->DestroyObject(shadow);
         }
 
         // creation of a CkMaterial
-        CKMaterial *mat = (CKMaterial *)context->CreateObject(CKCID_MATERIAL, "SimpleShadow Material",
-                                                               beh->IsDynamic() ? CK_OBJECTCREATION_DYNAMIC : CK_OBJECTCREATION_NONAMECHECK);
+        CKMaterial *mat = (CKMaterial *)context->CreateObject(CKCID_MATERIAL, "TT_SimpleShadow Material",
+                                                              beh->IsDynamic() ? CK_OBJECTCREATION_DYNAMIC : CK_OBJECTCREATION_NONAMECHECK);
         mat->SetEmissive(VxColor(255, 255, 255));
         mat->SetDiffuse(VxColor(255, 255, 255, 255));
         mat->SetSpecular(VxColor(0, 0, 0));
@@ -148,12 +148,10 @@ int SimpleShadow(const CKBehaviorContext &behcontext)
         memset(tss->floor, 0, A_MAX_NUMBER_OF_FLOOR_UNDER_OBJECT * sizeof(CK_ID));
 
         beh->SetLocalParameterValue(0, &tss);
-
-        dev->AddPreRenderCallBack(SimpleShadowRenderCallback, beh);
-        return CKBR_ACTIVATENEXTFRAME;
     }
 
-    return CKBR_OK;
+    dev->AddPreRenderCallBack(SimpleShadowRenderCallback, beh, TRUE);
+    return CKBR_ACTIVATENEXTFRAME;
 }
 
 CKERROR SimpleShadowCallBack(const CKBehaviorContext &behcontext)
@@ -163,12 +161,12 @@ CKERROR SimpleShadowCallBack(const CKBehaviorContext &behcontext)
 
     switch (behcontext.CallbackMessage)
     {
-        case CKM_BEHAVIORPAUSE:
-            dev->RemovePreRenderCallBack(SimpleShadowRenderCallback, beh);
-            break;
-        case CKM_BEHAVIORRESUME:
-            dev->AddPreRenderCallBack(SimpleShadowRenderCallback, beh, TRUE);
-            break;
+    case CKM_BEHAVIORPAUSE:
+        dev->RemovePreRenderCallBack(SimpleShadowRenderCallback, beh);
+        break;
+    case CKM_BEHAVIORRESUME:
+        dev->AddPreRenderCallBack(SimpleShadowRenderCallback, beh, TRUE);
+        break;
     }
 
     return CKBR_OK;
@@ -179,10 +177,12 @@ void SimpleShadowRenderCallback(CKRenderContext *dev, void *arg)
     CKBehavior *beh = (CKBehavior *)arg;
     CKContext *context = dev->GetCKContext();
 
-    CK3dEntity *entity = (CK3dEntity*)beh->GetTarget();
+    CK3dEntity *entity = (CK3dEntity *)beh->GetTarget();
 
     SimpleShadowStruct *tss = NULL;
     beh->GetLocalParameterValue(0, &tss);
+    if (!tss)
+        return;
 
     CKMaterial *mat = (CKMaterial *)context->GetObject(tss->matID);
 
@@ -190,8 +190,15 @@ void SimpleShadowRenderCallback(CKRenderContext *dev, void *arg)
     //  We get the Floors that WERE under the object
     //////////////////////////////////////////////////
     int old_nb_floors_under = tss->nb_floors_under;
+
+#if CKVERSION == 0x13022002
     CKMemoryPool memoryPool1(context, old_nb_floors_under);
     CK_ID *old_floor = (CK_ID *)memoryPool1.Mem();
+#else
+    VxScratch mempool1(old_nb_floors_under * sizeof(float));
+    CK_ID* old_floor = (CK_ID*)mempool1.Mem();
+#endif
+
     memcpy(old_floor, tss->floor, old_nb_floors_under * sizeof(CK_ID));
 
     // we get the input texture id
@@ -203,7 +210,7 @@ void SimpleShadowRenderCallback(CKRenderContext *dev, void *arg)
     {
         tss->texID = newtexID;
         CKTexture *tex = (CKTexture *)context->GetObject(tss->texID);
-        mat->SetTexture(tex);
+        mat->SetTexture0(tex);
     }
 
     // we get the ZOOM factor
@@ -221,11 +228,16 @@ void SimpleShadowRenderCallback(CKRenderContext *dev, void *arg)
     //////////////////////////////////////////////////
     //  We get the Floors that ARE under the object
     //////////////////////////////////////////////////
+#if CKVERSION == 0x13022002
     CKMemoryPool memoryPool2(context, A_MAX_NUMBER_OF_FLOOR_UNDER_OBJECT);
     CKMemoryPool memoryPool3(context, A_MAX_NUMBER_OF_FLOOR_UNDER_OBJECT);
-
-    VxVector *pos_rel = (VxVector *)memoryPool2.Mem();
-    VxVector *scale = (VxVector *)memoryPool3.Mem();
+    VxVector* pos_rel = (VxVector*)memoryPool2.Mem();
+    VxVector* scale = (VxVector*)memoryPool3.Mem();
+#else
+    VxScratch mempool2(A_MAX_NUMBER_OF_FLOOR_UNDER_OBJECT * sizeof(VxVector) * 2);
+    VxVector* pos_rel = (VxVector*)mempool2.Mem();
+    VxVector* scale = pos_rel + A_MAX_NUMBER_OF_FLOOR_UNDER_OBJECT;
+#endif
 
     A_GetFloors(tss, entity, beh, pos_rel, scale, maxHeight);
     CK_ID *floor = tss->floor;
@@ -286,7 +298,6 @@ void SimpleShadowRenderCallback(CKRenderContext *dev, void *arg)
 
     for (a = 0; a < tss->nb_floors_under; a++)
     {
-
         o = (CK3dEntity *)context->GetObject(floor[a]);
         if (CKIsChildClassOf(o, CKCID_3DENTITY))
         {
@@ -317,8 +328,9 @@ void SimpleShadowRenderCallback(CKRenderContext *dev, void *arg)
                 vPos.x = pos_rel[a].x * tmp_x + 0.5f;
                 vPos.z = pos_rel[a].z * tmp_z + 0.5f;
 
-                for (i = 0; i < vertexCount;
-                    i++, vertexArray = (VxVector *)((CKBYTE *)vertexArray + stride), uvArray = (Vx2DVector *)((CKBYTE *)uvArray + cStride))
+                for (i = 0; i < vertexCount; i++,
+                        vertexArray = (VxVector *) ((CKBYTE *) vertexArray + stride),
+                        uvArray = (Vx2DVector *) ((CKBYTE *) uvArray + cStride))
                 {
                     // Transform Vertex Position from mesh coordinates system to projector coordinate system
                     uvArray->x = vPos.x - vertexArray->x * tmp_x;
@@ -343,7 +355,6 @@ void A_GetFloors(SimpleShadowStruct *tss, CK3dEntity *ent, CKBehavior *beh, VxVe
 
     const VxBbox &Bbox_obj = ent->GetBoundingBox();
     float inv_zoom = 1.0f / (tss->zoom * (Bbox_obj.Max.x - Bbox_obj.Min.x));
-
 
     CKFloorManager *FloorManager = (CKFloorManager *)context->GetManagerByGuid(FLOOR_MANAGER_GUID);
     int floorAttribute = FloorManager->GetFloorAttribute();
