@@ -85,31 +85,28 @@ int TextureSine(const CKBehaviorContext &behcontext)
     }
 
     CKDWORD stride;
-    VxUV *uvArray = (VxUV *)mesh->GetModifierUVs(&stride, channel);
-    int pointsNumber = mesh->GetModifierUVCount(channel);
+    VxUV *uvarray = (VxUV *)mesh->GetModifierUVs(&stride, channel);
+    int nbvert = mesh->GetModifierUVCount(channel);
 
     float time;
     beh->GetLocalParameterValue(1, &time);
 
     float t;
-    for (int i = 0; i < pointsNumber; i++, uvArray = (VxUV *)((CKBYTE *)uvArray + stride))
+    for (int i = 0; i < nbvert; i++, uvarray = (VxUV *)((CKBYTE *)uvarray + stride))
     {
-        t = ((float)i / pointsNumber - 0.5f) * 4.0f + time * velocity;
-        uvArray->u = savedUV[i].u + (0.5f - savedUV[i].u) * xamp * cosf(t);
-        uvArray->v = savedUV[i].v + (0.5f - savedUV[i].v) * yamp * sinf(t);
+        t = ((float)i / nbvert - 0.5f) * 4.0f + time * velocity;
+        uvarray->u = savedUV[i].u + (0.5f - savedUV[i].u) * xamp * cosf(t);
+        uvarray->v = savedUV[i].v + (0.5f - savedUV[i].v) * yamp * sinf(t);
     }
     mesh->ModifierUVMove();
 
-    float pi = 3.1415926535f;
     time += behcontext.DeltaTime * 0.001f;
-
-    if (velocity * time > 2 * pi)
-        time -= (2 * pi / velocity);
-
+    if (time * velocity > 2 * PI)
+        time -= (2 * PI / velocity);
     beh->SetLocalParameterValue(1, &time);
 
     beh->ActivateInput(0, FALSE);
-    beh->ActivateOutput(0);
+    beh->ActivateOutput(0, TRUE);
     return CKBR_OK;
 }
 
@@ -122,7 +119,7 @@ CKERROR TextureSineCallBack(const CKBehaviorContext &behcontext)
     case CKM_BEHAVIORATTACH:
     {
         // we get the mesh vertices
-        CKMesh *mesh = (CKMesh *)beh->GetOwner();
+        CKMesh *mesh = (CKMesh *)beh->GetTarget();
         if (!mesh)
             return 0;
 
@@ -148,7 +145,7 @@ CKERROR TextureSineCallBack(const CKBehaviorContext &behcontext)
         // we get the mesh vertices
         if (!beh)
             return 0;
-        CKMesh *mesh = (CKMesh *)beh->GetOwner();
+        CKMesh *mesh = (CKMesh *)beh->GetTarget();
         if (!mesh)
             return 0;
 
