@@ -95,12 +95,12 @@ int Physicalize(const CKBehaviorContext &behcontext)
 
     CKIpionManager *man = CKIpionManager::GetManager(context);
 
-    PhysicsObject *po = man->GetPhysicsObject(ent);
-
     if (beh->IsInputActive(0)) // Physicalize
     {
         ++man->m_PhysicalizeCalls;
         beh->ActivateInput(0, FALSE);
+
+        PhysicsObject *po = man->GetPhysicsObject(ent);
         if (po)
         {
             beh->ActivateOutput(0, TRUE);
@@ -189,11 +189,14 @@ int Physicalize(const CKBehaviorContext &behcontext)
     {
         ++man->m_DePhysicalizeCalls;
         beh->ActivateInput(1, FALSE);
+
+        PhysicsObject *po = man->GetPhysicsObject(ent);
         if (po)
         {
             po->m_RealObject->delete_silently();
             man->RemovePhysicsObject(ent);
         }
+
         beh->ActivateOutput(1, TRUE);
         return CKBR_OK;
     }
