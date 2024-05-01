@@ -22,8 +22,7 @@ public:
     {
         IVP_Real_Object *obj = object->real_object;
 
-        IVP_Core *core = obj->get_core();
-        if (!core->physical_unmoveable)
+        if (obj->get_movement_state() != IVP_MT_STATIC)
         {
             int i = m_IpionManager->m_MovableObjects.index_of(obj);
             if (i != -1)
@@ -47,13 +46,21 @@ public:
     virtual void event_object_revived(IVP_Event_Object *object)
     {
         IVP_Real_Object *obj = object->real_object;
-        m_IpionManager->m_MovableObjects.add(obj);
+        if (obj->get_movement_state() != IVP_MT_STATIC)
+        {
+            m_IpionManager->m_MovableObjects.add(obj);
+        }
     }
 
     virtual void event_object_frozen(IVP_Event_Object *object)
     {
         IVP_Real_Object *obj = object->real_object;
-        m_IpionManager->m_MovableObjects.remove(obj);
+        if (obj->get_movement_state() != IVP_MT_STATIC)
+        {
+            int i = m_IpionManager->m_MovableObjects.index_of(obj);
+            if (i != -1)
+                m_IpionManager->m_MovableObjects.remove_at(i);
+        }
     }
 
 private:
@@ -214,6 +221,26 @@ CKERROR CKIpionManager::PostClearAll()
 CKERROR CKIpionManager::PostProcess()
 {
     Simulate(m_TimeManager->GetLastDeltaTime());
+
+    return CK_OK;
+}
+
+CKERROR CKIpionManager::SequenceToBeDeleted(CK_ID *objids, int count)
+{
+    for (int i = 0; i < count; ++i)
+    {
+        CKObject *obj = m_Context->GetObject(objids[i]);
+        if (CKIsChildClassOf(obj, CKCID_3DENTITY))
+        {
+            CK3dEntity *ent = (CK3dEntity *)obj;
+            PhysicsObject *po = GetPhysicsObject(ent);
+            if (po)
+            {
+                po->m_RealObject->delete_silently();
+                RemovePhysicsObject(ent);
+            }
+        }
+    }
 
     return CK_OK;
 }

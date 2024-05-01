@@ -75,12 +75,14 @@ public:
     virtual CKERROR OnCKReset();
     virtual CKERROR PostClearAll();
     virtual CKERROR PostProcess();
+    virtual CKERROR SequenceToBeDeleted(CK_ID *iIDs, int iCount);
     virtual CKDWORD GetValidFunctionsMask()
     {
         return CKMANAGER_FUNC_PostProcess |
                CKMANAGER_FUNC_PostClearAll |
                CKMANAGER_FUNC_OnCKInit |
                CKMANAGER_FUNC_OnCKEnd |
+               CKMANAGER_FUNC_OnSequenceToBeDeleted |
                CKMANAGER_FUNC_OnCKPlay |
                CKMANAGER_FUNC_OnCKReset;
     }
