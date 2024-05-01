@@ -39,6 +39,8 @@ public:
             delete po->m_ContactData;
             po->m_ContactData = NULL;
         }
+
+        m_IpionManager->RemovePhysicsObject(entity);
     }
 
     virtual void event_object_created(IVP_Event_Object *object) {}
@@ -237,7 +239,6 @@ CKERROR CKIpionManager::SequenceToBeDeleted(CK_ID *objids, int count)
             if (po)
             {
                 po->m_RealObject->delete_silently();
-                RemovePhysicsObject(ent);
             }
         }
     }

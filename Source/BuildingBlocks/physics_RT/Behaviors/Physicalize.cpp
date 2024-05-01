@@ -194,7 +194,6 @@ int Physicalize(const CKBehaviorContext &behcontext)
         if (po)
         {
             po->m_RealObject->delete_silently();
-            man->RemovePhysicsObject(ent);
         }
 
         beh->ActivateOutput(1, TRUE);
