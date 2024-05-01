@@ -14,12 +14,10 @@ The current progress is shown as follows.
 | Bin/ResDll.dll                            | Completed         |
 | BuildingBlocks/physics_RT.dll             | Completed         |
 | BuildingBlocks/TT_DatabaseManager_RT.dll  | Completed         |
-| BuildingBlocks/TT_Gravity_RT.dll          | In Progress       |
+| BuildingBlocks/TT_Gravity_RT.dll          | Almost Done       |
 | BuildingBlocks/TT_InterfaceManager_RT.dll | Completed         |
-| BuildingBlocks/TT_ParticleSystems_RT.dll  | In Progress       |
+| BuildingBlocks/TT_ParticleSystems_RT.dll  | Almost Done       |
 | BuildingBlocks/TT_Toolbox_RT.dll          | Functional        |
-
-**Note: The repository is at the early stage. There is still a lot of work that needs to be done. Please be aware that the codebase can drastically change at any time.**
 
 ## Installation
 
