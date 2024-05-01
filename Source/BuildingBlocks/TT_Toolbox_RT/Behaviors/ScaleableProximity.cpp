@@ -42,10 +42,10 @@ CKERROR CreateScaleableProximityProto(CKBehaviorPrototype **pproto)
     proto->DeclareInput("In");
     proto->DeclareInput("Off");
 
-    proto->DeclareOutput("InRange");
-    proto->DeclareOutput("OutRange");
-    proto->DeclareOutput("EnterRange");
-    proto->DeclareOutput("ExitRange");
+    proto->DeclareOutput(A_outputname[0]);
+    proto->DeclareOutput(A_outputname[1]);
+    proto->DeclareOutput(A_outputname[2]);
+    proto->DeclareOutput(A_outputname[3]);
 
     proto->DeclareInParameter("Distance", CKPGUID_FLOAT, "1");
     proto->DeclareInParameter("ObjectA", CKPGUID_3DENTITY);
@@ -92,8 +92,8 @@ int ScaleableProximity(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
 
-    int outputs = A_ALL;
-    beh->GetLocalParameterValue(2, &outputs);
+    int flag = A_ALL;
+    beh->GetLocalParameterValue(2, &flag);
 
     int checkAxis = 0;
     beh->GetLocalParameterValue(3, &checkAxis);
@@ -200,7 +200,7 @@ int ScaleableProximity(const CKBehaviorContext &behcontext)
     }
     else
     {
-        currentDistance = (float)pow(currentDistance, 0.5);
+        currentDistance = powf(currentDistance, 0.5f);
     }
 
     beh->SetOutputParameterValue(0, &currentDistance);
@@ -208,12 +208,15 @@ int ScaleableProximity(const CKBehaviorContext &behcontext)
 
     if (currentDistance < maxDistanceExactness)
     {
-        lastCheck = minFrameDelay;
         if (currentDistance > minDistanceExactness)
         {
-            lastCheck += (int) ((currentDistance - minDistanceExactness) /
+            lastCheck = minFrameDelay + (int) ((currentDistance - minDistanceExactness) /
                                 (double) (maxDistanceExactness - minDistanceExactness) *
                                 (maxFrameDelay - minFrameDelay));
+        }
+        else
+        {
+            lastCheck = minFrameDelay;
         }
     }
     else
@@ -260,7 +263,7 @@ int ScaleableProximity(const CKBehaviorContext &behcontext)
     int pos = 0;
     for (int i = 0; i < 4; ++i)
     {
-        if ((outputs & (1 << i)) != 0)
+        if ((flag & (1 << i)) != 0)
         {
             if ((activation & (1 << i)) != 0)
             {
