@@ -120,8 +120,8 @@ struct SmallBall
     float force;
     bool flag;
 
-    SmallBall(SmallBall *node, CK3dEntity *b, const VxVector &pos, float f, bool init)
-        : next(node), ball(b), position(pos), force(f), flag(init) {}
+    SmallBall(SmallBall *n, CK3dEntity *b, const VxVector &pos, float f, bool init)
+        : next(n), ball(b), position(pos), force(f), flag(init) {}
 };
 
 const char *indices[] = {"1", "2", "3", "4", "5", "6", "7", "8", "9"};
@@ -253,37 +253,37 @@ int InitializeExtra(const CKBehaviorContext &behcontext)
     CKBOOL flyingExtra;
     beh->GetInputParameterValue(FLYING_EXTRA, &flyingExtra);
 
-    CK3dEntity *shadowObject = GetChildOfTarget(14, "Floor", target);
-    CK3dEntity *centerObject = GetChildOfTarget(14, "Ball0", target);
+    CK3dEntity *floor = GetChildOfTarget(14, "Floor", target);
+    CK3dEntity *ball0 = GetChildOfTarget(14, "Ball0", target);
 
-    if (!shadowObject && !flyingExtra)
+    if (!flyingExtra && !floor)
     {
         context->OutputToConsole("There is no Floorglowobject in hirachy!", FALSE);
         return CKBR_PARAMETERERROR;
     }
 
-    if (!centerObject)
+    if (!ball0)
     {
         context->OutputToConsole("There is no Centerbillboard in hirachy!", FALSE);
         return CKBR_PARAMETERERROR;
     }
 
-    beh->SetLocalParameterObject(SHADOW_OBJECT, shadowObject);
-    beh->SetLocalParameterObject(CENTER_OBJECT, centerObject);
+    beh->SetLocalParameterObject(SHADOW_OBJECT, floor);
+    beh->SetLocalParameterObject(CENTER_OBJECT, ball0);
 
-    if (shadowObject)
+    if (floor)
     {
-        scene->DeActivate(shadowObject);
-        shadowObject->Show(CKHIDE);
+        scene->DeActivate(floor);
+        floor->Show(CKHIDE);
     }
 
-    CK3dEntity *child = centerObject->GetChild(0);
+    CK3dEntity *child = ball0->GetChild(0);
     CKBehavior *script = child->GetScript(0);
     if (script)
         scene->DeActivate(script);
     else
         context->OutputToConsoleEx("1Script not found %s", child->GetName());
-    centerObject->Show(CKHIDE);
+    ball0->Show(CKHIDE);
 
     float force;
     float forceWidth;
@@ -314,7 +314,7 @@ int InitializeExtra(const CKBehaviorContext &behcontext)
         VxVector pos;
         ball->GetPosition(&pos);
 
-        SmallBall *current = new SmallBall(NULL, ball, pos, force, true);
+        SmallBall *current = new SmallBall(NULL, ball, pos, force + forceWidth, true);
         if (i == 0)
             smallBalls = current;
 
@@ -376,23 +376,23 @@ int ActivateExtra(const CKBehaviorContext &behcontext)
     if (centerObject)
         centerObject->Show();
 
-    if (shadowObject && !flyingExtra)
+    if (!flyingExtra && shadowObject)
         shadowObject->Show();
 
     CK3dEntity *child;
     CKBehavior *script;
-    for (SmallBall *it = smallBalls; it != NULL; it = it->next)
+    for (SmallBall *node = smallBalls; node != NULL; node = node->next)
     {
-        child = it->ball->GetChild(0);
+        child = node->ball->GetChild(0);
         script = child->GetScript(0);
         if (script)
             scene->Activate(script, TRUE);
         else
             context->OutputToConsoleEx("8Script not found %s", child->GetName());
 
-        it->ball->Show();
+        node->ball->Show();
 
-        child = it->ball->GetChild(0);
+        child = node->ball->GetChild(0);
         if (child)
         {
             script = child->GetScript(0);
@@ -432,7 +432,7 @@ int sub_10002400(const CKBehaviorContext &behcontext)
 
     float activationDistance;
     beh->GetInputParameterValue(ACTIVATION_DISTANCE, &activationDistance);
-    activationDistance *= activationDistance;
+    activationDistance = activationDistance * activationDistance;
 
     if (CalcDistanceSquare(target, ballPos) > activationDistance)
     {
@@ -441,52 +441,52 @@ int sub_10002400(const CKBehaviorContext &behcontext)
 
         float timeValue;
         beh->GetLocalParameterValue(TIME_VALUE, &timeValue);
+        rotationSpeed *= timeValue;
 
         SmallBall *smallBalls = NULL;
         beh->GetLocalParameterValue(SMALLBALL_LIST, &smallBalls);
         if (!smallBalls)
             return CKBR_PARAMETERERROR;
 
-        int i = 0;
         VxVector pos;
-        VxVector vec1;
+        VxVector vec;
         VxVector newPos;
         VxMatrix mat;
 
-        for (SmallBall *it = smallBalls; it != NULL; it = it->next)
+        int i = 0;
+        for (SmallBall *node = smallBalls; node != NULL; node = node->next)
         {
-            switch (i)
+            switch (i++)
             {
             case 0:
-                vec1.Set(0.0f, 1.0f, 0.0f);
+                vec.Set(0.0f, 1.0f, 0.0f);
                 break;
             case 1:
-                vec1.Set(0.0f, 0.0f, 1.0f);
+                vec.Set(0.0f, 0.0f, 1.0f);
                 break;
             case 2:
-                vec1.Set(1.0f, 0.0f, 0.0f);
+                vec.Set(1.0f, 0.0f, 0.0f);
                 break;
             case 3:
-                vec1.Set(0.5f, 0.5f, 0.7070000171661377f);
+                vec.Set(0.5f, 0.5f, 0.707f);
                 break;
             case 4:
-                vec1.Set(0.7070000171661377f, 0.7070000171661377f, 0.0f);
+                vec.Set(0.707f, -0.707f, 0.0f);
                 break;
             case 5:
-                vec1.Set(-0.5f, -0.5f, 0.7070000171661377f);
+                vec.Set(-0.5f, -0.5f, 0.707f);
                 break;
             default:
                 break;
             }
 
-            it->ball->GetPosition(&pos, target);
-            Vx3DMatrixFromRotation(mat, vec1, rotationSpeed);
+            node->ball->GetPosition(&pos, target);
+            Vx3DMatrixFromRotation(mat, vec, rotationSpeed);
             Vx3DRotateVector(&newPos, mat, &pos);
             float v20 = newPos.Magnitude();
             if (v20 != 2.0f)
                 newPos *= (1.0f / v20) * 2;
-            it->ball->SetPosition(&newPos, target);
-            ++i;
+            node->ball->SetPosition(&newPos, target);
         }
     }
     else
@@ -504,7 +504,7 @@ int sub_10002400(const CKBehaviorContext &behcontext)
         if (!scene)
             return CKBR_PARAMETERERROR;
 
-        if (shadowObject && !flyingExtra)
+        if (!flyingExtra && shadowObject)
             shadowObject->Show(CKHIDE);
 
         if (centerObject)
@@ -534,8 +534,8 @@ int sub_10002400(const CKBehaviorContext &behcontext)
         if (!smallBalls)
             return CKBR_PARAMETERERROR;
 
-        for (SmallBall *it = smallBalls; it != NULL; it = it->next)
-            it->ball->GetPosition(&it->position);
+        for (SmallBall *node = smallBalls; node != NULL; node = node->next)
+            node->ball->GetPosition(&node->position);
 
         CKBOOL activated = TRUE;
         beh->SetOutputParameterValue(0, &activated);
@@ -550,11 +550,10 @@ int sub_10002400(const CKBehaviorContext &behcontext)
 int sub_10002870(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
-    CKContext *context = behcontext.Context;
 
     VxVector awayPos;
     beh->GetLocalParameterValue(AWAY_POSITION_SAVE, &awayPos);
-    awayPos -= 3.0f;
+    awayPos.y -= 3.0f;
 
     float timeCount;
     beh->GetLocalParameterValue(TIME_COUNTER, &timeCount);
@@ -584,15 +583,15 @@ int sub_10002870(const CKBehaviorContext &behcontext)
         return CKBR_PARAMETERERROR;
 
     VxVector pos;
-    for (SmallBall *it = smallBalls; it != NULL; it = it->next)
+    for (SmallBall *node = smallBalls; node != NULL; node = node->next)
     {
-        VxVector oldPos = it->position;
+        VxVector oldPos = node->position;
 
-        it->ball->GetPosition(&pos);
-        it->position = pos;
+        node->ball->GetPosition(&pos);
+        node->position = pos;
 
         VxVector newPos = pos + (pos - oldPos) * awayDamping + (pos - awayPos) * awayForce;
-        it->ball->SetPosition(&newPos);
+        node->ball->SetPosition(&newPos);
     }
 
     return CKBR_OK;
@@ -640,58 +639,60 @@ int sub_10002A50(const CKBehaviorContext &behcontext)
     VxVector pos;
     int activatedBallCount = 0;
     int i = 0;
-    for (SmallBall *it = smallBalls; it != NULL; it = it->next, ++i)
+    for (SmallBall *node = smallBalls; node != NULL; node = node->next, ++i)
     {
-        if (it->flag)
+        if (!node->flag)
+            continue;
+
+        node->ball->GetPosition(&pos);
+
+        float collDistance = 2.0f;
+        beh->GetInputParameterValue(EXTRA_POINTS_COLLDISTANCE, &collDistance);
+        if (SquareMagnitude(ballPos - pos) <= collDistance)
         {
-            it->ball->GetPosition(&pos);
-
-            float collDistance = 2.0f;
-            beh->GetInputParameterValue(EXTRA_POINTS_COLLDISTANCE, &collDistance);
-            if (SquareMagnitude(ballPos - pos) <= collDistance)
+            ++activatedBallCount;
+            --ballCount;
+            beh->SetLocalParameterValue(BALL_COUNTER, &ballCount);
+            child = node->ball->GetChild(0);
+            if (child)
             {
-                ++activatedBallCount;
-                --ballCount;
-                beh->SetLocalParameterValue(BALL_COUNTER, &ballCount);
-                child = it->ball->GetChild(0);
-                if (child)
-                {
-                    script = child->GetScript(0);
-                    if (script)
-                        scene->DeActivate(script);
-                    else
-                        context->OutputToConsoleEx("17Script not found %s", child->GetName());
+                script = child->GetScript(0);
+                if (script)
+                    scene->DeActivate(script);
+                else
+                    context->OutputToConsoleEx("17Script not found %s", child->GetName());
 
-                    child = it->ball->GetChild(0);
-                    script = child->GetScript(0);
-                    if (script)
-                        scene->DeActivate(script);
-                    else
-                        context->OutputToConsoleEx("18Script not found %s", child->GetName());
-                }
-                it->ball->Show(CKHIDE);
-
-                CKGroup *hitFrameGroup = (CKGroup *)beh->GetInputParameterObject(HIT_FRAME_GROUP);
-                CK3dEntity *hitFrame = (CK3dEntity *)hitFrameGroup->GetObject(i);
-                if (hitFrame)
-                {
-                    hitFrame->SetPosition(&pos);
-
-                    script = hitFrame->GetScript(0);
-                    if (script)
-                        scene->DeActivate(script);
-                    else
-                        context->OutputToConsoleEx("19Script not found %s", child->GetName());
-                }
+                child = node->ball->GetChild(0);
+                script = child->GetScript(0);
+                if (script)
+                    scene->DeActivate(script);
+                else
+                    context->OutputToConsoleEx("18Script not found %s", child->GetName());
             }
-            else
+            node->ball->Show(CKHIDE);
+
+            CKGroup *hitFrameGroup = (CKGroup *)beh->GetInputParameterObject(HIT_FRAME_GROUP);
+            CK3dEntity *hitFrame = (CK3dEntity *)hitFrameGroup->GetObject(i);
+            if (hitFrame)
             {
-                VxVector oldPos = it->position;
-                it->position = pos;
+                VxVector position;
+                node->ball->GetPosition(&position);
+                hitFrame->SetPosition(&position);
 
-                VxVector newPos = pos + (pos - oldPos) * damping + (ballPos - pos) * it->force * timeValue;
-                it->ball->SetPosition(&newPos);
+                script = hitFrame->GetScript(0);
+                if (script)
+                    scene->DeActivate(script);
+                else
+                    context->OutputToConsoleEx("19Script not found %s", child->GetName());
             }
+        }
+        else
+        {
+            VxVector oldPos = node->position;
+            node->position = pos;
+
+            VxVector newPos = pos + (pos - oldPos) * damping + (ballPos - pos) * node->force * timeValue;
+            node->ball->SetPosition(&newPos);
         }
     }
 
@@ -760,25 +761,25 @@ int DestroyExtra(const CKBehaviorContext &behcontext)
         centerObject->Show(CKHIDE);
     }
 
-    if (shadowObject && !flyingExtra)
+    if (!flyingExtra && shadowObject)
     {
         shadowObject->Show(CKHIDE);
     }
 
     CK3dEntity *child;
     CKBehavior *script;
-    for (SmallBall *it = smallBalls; it != NULL; it = it->next)
+    for (SmallBall *node = smallBalls; node != NULL; node = node->next)
     {
-        child = it->ball->GetChild(0);
+        child = node->ball->GetChild(0);
         script = child->GetScript(0);
-        if (!script)
+        if (script)
             scene->DeActivate(script);
         else
             context->OutputToConsoleEx("11Script not found %s", child->GetName());
 
-        it->ball->Show(CKHIDE);
+        node->ball->Show(CKHIDE);
 
-        child = it->ball->GetChild(0);
+        child = node->ball->GetChild(0);
         if (child)
         {
             script = child->GetScript(0);
@@ -892,7 +893,7 @@ int Extra(const CKBehaviorContext &behcontext)
         beh->SetLocalParameterValue(NEXT_CHECK, &nextCheck);
     }
 
-    if (!ExecuteExtra(behcontext))
+    if (ExecuteExtra(behcontext))
     {
         context->OutputToConsole("Couldn't execute the Extra.");
         return CKBR_PARAMETERERROR;
