@@ -14,9 +14,9 @@ The current progress is shown as follows.
 | Bin/ResDll.dll                            | Completed         |
 | BuildingBlocks/physics_RT.dll             | Completed         |
 | BuildingBlocks/TT_DatabaseManager_RT.dll  | Completed         |
-| BuildingBlocks/TT_Gravity_RT.dll          | Almost Done       |
+| BuildingBlocks/TT_Gravity_RT.dll          | Completed         |
 | BuildingBlocks/TT_InterfaceManager_RT.dll | Completed         |
-| BuildingBlocks/TT_ParticleSystems_RT.dll  | Almost Done       |
+| BuildingBlocks/TT_ParticleSystems_RT.dll  | Functional        |
 | BuildingBlocks/TT_Toolbox_RT.dll          | Functional        |
 
 ## Installation
