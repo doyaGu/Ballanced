@@ -64,7 +64,7 @@ public:
         m_Properties = 0;
         m_FontTexture = 0;
         m_FirstCharacter = 0;
-        m_ParagraphIndentation = 0.0f;
+        m_ParagraphIndentation = Vx2DVector(0.0f);
         m_SpacingProperties = 0;
         m_CaretMaterial = NULL;
         m_CaretSize = 0.0f;
