@@ -148,6 +148,8 @@ public:
     void DeleteCollisionSurfaces();
     void ClearCollisionSurfaces();
 
+    void ClearLiquidSurfaces();
+
     void SetupCollisionDetectID();
     int GetCollisionDetectID(CK3dEntity *entity) const;
 

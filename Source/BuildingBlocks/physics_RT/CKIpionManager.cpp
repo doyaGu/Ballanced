@@ -207,15 +207,9 @@ CKERROR CKIpionManager::OnCKReset()
 
 CKERROR CKIpionManager::PostClearAll()
 {
+    DestroyEnvironment();
     ClearCollisionSurfaces();
-
-    const int len = m_LiquidSurfaces.len();
-    for (int i = len - 1; i >= 0; --i)
-    {
-        IVP_Liquid_Surface_Descriptor_Simple *surface = m_LiquidSurfaces.element_at(i);
-        m_LiquidSurfaces.remove_at(i);
-        delete surface;
-    }
+    ClearLiquidSurfaces();
 
     return CK_OK;
 }
@@ -612,6 +606,17 @@ void CKIpionManager::ClearCollisionSurfaces()
 {
     DeleteCollisionSurfaces();
     m_CollisionSurfaces = new IVP_U_String_Hash(64);
+}
+
+void CKIpionManager::ClearLiquidSurfaces()
+{
+    const int len = m_LiquidSurfaces.len();
+    for (int i = len - 1; i >= 0; --i)
+    {
+        IVP_Liquid_Surface_Descriptor_Simple *surface = m_LiquidSurfaces.element_at(i);
+        m_LiquidSurfaces.remove_at(i);
+        delete surface;
+    }
 }
 
 void CKIpionManager::SetupCollisionDetectID()
