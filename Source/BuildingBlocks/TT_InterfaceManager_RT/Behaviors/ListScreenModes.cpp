@@ -96,15 +96,15 @@ int ListScreenModes(const CKBehaviorContext &behcontext)
         int height = dm[i].Height;
 
         int maxRefreshRate = 0;
-        for (int j = i; dm[j].Width == width && dm[j].Height == height && j < dmCount; ++j)
+        for (int j = i; j < dmCount && dm[j].Width == width && dm[j].Height == height; ++j)
         {
-            if (dm[j].RefreshRate > maxRefreshRate && dm[j].Bpp > 8)
+            if (dm[j].Bpp > 8 && dm[j].RefreshRate > maxRefreshRate)
                 maxRefreshRate = dm[j].RefreshRate;
         }
 
-        while (dm[i].Width == width && dm[i].Height == height && i < dmCount)
+        while (i < dmCount && dm[i].Width == width && dm[i].Height == height)
         {
-            if (dm[i].RefreshRate == maxRefreshRate && dm[i].Bpp > 8) {
+            if (dm[i].Bpp > 8 && dm[i].RefreshRate == maxRefreshRate) {
                 screenModes->InsertRow();
                 screenModes->SetElementValue(row, 0, &i, sizeof(int));
                 screenModes->SetElementValue(row, 1, &dm[i].Width, sizeof(int));
