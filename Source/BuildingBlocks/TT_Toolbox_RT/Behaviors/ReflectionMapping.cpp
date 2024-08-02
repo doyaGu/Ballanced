@@ -86,27 +86,31 @@ int ReflectionMapping(const CKBehaviorContext &behcontext)
         return CKBR_OK;
     }
 
-    CKDWORD uvStride = 0;
     CKDWORD vertexStride = 0;
     CKDWORD normalStride = 0;
-    CKBYTE *uvs = mesh->GetModifierUVs(&uvStride);
-    CKBYTE *vertices = mesh->GetModifierVertices(&vertexStride);
-    void *normals = mesh->GetNormalsPtr(&normalStride);
+    CKDWORD uvStride = 0;
+    CKBYTE *verticesPtr = mesh->GetModifierVertices(&vertexStride);
+    void *normalsPtr = mesh->GetNormalsPtr(&normalStride);
+    CKBYTE *uvsPtr = mesh->GetModifierUVs(&uvStride);
+
+    XPtrStrided<VxVector> vertices(verticesPtr, vertexStride);
+    XPtrStrided<VxVector> normals(normalsPtr, normalStride);
+    XPtrStrided<VxUV> uvs(uvsPtr, uvStride);
 
     const int count = mesh->GetVertexCount();
     for (int i = 0; i < count; ++i)
     {
-        VxVector *pos = (VxVector *)&vertices[i * vertexStride];
-        VxVector *normal = (VxVector *)&((CKBYTE *)normals)[i * normalStride];
-        Vx2DVector *uv = (Vx2DVector *)&uvs[i * uvStride];
-
-        VxVector e = cameraPosition - *pos;
+        VxVector e = cameraPosition - *vertices;
         e.Normalize();
+        ++vertices;
 
-        VxVector r = 2 * normal->Dot(e) * *normal - *pos;
+        VxVector r = 2 * normals->Dot(e) * *normals - e;
         r.Normalize();
-        uv->x = (r.x + 1.0f) * 0.5f;
-        uv->y = (r.z + 1.0f) * 0.5f;
+        ++normals;
+
+        uvs->u = (r.x + 1.0f) * 0.5f;
+        uvs->v = (r.z + 1.0f) * 0.5f;
+        ++uvs;
     }
 
     mesh->UVChanged();
