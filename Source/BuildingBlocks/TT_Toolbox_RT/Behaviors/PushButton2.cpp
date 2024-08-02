@@ -52,6 +52,11 @@ CKERROR CreatePushButton2Proto(CKBehaviorPrototype **pproto)
     return CK_OK;
 }
 
+#define RELEASED 0
+#define ROLLOVER 1
+#define PRESSED  2
+#define PUSHED   3
+
 int PushButton2(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
@@ -61,13 +66,12 @@ int PushButton2(const CKBehaviorContext &behcontext)
     if (!target)
         return CKBR_OWNERERROR;
 
+    int state = 0;
+
     if (beh->IsInputActive(0))
     {
         beh->ActivateInput(0, FALSE);
-        int state = 0;
         beh->SetLocalParameterValue(0, &state);
-        CKBOOL mouseDown = FALSE;
-        beh->SetLocalParameterValue(1, &mouseDown);
     }
 
     if (beh->IsInputActive(1))
@@ -75,6 +79,9 @@ int PushButton2(const CKBehaviorContext &behcontext)
         beh->ActivateInput(1, FALSE);
         return CKBR_OK;
     }
+
+    int oldState = 0;
+    beh->GetLocalParameterValue(0, &oldState);
 
     CKInputManager *im = (CKInputManager *)context->GetManagerByGuid(INPUT_MANAGER_GUID);
     if (!im)
@@ -91,43 +98,26 @@ int PushButton2(const CKBehaviorContext &behcontext)
     rc->GetWindowRect(screen, FALSE);
     mousePos += screen.GetTopLeft();
 
-    int state = 0;
     CK2dEntity *picked = rc->Pick2D(mousePos);
     if (target == picked && im->GetCursorVisibility())
-        state |= 1;
+        state |= ROLLOVER;
 
-    int oldState = 0;
-    beh->GetLocalParameterValue(0, &oldState);
-    CKBOOL oldMouseDown = FALSE;
-    beh->GetLocalParameterValue(1, &oldMouseDown);
-
-    CKBOOL mouseStateChanged = FALSE;
-
-    CKBOOL mouseDown = im->IsMouseButtonDown(CK_MOUSEBUTTON_LEFT);
-    if (mouseDown && !oldMouseDown)
-    {
-        oldMouseDown = TRUE;
-        beh->SetLocalParameterValue(1, &oldMouseDown);
-        mouseStateChanged = TRUE;
-    }
-    else if (!mouseDown && oldMouseDown)
-    {
-        oldMouseDown = FALSE;
-        beh->SetLocalParameterValue(1, &oldMouseDown);
-        mouseStateChanged = TRUE;
-    }
+    if (im->IsMouseButtonDown(CK_MOUSEBUTTON_LEFT))
+        state |= PRESSED;
 
     if (state != oldState)
     {
         beh->SetLocalParameterValue(0, &state);
-        if ((oldState & 1) != 0 && (state & 1) == 0)
-            beh->ActivateOutput(0, TRUE);
-        else if ((oldState & 1) == 0 && (state & 1) != 0)
-            beh->ActivateOutput(1, TRUE);
-    }
 
-    if (mouseStateChanged && (state & 1) != 0 && mouseDown)
-        beh->ActivateOutput(2, TRUE);
+        if ((oldState & ROLLOVER) && !(state & ROLLOVER))
+            beh->ActivateOutput(RELEASED);
+
+        if (!(oldState & ROLLOVER) && (state & ROLLOVER))
+            beh->ActivateOutput(ROLLOVER);
+
+        if ((oldState == PUSHED) && (state == ROLLOVER))
+            beh->ActivateOutput(PRESSED);
+    }
 
     return CKBR_ACTIVATENEXTFRAME;
 }
