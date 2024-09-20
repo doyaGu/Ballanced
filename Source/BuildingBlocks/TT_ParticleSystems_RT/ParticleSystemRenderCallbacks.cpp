@@ -69,6 +69,7 @@ int RenderParticles_L(CKRenderContext *dev, CKRenderObject *obj, void *arg)
 
     if (!em->particleCount)
         return 0;
+
     VxDrawPrimitiveData *data = dev->GetDrawPrimitiveStructure(CKRST_DP_TR_CL_VC, 2 * em->particleCount);
 
     VxMatrix oldmatrix = dev->GetWorldTransformationMatrix();
@@ -140,12 +141,8 @@ int RenderParticles_S(CKRenderContext *dev, CKRenderObject *obj, void *arg)
     int pc = em->particleCount;
     if (!pc)
         return 0;
-#ifndef PSX2
-    VxDrawPrimitiveData *data = dev->GetDrawPrimitiveStructure((CKRST_DPFLAGS)(CKRST_DP_TR_CL_VCT | CKRST_DP_VBUFFER), (4 * pc > VBUFFERSIZE) ? VBUFFERSIZE : 4 * pc);
-#else
-    VxDrawPrimitiveData *data = dev->GetDrawPrimitiveStructure((CKRST_DPFLAGS)(CKRST_DP_TR_CL_VCT), (4 * pc > VBUFFERSIZE) ? VBUFFERSIZE : 4 * pc);
-#endif
 
+    VxDrawPrimitiveData *data = dev->GetDrawPrimitiveStructure((CKRST_DPFLAGS)(CKRST_DP_TR_CL_VCT | CKRST_DP_VBUFFER), (4 * pc > VBUFFERSIZE) ? VBUFFERSIZE : 4 * pc);
     VxUV *uvs = (VxUV *)data->TexCoordPtr;
     VxVector *positions = (VxVector *)data->PositionPtr;
     CKDWORD *colors = (CKDWORD *)data->ColorPtr;
@@ -292,11 +289,7 @@ int RenderParticles_S(CKRenderContext *dev, CKRenderObject *obj, void *arg)
 
             if (remaining > 0)
             {
-#ifndef PSX2
                 data = dev->GetDrawPrimitiveStructure((CKRST_DPFLAGS)(CKRST_DP_TR_CL_VCT | CKRST_DP_VBUFFER), (remaining > VBUFFERSIZE) ? VBUFFERSIZE : remaining);
-#else
-                data = dev->GetDrawPrimitiveStructure((CKRST_DPFLAGS)(CKRST_DP_TR_CL_VCT), (remaining > VBUFFERSIZE) ? VBUFFERSIZE : remaining);
-#endif
                 uvs = (VxUV *)data->TexCoordPtr;
                 positions = (VxVector *)data->PositionPtr;
                 colors = (CKDWORD *)data->ColorPtr;
@@ -326,8 +319,8 @@ int RenderParticles_FS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
     int pc = em->particleCount;
     if (!pc)
         return 0;
-    VxDrawPrimitiveData *data = dev->GetDrawPrimitiveStructure(CKRST_DP_TR_CL_VCT, 3 * pc);
 
+    VxDrawPrimitiveData *data = dev->GetDrawPrimitiveStructure(CKRST_DP_TR_CL_VCT, 3 * pc);
     XPtrStrided<VxUV> uvs(data->TexCoordPtr, data->TexCoordStride);
     XPtrStrided<VxVector> positions(data->PositionPtr, data->PositionStride);
     XPtrStrided<CKDWORD> colors(data->ColorPtr, data->ColorStride);
@@ -449,12 +442,8 @@ int RenderParticles_OS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
     int pc = em->particleCount;
     if (!pc)
         return 0;
-#ifndef PSX2
-    VxDrawPrimitiveData *data = dev->GetDrawPrimitiveStructure((CKRST_DPFLAGS)(CKRST_DP_TR_CL_VCT /*|CKRST_DP_VBUFFER*/), 4 * pc);
-#else
-    VxDrawPrimitiveData *data = dev->GetDrawPrimitiveStructure((CKRST_DPFLAGS)(CKRST_DP_TR_CL_VCT), 4 * pc);
-#endif
 
+    VxDrawPrimitiveData *data = dev->GetDrawPrimitiveStructure(CKRST_DP_TR_CL_VCT, 4 * pc);
     VxUV *uvs = (VxUV *)data->TexCoordPtr;
     VxVector *positions = (VxVector *)data->PositionPtr;
     CKDWORD *colors = (CKDWORD *)data->ColorPtr;
@@ -504,7 +493,7 @@ int RenderParticles_OS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
     if (em->m_TextureFrameCount > 1)
     {
         changeuv = TRUE;
-        framehc = 1 + (int)((float)(sqrtf((float)(em->m_TextureFrameCount - 1))));
+        framehc = 1 + (int)sqrtf((float)(em->m_TextureFrameCount - 1));
         step = 1.0f / framehc;
     }
 
@@ -521,7 +510,6 @@ int RenderParticles_OS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
     int fi = 0;
     while (p)
     {
-
         pos = p->pos;
         dir = p->dir;
 
@@ -618,6 +606,7 @@ int RenderParticles_CS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
     int pc = em->particleCount;
     if (!pc)
         return 0;
+
     VxDrawPrimitiveData *data = dev->GetDrawPrimitiveStructure(CKRST_DP_TR_CL_VCT, 4 * pc);
     VxUV *uvs = (VxUV *)data->TexCoordPtr;
     VxVector *positions = (VxVector *)data->PositionPtr;
@@ -667,7 +656,7 @@ int RenderParticles_CS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
     if (em->m_TextureFrameCount > 1)
     {
         changeuv = TRUE;
-        framehc = 1 + (int)((float)(sqrtf((float)(em->m_TextureFrameCount - 1))));
+        framehc = 1 + (int)sqrtf((float)(em->m_TextureFrameCount - 1));
         step = 1.0f / framehc;
     }
 
@@ -783,7 +772,6 @@ int RenderParticles_RS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
     if (!pc)
         return 0;
     VxDrawPrimitiveData *data = dev->GetDrawPrimitiveStructure(CKRST_DP_TR_CL_VCT, 4 * pc);
-    CKWORD *indices = dev->GetDrawPrimitiveIndices(pc * 6);
 
     VxUV *uvs = (VxUV *)data->TexCoordPtr;
     VxVector *positions = (VxVector *)data->PositionPtr;
@@ -802,7 +790,7 @@ int RenderParticles_RS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
     if (em->m_TextureFrameCount > 1)
     {
         changeuv = TRUE;
-        framehc = 1 + (int)(sqrtf((float)(em->m_TextureFrameCount - 1)));
+        framehc = 1 + (int)sqrtf((float)(em->m_TextureFrameCount - 1));
         step = 1.0f / framehc;
     }
 
@@ -815,21 +803,15 @@ int RenderParticles_RS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
 
     CK3dEntity *ent = (CK3dEntity *)dev->GetCKContext()->GetObject(em->m_Entity);
     cam->InverseTransform(&old, &vv, ent);
-    const VxMatrix &worldCam = cam->GetWorldMatrix();
-
     old += Normalize(old) * 40.0f;
 
-    CK_ID oldtex = -1;
-
     const VxMatrix &invCam = cam->GetInverseWorldMatrix();
-
-    VxMatrix finalMat = /*ent->GetWorldMatrix()*/ invCam;
 
     int fi = 0;
     int ni = 0;
     while (p)
     {
-        Vx3DMultiplyMatrixVector(&pos, finalMat, &p->pos);
+        Vx3DMultiplyMatrixVector(&pos, invCam, &p->pos);
 
         vv.x = pos.x - old.x;
         vv.y = pos.y - old.y;
