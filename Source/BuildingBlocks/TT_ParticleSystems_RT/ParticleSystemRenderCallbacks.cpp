@@ -623,7 +623,6 @@ int RenderParticles_CS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
     VxVector *positions = (VxVector *)data->PositionPtr;
     CKDWORD *colors = (CKDWORD *)data->ColorPtr;
 
-    ///
     // Indices
     if (pc * 6 > ParticleEmitter::m_GlobalIndicesCount)
     {

@@ -33,7 +33,7 @@ void ParticleManager::ManageInfinitePlaneDeflectors(ParticleEmitter *em, float d
     CKAttributeManager *attman = m_Context->GetAttributeManager();
     const XObjectPointerArray &Array = attman->GetAttributeListPtr(m_DInfinitePlaneAttribute);
 
-    VxVector prevpos, olddir, deflector, o_prevpos, o_ppos, o_intpoint, intpoint, o_intnormal, intnormal, d, slide, O;
+    VxVector prevpos, olddir, intpoint, o_intnormal, intnormal, d, O;
 
     CK3dEntity *emitter = (CK3dEntity *)m_Context->GetObject(em->m_Entity);
 
@@ -75,7 +75,6 @@ void ParticleManager::ManageInfinitePlaneDeflectors(ParticleEmitter *em, float d
             {
                 if (RayPlaneIntersection(intnormal, O, prevpos, particle->pos, intpoint))
                 {
-
                     float ps = DotProduct(olddir, intnormal);
                     d = (olddir - (intnormal * ps)) * friction - intnormal * (ps * response * particle->m_Bounce);
                     particle->pos = intpoint + d;
@@ -122,7 +121,7 @@ void ParticleManager::ManagePlaneDeflectors(ParticleEmitter *em, float deltat)
     CKAttributeManager *attman = m_Context->GetAttributeManager();
     const XObjectPointerArray &Array = attman->GetAttributeListPtr(m_DPlaneAttribute);
 
-    VxVector olddir, deflector, o_prevpos, o_ppos, o_intpoint, intpoint, o_intnormal, intnormal, d, slide, O;
+    VxVector olddir, o_intpoint, intpoint, o_intnormal, intnormal, d, O;
 
     CK3dEntity *emitter = (CK3dEntity *)m_Context->GetObject(em->m_Entity);
 
@@ -168,17 +167,13 @@ void ParticleManager::ManagePlaneDeflectors(ParticleEmitter *em, float deltat)
         ParticleImpact pi;
         while (particle)
         {
-
             if (particle->m_Density < density)
             {
-
                 if (RayPlaneIntersection(intnormal, O, particle->prevpos, particle->pos, intpoint))
                 {
-
                     ent->InverseTransform(&o_intpoint, &intpoint);
                     if (((o_intpoint.x > -1) && (o_intpoint.x < 1)) && ((o_intpoint.z > -1) && (o_intpoint.z < 1)))
                     {
-
                         olddir = particle->pos - particle->prevpos;
 
                         float ps = DotProduct(olddir, intnormal);
@@ -229,7 +224,7 @@ void ParticleManager::ManageCylinderDeflectors(ParticleEmitter *em, float deltat
     CKAttributeManager *attman = m_Context->GetAttributeManager();
     const XObjectPointerArray &Array = attman->GetAttributeListPtr(m_DCylinderAttribute);
 
-    VxVector prevpos, olddir, deflector, o_prevpos, o_ppos, o_intpoint, intpoint, o_intnormal, intnormal, d, slide;
+    VxVector prevpos, olddir, o_prevpos, o_ppos, o_intpoint, intpoint, o_intnormal, intnormal, d;
 
     CK3dEntity *emitter = (CK3dEntity *)m_Context->GetObject(em->m_Entity);
 
@@ -322,7 +317,7 @@ void ParticleManager::ManageSphereDeflectors(ParticleEmitter *em, float deltat)
     CKAttributeManager *attman = m_Context->GetAttributeManager();
     const XObjectPointerArray &Array = attman->GetAttributeListPtr(m_DSphereAttribute);
 
-    VxVector prevpos, olddir, deflector, o_prevpos, o_ppos, o_intpoint, intpoint, o_intnormal, intnormal, d, slide;
+    VxVector prevpos, olddir, o_prevpos, o_ppos, o_intpoint, intpoint, o_intnormal, intnormal, d;
 
     CK3dEntity *emitter = (CK3dEntity *)m_Context->GetObject(em->m_Entity);
 
@@ -527,7 +522,7 @@ void ParticleManager::ManageObjectDeflectors(ParticleEmitter *em, float deltat)
     CKAttributeManager *attman = m_Context->GetAttributeManager();
     const XObjectPointerArray &Array = attman->GetAttributeListPtr(m_DObjectAttribute);
 
-    VxVector prevpos, olddir, o_prevpos, o_ppos, o_intpoint, intpoint, o_intnormal, intnormal, d;
+    VxVector prevpos, olddir, o_prevpos, intpoint, o_intnormal, intnormal, d;
 
     CK3dEntity *emitter = (CK3dEntity *)m_Context->GetObject(em->m_Entity);
 
@@ -547,6 +542,7 @@ void ParticleManager::ManageObjectDeflectors(ParticleEmitter *em, float deltat)
         pout = ent->GetAttributeParameter(m_DObjectAttribute);
         if (!pout)
             continue;
+
         CK_ID *paramids = (CK_ID *)pout->GetReadDataPtr();
         pout = (CKParameterOut *)m_Context->GetObject(paramids[0]);
         pout->GetValue(&response);
@@ -574,7 +570,6 @@ void ParticleManager::ManageObjectDeflectors(ParticleEmitter *em, float deltat)
                     VxIntersectionDesc inter;
                     if (ent->RayIntersection(&prevpos, &(particle->pos), &inter, NULL, CKRAYINTERSECTION_SEGMENT))
                     {
-
                         // TODO prendre la normale de la face
                         if (smooth)
                         {
