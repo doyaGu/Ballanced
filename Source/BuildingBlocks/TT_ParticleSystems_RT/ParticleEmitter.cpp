@@ -76,7 +76,6 @@ ParticleEmitter::ParticleEmitter(CKContext *ctx, CK_ID entity, char *name)
     m_InteractorsFlags = 0;
     m_DeflectorsFlags = 0;
     m_RenderMode = 3;
-    m_TrailCount = 0;
 
     m_Mesh = 0;
     m_Entity = entity;
@@ -85,13 +84,13 @@ ParticleEmitter::ParticleEmitter(CKContext *ctx, CK_ID entity, char *name)
     m_MessageType = -1;
 
     m_CurrentImpact = 0;
-    m_Behavior = NULL;
-#ifdef WIN32
-    // ACC, July 10, 2002  Create Event to be waited in Render CB
-    hasBeenComputedEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-    hasBeenRendered = false;
-    hasBeenEnqueud = false;
-#endif
+
+    m_IsTimePointEmitter = FALSE;
+    m_IsWaveEmitter = FALSE;
+    m_Flag0x10C = TRUE;
+
+    m_DeltaTime = 0.0f;
+    m_Active = FALSE;
 
     InitParticleSystem();
 };
@@ -107,11 +106,11 @@ extern BlockingQueue<ThreadParam> PSqueue;
 ParticleEmitter::~ParticleEmitter()
 {
 #ifdef USE_THR
-    if (hasBeenEnqueud)
+    if (hasBeenEnqueued)
     {
         WaitForSingleObject(hasBeenComputedEvent, INFINITE);
 
-        while (hasBeenEnqueud)
+        while (hasBeenEnqueued)
         {
             int a = 0;
         }
@@ -134,9 +133,6 @@ ParticleEmitter::~ParticleEmitter()
     delete[] m_BackPool;
     m_BackPool = NULL;
     m_Entity = 0;
-#ifdef WIN32
-    CloseHandle(hasBeenComputedEvent);
-#endif
 }
 
 void ParticleEmitter::InitParticleSystem()
@@ -156,17 +152,11 @@ void ParticleEmitter::InitParticleSystem()
     m_Pool[m_MaximumParticles - 1].next = NULL;
     particles = NULL;
     particleCount = 0;
-
-    // Clear Historic pool.
-    old_pos.Clear();
-    old_pos.Reserve(m_MaximumParticles);
-    for (int i = 0; i < m_MaximumParticles; i++)
-        old_pos.PushBack(ParticleHistoric(m_TrailCount));
 }
 
 void ParticleEmitter::UpdateParticles(float rdeltat)
 {
-    ParticleManager *pm = m_Manager;
+    ParticleManager *pm = (ParticleManager *)m_Context->GetManagerByGuid(PARTICLE_MANAGER_GUID);
 
     // We clear the impact array
     m_Impacts.Clear();
@@ -175,7 +165,8 @@ void ParticleEmitter::UpdateParticles(float rdeltat)
     float deltat;
     Particle *particle = particles;
     // If there is no particles yet, we buzz off
-    if (!particles) return;
+    if (!particles)
+        return;
 
     VxVector minv(100000, 100000, 100000), maxv(-100000, -100000, -100000);
     g_Min[0] = g_Min[1] = g_Min[2] = g_Min[3] = 1e6f;
@@ -277,13 +268,13 @@ void ParticleEmitter::UpdateParticles(float rdeltat)
 
                 mulps  xmm2,xmm0 // Delta Color * delta Factor
                 movaps xmm4,[ebx+48] // Load Delta position + Delta Angle
-                
+
                 addps xmm2,[ebx] // Add to original color
                 mulps  xmm4,xmm0 // Delta Position * delta Factor
 
                 minps xmm6,[ebx+32] // compute minpos before adding delta
                 maxps xmm7,[ebx+32] // compute maxpos before adding delta
-                
+
                 minps xmm2,xmm5 // Ceil Color to One
                 addps xmm4,[ebx+32] // Add to original position
 
@@ -291,7 +282,7 @@ void ParticleEmitter::UpdateParticles(float rdeltat)
                 movaps [ebx+32],xmm4 // Store position
 
                 movaps [ebx],xmm2 // Store Color
-                
+
                 minps xmm6,xmm4 // compute minpos
                 maxps xmm7,xmm4 // compute maxpos
                 }
@@ -451,34 +442,11 @@ void ParticleEmitter::UpdateParticles(float rdeltat)
             // new delta time
             particle->m_DeltaTime = deltat;
 
-            // Updates trail position.
-            if (m_TrailCount)
-            {
-                int idx = ((CKBYTE *)particle - m_BackPool) / sizeof(Particle);
-                XASSERT(idx < m_MaximumParticles);
-                ParticleHistoric &ph = old_pos[idx];
-                if (ph.count == m_TrailCount)
-                {
-                    ph.particles[ph.start++] = *particle;
-                    if (ph.start >= m_TrailCount)
-                        ph.start = 0;
-                }
-                else
-                    ph.particles[ph.count++] = *particle;
-            }
             particle = particle->next;
         }
         else
         {
             // Delete particle
-            if (m_TrailCount)
-            {
-                int idx = ((CKBYTE *)particle - m_BackPool) / sizeof(Particle);
-                XASSERT(idx < m_MaximumParticles);
-                ParticleHistoric &ph = old_pos[idx];
-                ph.start = 0;
-                ph.count = 0;
-            }
             Particle *tmp = particle->next;
             if (particle->prev)
                 particle->prev->next = particle->next;
@@ -531,6 +499,240 @@ void ParticleEmitter::UpdateParticles(float rdeltat)
         pm->ManageObjectDeflectors(this, rdeltat);
 }
 
+void ParticleEmitter::UpdateParticles2(float rdeltat)
+{
+    ParticleManager *pm = (ParticleManager *)m_Context->GetManagerByGuid(PARTICLE_MANAGER_GUID);
+
+    // We clear the impact array
+    m_Impacts.Clear();
+    m_CurrentImpact = 0;
+
+    float deltat;
+    Particle *particle = particles;
+    // If there is no particles yet, we buzz off
+    if (!particles)
+        return;
+
+    VxVector minv(100000, 100000, 100000), maxv(-100000, -100000, -100000);
+    g_Min[0] = g_Min[1] = g_Min[2] = g_Min[3] = 1e6f;
+    g_Max[0] = g_Max[1] = g_Max[2] = g_Max[3] = -1e6f;
+
+    ///
+    // Interactors management
+
+    if (m_InteractorsFlags & PI_GRAVITY)
+        pm->ManageGravity(this, rdeltat);
+    if (m_InteractorsFlags & PI_ATMOSPHERE)
+        pm->ManageAtmosphere(this, rdeltat);
+    if (m_InteractorsFlags & PI_GLOBALWIND)
+        pm->ManageGlobalWind(this, rdeltat);
+    if (m_InteractorsFlags & PI_LOCALWIND)
+        pm->ManageLocalWind(this, rdeltat);
+    // The magnet act on the position, so it came after positioning
+    if (m_InteractorsFlags & PI_MAGNET)
+        pm->ManageMagnet(this, rdeltat);
+    if (m_InteractorsFlags & PI_VORTEX)
+        pm->ManageVortex(this, rdeltat);
+    if (m_InteractorsFlags & PI_DISRUPTIONBOX)
+        pm->ManageDisruptionBox(this, rdeltat);
+    if (m_InteractorsFlags & PI_MUTATIONBOX)
+        pm->ManageMutationBox(this, rdeltat);
+    if (m_InteractorsFlags & PI_TUNNEL)
+        pm->ManageTunnel(this, rdeltat);
+    if (m_InteractorsFlags & PI_PROJECTOR)
+        pm->ManageProjector(this, rdeltat);
+
+    while (particle)
+    {
+        // IF THIS IS AN VALID PARTICLE
+        if (particle->m_Life > 0)
+        {
+            if (particle->m_Life < rdeltat)
+            {
+                deltat = particle->m_Life;
+            }
+            else
+            {
+                deltat = rdeltat;
+            }
+
+            {
+                if (particle->pos.x < minv.x)
+                {
+                    minv.x = particle->pos.x;
+                }
+                if (particle->pos.y < minv.y)
+                {
+                    minv.y = particle->pos.y;
+                }
+                if (particle->pos.z < minv.z)
+                {
+                    minv.z = particle->pos.z;
+                }
+                if (maxv.x < particle->pos.x)
+                {
+                    maxv.x = particle->pos.x;
+                }
+                if (maxv.y < particle->pos.y)
+                {
+                    maxv.y = particle->pos.y;
+                }
+                if (maxv.z < particle->pos.z)
+                {
+                    maxv.z = particle->pos.z;
+                }
+
+                /////////////////////////////
+                // EVOLUTIONS MANAGEMENT
+                /////////////////////////////
+
+                // color management
+                if (m_EvolutionsFlags & PE_COLOR)
+                {
+                    particle->m_Color.r += particle->deltaColor.r * deltat;
+                    if (particle->m_Color.r < 0.0f)
+                        particle->m_Color.r = 0.0f;
+                    else if (particle->m_Color.r > 1.0f)
+                        particle->m_Color.r = 1.0f;
+                    particle->m_Color.g += particle->deltaColor.g * deltat;
+                    if (particle->m_Color.g < 0.0f)
+                        particle->m_Color.g = 0.0f;
+                    else if (particle->m_Color.g > 1.0f)
+                        particle->m_Color.g = 1.0f;
+                    particle->m_Color.b += particle->deltaColor.b * deltat;
+                    if (particle->m_Color.b < 0.0f)
+                        particle->m_Color.b = 0.0f;
+                    else if (particle->m_Color.b > 1.0f)
+                        particle->m_Color.b = 1.0f;
+                    particle->m_Color.a += particle->deltaColor.a * deltat;
+                    if (particle->m_Color.a < 0.0f)
+                        particle->m_Color.a = 0.0f;
+                    else if (particle->m_Color.a > 1.0f)
+                        particle->m_Color.a = 1.0f;
+                }
+            }
+            // Size management
+            if (m_EvolutionsFlags & PE_SIZE)
+                particle->m_Size += particle->m_DeltaSize * deltat;
+
+            // texture management
+            if (particle->m_DeltaFrametime != 0)
+                if (m_EvolutionsFlags & PE_TEXTURE && m_RenderMode != PR_OBJECT)
+                {
+                    particle->m_CurrentFrametime += deltat;
+                    float dft = particle->m_DeltaFrametime;
+                    int tfi = 1;
+                    if (particle->m_DeltaFrametime < 0)
+                    {
+                        dft = -particle->m_DeltaFrametime;
+                        tfi = -1;
+                    }
+                    while (particle->m_CurrentFrametime > dft)
+                    {
+                        particle->m_CurrentFrame += tfi;
+                        if (particle->m_CurrentFrame >= m_TextureFrameCount)
+                        {
+                            switch (m_TextureFrameloop)
+                            {
+                            case PL_NOLOOP:
+                                particle->m_CurrentFrame = m_TextureFrameCount - 1;
+                                break;
+                            case PL_LOOP:
+                                particle->m_CurrentFrame = 0;
+                                break;
+                            case PL_PINGPONG:
+                                particle->m_CurrentFrame = m_TextureFrameCount - 2;
+                                particle->m_DeltaFrametime = -particle->m_DeltaFrametime;
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            if (particle->m_CurrentFrame < 0)
+                            {
+                                switch (m_TextureFrameloop)
+                                {
+                                case PL_NOLOOP:
+                                    particle->m_CurrentFrame = 0;
+                                    break;
+                                case PL_LOOP:
+                                    particle->m_CurrentFrame = m_TextureFrameCount - 1;
+                                    break;
+                                case PL_PINGPONG:
+                                    particle->m_CurrentFrame = 1;
+                                    particle->m_DeltaFrametime = -particle->m_DeltaFrametime;
+                                    break;
+                                }
+                            }
+                        }
+                        particle->m_CurrentFrametime -= dft;
+                    }
+                }
+
+            // New lifespan
+            particle->m_Life -= deltat;
+            // new delta time
+            particle->m_DeltaTime = deltat;
+
+            particle = particle->next;
+        }
+        else
+        {
+            // Delete particle
+            Particle *tmp = particle->next;
+            if (particle->prev)
+                particle->prev->next = particle->next;
+            else
+                particles = particle->next;
+            if (particle->next)
+                particle->next->prev = particle->prev;
+            particle->next = m_Pool;
+            m_Pool = particle; // NEW POOL POINTER
+            particleCount--;   // ADD ONE TO POOL
+            particle = tmp;
+        }
+    }
+
+    VxBbox bbox;
+#ifdef SIMD_SUPPORTED
+    if (ProcessorFeatures & PROC_SIMD)
+    {
+        __asm {
+            // preload katmai registers
+                mov esi,g_Min
+                mov edi,g_Max
+                movaps [esi],xmm6 // Save Min
+                movaps [edi],xmm7 // Save Max
+        }
+        bbox.Min = *(VxVector *)g_Min;
+        bbox.Max = *(VxVector *)g_Max;
+    }
+    else
+#endif
+    {
+        bbox.Min = minv;
+        bbox.Max = maxv;
+    }
+    CK3dEntity *entity = (CK3dEntity *)m_Context->GetObject(m_Entity);
+    entity->SetBoundingBox(&bbox);
+
+    // Deflectors management
+    if (m_DeflectorsFlags & PD_PLANE)
+        pm->ManagePlaneDeflectors(this, rdeltat);
+    if (m_DeflectorsFlags & PD_INFINITEPLANE)
+        pm->ManageInfinitePlaneDeflectors(this, rdeltat);
+    if (m_DeflectorsFlags & PD_CYLINDER)
+        pm->ManageCylinderDeflectors(this, rdeltat);
+    if (m_DeflectorsFlags & PD_SPHERE)
+        pm->ManageSphereDeflectors(this, rdeltat);
+    if (m_DeflectorsFlags & PD_BOX)
+        pm->ManageBoxDeflectors(this, rdeltat);
+    if (m_DeflectorsFlags & PD_OBJECT)
+        pm->ManageObjectDeflectors(this, rdeltat);
+
+    entity->GetPosition(&((WaveEmitter *)this)->m_Position);
+}
+
 void ParticleEmitter::AddParticles()
 {
     // emits particles for this frame
@@ -550,8 +752,7 @@ void ParticleEmitter::AddParticles()
     {
         if (m_Pool != NULL && particleCount < totalParticles)
         {
-            Particle *p;
-            p = m_Pool;
+            Particle *p = m_Pool;
             m_Pool = m_Pool->next;
 
             if (particles != NULL)
@@ -626,6 +827,566 @@ void ParticleEmitter::AddParticles()
                 p->m_DeltaAngle = 0;
                 break;
             }
+
+            ////////////////////////
+            // LifeSpan Management
+            ////////////////////////
+            if (m_VariancesFlags & PV_LIFESPAN)
+            {
+                p->m_Life = m_Life + m_LifeVariation * RANDNUM;
+            }
+            else
+            {
+                p->m_Life = m_Life;
+            }
+            float invlife = 1.0f / p->m_Life;
+
+            ////////////////////////
+            // Color Management
+            ////////////////////////
+
+            // Initial Color
+            if (m_VariancesFlags & PV_INITIALCOLOR)
+            {
+                p->m_Color.r = m_StartColor.r + (m_StartColorVar.r * RANDNUM);
+                p->m_Color.g = m_StartColor.g + (m_StartColorVar.g * RANDNUM);
+                p->m_Color.b = m_StartColor.b + (m_StartColorVar.b * RANDNUM);
+                p->m_Color.a = m_StartColor.a + (m_StartColorVar.a * RANDNUM);
+            }
+            else
+            {
+                p->m_Color = m_StartColor;
+            }
+            // Color Delta
+            if (m_EvolutionsFlags & PE_COLOR)
+            {
+                if (m_VariancesFlags & PV_ENDINGCOLOR)
+                {
+                    p->deltaColor.r = ((m_EndColor.r + (m_EndColorVar.r * RANDNUM)) - p->m_Color.r) * invlife;
+                    p->deltaColor.g = ((m_EndColor.g + (m_EndColorVar.g * RANDNUM)) - p->m_Color.g) * invlife;
+                    p->deltaColor.b = ((m_EndColor.b + (m_EndColorVar.b * RANDNUM)) - p->m_Color.b) * invlife;
+                    p->deltaColor.a = ((m_EndColor.a + (m_EndColorVar.a * RANDNUM)) - p->m_Color.a) * invlife;
+                }
+                else
+                {
+                    p->deltaColor.r = (m_EndColor.r - p->m_Color.r) * invlife;
+                    p->deltaColor.g = (m_EndColor.g - p->m_Color.g) * invlife;
+                    p->deltaColor.b = (m_EndColor.b - p->m_Color.b) * invlife;
+                    p->deltaColor.a = (m_EndColor.a - p->m_Color.a) * invlife;
+                }
+            }
+            else
+            {
+                p->deltaColor.r = 0;
+                p->deltaColor.g = 0;
+                p->deltaColor.b = 0;
+                p->deltaColor.a = 0;
+            }
+
+            /////////////////////////
+            // Size Management
+            /////////////////////////
+
+            // Initial Size
+            if (m_VariancesFlags & PV_INITIALSIZE)
+            {
+                p->m_Size = m_StartSize + (m_StartSizeVar * RANDNUM);
+            }
+            else
+            {
+                p->m_Size = m_StartSize;
+            }
+            // Size Delta
+            if (m_EvolutionsFlags & PE_SIZE)
+            {
+                if (m_VariancesFlags & PV_ENDINGSIZE)
+                {
+                    p->m_DeltaSize = (m_EndSize + (m_EndSizeVar * RANDNUM) - p->m_Size) * invlife;
+                }
+                else
+                {
+                    p->m_DeltaSize = (m_EndSize - p->m_Size) * invlife;
+                }
+            }
+            else
+            {
+                p->m_DeltaSize = 0;
+            }
+
+            /////////////////////////
+            // Texture management
+            /////////////////////////
+
+            switch (m_RenderMode)
+            {
+            case PR_SPRITE:
+            case PR_FSPRITE:
+            case PR_OSPRITE:
+            case PR_CSPRITE:
+            case PR_RSPRITE:
+                // Initial Texture
+                if (m_VariancesFlags & PV_INITIALTEXTURE)
+                {
+                    p->m_CurrentFrame = m_InitialTextureFrame + (int)(m_InitialTextureFrameVariance * RANDNUMP);
+                }
+                else
+                {
+                    p->m_CurrentFrame = m_InitialTextureFrame;
+                }
+
+                // Initialisation of the current frame time
+                p->m_CurrentFrametime = 0;
+
+                // Texture Delta time
+                if ((m_EvolutionsFlags & PE_TEXTURE) && (m_TextureFrameCount > 1))
+                {
+                    if (m_VariancesFlags & PV_SPEEDTEXTURE)
+                    {
+                        p->m_DeltaFrametime = m_SpeedTextureFrame + m_SpeedTextureFrameVariance * RANDNUM;
+                    }
+                    else
+                    {
+                        p->m_DeltaFrametime = (float)m_SpeedTextureFrame;
+                    }
+                }
+                else
+                {
+                    p->m_DeltaFrametime = 0;
+                }
+                break;
+            default:
+                p->m_DeltaFrametime = 0;
+                break;
+            }
+
+            //////////////////////////
+            // Deflectors Management
+            //////////////////////////
+
+            // Particle Bouncing factor
+            if (m_DeflectorsFlags)
+            {
+                if (m_VariancesFlags & PV_BOUNCE)
+                {
+                    p->m_Bounce = m_Bounce + (m_BounceVariation * RANDNUM);
+                }
+                else
+                {
+                    p->m_Bounce = m_Bounce;
+                }
+            }
+
+            //////////////////////////
+            // Interactors Management
+            //////////////////////////
+
+            // Particle Weight
+            if (m_InteractorsFlags & PI_GRAVITY)
+            {
+                if (m_VariancesFlags & PV_WEIGHT)
+                {
+                    p->m_Weight = m_Weight + (m_WeightVariation * RANDNUM);
+                }
+                else
+                {
+                    p->m_Weight = m_Weight;
+                }
+            }
+
+            // Time Management
+            p->m_DeltaTime = 0.01f;
+
+            // Particle Surface
+            if (m_InteractorsFlags & (PI_LOCALWIND | PI_GLOBALWIND | PI_ATMOSPHERE))
+            {
+                if (m_VariancesFlags & PV_SURFACE)
+                {
+                    p->m_Surface = m_Surface + (m_SurfaceVariation * RANDNUM);
+                }
+                else
+                {
+                    p->m_Surface = m_Surface;
+                }
+            }
+        }
+        else
+            break;
+    } while (--emits);
+}
+
+void ParticleEmitter::AddParticles2()
+{
+    CK3dEntity *ent = (CK3dEntity *)m_Context->GetObject(m_Entity);
+    if (!ent)
+    {
+        m_Context->OutputToConsole("No Frame?");
+        return;
+    }
+
+    if (m_Active)
+    {
+        TimePointEmitter *self = (TimePointEmitter *)this;
+        float time = (self->m_Time + m_DeltaTime) * 0.001f;
+
+        // emits particles for this frame
+        float emits;
+        if (m_VariancesFlags & PV_EMISSION)
+        {
+            emits = self->m_EmissionDelay + emitsVar * RANDNUM;
+        }
+        else
+        {
+            emits = self->m_EmissionDelay;
+        }
+
+        if (emits * time <= 0.9f || m_Flag0x10C)
+        {
+            self->m_Time += m_DeltaTime;
+            if (m_Flag0x10C)
+            {
+                m_Flag0x10C = 0;
+                ent->GetPosition(&self->m_Position);
+            }
+        }
+        else
+        {
+            emits *= time;
+
+            self->m_Time = 0.0f;
+
+            VxVector pos;
+            ent->GetPosition(&pos);
+
+            do
+            {
+                if (m_Pool != NULL && particleCount < totalParticles)
+                {
+                    Particle *p = m_Pool;
+                    m_Pool = m_Pool->next;
+
+                    if (particles != NULL)
+                        particles->prev = p;
+                    p->next = particles;
+                    p->prev = NULL;
+                    particleCount++;
+                    particles = p;
+
+                    p->pos = pos;
+
+                    // CALCULATE THE STARTING DIRECTION VECTOR
+                    InitiateDirection(p);
+
+                    // Initiate density
+                    p->m_Density = rand() * INV_RAND;
+
+                    // Calculate the speed
+                    if (m_VariancesFlags & PV_SPEED)
+                    {
+                        p->dir *= m_Speed + (m_SpeedVariation * RANDNUM);
+                    }
+                    else
+                    {
+                        p->dir *= m_Speed;
+                    }
+
+                    switch (m_RenderMode)
+                    {
+                    case PR_LINE:
+                    case PR_OSPRITE:
+                    case PR_CSPRITE:
+                        // we manage here latency
+                        p->m_Angle = m_AngularSpeed;
+                        p->m_DeltaAngle = m_AngularSpeedVariation;
+                        break;
+                    case PR_SPRITE:
+                    case PR_FSPRITE:
+                        p->m_Angle = 0;
+                        if (m_VariancesFlags & PV_ANGULARSPEED)
+                        {
+                            p->m_DeltaAngle = m_AngularSpeed + m_AngularSpeedVariation * RANDNUM;
+                        }
+                        else
+                        {
+                            p->m_DeltaAngle = 0;
+                        }
+                        break;
+                    case PR_OBJECT:
+                    {
+                        CKGroup *group = (CKGroup *)m_Context->GetObject(m_Group);
+                        int oc;
+                        if (group)
+                            oc = group->GetObjectCount();
+                        else
+                            oc = 0;
+                        p->m_GroupIndex = (int)(oc * ((float)rand() * INV_RAND));
+                        p->m_Angle = 0;
+                        if (m_VariancesFlags & PV_ANGULARSPEED)
+                        {
+                            p->m_DeltaAngle = m_AngularSpeed + m_AngularSpeedVariation * RANDNUM;
+                        }
+                        else
+                        {
+                            p->m_DeltaAngle = 0;
+                        }
+                    }
+                    break;
+                    default:
+                        p->m_Angle = 0;
+                        p->m_DeltaAngle = 0;
+                        break;
+                    }
+
+                    ////////////////////////
+                    // LifeSpan Management
+                    ////////////////////////
+                    if (m_VariancesFlags & PV_LIFESPAN)
+                    {
+                        p->m_Life = m_Life + m_LifeVariation * RANDNUM;
+                    }
+                    else
+                    {
+                        p->m_Life = m_Life;
+                    }
+                    float invlife = 1.0f / p->m_Life;
+
+                    ////////////////////////
+                    // Color Management
+                    ////////////////////////
+
+                    // Initial Color
+                    if (m_VariancesFlags & PV_INITIALCOLOR)
+                    {
+                        p->m_Color.r = m_StartColor.r + (m_StartColorVar.r * RANDNUM);
+                        p->m_Color.g = m_StartColor.g + (m_StartColorVar.g * RANDNUM);
+                        p->m_Color.b = m_StartColor.b + (m_StartColorVar.b * RANDNUM);
+                        p->m_Color.a = m_StartColor.a + (m_StartColorVar.a * RANDNUM);
+                    }
+                    else
+                    {
+                        p->m_Color = m_StartColor;
+                    }
+                    // Color Delta
+                    if (m_EvolutionsFlags & PE_COLOR)
+                    {
+                        if (m_VariancesFlags & PV_ENDINGCOLOR)
+                        {
+                            p->deltaColor.r = ((m_EndColor.r + (m_EndColorVar.r * RANDNUM)) - p->m_Color.r) * invlife;
+                            p->deltaColor.g = ((m_EndColor.g + (m_EndColorVar.g * RANDNUM)) - p->m_Color.g) * invlife;
+                            p->deltaColor.b = ((m_EndColor.b + (m_EndColorVar.b * RANDNUM)) - p->m_Color.b) * invlife;
+                            p->deltaColor.a = ((m_EndColor.a + (m_EndColorVar.a * RANDNUM)) - p->m_Color.a) * invlife;
+                        }
+                        else
+                        {
+                            p->deltaColor.r = (m_EndColor.r - p->m_Color.r) * invlife;
+                            p->deltaColor.g = (m_EndColor.g - p->m_Color.g) * invlife;
+                            p->deltaColor.b = (m_EndColor.b - p->m_Color.b) * invlife;
+                            p->deltaColor.a = (m_EndColor.a - p->m_Color.a) * invlife;
+                        }
+                    }
+                    else
+                    {
+                        p->deltaColor.r = 0;
+                        p->deltaColor.g = 0;
+                        p->deltaColor.b = 0;
+                        p->deltaColor.a = 0;
+                    }
+
+                    /////////////////////////
+                    // Size Management
+                    /////////////////////////
+
+                    // Initial Size
+                    if (m_VariancesFlags & PV_INITIALSIZE)
+                    {
+                        p->m_Size = m_StartSize + (m_StartSizeVar * RANDNUM);
+                    }
+                    else
+                    {
+                        p->m_Size = m_StartSize;
+                    }
+                    // Size Delta
+                    if (m_EvolutionsFlags & PE_SIZE)
+                    {
+                        if (m_VariancesFlags & PV_ENDINGSIZE)
+                        {
+                            p->m_DeltaSize = (m_EndSize + (m_EndSizeVar * RANDNUM) - p->m_Size) * invlife;
+                        }
+                        else
+                        {
+                            p->m_DeltaSize = (m_EndSize - p->m_Size) * invlife;
+                        }
+                    }
+                    else
+                    {
+                        p->m_DeltaSize = 0;
+                    }
+
+                    /////////////////////////
+                    // Texture management
+                    /////////////////////////
+
+                    switch (m_RenderMode)
+                    {
+                    case PR_SPRITE:
+                    case PR_FSPRITE:
+                    case PR_OSPRITE:
+                    case PR_CSPRITE:
+                    case PR_RSPRITE:
+                        // Initial Texture
+                        if (m_VariancesFlags & PV_INITIALTEXTURE)
+                        {
+                            p->m_CurrentFrame = m_InitialTextureFrame + (int)(m_InitialTextureFrameVariance * RANDNUMP);
+                        }
+                        else
+                        {
+                            p->m_CurrentFrame = m_InitialTextureFrame;
+                        }
+
+                        // Initialisation of the current frame time
+                        p->m_CurrentFrametime = 0;
+
+                        // Texture Delta time
+                        if ((m_EvolutionsFlags & PE_TEXTURE) && (m_TextureFrameCount > 1))
+                        {
+                            if (m_VariancesFlags & PV_SPEEDTEXTURE)
+                            {
+                                p->m_DeltaFrametime = m_SpeedTextureFrame + m_SpeedTextureFrameVariance * RANDNUM;
+                            }
+                            else
+                            {
+                                p->m_DeltaFrametime = (float)m_SpeedTextureFrame;
+                            }
+                        }
+                        else
+                        {
+                            p->m_DeltaFrametime = 0;
+                        }
+                        break;
+                    default:
+                        p->m_DeltaFrametime = 0;
+                        break;
+                    }
+
+                    //////////////////////////
+                    // Deflectors Management
+                    //////////////////////////
+
+                    // Particle Bouncing factor
+                    if (m_DeflectorsFlags)
+                    {
+                        if (m_VariancesFlags & PV_BOUNCE)
+                        {
+                            p->m_Bounce = m_Bounce + (m_BounceVariation * RANDNUM);
+                        }
+                        else
+                        {
+                            p->m_Bounce = m_Bounce;
+                        }
+                    }
+
+                    //////////////////////////
+                    // Interactors Management
+                    //////////////////////////
+
+                    // Particle Weight
+                    if (m_InteractorsFlags & PI_GRAVITY)
+                    {
+                        if (m_VariancesFlags & PV_WEIGHT)
+                        {
+                            p->m_Weight = m_Weight + (m_WeightVariation * RANDNUM);
+                        }
+                        else
+                        {
+                            p->m_Weight = m_Weight;
+                        }
+                    }
+
+                    // Time Management
+                    p->m_DeltaTime = 0.01f;
+
+                    // Particle Surface
+                    if (m_InteractorsFlags & (PI_LOCALWIND | PI_GLOBALWIND | PI_ATMOSPHERE))
+                    {
+                        if (m_VariancesFlags & PV_SURFACE)
+                        {
+                            p->m_Surface = m_Surface + (m_SurfaceVariation * RANDNUM);
+                        }
+                        else
+                        {
+                            p->m_Surface = m_Surface;
+                        }
+                    }
+                }
+                else
+                    break;
+            } while (--emits > 0);
+
+            self->m_Position = pos;
+        }
+    }
+}
+
+
+void ParticleEmitter::AddParticles3()
+{
+    // emits particles for this frame
+    int emits;
+    if (m_VariancesFlags & PV_EMISSION)
+    {
+        emits = emitsPerFrame + (int)((float)emitsVar * RANDNUM);
+    }
+    else
+    {
+        emits = emitsPerFrame;
+    }
+    if (emits <= 0)
+        return;
+
+    WaveEmitter *self = (WaveEmitter *)this;
+
+    CK3dEntity *ent = (CK3dEntity *)m_Context->GetObject(m_Entity);
+    if (!ent)
+        return;
+
+    VxVector pos;
+    ent->GetPosition(&pos);
+
+    do
+    {
+        if (m_Pool != NULL && particleCount < totalParticles)
+        {
+            Particle *p = m_Pool;
+            m_Pool = m_Pool->next;
+
+            if (particles != NULL)
+                particles->prev = p;
+            p->next = particles;
+            p->prev = NULL;
+            particleCount++;
+            particles = p;
+
+            p->pos = pos;
+
+            p->dir = VxVector(0, 0, 0);
+
+            VxVector dir;
+            ent->GetOrientation(&dir, NULL);
+
+            VxVector pp = pos - self->m_Position;
+            if (pp == VxVector(0.0f))
+            {
+                p->m_Angle = self->m_Angle;
+            }
+            else
+            {
+                VxVector np = Normalize(pp);
+                p->m_Angle = acosf(DotProduct(np, dir));
+                if (np.x < 0.0f && p->m_Angle > 0.0f)
+                    p->m_Angle = -p->m_Angle;
+                self->m_Angle = p->m_Angle;
+            }
+
+            p->m_DeltaAngle = 0.0f;
 
             ////////////////////////
             // LifeSpan Management
@@ -950,32 +1711,23 @@ void ParticleEmitter::ReadSettings(CKBehavior *beh)
         return;
     }
 
-    // Trail
-    int tc = 0;
-    beh->GetLocalParameterValue(TRAILCOUNT, &tc);
-
     ///////////////////////////
     // Memory Management
     ///////////////////////////
     int pn;
     beh->GetLocalParameterValue(PARTICLENUMBER, &pn);
-    if ((pn != m_MaximumParticles && pn > 0) || (tc != m_TrailCount && tc > 0))
+    if (pn != m_MaximumParticles && pn > 0)
     {
-        m_TrailCount = tc;
         m_MaximumParticles = pn;
         InitParticleSystem();
-    }
-    else
-    {
-        m_TrailCount = tc;
-        m_MaximumParticles = pn;
     }
 
     ///////////////////////////
     // Interactors Display
     ///////////////////////////
-    ParticleManager *pm = m_Manager;
-    BOOL display;
+    ParticleManager *pm = (ParticleManager *)m_Context->GetManagerByGuid(PARTICLE_MANAGER_GUID);
+
+    CKBOOL display;
     beh->GetLocalParameterValue(DISPLAYINTERACTORS, &display);
     pm->ShowInteractors(display);
 
@@ -984,42 +1736,49 @@ void ParticleEmitter::ReadSettings(CKBehavior *beh)
     ///////////////////////////
     beh->GetLocalParameterValue(RENDERMODES, &m_RenderMode);
     if (m_RenderMode == PR_POINT)
+    {
         m_RenderParticlesCallback = RenderParticles_P;
+    }
     else if (m_RenderMode == PR_LINE)
     {
-        if (m_TrailCount > 1)
-            m_RenderParticlesCallback = RenderParticles_LL;
-        else
-            m_RenderParticlesCallback = RenderParticles_L;
+        m_RenderParticlesCallback = RenderParticles_L;
     }
     else if (m_RenderMode == PR_SPRITE)
     {
-        if (m_TrailCount > 1)
-            m_RenderParticlesCallback = RenderParticles_LS;
-        else
-            m_RenderParticlesCallback = RenderParticles_S;
+        m_RenderParticlesCallback = RenderParticles_S;
     }
     else if (m_RenderMode == PR_OBJECT)
+    {
         m_RenderParticlesCallback = RenderParticles_O;
+    }
     else if (m_RenderMode == PR_FSPRITE)
+    {
         m_RenderParticlesCallback = RenderParticles_FS;
+    }
     else if (m_RenderMode == PR_OSPRITE)
     {
-        if (m_TrailCount > 1)
-            m_RenderParticlesCallback = RenderParticles_LOS;
-        else
-            m_RenderParticlesCallback = RenderParticles_OS;
+        m_RenderParticlesCallback = RenderParticles_OS;
     }
     else if (m_RenderMode == PR_CSPRITE)
+    {
         m_RenderParticlesCallback = RenderParticles_CS;
+    }
     else if (m_RenderMode == PR_RSPRITE)
+    {
         m_RenderParticlesCallback = RenderParticles_RS;
+    }
+    else if (m_RenderMode == PR_POINTSPRITE)
+    {
+        m_RenderParticlesCallback = RenderParticles_PS;
+    }
     else
+    {
         m_RenderParticlesCallback = NULL;
+    }
 
     /*
-    CK3dEntity* entity = (CK3dEntity*)CKGetObject(m_Entity);
-    entity->SetRenderCallBack( m_RenderParticlesCallback, this );
+    CK3dEntity *entity = (CK3dEntity *)CKGetObject(m_Entity);
+    entity->SetRenderCallBack(m_RenderParticlesCallback, this);
     */
 
     //////////////////////////////
@@ -1114,28 +1873,6 @@ void ParticleEmitter::ReadSettings(CKBehavior *beh)
         CKDestroyObject(beh->RemoveOutputParameter(0));
     }
 
-    // Output are either  C C C C, or C C C C P or P and nothing else
-
-    CKBOOL outputParticleCount = FALSE;
-    beh->GetLocalParameterValue(PARTICLESCOUNT, &outputParticleCount);
-
-    if (outputParticleCount)
-    {
-        beh->CreateOutputParameter("Particle Count", CKPGUID_INT);
-    }
-    else
-    {
-
-        if (beh->GetOutputParameterCount() == 1)
-        {
-            CKDestroyObject(beh->RemoveOutputParameter(0));
-        }
-        else
-        { // there is the collision outputs, then the p count
-            CKDestroyObject(beh->RemoveOutputParameter(4));
-        }
-    }
-
     // INTERACTORS
     //------------
 
@@ -1190,12 +1927,4 @@ void ParticleEmitter::SetState(CKRenderContext *dev, CKBOOL gouraud)
     dev->SetTextureStageState(CKRST_TSS_STAGEBLEND, 0, 1);
     dev->SetTextureStageState(CKRST_TSS_TEXTURETRANSFORMFLAGS, 0);
     dev->SetTextureStageState(CKRST_TSS_TEXCOORDINDEX, 0);
-}
-
-ParticleEmitter::ParticleHistoric &ParticleEmitter::GetParticleHistoric(Particle *part)
-{
-    typedef XClassArray<ParticleEmitter::ParticleHistoric> t_array_ph;
-    int idx = ((CKBYTE *)part - m_BackPool) / sizeof(Particle);
-    XASSERT(idx < m_MaximumParticles);
-    return old_pos[idx];
 }

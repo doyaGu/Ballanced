@@ -2,7 +2,10 @@
 
 #include "TimePointEmitter.h"
 
-void TimePointEmitter::InitiateParticle(Particle *p) {
-    CK3dEntity *entity = (CK3dEntity *)m_Context->GetObject(m_Entity);
-    entity->GetPosition(&(p->pos));
+void TimePointEmitter::ReadInputs(CKBehavior *beh)
+{
+    float delay = 0.0f;
+    beh->GetInputParameterValue(EMISSIONDELAY, &delay);
+    m_EmissionDelay = delay;
+    ParticleEmitter::ReadInputs(beh);
 }

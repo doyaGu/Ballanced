@@ -29,22 +29,10 @@ public:
 
     CKERROR OnCKInit();
     CKERROR PostClearAll() { return OnCKInit(); }
-    CKERROR PostProcess();
-
-    CKERROR OnCKPause();
-    CKERROR PostLaunchScene(CKScene *OldScene, CKScene *NewScene);
-    CKERROR PreSave();
-    CKERROR PostSave();
 
     CKDWORD GetValidFunctionsMask()
     {
-        return CKMANAGER_FUNC_OnCKInit |
-               CKMANAGER_FUNC_OnCKPause |
-               CKMANAGER_FUNC_PostLaunchScene |
-               CKMANAGER_FUNC_PreSave |
-               CKMANAGER_FUNC_PostSave |
-               CKMANAGER_FUNC_PostClearAll |
-               CKMANAGER_FUNC_PostProcess;
+        return CKMANAGER_FUNC_OnCKInit | CKMANAGER_FUNC_PostClearAll;
     }
 
     static ParticleManager *GetManager(CKContext *context)
@@ -158,7 +146,6 @@ public:
 
     CKBOOL m_ShowInteractors;
 
-    XArray<ParticleEmitter *> m_Emitters;
     int m_TotalParticleCount;
 
 protected:

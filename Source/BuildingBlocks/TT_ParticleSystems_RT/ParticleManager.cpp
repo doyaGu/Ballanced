@@ -15,7 +15,7 @@ ParticleManager::ParticleManager(CKContext *context) : CKBaseManager(context, PA
     ParticleEmitter::m_GlobalIndicesCount = 0;
 
     InitMeshes();
-    m_ShowInteractors = FALSE;
+    m_ShowInteractors = TRUE;
     context->RegisterNewManager(this);
 }
 
@@ -244,6 +244,8 @@ void ParticleManager::InitMeshes()
 
 CKERROR ParticleManager::OnCKInit()
 {
+    m_TotalParticleCount = 0;
+
     // We create the attributes
     InitAttributes();
     DestroyMeshes();
@@ -251,40 +253,10 @@ CKERROR ParticleManager::OnCKInit()
     return CK_OK;
 }
 
-CKERROR ParticleManager::OnCKPause()
-{
-    // set the interactors meshes
-    InteractorsSetRemoveMesh(TRUE);
-
-    return CK_OK;
-}
-
-CKERROR ParticleManager::PostLaunchScene(CKScene *OldScene, CKScene *NewScene)
-{
-    // set the interactors meshes
-    InteractorsSetRemoveMesh(TRUE);
-
-    return CK_OK;
-}
-
-CKERROR ParticleManager::PreSave()
-{
-    InteractorsSetRemoveMesh(FALSE);
-
-    return CK_OK;
-}
-
-CKERROR ParticleManager::PostSave()
-{
-    InteractorsSetRemoveMesh(TRUE);
-
-    return CK_OK;
-}
-
 ParticleManager::~ParticleManager()
 {
     delete[] ParticleEmitter::m_GlobalIndices;
-    ParticleEmitter::m_GlobalIndices = 0;
+    ParticleEmitter::m_GlobalIndices = NULL;
 }
 
 ParticleEmitter *ParticleManager::CreateNewEmitter(CKGUID guid, CK_ID entity)
@@ -351,41 +323,20 @@ ParticleEmitter *ParticleManager::CreateNewEmitter(CKGUID guid, CK_ID entity)
     }
     else if (guid == TIMEPOINTSYSTEM_GUID)
     {
-        em = new PointEmitter(m_Context, entity, "TimePointEmitter");
-        // POINT MESH
-        CreatePointMesh();
-        em->m_Mesh = m_PointMesh;
+        em = new TimePointEmitter(m_Context, entity, "TimePointEmitter");
     }
     else if (guid == WAVESYSTEM_GUID)
     {
         em = new WaveEmitter(m_Context, entity, "WaveEmitter");
     }
 
-    // register the manager
-    em->m_Manager = this;
-
-    // +1 Emitter
-    m_Emitters.PushBack(em);
-
+    ++m_TotalParticleCount;
     return em;
 }
 
 void ParticleManager::DeleteEmitter(ParticleEmitter *iEmitter)
 {
-    m_Emitters.Remove(iEmitter);
     delete iEmitter;
-}
-
-CKERROR ParticleManager::PostProcess()
-{
-    // Add up the current count of emitted particles
-    m_TotalParticleCount = 0;
-    for (ParticleEmitter **it = m_Emitters.Begin(); it != m_Emitters.End(); ++it)
-    {
-        m_TotalParticleCount += (*it)->particleCount;
-    }
-
-    return CK_OK;
 }
 
 void ParticleManager::InteractorsSetRemoveMesh(CKBOOL iAdd)

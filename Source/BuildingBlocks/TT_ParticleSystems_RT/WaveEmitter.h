@@ -9,12 +9,13 @@ public:
     WaveEmitter(CKContext *ctx, CK_ID ent, char *name) : ParticleEmitter(ctx, ent, name)
     {
         CK3dEntity *entity = (CK3dEntity *)m_Context->GetObject(m_Entity);
-        entity->GetPosition(&m_Pos);
-        field_124 = 0;
+        entity->GetPosition(&m_Position);
+        m_Angle = 0;
+        m_IsWaveEmitter = TRUE;
     }
 
-    VxVector m_Pos;
-    CKDWORD field_124;
+    VxVector m_Position;
+    float m_Angle;
 
 protected:
     // add a particle

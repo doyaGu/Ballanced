@@ -6,19 +6,19 @@
 class TimePointEmitter : public PointEmitter
 {
 public:
-    TimePointEmitter(CKContext *ctx, CK_ID ent, char *name) : PointEmitter(ctx, ent, name), m_Vector(VxVector::axis0()), m_EmissionDelay(0)
+    TimePointEmitter(CKContext *ctx, CK_ID ent, char *name) : PointEmitter(ctx, ent, name)
     {
-        hasBeenRendered = TRUE;
-        hasBeenEnqueud = TRUE;
+        m_Position = VxVector::axis0();
+        m_Time = 0.0f;
+        m_Flag0x10C = TRUE;
+        m_IsTimePointEmitter = TRUE;
     }
 
-    VxVector m_Vector;
+    VxVector m_Position;
     float m_EmissionDelay;
-    CKDWORD m_Unknown;
+    float m_Time;
 
-protected:
-    // add a particle
-    void InitiateParticle(Particle *p);
+    void ReadInputs(CKBehavior *beh);
 };
 
 #endif

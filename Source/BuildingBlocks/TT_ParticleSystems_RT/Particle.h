@@ -199,7 +199,8 @@ extern char *ParticleDObjectName;
 #define SPEEDTEXTUREVARIANCE 31
 #define TEXTURECOUNT        32
 #define TEXTURELOOP         33
-#define STARTTIME           34
+#define REALTIMEMODE        34
+#define DELTATIME           35
 
 // Settings Indices
 #define PARTICLENUMBER      3
@@ -213,9 +214,6 @@ extern char *ParticleDObjectName;
 #define MESSAGE             11
 #define MANAGEINTERACTORS   12
 #define DISPLAYINTERACTORS  13
-#define PARTICLESCOUNT      14
-#define TRAILCOUNT          15
-#define VISIBLEINPAUSE      16
 
 // Bluured Layer Defines
 #define BLURREDLAYERWIDTH   256
