@@ -22,10 +22,8 @@ set(TT_PARTICLESYSTEMS_RT_HEAHERS
 		
         ParticleSystemRenderCallbacks.h
 		GeneralParticleSystem.h
-		
-	    BlockingQueue.h
-        ThreadSafeQueue.h
-        )
+
+)
 set(TT_PARTICLESYSTEMS_RT_SOURCES
         Particle.cpp
         ParticleTools.cpp

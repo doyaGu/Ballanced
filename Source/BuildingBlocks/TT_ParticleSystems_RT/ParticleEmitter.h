@@ -4,14 +4,6 @@
 #include "Particle.h"
 #include "ParticleTools.h"
 
-#ifdef WIN32
-#include <windows.h>
-#endif
-
-//#define MT_VERB
-
-//#define USE_THR 1
-
 class ParticleManager;
 
 class ParticleEmitter
@@ -154,13 +146,6 @@ public:
 
     float m_DeltaTime;
     CKBOOL m_Active;
-
-    // Thread computation
-#ifdef WIN32
-    HANDLE hasBeenComputedEvent;
-    volatile bool hasBeenRendered; // used for cases where we compute once and render twice
-    volatile bool hasBeenEnqueued;  // used for cases where we compute once and render twice
-#endif
 
 protected:
     // create the particle at its initial position : depends on the emitter type
