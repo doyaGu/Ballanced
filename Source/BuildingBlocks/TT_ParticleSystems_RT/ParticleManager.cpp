@@ -52,7 +52,7 @@ void ParticleManager::ShowInteractors(CKBOOL on)
     }
 }
 
-void ParticleAttributeCallback(int AttribType, BOOL Set, CKBeObject *obj, void *arg);
+void ParticleAttributeCallback(int AttribType, CKBOOL Set, CKBeObject *obj, void *arg);
 
 void ParticleManager::InitAttributes()
 {
@@ -395,7 +395,7 @@ void ParticleManager::_InteractorsSetRemoveMesh(int iAttribute, CK_ID iMeshID, C
     }
 }
 
-void ParticleAttributeCallback(int AttribType, BOOL Set, CKBeObject *obj, void *arg)
+void ParticleAttributeCallback(int AttribType, CKBOOL Set, CKBeObject *obj, void *arg)
 {
     CKContext *ctx = obj->GetCKContext();
     ParticleManager *pm = (ParticleManager *)arg;

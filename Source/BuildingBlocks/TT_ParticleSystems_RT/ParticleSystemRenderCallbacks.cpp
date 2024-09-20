@@ -5,42 +5,10 @@
 
 int (*renderParticles)(CKRenderContext *dev, CKRenderObject *obj, void *arg);
 
-// ACC - July 10,2002
-// Need to add code into each RenderCB to test if shutdown
-// Then we need to wait on PE to be finished
-//
-extern VxMutex logguard;
-extern FILE *ACCLOG;
-
-#ifdef USE_THR
-void ThreadWaitForCompletion(ParticleEmitter *em, const char *RenderingMethod)
-{
-#ifdef MT_VERB
-    // ACC, July 10, 2002
-    {
-        VxMutexLock lock(logguard);
-        fprintf(ACCLOG, "About to render a %s\n", RenderingMethod);
-        fflush(ACCLOG);
-    }
-#endif
-
-    // Wait
-    if (!em->hasBeenRendered && em->hasBeenEnqueued)
-    {
-        WaitForSingleObject(em->hasBeenComputedEvent, INFINITE);
-        em->hasBeenRendered = TRUE;
-    }
-}
-#endif
-
 int RenderParticles_P(CKRenderContext *dev, CKRenderObject *obj, void *arg)
 {
     CK3dEntity *mov = (CK3dEntity *)obj;
     ParticleEmitter *em = (ParticleEmitter *)arg;
-
-#ifdef USE_THR
-    ThreadWaitForCompletion(em, "Point");
-#endif
 
     if (em->m_IsTimePointEmitter)
         em->AddParticles2();
@@ -95,10 +63,6 @@ int RenderParticles_L(CKRenderContext *dev, CKRenderObject *obj, void *arg)
 {
     CK3dEntity *mov = (CK3dEntity *)obj;
     ParticleEmitter *em = (ParticleEmitter *)arg;
-
-#ifdef USE_THR
-    ThreadWaitForCompletion(em, "Line");
-#endif
 
     if (em->m_IsTimePointEmitter)
         em->AddParticles2();
@@ -168,10 +132,6 @@ int RenderParticles_S(CKRenderContext *dev, CKRenderObject *obj, void *arg)
     CK3dEntity *mov = (CK3dEntity *)obj;
     ParticleEmitter *em = (ParticleEmitter *)arg;
 
-#ifdef USE_THR
-    ThreadWaitForCompletion(em, "Sprite");
-#endif
-
     if (em->m_IsTimePointEmitter)
         em->AddParticles2();
 
@@ -227,7 +187,7 @@ int RenderParticles_S(CKRenderContext *dev, CKRenderObject *obj, void *arg)
     VxVector camup;
     Vx3DRotateVector(&camup, realmatrix, &mat[1]);
 
-    BOOL changeuv = FALSE;
+    CKBOOL changeuv = FALSE;
     float step = 1.0f;
     int framehc = 0;
     if (em->m_TextureFrameCount > 1)
@@ -360,10 +320,6 @@ int RenderParticles_FS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
     CK3dEntity *mov = (CK3dEntity *)obj;
     ParticleEmitter *em = (ParticleEmitter *)arg;
 
-#ifdef USE_THR
-    ThreadWaitForCompletion(em, "FastSprite");
-#endif
-
     if (em->m_IsTimePointEmitter)
         em->AddParticles2();
 
@@ -389,7 +345,7 @@ int RenderParticles_FS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
     VxVector camup;
     Vx3DRotateVector(&camup, realmatrix, &mat[1]);
 
-    BOOL changeuv = FALSE;
+    CKBOOL changeuv = FALSE;
     float step = 1.0f;
     int framehc = 0;
     if (em->m_TextureFrameCount > 1)
@@ -487,10 +443,6 @@ int RenderParticles_OS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
     CK3dEntity *mov = (CK3dEntity *)obj;
     ParticleEmitter *em = (ParticleEmitter *)arg;
 
-#ifdef USE_THR
-    ThreadWaitForCompletion(em, "OrientableSprite");
-#endif
-
     if (em->m_IsTimePointEmitter)
         em->AddParticles2();
 
@@ -546,7 +498,7 @@ int RenderParticles_OS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
     VxVector camdir;
     Vx3DRotateVector(&camdir, realmatrix, &mat[2]);
 
-    BOOL changeuv = FALSE;
+    CKBOOL changeuv = FALSE;
     float step = 1.0f;
     int framehc = 0;
     if (em->m_TextureFrameCount > 1)
@@ -577,7 +529,7 @@ int RenderParticles_OS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
         old = pos - dir * p->m_DeltaTime;
         // the old size
         oldsize = p->m_Size - p->m_DeltaSize * p->m_DeltaTime;
-        // we exagerate the current position according to the latenty
+        // we exaggerate the current position according to the latency
         pos += dir * p->m_Angle;
 
         vv = pos - old;
@@ -660,10 +612,6 @@ int RenderParticles_CS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
     CK3dEntity *mov = (CK3dEntity *)obj;
     ParticleEmitter *em = (ParticleEmitter *)arg;
 
-#ifdef USE_THR
-    ThreadWaitForCompletion(em, "Comet");
-#endif
-
     if (em->m_IsTimePointEmitter)
         em->AddParticles2();
 
@@ -714,7 +662,7 @@ int RenderParticles_CS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
     VxVector camdir;
     Vx3DRotateVector(&camdir, realmatrix, &mat[2]);
 
-    BOOL changeuv = FALSE;
+    CKBOOL changeuv = FALSE;
     float step = 1.0f;
     int framehc = 0;
     if (em->m_TextureFrameCount > 1)
@@ -828,11 +776,6 @@ int RenderParticles_RS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
 {
     CK3dEntity *mov = (CK3dEntity *)obj;
     ParticleEmitter *em = (ParticleEmitter *)arg;
-    // ACC, July 10, 2002
-
-#ifdef USE_THR
-    ThreadWaitForCompletion(em, "Radial");
-#endif
 
     if (em->m_IsTimePointEmitter)
         em->AddParticles2();
@@ -854,7 +797,7 @@ int RenderParticles_RS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
     VxMatrix oldmatrix = dev->GetWorldTransformationMatrix();
     dev->SetWorldTransformationMatrix(cam->GetWorldMatrix());
 
-    BOOL changeuv = FALSE;
+    CKBOOL changeuv = FALSE;
     float step = 1.0f;
     int framehc = 0;
     if (em->m_TextureFrameCount > 1)
@@ -965,10 +908,6 @@ int RenderParticles_O(CKRenderContext *dev, CKRenderObject *obj, void *arg)
     CK3dEntity *mov = (CK3dEntity *)obj;
     ParticleEmitter *em = (ParticleEmitter *)arg;
 
-#ifdef USE_THR
-    ThreadWaitForCompletion(em, "Object");
-#endif
-
     if (em->m_IsTimePointEmitter)
         em->AddParticles2();
 
@@ -1024,10 +963,6 @@ int RenderParticles_PS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
     CK3dEntity *mov = (CK3dEntity *)obj;
 	ParticleEmitter *em = (ParticleEmitter*)arg;
 
-#ifdef USE_THR
-	ThreadWaitForCompletion(em,"PointSprite");
-#endif
-
     if (em->m_IsTimePointEmitter)
         em->AddParticles2();
 
@@ -1054,7 +989,7 @@ int RenderParticles_PS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
     // Render States
     em->SetState(dev);
 
-    BOOL changeuv = FALSE;
+    CKBOOL changeuv = FALSE;
     float step = 1.0f;
     int framehc = 0;
     if (em->m_TextureFrameCount > 1)

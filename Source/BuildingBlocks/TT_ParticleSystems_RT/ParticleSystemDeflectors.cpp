@@ -23,7 +23,7 @@ Particle *KillParticle(Particle *iParticle, ParticleEmitter *ioEmitter)
 void ParticleManager::ManageInfinitePlaneDeflectors(ParticleEmitter *em, float deltat)
 {
     // Deflectors Message Management
-    BOOL noNeedToSend = (em->m_MessageType == -1);
+    CKBOOL noNeedToSend = (em->m_MessageType == -1);
 
     float response;
     float friction;
@@ -112,7 +112,7 @@ void ParticleManager::ManageInfinitePlaneDeflectors(ParticleEmitter *em, float d
 void ParticleManager::ManagePlaneDeflectors(ParticleEmitter *em, float deltat)
 {
     // Deflectors Message Management
-    BOOL noNeedToSend = (em->m_MessageType == -1);
+    CKBOOL noNeedToSend = (em->m_MessageType == -1);
 
     float response = 1.0f;
     float friction = 1.0f;
@@ -219,7 +219,7 @@ void ParticleManager::ManagePlaneDeflectors(ParticleEmitter *em, float deltat)
 void ParticleManager::ManageCylinderDeflectors(ParticleEmitter *em, float deltat)
 {
     // Deflectors Message Management
-    BOOL noNeedToSend = (em->m_MessageType == -1);
+    CKBOOL noNeedToSend = (em->m_MessageType == -1);
 
     float response;
     float friction;
@@ -312,7 +312,7 @@ void ParticleManager::ManageCylinderDeflectors(ParticleEmitter *em, float deltat
 void ParticleManager::ManageSphereDeflectors(ParticleEmitter *em, float deltat)
 {
     // Deflectors Message Management
-    BOOL noNeedToSend = (em->m_MessageType == -1);
+    CKBOOL noNeedToSend = (em->m_MessageType == -1);
 
     float response;
     float friction;
@@ -409,7 +409,7 @@ void ParticleManager::ManageSphereDeflectors(ParticleEmitter *em, float deltat)
 void ParticleManager::ManageBoxDeflectors(ParticleEmitter *em, float deltat)
 {
     // Deflectors Message Management
-    BOOL noNeedToSend = (em->m_MessageType == -1);
+    CKBOOL noNeedToSend = (em->m_MessageType == -1);
 
     float response;
     float friction;
@@ -516,12 +516,12 @@ void ParticleManager::ManageBoxDeflectors(ParticleEmitter *em, float deltat)
 void ParticleManager::ManageObjectDeflectors(ParticleEmitter *em, float deltat)
 {
     // Deflectors Message Management
-    BOOL noNeedToSend = (em->m_MessageType == -1);
+    CKBOOL noNeedToSend = (em->m_MessageType == -1);
 
     float response;
     float friction;
     float density;
-    BOOL smooth;
+    CKBOOL smooth;
     CKParameterOut *pout;
 
     CKAttributeManager *attman = m_Context->GetAttributeManager();

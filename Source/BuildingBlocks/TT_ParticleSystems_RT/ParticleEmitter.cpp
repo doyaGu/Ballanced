@@ -95,41 +95,9 @@ ParticleEmitter::ParticleEmitter(CKContext *ctx, CK_ID entity, char *name)
     InitParticleSystem();
 };
 
-#ifdef USE_THR
-#include "blockingqueue.h"
-#include "GeneralParticleSystem.h"
-
-extern BlockingQueue<ThreadParam> PSqueue;
-#endif
-
 // Destructeur
 ParticleEmitter::~ParticleEmitter()
 {
-#ifdef USE_THR
-    if (hasBeenEnqueued)
-    {
-        WaitForSingleObject(hasBeenComputedEvent, INFINITE);
-
-        while (hasBeenEnqueued)
-        {
-            int a = 0;
-        }
-    }
-
-    EnterCriticalSection(&PSqueue.mGuardAccess);
-    for (list<ThreadParam>::iterator it = PSqueue.mQueue.begin(); it != PSqueue.mQueue.end();)
-    {
-        if (it->pe == this)
-        {
-            it = PSqueue.mQueue.erase(it);
-            int a = 0;
-        }
-        else
-            ++it;
-    }
-    LeaveCriticalSection(&PSqueue.mGuardAccess);
-#endif
-
     delete[] m_BackPool;
     m_BackPool = NULL;
     m_Entity = 0;

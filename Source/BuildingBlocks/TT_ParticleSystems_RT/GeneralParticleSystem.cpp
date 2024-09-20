@@ -13,17 +13,10 @@
 #define ACTIVE 1
 #define FREEZED 2
 
-#ifdef USE_THR
-// ACC - July 10,2002
-BlockingQueue<ThreadParam> PSqueue(40);
-FILE *ACCLOG;
-VxMutex logguard;
-#endif
-
 CKERROR CreateGeneralParticleSystemProto(CKBehaviorPrototype **);
 int GeneralParticleSystem(const CKBehaviorContext &behcontext);
 CKERROR GeneralParticleSystemCallback(const CKBehaviorContext &behcontext);
-void EmitterSetMesh(BOOL Set, CKGUID guid, CKBehavior *beh, ParticleEmitter *em);
+void EmitterSetMesh(CKBOOL Set, CKGUID guid, CKBehavior *beh, ParticleEmitter *em);
 
 CKERROR CreateGeneralParticleSystemProto(CKBehaviorPrototype **pproto)
 {
@@ -132,75 +125,6 @@ void ShowParticles(CKBehavior *beh, CKBOOL show)
         entity->AddPostRenderCallBack(pe->m_RenderParticlesCallback, pe);
     }
 }
-#ifdef USE_THR
-// ACC - July 10, 2002
-int UpdateParticleSystemEnqueue(ParticleEmitter *aPE, float aDeltaTime)
-{
-    ThreadParam ThrParam;
-    ThrParam.pe = aPE;
-    ThrParam.DeltaTime = aDeltaTime;
-
-    ResetEvent(aPE->hasBeenComputedEvent);
-    aPE->hasBeenEnqueued = true;
-
-    PSqueue.Add(ThrParam);
-
-    return 0;
-}
-HANDLE hPSthread;
-
-DWORD WINAPI PSWorkerThreadFunc(LPVOID junk)
-{
-    // Forever loop
-    for (;;)
-    {
-#ifdef MT_VERB
-        {
-            VxMutexLock lock(logguard);
-            fprintf(ACCLOG, "About to remove Thread param: count=%d\n", PSqueue.NumItems());
-            fflush(ACCLOG);
-        }
-#endif
-        // This can block when queue is empty
-        ThreadParam currParam = PSqueue.Remove();
-
-        ParticleEmitter *pe = currParam.pe;
-        CKBehavior *beh = currParam.pe->m_Behavior;
-#ifdef MT_VERB
-        {
-            VxMutexLock lock(logguard);
-            fprintf(ACCLOG, "Removed a Thread param: count=%d\n", PSqueue.NumItems());
-            fflush(ACCLOG);
-        }
-#endif
-        // CKContext* ctx = beh->GetCKContext();
-        // ctx->OutputToConsoleEx(
-
-        pe->UpdateParticles(currParam.DeltaTime);
-
-        if (pe->m_CurrentImpact < pe->m_Impacts.Size())
-        {
-            beh->SetOutputParameterValue(0, &pe->m_Impacts[pe->m_CurrentImpact].m_Position);
-            beh->SetOutputParameterValue(1, &pe->m_Impacts[pe->m_CurrentImpact].m_Direction);
-            beh->SetOutputParameterObject(2, pe->m_Impacts[pe->m_CurrentImpact].m_Object);
-            beh->SetOutputParameterValue(3, &pe->m_Impacts[pe->m_CurrentImpact].m_UVs);
-            pe->m_CurrentImpact++;
-            beh->ActivateOutput(3);
-        }
-
-        pe->hasBeenEnqueued = false;
-        SetEvent(pe->hasBeenComputedEvent);
-
-#ifdef MT_VERB
-        {
-            VxMutexLock lock(logguard);
-            fprintf(ACCLOG, "Setevent pe=%p\n", pe);
-            fflush(ACCLOG);
-        }
-#endif
-    }
-}
-#endif // USE_THR
 
 int GeneralParticleSystem(const CKBehaviorContext &behcontext)
 {
@@ -258,21 +182,7 @@ int GeneralParticleSystem(const CKBehaviorContext &behcontext)
             {
                 beh->ActivateInput(0, FALSE);
                 beh->ActivateOutput(0);
-#ifdef USE_THR
-                // ACC, This is the point to create function
-                static bool isThreadCreated = false;
 
-                if (!isThreadCreated)
-                {
-                    // Hijack this to create logfile
-                    ACCLOG = fopen("\\acclog.txt", "w");
-                    assert(ACCLOG != NULL);
-
-                    hPSthread = CreateThread(NULL, NULL, PSWorkerThreadFunc, NULL,
-                                             0, NULL); // w2k/xp specific
-                    isThreadCreated = true;
-                }
-#endif
                 // we write the emission time to 0
                 float emissiontime = 0.0f;
                 beh->GetInputParameterValue(EMISSIONDELAY, &emissiontime); // we init the time with the delay to have one particle emitted at the activation
@@ -351,11 +261,7 @@ int GeneralParticleSystem(const CKBehaviorContext &behcontext)
 
         }
 
-        // ACC - July 10,2002
-        // Original Code
-#ifndef USE_THR
         // We update the particles (position, color, size...)
-
         if (pe->m_IsWaveEmitter)
         {
             pe->UpdateParticles2(behcontext.DeltaTime);
@@ -364,28 +270,13 @@ int GeneralParticleSystem(const CKBehaviorContext &behcontext)
         {
             pe->UpdateParticles(behcontext.DeltaTime);
         }
-#else
-//		CKContext* ctx = beh->GetCKContext();
-//		ctx->OutputToConsoleEx("Enque a Thread param: count=%d\n", PSqueue.NumItems());
-// multi-thread.  Enqueue to be processed
-#ifdef MT_VERB
-        {
-            VxMutexLock lock(logguard);
-            fprintf(ACCLOG, "Enque a Thread param count=%d\n", PSqueue.NumItems());
-            fflush(ACCLOG);
-        }
-#endif
-        UpdateParticleSystemEnqueue(pe, behcontext.DeltaTime);
-#endif
+
         // Saving Locals
 
         // we write the time
         beh->SetLocalParameterValue(2, &emissiontime);
     }
 
-    // ACC, July 10, 2002:
-#ifndef USE_THR
-    // TODO
     // This code needs to be moved into thread function, however
     // it imposes a condition that the values are not ready until the next frame potentially
     // Deflector Impacts Management
@@ -408,7 +299,6 @@ int GeneralParticleSystem(const CKBehaviorContext &behcontext)
         beh->ActivateOutput(1);
         return CKBR_OK;
     }
-#endif
 
     return CKBR_ACTIVATENEXTFRAME;
 }
@@ -600,7 +490,7 @@ CKERROR GeneralParticleSystemCallback(const CKBehaviorContext &behcontext)
     return CKBR_OK;
 }
 
-void EmitterSetMesh(BOOL Set, CKGUID guid, CKBehavior *beh, ParticleEmitter *em)
+void EmitterSetMesh(CKBOOL Set, CKGUID guid, CKBehavior *beh, ParticleEmitter *em)
 {
     CKContext *ctx = beh->GetCKContext();
     // we get the frame entity
