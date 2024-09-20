@@ -26,8 +26,11 @@ public:
     void InitParticleSystem();
     // Updates the particles
     void UpdateParticles(float deltat);
+    void UpdateParticles2(float deltat);
     // Add new particles
     void AddParticles();
+    void AddParticles2();
+    void AddParticles3();
 
     void SetState(CKRenderContext *dev, CKBOOL gouraud = FALSE);
 
@@ -105,27 +108,6 @@ public:
     // life variation
     float m_LifeVariation;
 
-    // trailing particles
-    int m_TrailCount;
-    // historic of recent particles.
-    struct ParticleHistoric
-    {
-        inline ParticleHistoric() {}
-        inline ParticleHistoric(unsigned int size) : start(0),
-                                                     count(0)
-        {
-            particles.Resize(size);
-        }
-
-        int start;
-        int count;
-        XArray<Particle> particles;
-    };
-    // Old particles.
-    XClassArray<ParticleHistoric> old_pos;
-
-    ParticleHistoric &GetParticleHistoric(Particle *part);
-
     // Blend Modes
     VXBLEND_MODE m_SrcBlend;
     VXBLEND_MODE m_DestBlend;
@@ -166,15 +148,19 @@ public:
     static CKWORD *m_GlobalIndices;
     static int m_GlobalIndicesCount;
 
-    CKBehavior *m_Behavior;
-    ParticleManager *m_Manager;
+    CKBOOL m_Flag0x10C;
+    CKBOOL m_IsTimePointEmitter;
+    CKBOOL m_IsWaveEmitter;
+
+    float m_DeltaTime;
+    CKBOOL m_Active;
 
     // Thread computation
 #ifdef WIN32
     HANDLE hasBeenComputedEvent;
-#endif
     volatile bool hasBeenRendered; // used for cases where we compute once and render twice
-    volatile bool hasBeenEnqueud;  // used for cases where we compute once and render twice
+    volatile bool hasBeenEnqueued;  // used for cases where we compute once and render twice
+#endif
 
 protected:
     // create the particle at its initial position : depends on the emitter type

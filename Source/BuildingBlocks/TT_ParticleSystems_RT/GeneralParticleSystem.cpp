@@ -20,8 +20,6 @@ FILE *ACCLOG;
 VxMutex logguard;
 #endif
 
-#include <stdio.h>
-
 CKERROR CreateGeneralParticleSystemProto(CKBehaviorPrototype **);
 int GeneralParticleSystem(const CKBehaviorContext &behcontext);
 CKERROR GeneralParticleSystemCallback(const CKBehaviorContext &behcontext);
@@ -36,6 +34,7 @@ CKERROR CreateGeneralParticleSystemProto(CKBehaviorPrototype **pproto)
     proto->DeclareInput("On");
     proto->DeclareInput("Off");
     proto->DeclareInput("Freeze");
+
     proto->DeclareOutput("Exit On");
     proto->DeclareOutput("Exit Off");
     proto->DeclareOutput("Exit Freeze");
@@ -74,7 +73,8 @@ CKERROR CreateGeneralParticleSystemProto(CKBehaviorPrototype **pproto)
     proto->DeclareInParameter("Texture Speed Variance", CKPGUID_INT, "20");
     proto->DeclareInParameter("Texture Frame Count", CKPGUID_INT, "1");
     proto->DeclareInParameter("Texture Loop", CKPGUID_LOOPMODE, "No Loop");
-    proto->DeclareInParameter("Start Time", CKPGUID_TIME, "0m 0s 0ms");
+    proto->DeclareInParameter("Real-Time Mode", CKPGUID_BOOL, "true");
+    proto->DeclareInParameter("DeltaTime", CKPGUID_FLOAT, "20.0");
 
     proto->DeclareLocalParameter("Emitter", CKPGUID_VOIDBUF);
     proto->DeclareLocalParameter("Activity", CKPGUID_INT);
@@ -92,9 +92,6 @@ CKERROR CreateGeneralParticleSystemProto(CKBehaviorPrototype **pproto)
     proto->DeclareSetting("Message To Deflectors", CKPGUID_MESSAGE, "NULL");
     proto->DeclareSetting("Manage Interactors", CKPGUID_INTERACTORS, "Gravity,Global Wind,Local Wind,Magnet,Vortex,Disruption Box,Mutation Box,Atmosphere,Tunnel,Projector");
     proto->DeclareSetting("Interactors/Deflectors Display", CKPGUID_BOOL, "TRUE");
-    proto->DeclareSetting("Output Particle Count", CKPGUID_BOOL, "FALSE");
-    proto->DeclareSetting("Trail Particle Count", CKPGUID_INT, "0");
-    proto->DeclareSetting("Visible In Pause", CKPGUID_BOOL, "FALSE");
 
     proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
     proto->SetFunction(GeneralParticleSystem);
@@ -103,70 +100,6 @@ CKERROR CreateGeneralParticleSystemProto(CKBehaviorPrototype **pproto)
 
     *pproto = proto;
     return CK_OK;
-}
-
-////
-// Function to warm up the particles before the actual start of rendering
-// Thanks to Daniel Fournier from Microids Canada
-void WarmUpParticles(const CKBehaviorContext &behcontext)
-{
-    CKBehavior *beh = behcontext.Behavior;
-
-    float startTime = 0;
-    beh->GetInputParameterValue(STARTTIME, &startTime);
-
-    if (startTime < EPSILON) // No warmup to do
-        return;
-
-    CKContext *ctx = behcontext.Context;
-
-    CKGUID guid = beh->GetPrototypeGuid();
-
-    // We get the emitter
-    ParticleEmitter *pe = *(ParticleEmitter **)beh->GetLocalParameterReadDataPtr(0);
-    if (!pe) return;
-
-    CK3dEntity *entity = (CK3dEntity *)ctx->GetObject(pe->m_Entity);
-
-    // We get the activity
-
-    // Reading Inputs
-    pe->ReadInputs(beh);
-
-    // shape of emitter object
-    if (guid == OBJECTSYSTEM_GUID)
-    {
-        ((ObjectEmitter *)pe)->m_Shape = entity->GetCurrentMesh();
-    }
-
-    // We create new particles only if we are active
-    float emissiondelay = 0.0f;
-    beh->GetInputParameterValue(EMISSIONDELAY, &emissiondelay);
-
-    float deltaTime = 20.0f;
-
-    // we start cum at the emission delay to have right at the start something
-    for (float time = 0.f, cum = emissiondelay; time < startTime; time += deltaTime)
-    {
-
-        if (emissiondelay > EPSILON) // linked with time
-        {
-            while (cum >= emissiondelay)
-            {
-                pe->AddParticles();
-                cum -= emissiondelay;
-            }
-
-            cum += deltaTime;
-        }
-        else // Not linked with time
-        {
-            pe->AddParticles();
-        }
-
-        // We update the particles (position, color, size...)
-        pe->UpdateParticles(deltaTime);
-    }
 }
 
 void ShowParticles(CKBehavior *beh, CKBOOL show)
@@ -178,22 +111,22 @@ void ShowParticles(CKBehavior *beh, CKBOOL show)
     if (!pe) return;
 
     // we now set the good mesh of the emitter
-    if (show) EmitterSetMesh(FALSE, guid, beh, pe);
+    if (show)
+        EmitterSetMesh(FALSE, guid, beh, pe);
 
     CK3dEntity *entity = (CK3dEntity *)beh->GetCKObject(pe->m_Entity);
-    if (!entity) return;
+    if (!entity)
+        return;
 
     entity->RemovePostRenderCallBack(RenderParticles_P, pe);
     entity->RemovePostRenderCallBack(RenderParticles_L, pe);
-    entity->RemovePostRenderCallBack(RenderParticles_LL, pe);
     entity->RemovePostRenderCallBack(RenderParticles_S, pe);
-    entity->RemovePostRenderCallBack(RenderParticles_LS, pe);
     entity->RemovePostRenderCallBack(RenderParticles_O, pe);
     entity->RemovePostRenderCallBack(RenderParticles_FS, pe);
     entity->RemovePostRenderCallBack(RenderParticles_OS, pe);
-    entity->RemovePostRenderCallBack(RenderParticles_LOS, pe);
     entity->RemovePostRenderCallBack(RenderParticles_CS, pe);
     entity->RemovePostRenderCallBack(RenderParticles_RS, pe);
+    entity->RemovePostRenderCallBack(RenderParticles_PS, pe);
     if (show)
     {
         entity->AddPostRenderCallBack(pe->m_RenderParticlesCallback, pe);
@@ -208,7 +141,7 @@ int UpdateParticleSystemEnqueue(ParticleEmitter *aPE, float aDeltaTime)
     ThrParam.DeltaTime = aDeltaTime;
 
     ResetEvent(aPE->hasBeenComputedEvent);
-    aPE->hasBeenEnqueud = true;
+    aPE->hasBeenEnqueued = true;
 
     PSqueue.Add(ThrParam);
 
@@ -255,7 +188,7 @@ DWORD WINAPI PSWorkerThreadFunc(LPVOID junk)
             beh->ActivateOutput(3);
         }
 
-        pe->hasBeenEnqueud = false;
+        pe->hasBeenEnqueued = false;
         SetEvent(pe->hasBeenComputedEvent);
 
 #ifdef MT_VERB
@@ -281,14 +214,19 @@ int GeneralParticleSystem(const CKBehaviorContext &behcontext)
     if (!pe)
         return CKBR_PARAMETERERROR;
 
-    pe->m_Behavior = beh;
-    pe->hasBeenRendered = false; // initialize every frame
-
     CK3dEntity *entity = (CK3dEntity *)ctx->GetObject(pe->m_Entity);
 
     // We get the activity
     int activity = 0;
     beh->GetLocalParameterValue(1, &activity);
+
+    CKBOOL realTimeMode = 0;
+    beh->GetInputParameterValue(REALTIMEMODE, &realTimeMode);
+
+    float deltaTime = 0.0f;
+    beh->GetInputParameterValue(DELTATIME, &deltaTime);
+    if (realTimeMode)
+        deltaTime = behcontext.DeltaTime;
 
     if (beh->IsInputActive(3))
     {
@@ -303,9 +241,15 @@ int GeneralParticleSystem(const CKBehaviorContext &behcontext)
             beh->ActivateOutput(2);
             // it was frozen, we unfreeze it
             if (activity & FREEZED)
+            {
                 activity &= ~FREEZED;
+                pe->m_Active = FALSE;
+            }
             else
+            {
                 activity |= FREEZED;
+                pe->m_Active = TRUE;
+            }
         }
         else
         {
@@ -334,7 +278,7 @@ int GeneralParticleSystem(const CKBehaviorContext &behcontext)
                 beh->GetInputParameterValue(EMISSIONDELAY, &emissiontime); // we init the time with the delay to have one particle emitted at the activation
                 beh->SetLocalParameterValue(2, &emissiontime);
 
-                WarmUpParticles(behcontext);
+                pe->m_Active = TRUE;
 
                 activity |= ACTIVE;
                 ShowParticles(beh);
@@ -346,6 +290,7 @@ int GeneralParticleSystem(const CKBehaviorContext &behcontext)
                 {
                     beh->ActivateInput(1, FALSE);
                     activity = INACTIVE;
+                    pe->m_Active = FALSE;
                 }
             }
         }
@@ -357,7 +302,10 @@ int GeneralParticleSystem(const CKBehaviorContext &behcontext)
             return CKBR_OK;
 
         // Reading Inputs
-        pe->ReadInputs(beh);
+        if (pe->m_IsTimePointEmitter)
+            ((TimePointEmitter *)pe)->ReadInputs(beh);
+        else
+            pe->ReadInputs(beh);
 
         // shape of emitter object
         if (guid == OBJECTSYSTEM_GUID)
@@ -368,36 +316,54 @@ int GeneralParticleSystem(const CKBehaviorContext &behcontext)
         // we update the time spent since last emission
         float emissiontime = 0.0f;
         beh->GetLocalParameterValue(2, &emissiontime);
-        emissiontime += behcontext.DeltaTime;
+        emissiontime += deltaTime;
+
+        pe->m_DeltaTime = deltaTime;
 
         // We create new particles only if we are active
         if (activity)
         {
-            float emissiondelay = 0;
-            beh->GetInputParameterValue(EMISSIONDELAY, &emissiondelay);
-            float emissiondelayvariance = 0;
-            beh->GetInputParameterValue(EMISSIONDELAYVAR, &emissiondelayvariance);
-            emissiondelay += emissiondelayvariance * RANDNUM;
-
-            if (emissiondelay > 0) // linked with time
+            if (pe->m_IsWaveEmitter)
             {
-                while (emissiontime > emissiondelay)
+                pe->AddParticles3();
+            }
+            else
+            {
+                float emissiondelay = 0;
+                beh->GetInputParameterValue(EMISSIONDELAY, &emissiondelay);
+                float emissiondelayvariance = 0;
+                beh->GetInputParameterValue(EMISSIONDELAYVAR, &emissiondelayvariance);
+                emissiondelay += emissiondelayvariance * RANDNUM;
+
+                if (emissiondelay > 0) // linked with time
                 {
-                    emissiontime -= emissiondelay;
+                    while (emissiontime > emissiondelay)
+                    {
+                        emissiontime -= emissiondelay;
+                        pe->AddParticles();
+                    }
+                }
+                else // Not linked with time
+                {
                     pe->AddParticles();
                 }
             }
-            else // Not linked with time
-            {
-                pe->AddParticles();
-            }
+
         }
 
         // ACC - July 10,2002
         // Original Code
 #ifndef USE_THR
         // We update the particles (position, color, size...)
-        pe->UpdateParticles(behcontext.DeltaTime);
+
+        if (pe->m_IsWaveEmitter)
+        {
+            pe->UpdateParticles2(behcontext.DeltaTime);
+        }
+        else
+        {
+            pe->UpdateParticles(behcontext.DeltaTime);
+        }
 #else
 //		CKContext* ctx = beh->GetCKContext();
 //		ctx->OutputToConsoleEx("Enque a Thread param: count=%d\n", PSqueue.NumItems());
@@ -431,13 +397,6 @@ int GeneralParticleSystem(const CKBehaviorContext &behcontext)
         beh->SetOutputParameterValue(3, &pe->m_Impacts[pe->m_CurrentImpact].m_UVs);
         pe->m_CurrentImpact++;
         beh->ActivateOutput(3);
-    }
-
-    // Update the particle count output (if available)
-    int opCount = beh->GetOutputParameterCount();
-    if ((opCount == 1) || (opCount == 5))
-    {
-        beh->SetOutputParameterValue(opCount - 1, &pe->particleCount);
     }
 
     // This section of code can go into the render call back, and return premature
@@ -479,19 +438,20 @@ CKERROR GeneralParticleSystemCallback(const CKBehaviorContext &behcontext)
                 return CKBR_OWNERERROR;
             }
         }
-    }
-    case CKM_BEHAVIORLOAD:
-    {
+
         ParticleManager *pm = (ParticleManager *)ctx->GetManagerByGuid(PARTICLE_MANAGER_GUID);
 
         ///////////////////////////
         // Interactors Diplay
         ///////////////////////////
         beh->SetLocalParameterValue(DISPLAYINTERACTORS, &pm->m_ShowInteractors);
+    }
+    case CKM_BEHAVIORLOAD:
+    {
+        ParticleManager *pm = (ParticleManager *)ctx->GetManagerByGuid(PARTICLE_MANAGER_GUID);
 
         // init of the local param
         ParticleEmitter *em = pm->CreateNewEmitter(guid, CKOBJID(ement));
-        em->m_Behavior = beh;
 
         beh->SetLocalParameterValue(0, &em, sizeof(ParticleEmitter *));
 
@@ -507,7 +467,10 @@ CKERROR GeneralParticleSystemCallback(const CKBehaviorContext &behcontext)
         em->ReadSettings(beh);
 
         // We read the inputs
-        em->ReadInputs(beh);
+        if (guid == TIMEPOINTSYSTEM_GUID)
+            ((TimePointEmitter*)em)->ReadInputs(beh);
+        else
+            em->ReadInputs(beh);
 
         // we initialize the time
         float time = 0.0f;
@@ -520,21 +483,11 @@ CKERROR GeneralParticleSystemCallback(const CKBehaviorContext &behcontext)
         if (!pe)
             return CKBR_PARAMETERERROR;
 
-        ement->ModifyMoveableFlags(VX_MOVEABLE_RENDERLAST, 0);
+        ParticleManager *pm = (ParticleManager *)ctx->GetManagerByGuid(PARTICLE_MANAGER_GUID);
+        if (pm)
+            pm->InteractorsSetRemoveMesh(TRUE);
 
-        if (beh->IsParentScriptActiveInScene(behcontext.CurrentScene))
-        {
-            CKBOOL active;
-            beh->GetLocalParameterValue(1, &active);
-            if (active)
-            {
-                // entity->SetRenderCallBack( pe->m_RenderParticlesCallback, pe );
-            }
-        }
-        else
-        {
-            ShowParticles(beh, FALSE);
-        }
+        ement->ModifyMoveableFlags(VX_MOVEABLE_RENDERLAST, 0);
     }
     break;
     case CKM_BEHAVIORSETTINGSEDITED:
@@ -576,6 +529,10 @@ CKERROR GeneralParticleSystemCallback(const CKBehaviorContext &behcontext)
 
         // we now set the good mesh of the emitter
         EmitterSetMesh(TRUE, guid, beh, em);
+
+        ParticleManager *pm = (ParticleManager *)ctx->GetManagerByGuid(PARTICLE_MANAGER_GUID);
+        if (pm)
+            pm->InteractorsSetRemoveMesh(TRUE);
     }
     break;
     case CKM_BEHAVIORRESET:
@@ -592,16 +549,19 @@ CKERROR GeneralParticleSystemCallback(const CKBehaviorContext &behcontext)
     case CKM_BEHAVIORPAUSE:
     {
         ParticleEmitter *em = *(ParticleEmitter **)beh->GetLocalParameterReadDataPtr(0);
-        if (!em) return CKBR_PARAMETERERROR;
+        if (!em)
+            return CKBR_PARAMETERERROR;
 
-        CKBOOL visibleOnPause = FALSE;
-        beh->GetLocalParameterValue(VISIBLEINPAUSE, &visibleOnPause);
-
-        if (visibleOnPause) return CKBR_OK;
+        ParticleManager *pm = (ParticleManager *)ctx->GetManagerByGuid(PARTICLE_MANAGER_GUID);
+        if (pm)
+            pm->InteractorsSetRemoveMesh(TRUE);
 
         // we now set the good mesh of the emitter
         EmitterSetMesh(TRUE, guid, beh, em);
+
+        ShowParticles(beh, FALSE);
     }
+    break;
     case CKM_BEHAVIORDEACTIVATESCRIPT:
     {
         ShowParticles(beh, FALSE);
@@ -610,16 +570,22 @@ CKERROR GeneralParticleSystemCallback(const CKBehaviorContext &behcontext)
     case CKM_BEHAVIORPRESAVE:
     {
         ParticleEmitter *em = *(ParticleEmitter **)beh->GetLocalParameterReadDataPtr(0);
-        if (!em) return CKBR_PARAMETERERROR;
+        if (!em)
+            return CKBR_PARAMETERERROR;
 
         // we now set the good mesh of the emitter
         EmitterSetMesh(FALSE, guid, beh, em);
+
+        ParticleManager *pm = (ParticleManager *)ctx->GetManagerByGuid(PARTICLE_MANAGER_GUID);
+        if (pm)
+            pm->InteractorsSetRemoveMesh(FALSE);
     }
     break;
     case CKM_BEHAVIORRESUME:
     {
         ParticleEmitter *em = *(ParticleEmitter **)beh->GetLocalParameterReadDataPtr(0);
-        if (!em) return CKBR_PARAMETERERROR;
+        if (!em)
+            return CKBR_PARAMETERERROR;
 
         // we now remove the emitter mesh of the frame
         EmitterSetMesh(FALSE, guid, beh, em);
@@ -639,7 +605,8 @@ void EmitterSetMesh(BOOL Set, CKGUID guid, CKBehavior *beh, ParticleEmitter *em)
     CKContext *ctx = beh->GetCKContext();
     // we get the frame entity
     CK3dEntity *ement = (CK3dEntity *)beh->GetOwner();
-    if (!ement) return;
+    if (!ement)
+        return;
 
     // If a mesh, it's not an object or a curve PS
     if (em->m_Mesh)
