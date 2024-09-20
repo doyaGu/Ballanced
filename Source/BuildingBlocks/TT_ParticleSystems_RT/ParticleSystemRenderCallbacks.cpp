@@ -1106,9 +1106,9 @@ int RenderParticles_PS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
             }
             else
             {
-                float hs = p->m_Size * 0.5;
-                float ca = cos(p->m_Angle);
-                float sa = sin(p->m_Angle);
+                float hs = p->m_Size * 0.5f;
+                float ca = cosf(p->m_Angle);
+                float sa = sinf(p->m_Angle);
 
                 positions->x = x - hs * ca + hs * sa;
                 positions->y = y;

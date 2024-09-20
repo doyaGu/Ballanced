@@ -695,7 +695,7 @@ void ParticleEmitter::UpdateParticles2(float rdeltat)
 
     VxBbox bbox;
 #ifdef SIMD_SUPPORTED
-    if (ProcessorFeatures & PROC_SIMD)
+    if (GetProcessorFeatures() & PROC_SIMD)
     {
         __asm {
             // preload katmai registers
