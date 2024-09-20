@@ -197,10 +197,6 @@ void ParticleManager::ManageVortex(ParticleEmitter *em, float deltat)
 
         Particle *particle = em->particles;
 
-        // TODO : �tendre le vortex sur les 3 axes avec un vector
-        // voir si on ne peut pas acc�lerer les calculs...
-
-        VxVector dir;
         while (particle)
         {
             // we calculate the new particle position
@@ -304,11 +300,7 @@ void ParticleManager::ManageMutationBox(ParticleEmitter *em, float deltat)
         pout = (CKParameterOut *)CKGetObject(paramids[3]);
         pout->GetValue(&colorspeed);
         colorspeed *= deltat;
-        /*
-                CK_ID texid;
-                pout = (CKParameterOut*)CKGetObject(paramids[4]);
-                pout->GetValue(&texid);
-        */
+
         Particle *particle = em->particles;
         while (particle)
         {
@@ -385,28 +377,31 @@ void ParticleManager::ManageTunnel(ParticleEmitter *em, float deltat)
 
         Particle *particle = em->particles;
 
-        float radius = ent->GetRadius();
         VxVector ppos;
         while (particle)
         {
             ent->InverseTransform(&ppos, &particle->pos);
 
             if (ppos.z < 1.0f)
-            { // Something must be done
+            {
+                // Something must be done
                 if (ppos.z < 0.0f)
-                { // we are before the tunnel
+                {
+                    // we are before the tunnel
                     // We must see if we are in the radius of the magnet
                     float worlddistance = Magnitude(particle->pos - tunnelposition);
                     if (worlddistance < magnetradius)
                     {
                         float fx = (float)fabs(ppos.x);
                         float fy = (float)fabs(ppos.y);
+
                         // Rescaling z to x : whatever the tunnel length, it will react the same at the entrance
                         float rescale = scalez * magnetforce * invscalex;
                         ppos.z *= rescale;
                         float squarez = (ppos.z) * (ppos.z);
                         if ((fx < squarez + 1) && (fy < squarez + 1))
-                        { // Inside the stream
+                        {
+                            // Inside the stream
                             float invsquarez = 1.0f / (squarez + 1);
                             float alphax = (ppos.x) * invsquarez;
                             float alphay = (ppos.y) * invsquarez;
@@ -431,7 +426,8 @@ void ParticleManager::ManageTunnel(ParticleEmitter *em, float deltat)
                 else
                 {
                     if ((fabs(ppos.x) < 1.0f) && (fabs(ppos.y) < 1.0f))
-                    { // Inside the tunnel
+                    {
+                        // Inside the tunnel
                         particle->dir = dirz * velocity;
                     }
                 }
@@ -447,8 +443,6 @@ void ParticleManager::ManageProjector(ParticleEmitter *em, float deltat)
     CKAttributeManager *attman = m_Context->GetAttributeManager();
 
     const XObjectPointerArray &Array = attman->GetAttributeListPtr(m_ProjectorAttribute);
-
-    CK3dEntity *emitter = (CK3dEntity *)CKGetObject(em->m_Entity);
 
     for (CKObject **it = Array.Begin(); it != Array.End(); ++it)
     {

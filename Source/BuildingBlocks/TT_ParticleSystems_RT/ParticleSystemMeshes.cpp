@@ -44,7 +44,6 @@ void CreateCircle(CKMesh *mesh, int start, int count, float radius, VxVector &ax
 
 void ParticleManager::CreateGlobalWindMesh()
 {
-#ifndef PSX2
     if (m_GlobalWindMesh)
         return;
     CKMesh *mesh = (CKMesh *)m_Context->CreateObject(CKCID_MESH, "Global Wind Mesh");
@@ -78,12 +77,10 @@ void ParticleManager::CreateGlobalWindMesh()
     mesh->SetLine(4, 5, 7);
     mesh->SetLine(5, 0, 1);
     mesh->SetLine(6, 2, 3);
-#endif
 }
 
 void ParticleManager::CreateLocalWindMesh()
 {
-#ifndef PSX2
     if (m_LocalWindMesh)
         return;
     CKMesh *mesh = (CKMesh *)m_Context->CreateObject(CKCID_MESH, "Local Wind Mesh");
@@ -131,12 +128,10 @@ void ParticleManager::CreateLocalWindMesh()
     mesh->SetLine(n + 2, n + 1, n + 3);
     mesh->SetLine(n + 3, n + 4, n + 5);
     mesh->SetLine(n + 4, n + 6, n + 7);
-#endif
 }
 
 void ParticleManager::CreateMagnetMesh()
 {
-#ifndef PSX2
     if (m_MagnetMesh)
         return;
     CKMesh *mesh = (CKMesh *)m_Context->CreateObject(CKCID_MESH, "Magnet Mesh");
@@ -158,12 +153,10 @@ void ParticleManager::CreateMagnetMesh()
     CreateCircle(mesh, n1 + n2 + n3, n1, 0.3f, axis, RGBAFTOCOLOR(0.7f, 0.0f, 0.0f, 1.0f));
     CreateCircle(mesh, 2 * n1 + n2 + n3, n2, 0.6f, axis, RGBAFTOCOLOR(0.7f, 0.0f, 0.0f, 1.0f));
     CreateCircle(mesh, 2 * (n1 + n2) + n3, n3, 1.0f, axis, RGBAFTOCOLOR(0.7f, 0.0f, 0.0f, 1.0f));
-#endif
 }
 
 void ParticleManager::CreateVortexMesh()
 {
-#ifndef PSX2
     if (m_VortexMesh)
         return;
     CKMesh *mesh = (CKMesh *)m_Context->CreateObject(CKCID_MESH, "Vortex Mesh");
@@ -196,12 +189,10 @@ void ParticleManager::CreateVortexMesh()
         angle += step;
         att -= 1.0f / n;
     }
-#endif
 }
 
 void ParticleManager::CreateDisruptionBoxMesh()
 {
-#ifndef PSX2
     if (m_DisruptionBoxMesh)
         return;
     CKMesh *mesh = (CKMesh *)m_Context->CreateObject(CKCID_MESH, "Disruption Box Mesh");
@@ -243,12 +234,10 @@ void ParticleManager::CreateDisruptionBoxMesh()
     mesh->SetLine(9, 1, 5);
     mesh->SetLine(10, 2, 6);
     mesh->SetLine(11, 3, 7);
-#endif
 }
 
 void ParticleManager::CreateMutationBoxMesh()
 {
-#ifndef PSX2
     if (m_MutationBoxMesh)
         return;
     CKMesh *mesh = (CKMesh *)m_Context->CreateObject(CKCID_MESH, "Mutation Box Mesh");
@@ -296,12 +285,10 @@ void ParticleManager::CreateMutationBoxMesh()
     mesh->SetLine(13, 1, 7);
     mesh->SetLine(14, 2, 4);
     mesh->SetLine(15, 3, 5);
-#endif
 }
 
 void ParticleManager::CreateTunnelMesh()
 {
-#ifndef PSX2
     if (m_TunnelMesh)
         return;
     CKMesh *mesh = (CKMesh *)m_Context->CreateObject(CKCID_MESH, "Tunnel Mesh");
@@ -320,12 +307,10 @@ void ParticleManager::CreateTunnelMesh()
     mesh->SetLine(2 * n + 1, n / 4, 5 * n / 4);
     mesh->SetLine(2 * n + 2, n / 2, 3 * n / 2);
     mesh->SetLine(2 * n + 3, 3 * n / 4, 7 * n / 4);
-#endif
 }
 
 void ParticleManager::CreateDPlaneMesh()
 {
-#ifndef PSX2
     if (m_DPlaneMesh)
         return;
     CKMesh *mesh = (CKMesh *)m_Context->CreateObject(CKCID_MESH, "DPlane Mesh");
@@ -353,12 +338,10 @@ void ParticleManager::CreateDPlaneMesh()
     mesh->SetLine(1, 0, 2);
     mesh->SetLine(2, 3, 1);
     mesh->SetLine(3, 2, 3);
-#endif
 }
 
 void ParticleManager::CreateDInfinitePlaneMesh()
 {
-#ifndef PSX2
     if (m_DInfinitePlaneMesh)
         return;
     CKMesh *mesh = (CKMesh *)m_Context->CreateObject(CKCID_MESH, "DInfinite Plane Mesh");
@@ -388,12 +371,10 @@ void ParticleManager::CreateDInfinitePlaneMesh()
     mesh->SetLine(3, 2, 3);
     mesh->SetLine(4, 0, 3);
     mesh->SetLine(5, 1, 2);
-#endif
 }
 
 void ParticleManager::CreateDCylinderMesh()
 {
-#ifndef PSX2
     if (m_DCylinderMesh)
         return;
     CKMesh *mesh = (CKMesh *)m_Context->CreateObject(CKCID_MESH, "Cylinder Mesh");
@@ -412,12 +393,10 @@ void ParticleManager::CreateDCylinderMesh()
     mesh->SetLine(2 * n + 1, n / 4, 5 * n / 4);
     mesh->SetLine(2 * n + 2, n / 2, 3 * n / 2);
     mesh->SetLine(2 * n + 3, 3 * n / 4, 7 * n / 4);
-#endif
 }
 
 void ParticleManager::CreateDSphereMesh()
 {
-#ifndef PSX2
     if (m_DSphereMesh)
         return;
     CKMesh *mesh = (CKMesh *)m_Context->CreateObject(CKCID_MESH, "DSphere Mesh");
@@ -435,12 +414,10 @@ void ParticleManager::CreateDSphereMesh()
     CreateCircle(mesh, n, n, 1.0f, axis, RGBAFTOCOLOR(1.0, 1.0, 0.0, 1.0));
     axis = VxVector(0.0f, 1.0f, 1.0f);
     CreateCircle(mesh, 2 * n, n, 1.0f, axis, RGBAFTOCOLOR(1.0, 1.0, 0.0, 1.0));
-#endif
 }
 
 void ParticleManager::CreateDBoxMesh()
 {
-#ifndef PSX2
     if (m_DBoxMesh)
         return;
     CKMesh *mesh = (CKMesh *)m_Context->CreateObject(CKCID_MESH, "DBox Mesh");
@@ -482,12 +459,10 @@ void ParticleManager::CreateDBoxMesh()
     mesh->SetLine(9, 1, 5);
     mesh->SetLine(10, 2, 6);
     mesh->SetLine(11, 3, 7);
-#endif
 }
 
 void ParticleManager::CreatePointMesh()
 {
-#ifndef PSX2
     if (m_PointMesh)
         return;
     CKMesh *mesh = (CKMesh *)m_Context->CreateObject(CKCID_MESH, "Point Mesh");
@@ -515,12 +490,10 @@ void ParticleManager::CreatePointMesh()
     mesh->SetLine(1, 1, 2);
     mesh->SetLine(2, 1, 3);
     mesh->SetLine(3, 2, 3);
-#endif
 }
 
 void ParticleManager::CreateLinearMesh()
 {
-#ifndef PSX2
     if (m_LinearMesh)
         return;
     CKMesh *mesh = (CKMesh *)m_Context->CreateObject(CKCID_MESH, "Linear Mesh");
@@ -552,12 +525,10 @@ void ParticleManager::CreateLinearMesh()
     mesh->SetLine(2, 1, 3);
     mesh->SetLine(3, 4, 5);
     mesh->SetLine(4, 2, 3);
-#endif
 }
 
 void ParticleManager::CreatePlanarMesh()
 {
-#ifndef PSX2
     if (m_PlanarMesh)
         return;
     CKMesh *mesh = (CKMesh *)m_Context->CreateObject(CKCID_MESH, "Planar Mesh");
@@ -594,12 +565,10 @@ void ParticleManager::CreatePlanarMesh()
     mesh->SetLine(5, 7, 5);
     mesh->SetLine(6, 6, 7);
     mesh->SetLine(7, 2, 3);
-#endif
 }
 
 void ParticleManager::CreateCubicMesh()
 {
-#ifndef PSX2
     if (m_CubicMesh)
         return;
     CKMesh *mesh = (CKMesh *)m_Context->CreateObject(CKCID_MESH, "Cubic Mesh");
@@ -641,12 +610,10 @@ void ParticleManager::CreateCubicMesh()
     mesh->SetLine(9, 1, 5);
     mesh->SetLine(10, 2, 6);
     mesh->SetLine(11, 3, 7);
-#endif
 }
 
 void ParticleManager::CreateDiscMesh()
 {
-#ifndef PSX2
     if (m_DiscMesh)
         return;
     CKMesh *mesh = (CKMesh *)m_Context->CreateObject(CKCID_MESH, "Disc Mesh");
@@ -693,13 +660,10 @@ void ParticleManager::CreateDiscMesh()
     mesh->SetLine(n + 1, n + 1, n + 2);
     mesh->SetLine(n + 2, n + 1, n + 3);
     mesh->SetLine(n + 3, n + 2, n + 3);
-
-#endif
 }
 
 void ParticleManager::CreateCylindricalMesh()
 {
-#ifndef PSX2
     if (m_CylindricalMesh)
         return;
     CKMesh *mesh = (CKMesh *)m_Context->CreateObject(CKCID_MESH, "Cylinder Mesh");
@@ -718,12 +682,10 @@ void ParticleManager::CreateCylindricalMesh()
     mesh->SetLine(2 * n + 1, n / 4, 5 * n / 4);
     mesh->SetLine(2 * n + 2, n / 2, 3 * n / 2);
     mesh->SetLine(2 * n + 3, 3 * n / 4, 7 * n / 4);
-#endif
 }
 
 void ParticleManager::CreateSphericalMesh()
 {
-#ifndef PSX2
     if (m_SphericalMesh)
         return;
     CKMesh *mesh = (CKMesh *)m_Context->CreateObject(CKCID_MESH, "Spherical Mesh");
@@ -742,5 +704,4 @@ void ParticleManager::CreateSphericalMesh()
     CreateCircle(mesh, 3 * n, n, 0.98f, axis, RGBAFTOCOLOR(1.0f, 0.7f, 0.0f, 1.0f), -0.12f);
     CreateCircle(mesh, 4 * n, n, 0.8f, axis, RGBAFTOCOLOR(1.0f, 0.7f, 0.0f, 1.0f), -0.4f);
     CreateCircle(mesh, 5 * n, n, 0.48f, axis, RGBAFTOCOLOR(1.0f, 0.7f, 0.0f, 1.0f), -0.68f);
-#endif
 }
