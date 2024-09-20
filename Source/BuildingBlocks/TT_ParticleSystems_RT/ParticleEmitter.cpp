@@ -218,24 +218,6 @@ void ParticleEmitter::UpdateParticles(float rdeltat)
     if (m_InteractorsFlags & PI_PROJECTOR)
         pm->ManageProjector(this, rdeltat);
 
-    CKDWORD ProcessorFeatures = GetProcessorFeatures();
-#ifdef SIMD_SUPPORTED
-    if (ProcessorFeatures & PROC_SIMD)
-    {
-        __asm {
-            // preload katmai registers
-                    mov esi,g_Min
-                    mov edi,g_Max
-                    mov edx,g_One
-
-                    movaps xmm7,[edi] // Load Max
-                    movaps xmm6,[esi] // Load Min
-                    movaps xmm5,[edx] // Load One
-                    xorps xmm3,xmm3 // Zero xmm3
-        }
-    }
-#endif
-
     while (particle)
     {
         // IF THIS IS AN VALID PARTICLE
@@ -255,130 +237,95 @@ void ParticleEmitter::UpdateParticles(float rdeltat)
             // Gravity management
             particle->dir.y += gravityForce * particle->m_Weight;
 
-#ifdef SIMD_SUPPORTED
-            if (ProcessorFeatures & PROC_SIMD)
+            // Calculating new angle
+            particle->m_Angle += particle->m_DeltaAngle * deltat;
+
+            if (particle->pos.x < minv.x)
             {
-                __asm {
-                lea ecx,[deltat]
-                mov ebx,particle
-
-                movss  xmm0,[ecx] // Load delta factor
-                movaps xmm2,[ebx+16] // Load Delta Color
-                shufps xmm0,xmm0,0 // propagate delta to 4 floats
-
-                mulps  xmm2,xmm0 // Delta Color * delta Factor
-                movaps xmm4,[ebx+48] // Load Delta position + Delta Angle
-
-                addps xmm2,[ebx] // Add to original color
-                mulps  xmm4,xmm0 // Delta Position * delta Factor
-
-                minps xmm6,[ebx+32] // compute minpos before adding delta
-                maxps xmm7,[ebx+32] // compute maxpos before adding delta
-
-                minps xmm2,xmm5 // Ceil Color to One
-                addps xmm4,[ebx+32] // Add to original position
-
-                maxps xmm2,xmm3 // Floor to Zero
-                movaps [ebx+32],xmm4 // Store position
-
-                movaps [ebx],xmm2 // Store Color
-
-                minps xmm6,xmm4 // compute minpos
-                maxps xmm7,xmm4 // compute maxpos
-                }
+                minv.x = particle->pos.x;
             }
-            else
-#endif
+            if (particle->pos.y < minv.y)
             {
-                // Calculating new angle
-                particle->m_Angle += particle->m_DeltaAngle * deltat;
-
-                if (particle->pos.x < minv.x)
-                {
-                    minv.x = particle->pos.x;
-                }
-                if (particle->pos.y < minv.y)
-                {
-                    minv.y = particle->pos.y;
-                }
-                if (particle->pos.z < minv.z)
-                {
-                    minv.z = particle->pos.z;
-                }
-                if (maxv.x < particle->pos.x)
-                {
-                    maxv.x = particle->pos.x;
-                }
-                if (maxv.y < particle->pos.y)
-                {
-                    maxv.y = particle->pos.y;
-                }
-                if (maxv.z < particle->pos.z)
-                {
-                    maxv.z = particle->pos.z;
-                }
-
-                // CALCULATE THE NEW
-                particle->pos += (particle->dir * deltat);
-
-                //////////////////////////////
-                // BOUNDING BOX UPDATING
-                //////////////////////////////
-
-                if (particle->pos.x < minv.x)
-                {
-                    minv.x = particle->pos.x;
-                }
-                if (particle->pos.y < minv.y)
-                {
-                    minv.y = particle->pos.y;
-                }
-                if (particle->pos.z < minv.z)
-                {
-                    minv.z = particle->pos.z;
-                }
-                if (maxv.x < particle->pos.x)
-                {
-                    maxv.x = particle->pos.x;
-                }
-                if (maxv.y < particle->pos.y)
-                {
-                    maxv.y = particle->pos.y;
-                }
-                if (maxv.z < particle->pos.z)
-                {
-                    maxv.z = particle->pos.z;
-                }
-
-                /////////////////////////////
-                // EVOLUTIONS MANAGEMENT
-                /////////////////////////////
-
-                // color management
-                if (m_EvolutionsFlags & PE_COLOR)
-                {
-                    particle->m_Color.r += particle->deltaColor.r * deltat;
-                    if (particle->m_Color.r < 0.0f)
-                        particle->m_Color.r = 0.0f;
-                    else if (particle->m_Color.r > 1.0f)
-                        particle->m_Color.r = 1.0f;
-                    particle->m_Color.g += particle->deltaColor.g * deltat;
-                    if (particle->m_Color.g < 0.0f)
-                        particle->m_Color.g = 0.0f;
-                    else if (particle->m_Color.g > 1.0f)
-                        particle->m_Color.g = 1.0f;
-                    particle->m_Color.b += particle->deltaColor.b * deltat;
-                    if (particle->m_Color.b < 0.0f)
-                        particle->m_Color.b = 0.0f;
-                    else if (particle->m_Color.b > 1.0f)
-                        particle->m_Color.b = 1.0f;
-                    particle->m_Color.a += particle->deltaColor.a * deltat;
-                    if (particle->m_Color.a < 0.0f)
-                        particle->m_Color.a = 0.0f;
-                    else if (particle->m_Color.a > 1.0f)
-                        particle->m_Color.a = 1.0f;
-                }
+                minv.y = particle->pos.y;
             }
+            if (particle->pos.z < minv.z)
+            {
+                minv.z = particle->pos.z;
+            }
+            if (maxv.x < particle->pos.x)
+            {
+                maxv.x = particle->pos.x;
+            }
+            if (maxv.y < particle->pos.y)
+            {
+                maxv.y = particle->pos.y;
+            }
+            if (maxv.z < particle->pos.z)
+            {
+                maxv.z = particle->pos.z;
+            }
+
+            // CALCULATE THE NEW
+            particle->pos += (particle->dir * deltat);
+
+            //////////////////////////////
+            // BOUNDING BOX UPDATING
+            //////////////////////////////
+
+            if (particle->pos.x < minv.x)
+            {
+                minv.x = particle->pos.x;
+            }
+            if (particle->pos.y < minv.y)
+            {
+                minv.y = particle->pos.y;
+            }
+            if (particle->pos.z < minv.z)
+            {
+                minv.z = particle->pos.z;
+            }
+            if (maxv.x < particle->pos.x)
+            {
+                maxv.x = particle->pos.x;
+            }
+            if (maxv.y < particle->pos.y)
+            {
+                maxv.y = particle->pos.y;
+            }
+            if (maxv.z < particle->pos.z)
+            {
+                maxv.z = particle->pos.z;
+            }
+
+            /////////////////////////////
+            // EVOLUTIONS MANAGEMENT
+            /////////////////////////////
+
+            // color management
+            if (m_EvolutionsFlags & PE_COLOR)
+            {
+                particle->m_Color.r += particle->deltaColor.r * deltat;
+                if (particle->m_Color.r < 0.0f)
+                    particle->m_Color.r = 0.0f;
+                else if (particle->m_Color.r > 1.0f)
+                    particle->m_Color.r = 1.0f;
+                particle->m_Color.g += particle->deltaColor.g * deltat;
+                if (particle->m_Color.g < 0.0f)
+                    particle->m_Color.g = 0.0f;
+                else if (particle->m_Color.g > 1.0f)
+                    particle->m_Color.g = 1.0f;
+                particle->m_Color.b += particle->deltaColor.b * deltat;
+                if (particle->m_Color.b < 0.0f)
+                    particle->m_Color.b = 0.0f;
+                else if (particle->m_Color.b > 1.0f)
+                    particle->m_Color.b = 1.0f;
+                particle->m_Color.a += particle->deltaColor.a * deltat;
+                if (particle->m_Color.a < 0.0f)
+                    particle->m_Color.a = 0.0f;
+                else if (particle->m_Color.a > 1.0f)
+                    particle->m_Color.a = 1.0f;
+            }
+
             // Size management
             if (m_EvolutionsFlags & PE_SIZE)
                 particle->m_Size += particle->m_DeltaSize * deltat;
@@ -461,26 +408,7 @@ void ParticleEmitter::UpdateParticles(float rdeltat)
         }
     }
 
-    VxBbox bbox;
-#ifdef SIMD_SUPPORTED
-    if (ProcessorFeatures & PROC_SIMD)
-    {
-        __asm {
-            // preload katmai registers
-                mov esi,g_Min
-                mov edi,g_Max
-                movaps [esi],xmm6 // Save Min
-                movaps [edi],xmm7 // Save Max
-        }
-        bbox.Min = *(VxVector *)g_Min;
-        bbox.Max = *(VxVector *)g_Max;
-    }
-    else
-#endif
-    {
-        bbox.Min = minv;
-        bbox.Max = maxv;
-    }
+    VxBbox bbox(minv, maxv);
     CK3dEntity *entity = (CK3dEntity *)m_Context->GetObject(m_Entity);
     entity->SetBoundingBox(&bbox);
 
@@ -693,26 +621,7 @@ void ParticleEmitter::UpdateParticles2(float rdeltat)
         }
     }
 
-    VxBbox bbox;
-#ifdef SIMD_SUPPORTED
-    if (GetProcessorFeatures() & PROC_SIMD)
-    {
-        __asm {
-            // preload katmai registers
-                mov esi,g_Min
-                mov edi,g_Max
-                movaps [esi],xmm6 // Save Min
-                movaps [edi],xmm7 // Save Max
-        }
-        bbox.Min = *(VxVector *)g_Min;
-        bbox.Max = *(VxVector *)g_Max;
-    }
-    else
-#endif
-    {
-        bbox.Min = minv;
-        bbox.Max = maxv;
-    }
+    VxBbox bbox(minv, maxv);
     CK3dEntity *entity = (CK3dEntity *)m_Context->GetObject(m_Entity);
     entity->SetBoundingBox(&bbox);
 
