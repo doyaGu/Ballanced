@@ -184,7 +184,8 @@ int GeneralParticleSystem(const CKBehaviorContext &behcontext)
 
                 // we write the emission time to 0
                 float emissiontime = 0.0f;
-                beh->GetInputParameterValue(EMISSIONDELAY, &emissiontime); // we init the time with the delay to have one particle emitted at the activation
+                beh->GetInputParameterValue(EMISSIONDELAY, &emissiontime);
+                // we init the time with the delay to have one particle emitted at the activation
                 beh->SetLocalParameterValue(2, &emissiontime);
 
                 pe->m_Active = TRUE;
@@ -257,7 +258,6 @@ int GeneralParticleSystem(const CKBehaviorContext &behcontext)
                     pe->AddParticles();
                 }
             }
-
         }
 
         // We update the particles (position, color, size...)
