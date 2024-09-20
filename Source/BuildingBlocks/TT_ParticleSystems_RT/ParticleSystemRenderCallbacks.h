@@ -11,6 +11,5 @@ int RenderParticles_OS(CKRenderContext *dev, CKRenderObject *mov, void *arg);
 int RenderParticles_CS(CKRenderContext *dev, CKRenderObject *mov, void *arg);
 int RenderParticles_RS(CKRenderContext *dev, CKRenderObject *mov, void *arg);
 int RenderParticles_FS(CKRenderContext *dev, CKRenderObject *mov, void *arg);
-int RenderParticles_PS(CKRenderContext *dev, CKRenderObject *mov, void *arg);
 
 #endif

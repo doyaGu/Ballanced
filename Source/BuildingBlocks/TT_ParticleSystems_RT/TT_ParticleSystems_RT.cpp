@@ -27,7 +27,7 @@ CKERROR InitInstance(CKContext *context)
     CKParameterManager *pm = context->GetParameterManager();
 
     // we register all the enums related to the particle system
-    pm->RegisterNewEnum(CKPGUID_RENDERMODES, "Particle Rendering", "Point=1,Line=2,Sprite=3,Object=4,Orientable Sprite=5,Radial Sprite=6,Fast Sprite=7,Comet=8"); // ,Blurred=7");
+    pm->RegisterNewEnum(CKPGUID_RENDERMODES, "Particle Rendering", "Point=1,Line=2,Sprite=3,Object=4,Orientable Sprite=5,Radial Sprite=6,Fast Sprite=7,Comet=8");
     // Loop mode
     pm->RegisterNewEnum(CKPGUID_LOOPMODE, "Loop Mode", "No Loop=0,Loop=1,To and Fro=2");
 

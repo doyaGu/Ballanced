@@ -119,7 +119,6 @@ void ShowParticles(CKBehavior *beh, CKBOOL show)
     entity->RemovePostRenderCallBack(RenderParticles_OS, pe);
     entity->RemovePostRenderCallBack(RenderParticles_CS, pe);
     entity->RemovePostRenderCallBack(RenderParticles_RS, pe);
-    entity->RemovePostRenderCallBack(RenderParticles_PS, pe);
     if (show)
     {
         entity->AddPostRenderCallBack(pe->m_RenderParticlesCallback, pe);
