@@ -1,0 +1,19 @@
+# .github/workflows/build-2.5.yml
+name: Build with Virtools SDK 2.5
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        configuration: [Release, Debug]
+        
+    uses: ./.github/workflows/build.yml
+    with:
+      sdk_version: "2.5"
+      configuration: "${{ matrix.configuration }}"
