@@ -4,12 +4,18 @@ name: Build
 on:
   workflow_call:
     inputs:
+      branch:  
+        required: true
+        type: string
+        default: "main"
       sdk_version:
         required: true
         type: string
+        default: "2.1"
       configuration:
         required: true
         type: string
+        default: "Release"
 
 jobs:
   build:
@@ -19,13 +25,13 @@ jobs:
       PROJECT_NAME: Ballanced
       BASE_BUILD_DIR: ${{ github.workspace }}/build
       BASE_DIST_DIR: ${{ github.workspace }}/dist
-      CMAKE_GENERATOR: "Ninja" # Optional: Use Ninja for faster builds
+      CMAKE_GENERATOR: "Ninja"
 
     steps:
     - name: Checkout source code
       uses: actions/checkout@v4
       with:
-        ref: main
+        ref: ${{ inputs.branch }}
         submodules: true
 
     - name: Checkout Virtools SDK
@@ -64,5 +70,5 @@ jobs:
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4.3.3
       with:
-        name: ${{ env.PROJECT_NAME }}-${{ inputs.sdk_version }}-${{env.GIT_SHA}}-${{ inputs.configuration }}
+        name: ${{ env.PROJECT_NAME }}-${{ inputs.sdk_version }}-${{ env.GIT_BRANCH }}-${{ env.GIT_SHA }}-${{ inputs.configuration }}
         path: ${{ env.BASE_DIST_DIR }}/${{ inputs.sdk_version }}/${{ inputs.configuration }}
