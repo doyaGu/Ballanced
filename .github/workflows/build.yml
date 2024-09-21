@@ -41,11 +41,6 @@ jobs:
       with:
         arch: x86
 
-    - name: Clean build directory
-      run: |
-        if exist ${{ env.BASE_BUILD_DIR }}/${{ inputs.sdk_version }}/${{ inputs.configuration }} rmdir /S /Q ${{ env.BASE_BUILD_DIR }}/${{ inputs.sdk_version }}/${{ inputs.configuration }}
-        mkdir ${{ env.BASE_BUILD_DIR }}/${{ inputs.sdk_version }}/${{ inputs.configuration }}
-
     - name: Configure CMake
       run: |
         cmake -G "${{ env.CMAKE_GENERATOR }}" -B ${{ env.BASE_BUILD_DIR }}/${{ inputs.sdk_version }}/${{ inputs.configuration }} \
