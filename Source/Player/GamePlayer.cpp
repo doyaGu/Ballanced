@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-//#include <dsetup.h>
+// #include <dsetup.h>
 
 #include "ErrorProtocol.h"
 #include "LogProtocol.h"
@@ -263,7 +263,6 @@ static void OnInitDialog(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     UINT lbStrId;
     int drCount;
     VxDriverDesc *drDesc;
-    VxDisplayMode *displayMode;
 
     drCount = CNeMoContext::GetInstance()->GetRenderManager()->GetRenderDriverCount();
     if (drCount > 0)
@@ -273,7 +272,12 @@ static void OnInitDialog(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             drDesc = CNeMoContext::GetInstance()->GetRenderManager()->GetRenderDriverDescription(i);
             if (drDesc->IsHardware)
             {
-                lbStrId = ::SendDlgItemMessageA(hWnd, IDC_LB_SCREEN_MODE, LB_ADDSTRING, 0, (LPARAM)drDesc->DriverName);
+#if CKVERSION == 0x13022002
+                const char *driverName = drDesc->DriverName;
+#else
+                const char *driverName = drDesc->DriverName.CStr();
+#endif
+                lbStrId = ::SendDlgItemMessageA(hWnd, IDC_LB_SCREEN_MODE, LB_ADDSTRING, 0, (LPARAM)driverName);
                 ::SendDlgItemMessageA(hWnd, IDC_LB_SCREEN_MODE, LB_SETITEMDATA, lbStrId, i);
                 if (i == CNeMoContext::GetInstance()->GetDriverIndex())
                     ::SendDlgItemMessageA(hWnd, IDC_LB_SCREEN_MODE, LB_SETCURSEL, lbStrId, 0);
@@ -282,14 +286,22 @@ static void OnInitDialog(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     }
 
     drDesc = CNeMoContext::GetInstance()->GetRenderManager()->GetRenderDriverDescription(CNeMoContext::GetInstance()->GetDriverIndex());
-    for (int i = 0, j = 0; i < drDesc->DisplayModeCount; ++i, ++j)
+
+#if CKVERSION == 0x13022002
+    VxDisplayMode *dm = drDesc->DisplayModes;
+    const int dmCount = drDesc->DisplayModeCount;
+#else
+    XArray<VxDisplayMode> &dm = drDesc->DisplayModes;
+    const int dmCount = dm.Size();
+#endif
+
+    for (int i = 0, j = 0; i < dmCount; ++i, ++j)
     {
-        displayMode = drDesc->DisplayModes;
-        if (displayMode[i].Bpp > 8)
+        if (dm[i].Bpp > 8)
         {
             if (j == 0)
             {
-                sprintf(buffer, "%d x %d x %d", displayMode[j].Width, displayMode[j].Height, displayMode[j].Bpp);
+                sprintf(buffer, "%d x %d x %d", dm[j].Width, dm[j].Height, dm[j].Bpp);
                 lbStrId = SendDlgItemMessageA(hWnd, IDC_LB_DRIVER, LB_ADDSTRING, 0, (LPARAM)buffer);
                 SendDlgItemMessageA(hWnd, IDC_LB_DRIVER, LB_SETITEMDATA, lbStrId, i);
                 if (i == CNeMoContext::GetInstance()->GetScreenModeIndex())
@@ -300,15 +312,15 @@ static void OnInitDialog(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
 
             int k = 0;
-            for (VxDisplayMode *displayModeNext = displayMode + 1;
-                 displayMode[j].Width != displayModeNext->Width ||
-                 displayMode[j].Height != displayModeNext->Height ||
-                 displayMode[j].Bpp != displayModeNext->Bpp;
+            for (VxDisplayMode *displayModeNext = &dm[i] + 1;
+                 dm[j].Width != displayModeNext->Width ||
+                 dm[j].Height != displayModeNext->Height ||
+                 dm[j].Bpp != displayModeNext->Bpp;
                  ++displayModeNext)
             {
                 if (++k >= i)
                 {
-                    sprintf(buffer, "%d x %d x %d", displayMode[j].Width, displayMode[j].Height, displayMode[j].Bpp);
+                    sprintf(buffer, "%d x %d x %d", dm[j].Width, dm[j].Height, dm[j].Bpp);
                     lbStrId = ::SendDlgItemMessageA(hWnd, IDC_LB_DRIVER, LB_ADDSTRING, 0, (LPARAM)buffer);
                     ::SendDlgItemMessageA(hWnd, IDC_LB_DRIVER, LB_SETITEMDATA, lbStrId, i);
                     if (i == CNeMoContext::GetInstance()->GetScreenModeIndex())
@@ -478,19 +490,28 @@ void CGamePlayer::OnMouseDoubleClick()
         ::ScreenToClient(m_WinContext.GetRenderWindow(), &pt);
     }
 
-    int msg = m_NeMoContext.GetMsgClick();
+    int msgType = m_NeMoContext.GetMsgClick();
 
-    CKPOINT ckpt = {pt.x, pt.y};
+#if CKVERSION == 0x13022002
+    CKPOINT ckpt = {(int)pt.x, (int)pt.y};
     CKPICKRESULT res;
     CKObject *obj = renderContext->Pick(ckpt, &res, FALSE);
     if (obj && CKIsChildClassOf(obj, CKCID_BEOBJECT))
-        m_NeMoContext.SendMessageSingle(msg, (CKBeObject *)obj, NULL);
+        m_NeMoContext.SendMessageSingle(msgType, (CKBeObject *)obj, NULL);
     if (res.Sprite)
     {
         CKObject *sprite = m_NeMoContext.GetObject(res.Sprite);
         if (sprite)
-            m_NeMoContext.SendMessageSingle(msg, (CKBeObject *)sprite, NULL);
+            m_NeMoContext.SendMessageSingle(msgType, (CKBeObject *)sprite, NULL);
     }
+#else
+    VxIntersectionDesc desc;
+    CKObject *obj = renderContext->Pick(pt.x, pt.y, &desc);
+    if (obj && CKIsChildClassOf(obj, CKCID_BEOBJECT))
+        m_NeMoContext.SendMessageSingle(msgType, (CKBeObject *)obj);
+    if (desc.Sprite)
+        m_NeMoContext.SendMessageSingle(msgType, (CKBeObject *)desc.Sprite);
+#endif
 }
 
 void CGamePlayer::OnMouseClick()
