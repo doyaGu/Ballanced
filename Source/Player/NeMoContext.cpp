@@ -488,7 +488,11 @@ bool CNeMoContext::Init()
             throw CNeMoContextException(1);
         }
 
+#if CKVERSION == 0x13022002
         CKERROR res = CKCreateContext(&m_CKContext, m_WinContext->GetMainWindow(), renderEnginePluginIdx, 0);
+#else
+        CKERROR res = CKCreateContext(&m_CKContext, m_WinContext->GetMainWindow(), 0);
+#endif
         if (res != CK_OK)
         {
             if (res == CKERR_NODLLFOUND)
@@ -669,8 +673,13 @@ bool CNeMoContext::FindScreenMode()
         throw CNeMoContextException(5);
     }
 
+#if CKVERSION == 0x13022002
     VxDisplayMode *dm = drDesc->DisplayModes;
     const int dmCount = drDesc->DisplayModeCount;
+#else
+    XArray<VxDisplayMode> &dm = drDesc->DisplayModes;
+    const int dmCount = dm.Size();
+#endif
     for (int i = 0; i < dmCount; ++i)
     {
         if (dm[i].Width == m_Width &&
