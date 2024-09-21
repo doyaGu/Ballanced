@@ -44,9 +44,9 @@ jobs:
     - name: Configure CMake
       run: >
         cmake -G "${{ env.CMAKE_GENERATOR }}" -B ${{ env.BASE_BUILD_DIR }}/${{ inputs.sdk_version }}/${{ inputs.configuration }}
-              -DCMAKE_BUILD_TYPE=${{ inputs.configuration }}
-              -DVIRTOOLS_SDK_PATH=${{ github.workspace }}/Virtools-SDK-${{ inputs.sdk_version }}
-              -DCMAKE_INSTALL_PREFIX=${{ env.BASE_DIST_DIR }}/${{ inputs.sdk_version }}/${{ inputs.configuration }}
+        -DCMAKE_BUILD_TYPE=${{ inputs.configuration }}
+        -DVIRTOOLS_SDK_PATH=${{ github.workspace }}/Virtools-SDK-${{ inputs.sdk_version }}
+        -DCMAKE_INSTALL_PREFIX=${{ env.BASE_DIST_DIR }}/${{ inputs.sdk_version }}/${{ inputs.configuration }}
 
     - name: Build the project
       run: cmake --build ${{ env.BASE_BUILD_DIR }}/${{ inputs.sdk_version }}/${{ inputs.configuration }}
