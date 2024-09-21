@@ -15,5 +15,6 @@ jobs:
         
     uses: ./.github/workflows/build.yml
     with:
+      branch: "${{ github.ref_name }}"
       sdk_version: "2.1"
       configuration: "${{ matrix.configuration }}"
