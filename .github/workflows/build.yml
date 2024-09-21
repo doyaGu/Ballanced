@@ -1,0 +1,74 @@
+# .github/workflows/build.yml
+name: Build
+
+on:
+  workflow_call:
+    inputs:
+      sdk_version:
+        required: true
+        type: string
+      configuration:
+        required: true
+        type: string
+    secrets:
+      GITHUB_TOKEN:
+        required: true
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    env:
+      PROJECT_NAME: Ballanced
+      BASE_BUILD_DIR: ${{ github.workspace }}/build
+      BASE_DIST_DIR: ${{ github.workspace }}/dist
+      CMAKE_GENERATOR: "Ninja" # Optional: Use Ninja for faster builds
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Checkout Virtools SDK
+      uses: actions/checkout@v4
+      with:
+        repository: doyaGu/Virtools-SDK-${{ inputs.sdk_version }}
+        path: ${{ github.workspace }}/Virtools-SDK-${{ inputs.sdk_version }}
+
+    - name: Get branch and commit info
+      run: |
+        echo "GIT_BRANCH=$(echo ${GITHUB_REF#refs/heads/})" >> "$GITHUB_ENV"
+        echo "GIT_SHA=$(git rev-parse --short "$GITHUB_SHA")" >> "$GITHUB_ENV"
+
+    - name: Setup CMake
+      uses: lukka/get-cmake@latest
+
+    - name: Setup MSVC
+      uses: TheMrMilchmann/setup-msvc-dev@v3.0.0
+      with:
+        arch: x86
+
+    - name: Clean build directory
+      run: |
+        if exist ${{ env.BASE_BUILD_DIR }}/${{ inputs.sdk_version }}/${{ inputs.configuration }} rmdir /S /Q ${{ env.BASE_BUILD_DIR }}/${{ inputs.sdk_version }}/${{ inputs.configuration }}
+        mkdir ${{ env.BASE_BUILD_DIR }}/${{ inputs.sdk_version }}/${{ inputs.configuration }}
+
+    - name: Configure CMake
+      run: |
+        cmake -G "${{ env.CMAKE_GENERATOR }}" -B ${{ env.BASE_BUILD_DIR }}/${{ inputs.sdk_version }}/${{ inputs.configuration }} \
+        -DCMAKE_BUILD_TYPE=${{ inputs.configuration }} \
+        -DVIRTOOLS_SDK_PATH=${{ github.workspace }}/Virtools-SDK-${{ inputs.sdk_version }} \
+        -DCMAKE_INSTALL_PREFIX=${{ env.BASE_DIST_DIR }}/${{ inputs.sdk_version }}/${{ inputs.configuration }}
+
+    - name: Build the project
+      run: cmake --build ${{ env.BASE_BUILD_DIR }}/${{ inputs.sdk_version }}/${{ inputs.configuration }}
+
+    - name: Install binaries to distribution folder
+      run: cmake --install ${{ env.BASE_BUILD_DIR }}/${{ inputs.sdk_version }}/${{ inputs.configuration }} --prefix ${{ env.BASE_DIST_DIR }}/${{ inputs.sdk_version }}/${{ inputs.configuration }}
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4.3.3
+      with:
+        name: ${{ env.PROJECT_NAME }}-${{ env.GIT_SHA }}-${{ inputs.sdk_version }}-${{ inputs.configuration }}
+        path: ${{ env.BASE_DIST_DIR }}/${{ inputs.sdk_version }}/${{ inputs.configuration }}
