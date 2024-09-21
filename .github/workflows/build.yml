@@ -33,9 +33,8 @@ jobs:
         repository: doyaGu/Virtools-SDK-${{ inputs.sdk_version }}
         path: ${{ github.workspace }}/Virtools-SDK-${{ inputs.sdk_version }}
 
-    - name: Get branch and commit info
+    - name: Get current commit hash
       run: |
-        echo "GIT_BRANCH=$(echo ${GITHUB_REF#refs/heads/})" >> "$GITHUB_ENV"
         echo "GIT_SHA=$(git rev-parse --short "$GITHUB_SHA")" >> "$GITHUB_ENV"
 
     - name: Setup CMake
