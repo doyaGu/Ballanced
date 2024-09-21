@@ -8,7 +8,7 @@ set(PLAYER_VERSION ${CMAKE_PROJECT_VERSION})
 
 set(PLAYER_SCREEN_WIDTH 640 CACHE STRING "Player screen width default value" FORCE)
 set(PLAYER_SCREEN_HEIGHT 480 CACHE STRING "Player screen height default value" FORCE)
-set(PLAYER_SCREEN_BPP 16 CACHE STRING "Player screen bpp default value" FORCE)
+set(PLAYER_SCREEN_BPP 32 CACHE STRING "Player screen bpp default value" FORCE)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_SOURCE_DIR}/config.h)
 
