@@ -1,9 +1,9 @@
 //#include <dsetup.h>
 
-#include "ErrorProtocol.h"
 #include "GamePlayer.h"
-#include "LogProtocol.h"
 #include "PlayerRegistry.h"
+#include "ErrorProtocol.h"
+#include "LogProtocol.h"
 
 #include "ResDll.h"
 #include "GameInfo.h"

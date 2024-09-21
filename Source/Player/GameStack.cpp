@@ -1,7 +1,7 @@
 #include "GameStack.h"
 
-#include "ErrorProtocol.h"
 #include "Game.h"
+#include "ErrorProtocol.h"
 
 #include "GameInfo.h"
 
