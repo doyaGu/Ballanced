@@ -386,3 +386,5 @@ target_sources(physics_RT PRIVATE
 )
 target_include_directories(physics_RT PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(physics_RT PRIVATE ivp_physics ivp_compact_builder CK2 VxMath)
+
+install(TARGETS physics_RT RUNTIME DESTINATION BuildingBlocks)

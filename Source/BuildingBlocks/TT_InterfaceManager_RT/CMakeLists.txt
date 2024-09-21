@@ -18,3 +18,5 @@ target_sources(TT_InterfaceManager_RT PRIVATE
     )
 target_include_directories(TT_InterfaceManager_RT PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(TT_InterfaceManager_RT PRIVATE CK2 VxMath)
+
+install(TARGETS TT_InterfaceManager_RT RUNTIME DESTINATION BuildingBlocks)
