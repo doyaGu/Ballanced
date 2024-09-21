@@ -24,20 +24,17 @@ jobs:
     steps:
     - name: Checkout source code
       uses: actions/checkout@v4
+      with:
+        submodules: true
     - run: |
-        git checkout HEAD^
-        git submodule update --init --recursive
+        git checkout HEAD
+        echo "GIT_SHA=$(git rev-parse --short "$GITHUB_SHA")" >> "$GITHUB_ENV"
 
     - name: Checkout Virtools SDK
       uses: actions/checkout@v4
       with:
         repository: doyaGu/Virtools-SDK-${{ inputs.sdk_version }}
         path: ${{ github.workspace }}/Virtools-SDK-${{ inputs.sdk_version }}
-
-    - name: Get current branch and commit hash
-      run: |
-        echo "GIT_BRANCH=$(echo ${GITHUB_REF#refs/heads/})" >> "$GITHUB_ENV"
-        echo "GIT_SHA=$(git rev-parse --short "$GITHUB_SHA")" >> "$GITHUB_ENV"
 
     - name: Setup CMake
       uses: lukka/get-cmake@latest
