@@ -34,8 +34,13 @@ int RenderParticles_P(CKRenderContext *dev, CKRenderObject *obj, void *arg)
 
     Particle *p = em->GetParticles();
 
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
     VxVector *positions = (VxVector *)data->PositionPtr;
     CKDWORD *colors = (CKDWORD *)data->ColorPtr;
+#else
+    VxVector *positions = (VxVector *)data->Positions.Ptr;
+    CKDWORD *colors = (CKDWORD *)data->Colors.Ptr;
+#endif
 
     while (p)
     {
@@ -45,8 +50,13 @@ int RenderParticles_P(CKRenderContext *dev, CKRenderObject *obj, void *arg)
         // next point
         p = p->next;
 
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         colors = (CKDWORD *)((CKBYTE *)colors + data->ColorStride);
         positions = (VxVector *)((CKBYTE *)positions + data->PositionStride);
+#else
+        colors = (CKDWORD *)((CKBYTE *)colors + data->Colors.Stride);
+        positions = (VxVector *)((CKBYTE *)positions + data->Positions.Stride);
+#endif
     }
 
     // The drawing
@@ -89,8 +99,13 @@ int RenderParticles_L(CKRenderContext *dev, CKRenderObject *obj, void *arg)
     Particle *p = em->GetParticles();
     VxColor oldColor;
 
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
     VxVector *positions = (VxVector *)data->PositionPtr;
     CKDWORD *colors = (CKDWORD *)data->ColorPtr;
+#else
+    VxVector *positions = (VxVector *)data->Positions.Ptr;
+    CKDWORD *colors = (CKDWORD *)data->Colors.Ptr;
+#endif
 
     while (p)
     {
@@ -102,17 +117,33 @@ int RenderParticles_L(CKRenderContext *dev, CKRenderObject *obj, void *arg)
 
         // Start of line
         *positions = p->pos - p->dir * p->m_DeltaTime;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         positions = (VxVector *)((CKBYTE *)positions + data->PositionStride);
+#else
+        positions = (VxVector *)((CKBYTE *)positions + data->Positions.Stride);
+#endif
 
         *colors = RGBAFTOCOLOR(&oldColor);
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         colors = (CKDWORD *)((CKBYTE *)colors + data->ColorStride);
+#else
+        colors = (CKDWORD *)((CKBYTE *)colors + data->Colors.Stride);
+#endif
 
         // End of line
         *positions = p->pos + p->dir * p->m_Angle;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         positions = (VxVector *)((CKBYTE *)positions + data->PositionStride);
+#else
+        positions = (VxVector *)((CKBYTE *)positions + data->Positions.Stride);
+#endif
 
         *colors = RGBAFTOCOLOR(&(p->m_Color));
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         colors = (CKDWORD *)((CKBYTE *)colors + data->ColorStride);
+#else
+        colors = (CKDWORD *)((CKBYTE *)colors + data->Colors.Stride);
+#endif
 
         // Next particle
         p = p->next;
@@ -143,9 +174,15 @@ int RenderParticles_S(CKRenderContext *dev, CKRenderObject *obj, void *arg)
         return 0;
 
     VxDrawPrimitiveData *data = dev->GetDrawPrimitiveStructure((CKRST_DPFLAGS)(CKRST_DP_TR_CL_VCT | CKRST_DP_VBUFFER), (4 * pc > VBUFFERSIZE) ? VBUFFERSIZE : 4 * pc);
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
     VxUV *uvs = (VxUV *)data->TexCoordPtr;
     VxVector *positions = (VxVector *)data->PositionPtr;
     CKDWORD *colors = (CKDWORD *)data->ColorPtr;
+#else
+    VxUV *uvs = (VxUV *)data->TexCoord.Ptr;
+    VxVector *positions = (VxVector *)data->Positions.Ptr;
+    CKDWORD *colors = (CKDWORD *)data->Colors.Ptr;
+#endif
 
     ///
     // Indices
@@ -245,36 +282,83 @@ int RenderParticles_S(CKRenderContext *dev, CKRenderObject *obj, void *arg)
 
         // Filling vertices
         *positions = pos - cr + cu;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         positions = (VxVector *)((CKBYTE *)positions + data->PositionStride);
+#else
+        positions = (VxVector *)((CKBYTE *)positions + data->Positions.Stride);
+#endif
         *colors = col;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         colors = (CKDWORD *)((CKBYTE *)colors + data->ColorStride);
+#else
+        colors = (CKDWORD *)((CKBYTE *)colors + data->Colors.Stride);
+#endif
         uvs->u = u;
         uvs->v = v;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoordStride);
-
+#else
+        uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoord.Stride);
+#endif
         *positions = pos + cr + cu;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         positions = (VxVector *)((CKBYTE *)positions + data->PositionStride);
+#else
+        positions = (VxVector *)((CKBYTE *)positions + data->Positions.Stride);
+#endif
         *colors = col;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         colors = (CKDWORD *)((CKBYTE *)colors + data->ColorStride);
+#else
+        colors = (CKDWORD *)((CKBYTE *)colors + data->Colors.Stride);
+#endif
         uvs->u = u + step;
         uvs->v = v;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoordStride);
+#else
+        uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoord.Stride);
+#endif
 
         *positions = pos + cr - cu;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         positions = (VxVector *)((CKBYTE *)positions + data->PositionStride);
+#else
+        positions = (VxVector *)((CKBYTE *)positions + data->Positions.Stride);
+#endif
         *colors = col;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         colors = (CKDWORD *)((CKBYTE *)colors + data->ColorStride);
+#else
+        colors = (CKDWORD *)((CKBYTE *)colors + data->Colors.Stride);
+#endif
         uvs->u = u + step;
         uvs->v = v + step;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoordStride);
+#else
+        uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoord.Stride);
+#endif
 
         *positions = pos - cr - cu;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         positions = (VxVector *)((CKBYTE *)positions + data->PositionStride);
+#else
+        positions = (VxVector *)((CKBYTE *)positions + data->Positions.Stride);
+#endif
         *colors = col;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         colors = (CKDWORD *)((CKBYTE *)colors + data->ColorStride);
+#else
+        colors = (CKDWORD *)((CKBYTE *)colors + data->Colors.Stride);
+#endif
         uvs->u = u;
         uvs->v = v + step;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoordStride);
+#else
+        uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoord.Stride);
+#endif
 
         ++np;
         p = p->next;
@@ -290,9 +374,15 @@ int RenderParticles_S(CKRenderContext *dev, CKRenderObject *obj, void *arg)
             if (remaining > 0)
             {
                 data = dev->GetDrawPrimitiveStructure((CKRST_DPFLAGS)(CKRST_DP_TR_CL_VCT | CKRST_DP_VBUFFER), (remaining > VBUFFERSIZE) ? VBUFFERSIZE : remaining);
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
                 uvs = (VxUV *)data->TexCoordPtr;
                 positions = (VxVector *)data->PositionPtr;
                 colors = (CKDWORD *)data->ColorPtr;
+#else
+                uvs = (VxUV *)data->TexCoord.Ptr;
+                positions = (VxVector *)data->Positions.Ptr;
+                colors = (CKDWORD *)data->Colors.Ptr;
+#endif
             }
         }
     }
@@ -321,9 +411,15 @@ int RenderParticles_FS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
         return 0;
 
     VxDrawPrimitiveData *data = dev->GetDrawPrimitiveStructure(CKRST_DP_TR_CL_VCT, 3 * pc);
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
     XPtrStrided<VxUV> uvs(data->TexCoordPtr, data->TexCoordStride);
     XPtrStrided<VxVector> positions(data->PositionPtr, data->PositionStride);
     XPtrStrided<CKDWORD> colors(data->ColorPtr, data->ColorStride);
+#else
+    XPtrStrided<VxUV> &uvs = data->TexCoord;
+    XPtrStrided<VxVector4> &positions = data->Positions;
+    XPtrStrided<DWORD> &colors = data->Colors;
+#endif
 
     // Render States
     em->SetState(dev);
@@ -444,9 +540,15 @@ int RenderParticles_OS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
         return 0;
 
     VxDrawPrimitiveData *data = dev->GetDrawPrimitiveStructure(CKRST_DP_TR_CL_VCT, 4 * pc);
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
     VxUV *uvs = (VxUV *)data->TexCoordPtr;
     VxVector *positions = (VxVector *)data->PositionPtr;
     CKDWORD *colors = (CKDWORD *)data->ColorPtr;
+#else
+    VxUV *uvs = (VxUV *)data->TexCoord.Ptr;
+    VxVector *positions = (VxVector *)data->Positions.Ptr;
+    CKDWORD *colors = (CKDWORD *)data->Colors.Ptr;
+#endif
 
     ///
     // Indices
@@ -549,36 +651,84 @@ int RenderParticles_OS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
 
         // Filling vertices
         *positions = pos + vv * p->m_Size + ww * p->m_Size;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         positions = (VxVector *)((CKBYTE *)positions + data->PositionStride);
+#else
+        positions = (VxVector *)((CKBYTE *)positions + data->Positions.Stride);
+#endif
         *colors = col;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         colors = (CKDWORD *)((CKBYTE *)colors + data->ColorStride);
+#else
+        colors = (CKDWORD *)((CKBYTE *)colors + data->Colors.Stride);
+#endif
         uvs->u = u;
         uvs->v = v;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoordStride);
+#else
+        uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoord.Stride);
+#endif
 
         *positions = pos + vv * p->m_Size - ww * p->m_Size;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         positions = (VxVector *)((CKBYTE *)positions + data->PositionStride);
+#else
+        positions = (VxVector *)((CKBYTE *)positions + data->Positions.Stride);
+#endif
         *colors = col;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         colors = (CKDWORD *)((CKBYTE *)colors + data->ColorStride);
+#else
+        colors = (CKDWORD *)((CKBYTE *)colors + data->Colors.Stride);
+#endif
         uvs->u = u + step;
         uvs->v = v;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoordStride);
+#else
+        uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoord.Stride);
+#endif
 
         *positions = old - vv * oldsize - ww * oldsize;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         positions = (VxVector *)((CKBYTE *)positions + data->PositionStride);
+#else
+        positions = (VxVector *)((CKBYTE *)positions + data->Positions.Stride);
+#endif
         *colors = oldcol;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         colors = (CKDWORD *)((CKBYTE *)colors + data->ColorStride);
+#else
+        colors = (CKDWORD *)((CKBYTE *)colors + data->Colors.Stride);
+#endif
         uvs->u = u + step;
         uvs->v = v + step;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoordStride);
+#else
+        uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoord.Stride);
+#endif
 
         *positions = old - vv * oldsize + ww * oldsize;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         positions = (VxVector *)((CKBYTE *)positions + data->PositionStride);
+#else
+        positions = (VxVector *)((CKBYTE *)positions + data->Positions.Stride);
+#endif
         *colors = oldcol;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         colors = (CKDWORD *)((CKBYTE *)colors + data->ColorStride);
+#else
+        colors = (CKDWORD *)((CKBYTE *)colors + data->Colors.Stride);
+#endif
         uvs->u = u;
         uvs->v = v + step;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoordStride);
+#else
+        uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoord.Stride);
+#endif
 
         p = p->next;
         ni += 4;
@@ -608,9 +758,15 @@ int RenderParticles_CS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
         return 0;
 
     VxDrawPrimitiveData *data = dev->GetDrawPrimitiveStructure(CKRST_DP_TR_CL_VCT, 4 * pc);
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
     VxUV *uvs = (VxUV *)data->TexCoordPtr;
     VxVector *positions = (VxVector *)data->PositionPtr;
     CKDWORD *colors = (CKDWORD *)data->ColorPtr;
+#else
+    VxUV *uvs = (VxUV *)data->TexCoord.Ptr;
+    VxVector *positions = (VxVector *)data->Positions.Ptr;
+    CKDWORD *colors = (CKDWORD *)data->Colors.Ptr;
+#endif
 
     // Indices
     if (pc * 6 > ParticleEmitter::m_GlobalIndicesCount)
@@ -715,36 +871,84 @@ int RenderParticles_CS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
 
         // Filling vertices
         *positions = center + ww;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         positions = (VxVector *)((CKBYTE *)positions + data->PositionStride);
+#else
+        positions = (VxVector *)((CKBYTE *)positions + data->Positions.Stride);
+#endif
         *colors = col;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         colors = (CKDWORD *)((CKBYTE *)colors + data->ColorStride);
+#else
+        colors = (CKDWORD *)((CKBYTE *)colors + data->Colors.Stride);
+#endif
         uvs->u = u;
         uvs->v = v;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoordStride);
+#else
+        uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoord.Stride);
+#endif
 
         *positions = pos;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         positions = (VxVector *)((CKBYTE *)positions + data->PositionStride);
+#else
+        positions = (VxVector *)((CKBYTE *)positions + data->Positions.Stride);
+#endif
         *colors = col;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         colors = (CKDWORD *)((CKBYTE *)colors + data->ColorStride);
+#else
+        colors = (CKDWORD *)((CKBYTE *)colors + data->Colors.Stride);
+#endif
         uvs->u = u + step;
         uvs->v = v;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoordStride);
+#else
+        uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoord.Stride);
+#endif
 
         *positions = center - ww;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         positions = (VxVector *)((CKBYTE *)positions + data->PositionStride);
+#else
+        positions = (VxVector *)((CKBYTE *)positions + data->Positions.Stride);
+#endif
         *colors = col;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         colors = (CKDWORD *)((CKBYTE *)colors + data->ColorStride);
+#else
+        colors = (CKDWORD *)((CKBYTE *)colors + data->Colors.Stride);
+#endif
         uvs->u = u + step;
         uvs->v = v + step;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoordStride);
+#else
+        uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoord.Stride);
+#endif
 
         *positions = old;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         positions = (VxVector *)((CKBYTE *)positions + data->PositionStride);
+#else
+        positions = (VxVector *)((CKBYTE *)positions + data->Positions.Stride);
+#endif
         *colors = oldcol;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         colors = (CKDWORD *)((CKBYTE *)colors + data->ColorStride);
+#else
+        colors = (CKDWORD *)((CKBYTE *)colors + data->Colors.Stride);
+#endif
         uvs->u = u;
         uvs->v = v + step;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoordStride);
+#else
+        uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoord.Stride);
+#endif
 
         p = p->next;
         ni += 4;
@@ -771,11 +975,17 @@ int RenderParticles_RS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
     int pc = em->particleCount;
     if (!pc)
         return 0;
-    VxDrawPrimitiveData *data = dev->GetDrawPrimitiveStructure(CKRST_DP_TR_CL_VCT, 4 * pc);
 
+    VxDrawPrimitiveData *data = dev->GetDrawPrimitiveStructure(CKRST_DP_TR_CL_VCT, 4 * pc);
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
     VxUV *uvs = (VxUV *)data->TexCoordPtr;
     VxVector *positions = (VxVector *)data->PositionPtr;
     CKDWORD *colors = (CKDWORD *)data->ColorPtr;
+#else
+    VxUV *uvs = (VxUV *)data->TexCoord.Ptr;
+    VxVector *positions = (VxVector *)data->Positions.Ptr;
+    CKDWORD *colors = (CKDWORD *)data->Colors.Ptr;
+#endif
 
     // Render States
     em->SetState(dev);
@@ -838,36 +1048,84 @@ int RenderParticles_RS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
 
         // Filling vertices
         *positions = pos + vv * p->m_Size + ww * p->m_Size;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         positions = (VxVector *)((CKBYTE *)positions + data->PositionStride);
+#else
+        positions = (VxVector *)((CKBYTE *)positions + data->Positions.Stride);
+#endif
         *colors = col;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         colors = (CKDWORD *)((CKBYTE *)colors + data->ColorStride);
+#else
+        colors = (CKDWORD *)((CKBYTE *)colors + data->Colors.Stride);
+#endif
         uvs->u = u;
         uvs->v = v;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoordStride);
+#else
+        uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoord.Stride);
+#endif
 
         *positions = pos + vv * p->m_Size - ww * p->m_Size;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         positions = (VxVector *)((CKBYTE *)positions + data->PositionStride);
+#else
+        positions = (VxVector *)((CKBYTE *)positions + data->Positions.Stride);
+#endif
         *colors = col;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         colors = (CKDWORD *)((CKBYTE *)colors + data->ColorStride);
+#else
+        colors = (CKDWORD *)((CKBYTE *)colors + data->Colors.Stride);
+#endif
         uvs->u = u + step;
         uvs->v = v;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoordStride);
+#else
+        uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoord.Stride);
+#endif
 
         *positions = old - vv * p->m_Size - ww * p->m_Size;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         positions = (VxVector *)((CKBYTE *)positions + data->PositionStride);
+#else
+        positions = (VxVector *)((CKBYTE *)positions + data->Positions.Stride);
+#endif
         *colors = col;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         colors = (CKDWORD *)((CKBYTE *)colors + data->ColorStride);
+#else
+        colors = (CKDWORD *)((CKBYTE *)colors + data->Colors.Stride);
+#endif
         uvs->u = u + step;
         uvs->v = v + step;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoordStride);
+#else
+        uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoord.Stride);
+#endif
 
         *positions = old - vv * p->m_Size + ww * p->m_Size;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         positions = (VxVector *)((CKBYTE *)positions + data->PositionStride);
+#else
+        positions = (VxVector *)((CKBYTE *)positions + data->Positions.Stride);
+#endif
         *colors = col;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         colors = (CKDWORD *)((CKBYTE *)colors + data->ColorStride);
+#else
+        colors = (CKDWORD *)((CKBYTE *)colors + data->Colors.Stride);
+#endif
         uvs->u = u;
         uvs->v = v + step;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoordStride);
+#else
+        uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoord.Stride);
+#endif
 
         p = p->next;
         ni += 4;
