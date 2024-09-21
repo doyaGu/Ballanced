@@ -44,7 +44,7 @@ static bool RegSetBPP(int bpp)
 
     if (bpp == 16)
     {
-        g_ResMap.dwVideoDriverSetting &= 0xFFFE;
+        g_ResMap.dwVideoDriverSetting &= ~1;
     }
     else if ((g_ResMap.dwVideoDriverSetting & 1) != 1)
     {
