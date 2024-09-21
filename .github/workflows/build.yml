@@ -24,7 +24,9 @@ jobs:
     steps:
     - name: Checkout source code
       uses: actions/checkout@v4
-    - run: git submodule update --init --recursive
+    - run: |
+        git checkout HEAD^
+        git submodule update --init --recursive
 
     - name: Checkout Virtools SDK
       uses: actions/checkout@v4
