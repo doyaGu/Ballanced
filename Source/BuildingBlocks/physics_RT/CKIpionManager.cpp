@@ -197,10 +197,18 @@ CKERROR CKIpionManager::OnCKPlay()
 
 CKERROR CKIpionManager::OnCKReset()
 {
+    return CK_OK;
+}
+
+CKERROR CKIpionManager::OnCKPostReset()
+{
     DestroyEnvironment();
 
     m_PhysicsTimeFactor = 0.001f;
     m_PhysicsObjects.Clear();
+
+    ClearCollisionSurfaces();
+    ClearLiquidSurfaces();
 
     return CK_OK;
 }
@@ -237,6 +245,10 @@ CKERROR CKIpionManager::SequenceToBeDeleted(CK_ID *objids, int count)
             if (po)
             {
                 po->m_RealObject->delete_silently();
+                RemovePhysicsObject(ent);
+
+                if (m_MovableObjects.index_of(po->m_RealObject) != -1)
+                    m_MovableObjects.remove(po->m_RealObject);
             }
         }
     }
@@ -430,6 +442,9 @@ IVP_Polygon *CKIpionManager::CreatePhysicsPolygon(CKSTRING name, float mass, IVP
 
 void CKIpionManager::CreateEnvironment()
 {
+	if (m_Environment)
+		return;
+
     IVP_Application_Environment appEnv;
     appEnv.material_manager = new IVP_Material_Manager(IVP_TRUE);
     appEnv.performancecounter = new IVP_PerformanceCounter_Simple();
