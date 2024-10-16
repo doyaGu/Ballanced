@@ -4,14 +4,12 @@
 #include "CKMesh.h"
 #include "CK3dEntity.h"
 #include "CK3dObject.h"
-#include "CKBehavior.h"
 #include "CKParameterOut.h"
 #include "VxMatrix.h"
 
 #include "ivp_performancecounter.hxx"
 #include "ivp_surbuild_pointsoup.hxx"
 #include "ivp_surman_polygon.hxx"
-#include "ivp_compact_surface.hxx"
 
 class PhysicsObjectListener : public IVP_Listener_Object
 {
