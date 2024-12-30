@@ -251,7 +251,7 @@ int ReadIntegerFromRegistry(const char *subKey, CKBehavior *beh, CKContext *cont
     if (::RegOpenKeyExA(HKEY_LOCAL_MACHINE, subKey, 0, KEY_ALL_ACCESS, &hkResult) != ERROR_SUCCESS)
     {
         ::RegCloseKey(hkResult);
-        context->OutputToConsoleExBeep("TT_ReadRegistry: failed to open : %s\\%s", HKEY_LOCAL_MACHINE, subKey);
+        context->OutputToConsoleExBeep("TT_ReadRegistry: failed to open : HKEY_LOCAL_MACHINE\\%s", subKey);
         beh->ActivateOutput(1);
         return 0;
     }
@@ -277,7 +277,7 @@ float ReadFloatFromRegistry(const char *subKey, CKBehavior *beh, CKContext *cont
     if (::RegOpenKeyExA(HKEY_LOCAL_MACHINE, subKey, 0, KEY_ALL_ACCESS, &hkResult) != ERROR_SUCCESS)
     {
         ::RegCloseKey(hkResult);
-        context->OutputToConsoleExBeep("TT_ReadRegistry: failed to open : %s\\%s", HKEY_LOCAL_MACHINE, subKey);
+        context->OutputToConsoleExBeep("TT_ReadRegistry: failed to open : HKEY_LOCAL_MACHINE\\%s", subKey);
         beh->ActivateOutput(1);
         return 0;
     }
@@ -303,7 +303,7 @@ char *ReadStringFromRegistry(const char *subKey, CKBehavior *beh, CKContext *con
     if (::RegOpenKeyExA(HKEY_LOCAL_MACHINE, subKey, 0, KEY_ALL_ACCESS, &hkResult) != ERROR_SUCCESS)
     {
         ::RegCloseKey(hkResult);
-        context->OutputToConsoleExBeep("TT_ReadRegistry: failed to open : %s\\%s", HKEY_LOCAL_MACHINE, subKey);
+        context->OutputToConsoleExBeep("TT_ReadRegistry: failed to open : HKEY_LOCAL_MACHINE\\%s", subKey);
         beh->ActivateOutput(1);
         return NULL;
     }
