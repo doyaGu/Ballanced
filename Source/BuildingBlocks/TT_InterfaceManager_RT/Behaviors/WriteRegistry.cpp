@@ -245,7 +245,6 @@ int WriteIntegerToRegistry(const char *subKey, CKBehavior *beh, CKContext *conte
     if (::RegCreateKeyExA(HKEY_CURRENT_USER, subKey, 0, 0, 0, KEY_ALL_ACCESS, 0, &hkResult, &dwDisposition) != ERROR_SUCCESS)
     {
         ::RegCloseKey(hkResult);
-        context->OutputToConsoleExBeep("TT_WriteRegistry: Create %s %s.", HKEY_CURRENT_USER, subKey);
         beh->ActivateOutput(1);
         return CKBR_OK;
     }
@@ -253,7 +252,6 @@ int WriteIntegerToRegistry(const char *subKey, CKBehavior *beh, CKContext *conte
     if (::RegSetValueExA(hkResult, valueName, 0, REG_DWORD, (LPBYTE)&value, sizeof(value)) != ERROR_SUCCESS)
     {
         ::RegCloseKey(hkResult);
-        context->OutputToConsoleExBeep("TT_WriteRegistry: Set %s %d.", valueName, value);
         beh->ActivateOutput(1);
         return CKBR_OK;
     }
@@ -269,7 +267,6 @@ int WriteFloatToRegistry(const char *subKey, CKBehavior *beh, CKContext *context
     if (::RegCreateKeyExA(HKEY_CURRENT_USER, subKey, 0, 0, 0, KEY_ALL_ACCESS, 0, &hkResult, &dwDisposition) != ERROR_SUCCESS)
     {
         ::RegCloseKey(hkResult);
-        context->OutputToConsoleExBeep("TT_WriteRegistry: Create %s %s.", HKEY_CURRENT_USER, subKey);
         beh->ActivateOutput(1);
         return CKBR_OK;
     }
@@ -277,7 +274,6 @@ int WriteFloatToRegistry(const char *subKey, CKBehavior *beh, CKContext *context
     if (::RegSetValueExA(hkResult, valueName, 0, REG_DWORD, (LPBYTE)&value, sizeof(value)) != ERROR_SUCCESS)
     {
         ::RegCloseKey(hkResult);
-        context->OutputToConsoleExBeep("TT_WriteRegistry: Set %s %f.", valueName, value);
         beh->ActivateOutput(1);
         return CKBR_OK;
     }
@@ -293,7 +289,6 @@ int WriteStringToRegistry(const char *subKey, CKBehavior *beh, CKContext *contex
     if (::RegCreateKeyExA(HKEY_CURRENT_USER, subKey, 0, 0, 0, KEY_ALL_ACCESS, 0, &hkResult, &dwDisposition) != ERROR_SUCCESS)
     {
         ::RegCloseKey(hkResult);
-        context->OutputToConsoleExBeep("TT_WriteRegistry: Create %s %s.", HKEY_CURRENT_USER, subKey);
         beh->ActivateOutput(1);
         return CKBR_OK;
     }
@@ -301,7 +296,6 @@ int WriteStringToRegistry(const char *subKey, CKBehavior *beh, CKContext *contex
     if (::RegSetValueExA(hkResult, valueName, 0, REG_SZ, (LPBYTE)str, strlen(str)) != ERROR_SUCCESS)
     {
         ::RegCloseKey(hkResult);
-        context->OutputToConsoleExBeep("TT_WriteRegistry: Set %s %s.", valueName, str);
         beh->ActivateOutput(1);
         return CKBR_OK;
     }
