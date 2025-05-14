@@ -57,4 +57,6 @@ target_include_directories(${PLAYER_NAME} PRIVATE
 
 target_link_libraries(${PLAYER_NAME} PRIVATE CK2 VxMath ResDll)
 
+copy_target_to_ballance_dir(${PLAYER_NAME} "Bin")
+
 install(TARGETS ${PLAYER_NAME} RUNTIME DESTINATION Bin)

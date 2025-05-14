@@ -18,4 +18,6 @@ target_include_directories(ResDll PUBLIC
 )
 target_compile_definitions(ResDll PRIVATE "RESDLL_EXPORTS")
 
+copy_target_to_ballance_dir(ResDll "Bin")
+
 install(TARGETS ResDll RUNTIME DESTINATION Bin)
