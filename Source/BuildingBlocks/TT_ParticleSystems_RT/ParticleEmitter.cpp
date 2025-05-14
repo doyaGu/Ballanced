@@ -75,7 +75,7 @@ ParticleEmitter::ParticleEmitter(CKContext *ctx, CK_ID entity, char *name)
     m_VariancesFlags = 0;
     m_InteractorsFlags = 0;
     m_DeflectorsFlags = 0;
-    m_RenderMode = 3;
+    m_RenderMode = PR_SPRITE;
 
     m_Mesh = 0;
     m_Entity = entity;
