@@ -37,6 +37,20 @@ if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     message(STATUS "Setting default install directory to ${CMAKE_INSTALL_PREFIX} as no install directory was specified")
 endif ()
 
+if(NOT DEFINED BALLANCE_DIR)
+    message(NOTICE "Set BALLANCE_DIR to automatically copy the artifacts to the game directory after build.")
+endif()
+
+macro(copy_target_to_ballance_dir target subdir)
+    if (DEFINED BALLANCE_DIR)
+        add_custom_command(TARGET ${target} POST_BUILD
+                COMMAND "${CMAKE_COMMAND}" -E
+                copy "$<TARGET_FILE:${target}>"
+                "${BALLANCE_DIR}/${subdir}/$<TARGET_FILE_NAME:${target}>"
+        )
+    endif ()
+endmacro()
+
 # Generate a CompilationDatabase (compile_commands.json)
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
