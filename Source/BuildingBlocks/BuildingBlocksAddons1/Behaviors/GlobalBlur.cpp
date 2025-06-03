@@ -164,6 +164,7 @@ void BlurRender(CKRenderContext *rc, void *arg)
     rc->GetViewRect(rect);
 
     // Positions
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
     ((VxVector4 *)data->PositionPtr)[0].x = rect.left;
     ((VxVector4 *)data->PositionPtr)[3].x = rect.right;
     ((VxVector4 *)data->PositionPtr)[1].x = rect.right;
@@ -172,11 +173,25 @@ void BlurRender(CKRenderContext *rc, void *arg)
     ((VxVector4 *)data->PositionPtr)[1].y = rect.top;
     ((VxVector4 *)data->PositionPtr)[2].y = rect.bottom;
     ((VxVector4 *)data->PositionPtr)[3].y = rect.bottom;
+#else
+    ((VxVector4 *)data->Positions.Ptr)[0].x = rect.left;
+    ((VxVector4 *)data->Positions.Ptr)[3].x = rect.right;
+    ((VxVector4 *)data->Positions.Ptr)[1].x = rect.right;
+    ((VxVector4 *)data->Positions.Ptr)[2].x = rect.left;
+    ((VxVector4 *)data->Positions.Ptr)[0].y = rect.top;
+    ((VxVector4 *)data->Positions.Ptr)[1].y = rect.top;
+    ((VxVector4 *)data->Positions.Ptr)[2].y = rect.bottom;
+    ((VxVector4 *)data->Positions.Ptr)[3].y = rect.bottom;
+#endif
 
     // Colors
     VxColor fcolor(0.0f, 0.0f, 0.0f, 0.93f);
     CKDWORD col = RGBAFTOCOLOR(&fcolor);
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
     VxFillStructure(4, data->ColorPtr, data->ColorStride, 4, &col);
+#else
+    VxFillStructure(4, data->Colors.Ptr, data->Colors.Stride, 4, &col);
+#endif
 
     CKWORD indices[4] = {0, 1, 3, 2};
     rc->DrawPrimitive(VX_TRIANGLEFAN, indices, 4, data);

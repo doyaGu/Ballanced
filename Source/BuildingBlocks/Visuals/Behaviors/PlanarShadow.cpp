@@ -141,7 +141,11 @@ void RenderShadow(CKRenderContext *rc, CK3dEntity *ent, CKMesh *mesh, CKLight *l
     plane->InverseTransform(&planepos, &zero, plane);
     planenorm = Normalize(localplanenormal);
 
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
     VxVector4 *positions = (VxVector4 *)data->PositionPtr;
+#else
+    VxVector4 *positions = (VxVector4 *)data->Positions.Ptr;
+#endif
     CKDWORD vStride;
     VxVector *vertices = (VxVector *)mesh->GetPositionsPtr(&vStride);
 
@@ -179,7 +183,11 @@ void RenderShadow(CKRenderContext *rc, CK3dEntity *ent, CKMesh *mesh, CKLight *l
         Vx3DMultiplyMatrix4(resultMatrix, plane->GetInverseWorldMatrix(), ent->GetWorldMatrix());
         Vx3DMultiplyMatrix4(resultMatrix, shadowmatrix, resultMatrix);
 
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         VxStridedData dst(positions, data->PositionStride);
+#else
+        VxStridedData dst(positions, data->Positions.Stride);
+#endif
         VxStridedData src(vertices, vStride);
         Vx3DMultiplyMatrixVectorStrided(&dst, &src, resultMatrix, verticescount);
     }
@@ -218,14 +226,22 @@ void RenderShadow(CKRenderContext *rc, CK3dEntity *ent, CKMesh *mesh, CKLight *l
             Vx3DMultiplyMatrixVector4(positions, resultMatrix, vertices);
             *((VxVector *)positions) /= positions->w;
 
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
             positions = (VxVector4 *)((CKBYTE *)positions + data->PositionStride);
+#else
+            positions = (VxVector4 *)((CKBYTE *)positions + data->Positions.Stride);
+#endif
             vertices = (VxVector *)((CKBYTE *)vertices + vStride);
         }
     }
 
     ///
     // Colors
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
     VxFillStructure(verticescount, data->ColorPtr, data->ColorStride, 4, &col);
+#else
+    VxFillStructure(verticescount, data->Colors.Ptr, data->Colors.Stride, 4, &col);
+#endif
 
     // The draw
     //	rc->SetState(VXRENDERSTATE_ZFUNC, VXCMP_LESSEQUAL);

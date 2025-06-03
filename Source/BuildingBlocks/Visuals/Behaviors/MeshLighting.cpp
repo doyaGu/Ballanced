@@ -287,12 +287,22 @@ int render(CKRenderContext *rc, CKRenderObject *obj, void *arg)
 
     if (!useColor)
     {
-        data->ColorPtr = 0;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
+        data->ColorPtr = NULL;
         data->ColorStride = 0;
+#else
+        data->Colors.Ptr = NULL;
+        data->Colors.Stride = 0;
+#endif
     }
 
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
     XPtrStrided<VxVector> positions(data->PositionPtr, data->PositionStride);
     XPtrStrided<VxUV> uvs(data->TexCoordPtr, data->TexCoordStride);
+#else
+    XPtrStrided<VxVector4> &positions = data->Positions;
+    XPtrStrided<VxUV> &uvs = data->TexCoord;
+#endif
 
     VxVector *pos = (VxVector *)ckmesh->GetPositionsPtr(&Stride);
 
@@ -368,10 +378,17 @@ int render(CKRenderContext *rc, CKRenderObject *obj, void *arg)
         CKDWORD cStride;
         CKDWORD *cptr = (CKDWORD *)ckmesh->GetColorsPtr(&cStride);
 
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         VxCopyStructure(count, data->ColorPtr, 4 * data->ColorStride, sizeof(CKDWORD), cptr, cStride);
         VxCopyStructure(count, (CKDWORD *)data->ColorPtr + 1, 4 * data->ColorStride, sizeof(CKDWORD), cptr, cStride);
         VxCopyStructure(count, (CKDWORD *)data->ColorPtr + 2, 4 * data->ColorStride, sizeof(CKDWORD), cptr, cStride);
         VxCopyStructure(count, (CKDWORD *)data->ColorPtr + 3, 4 * data->ColorStride, sizeof(CKDWORD), cptr, cStride);
+#else
+        VxCopyStructure(count, data->Colors.Ptr, 4 * data->Colors.Stride, sizeof(CKDWORD), cptr, cStride);
+        VxCopyStructure(count, (CKDWORD *)data->Colors.Ptr + 1, 4 * data->Colors.Stride, sizeof(CKDWORD), cptr, cStride);
+        VxCopyStructure(count, (CKDWORD *)data->Colors.Ptr + 2, 4 * data->Colors.Stride, sizeof(CKDWORD), cptr, cStride);
+        VxCopyStructure(count, (CKDWORD *)data->Colors.Ptr + 3, 4 * data->Colors.Stride, sizeof(CKDWORD), cptr, cStride);
+#endif
     }
 
     ////////////////////////////

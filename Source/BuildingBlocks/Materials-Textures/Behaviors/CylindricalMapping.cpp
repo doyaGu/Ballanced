@@ -109,6 +109,7 @@ int CylindricalMapping(const CKBehaviorContext &behcontext)
 
     // The transfo itself
     VxStridedData dest, src;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
     dest.Ptr = data->NormalPtr;
     dest.Stride = data->NormalStride;
     src.Ptr = vertices;
@@ -117,6 +118,16 @@ int CylindricalMapping(const CKBehaviorContext &behcontext)
 
     VxVector *pos = (VxVector *)data->NormalPtr;
     CKDWORD pStride = data->NormalStride;
+#else
+    dest.Ptr = data->Normals.Ptr;
+    dest.Stride = data->Normals.Stride;
+    src.Ptr = vertices;
+    src.Stride = vStride;
+    Vx3DMultiplyMatrixVectorStrided(&dest, &src, mat2, verticescount);
+
+    VxVector *pos = (VxVector *)data->Normals.Ptr;
+    CKDWORD pStride = data->Normals.Stride;
+#endif
 
     float inv2pi = 0.5f / PI;
     tiling.x *= inv2pi;

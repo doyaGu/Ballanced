@@ -137,6 +137,7 @@ ShowBoundingBoxRenderCallBack(CKRenderContext *rc, CKRenderObject *obj, void *ar
         VxDrawPrimitiveData *data = rc->GetDrawPrimitiveStructure(CKRST_DP_TR_CL_VC, 10);
 
         // Colors
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         CKDWORD *colors = (CKDWORD *)data->ColorPtr;
         CKDWORD col = RGBAFTOCOLOR(&color);
         VxFillStructure(10, colors, data->ColorStride, 4, &col);
@@ -152,7 +153,23 @@ ShowBoundingBoxRenderCallBack(CKRenderContext *rc, CKRenderObject *obj, void *ar
         ((VxVector4 *)data->PositionPtr)[5].Set(Max.x, Min.y, Max.z, 1.0f);
         ((VxVector4 *)data->PositionPtr)[6] = Max;
         ((VxVector4 *)data->PositionPtr)[7].Set(Min.x, Max.y, Max.z, 1.0f);
+#else
+        CKDWORD *colors = (CKDWORD *)data->Colors.Ptr;
+        CKDWORD col = RGBAFTOCOLOR(&color);
+        VxFillStructure(10, colors, data->Colors.Stride, 4, &col);
 
+        // Positions
+        VxVector Min = Box.Min, Max = Box.Max;
+        ((VxVector4 *)data->Positions.Ptr)[0] = Min;
+        ((VxVector4 *)data->Positions.Ptr)[1].Set(Max.x, Min.y, Min.z, 1.0f);
+        ((VxVector4 *)data->Positions.Ptr)[2].Set(Max.x, Max.y, Min.z, 1.0f);
+        ((VxVector4 *)data->Positions.Ptr)[3].Set(Min.x, Max.y, Min.z, 1.0f);
+
+        ((VxVector4 *)data->Positions.Ptr)[4].Set(Min.x, Min.y, Max.z, 1.0f);
+        ((VxVector4 *)data->Positions.Ptr)[5].Set(Max.x, Min.y, Max.z, 1.0f);
+        ((VxVector4 *)data->Positions.Ptr)[6] = Max;
+        ((VxVector4 *)data->Positions.Ptr)[7].Set(Min.x, Max.y, Max.z, 1.0f);
+#endif
         // Indices
         CKWORD indices[24] = {0, 1, 0, 3, 2, 1, 2, 3, 2, 6, 6, 7, 6, 5, 5, 1, 5, 4, 4, 7, 4, 0, 7, 3};
         rc->DrawPrimitive(VX_LINELIST, indices, 24, data);
@@ -192,9 +209,13 @@ ShowBoundingBoxRenderCallBack(CKRenderContext *rc, CKRenderObject *obj, void *ar
         CKDWORD nS;
         CKBYTE *normals = (CKBYTE *)mesh->GetNormalsPtr(&nS);
 
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         XPtrStrided<VxVector> dpp(data->PositionPtr, data->PositionStride);
         XPtrStrided<VxVector> dpn(data->NormalPtr, data->NormalStride);
-
+#else
+        XPtrStrided<VxVector> dpp(data->Positions.Ptr, data->Positions.Stride);
+        XPtrStrided<VxVector> dpn(data->Normals.Ptr, data->Normals.Stride);
+#endif
         for (int i = 0; i < vcount; ++i, positions += pS, normals += nS)
         {
             VxVector *v = (VxVector *)positions;
@@ -211,9 +232,15 @@ ShowBoundingBoxRenderCallBack(CKRenderContext *rc, CKRenderObject *obj, void *ar
         if (!mat)
         {
             // Colors
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
             CKDWORD *colors = (CKDWORD *)data->ColorPtr;
             CKDWORD col = RGBAFTOCOLOR(&color);
             VxFillStructure(vcount * 2, colors, data->ColorStride, 4, &col);
+#else
+            CKDWORD *colors = (CKDWORD *)data->Colors.Ptr;
+            CKDWORD col = RGBAFTOCOLOR(&color);
+            VxFillStructure(vcount * 2, colors, data->Colors.Stride, 4, &col);
+#endif
         }
 
         if (vcount)
@@ -256,8 +283,13 @@ ShowBoundingBoxRenderCallBack(CKRenderContext *rc, CKRenderObject *obj, void *ar
         CKDWORD pS;
         CKBYTE *positions = (CKBYTE *)mesh->GetPositionsPtr(&pS);
 
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         XPtrStrided<VxVector> dpp(data->PositionPtr, data->PositionStride);
         XPtrStrided<VxVector> dpn(data->NormalPtr, data->NormalStride);
+#else
+        XPtrStrided<VxVector> dpp(data->Positions.Ptr, data->Positions.Stride);
+        XPtrStrided<VxVector> dpn(data->Normals.Ptr, data->Normals.Stride);
+#endif
 
         for (int i = 0; i < fcount; ++i)
         {
@@ -276,9 +308,15 @@ ShowBoundingBoxRenderCallBack(CKRenderContext *rc, CKRenderObject *obj, void *ar
         if (!mat)
         {
             // Colors
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
             CKDWORD *colors = (CKDWORD *)data->ColorPtr;
             CKDWORD col = RGBAFTOCOLOR(&color);
             VxFillStructure(fcount * 2, colors, data->ColorStride, 4, &col);
+#else
+            CKDWORD *colors = (CKDWORD *)data->Colors.Ptr;
+            CKDWORD col = RGBAFTOCOLOR(&color);
+            VxFillStructure(fcount * 2, colors, data->Colors.Stride, 4, &col);
+#endif
         }
 
         if (fcount)
@@ -317,8 +355,11 @@ ShowBoundingBoxRenderCallBack(CKRenderContext *rc, CKRenderObject *obj, void *ar
         int axis1 = 1;
         for (int i = 0; i < 3; ++i)
         {
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
             XPtrStrided<VxVector> positions(data->PositionPtr, data->PositionStride);
-
+#else
+            XPtrStrided<VxVector> positions(data->Positions.Ptr, data->Positions.Stride);
+#endif
             // Positions
             float delta = PI * 2.0f / (count - 1);
             float t = 0.0f;
@@ -331,7 +372,11 @@ ShowBoundingBoxRenderCallBack(CKRenderContext *rc, CKRenderObject *obj, void *ar
 
             // Colors
             CKDWORD col = RGBAFTOCOLOR(&color);
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
             VxFillStructure(count, data->ColorPtr, data->ColorStride, 4, &col);
+#else
+            VxFillStructure(count, data->Colors.Ptr, data->Colors.Stride, 4, &col);
+#endif
 
             // Drawing
             rc->DrawPrimitive(VX_LINESTRIP, NULL, count, data);

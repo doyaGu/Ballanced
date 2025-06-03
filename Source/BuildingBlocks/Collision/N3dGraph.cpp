@@ -749,11 +749,15 @@ void N3DGraph::UpdateDistance()
 
 void GraphRender(CKRenderContext *rc, void *arg)
 {
-    CKContext *m_Context = rc->GetCKContext();
     VxDrawPrimitiveData *data = rc->GetDrawPrimitiveStructure(CKRST_DP_TR_CL_VC, 3);
     CKWORD *indices = rc->GetDrawPrimitiveIndices(3);
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
     VxVector4 *positions = (VxVector4 *)data->PositionPtr;
     CKDWORD *colors = (CKDWORD *)data->ColorPtr;
+#else
+    VxVector4 *positions = (VxVector4 *)data->Positions.Ptr;
+    CKDWORD *colors = (CKDWORD *)data->Colors.Ptr;
+#endif
 
     VxVector pos;
     VxVector nodepos, nodepos2;

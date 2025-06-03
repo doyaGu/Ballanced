@@ -783,9 +783,15 @@ void MarkSystem::RenderMarkSystem(CKRenderContext *dev, void *arg)
         dev->SetState(VXRENDERSTATE_CULLMODE, VXCULL_NONE);
         dev->SetTextureStageState(CKRST_TSS_STAGEBLEND, 0, 1);
 
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         VxUV *uvs = (VxUV *)data->TexCoordPtr;
         VxVector4 *positions = (VxVector4 *)data->PositionPtr;
         CKDWORD *colors = (CKDWORD *)data->ColorPtr;
+#else
+        VxUV *uvs = (VxUV *)data->TexCoord.Ptr;
+        VxVector4 *positions = (VxVector4 *)data->Positions.Ptr;
+        CKDWORD *colors = (CKDWORD *)data->Colors.Ptr;
+#endif
 
         Mark *m = mm.m_Marks;
         int vertexcount = 0;
@@ -798,7 +804,11 @@ void MarkSystem::RenderMarkSystem(CKRenderContext *dev, void *arg)
 
         VxStridedData src, dst;
         src.Stride = sizeof(VxVector);
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         dst.Stride = data->PositionStride;
+#else
+        dst.Stride = data->Positions.Stride;
+#endif
 
         // the filling
         while (m)
@@ -826,38 +836,62 @@ void MarkSystem::RenderMarkSystem(CKRenderContext *dev, void *arg)
                     dst.Ptr = positions;
 
                     Vx3DMultiplyMatrixVectorStrided(&dst, &src, ref->GetWorldMatrix(), 4);
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
                     positions = (VxVector4 *)((CKBYTE *)positions + 4 * data->PositionStride);
+#else
+                    positions = (VxVector4 *)((CKBYTE *)positions + 4 * data->Positions.Stride);
+#endif
                 }
                 else
-                { // World position
+                {
+                    // World position
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
                     VxCopyStructure(4, positions, data->PositionStride, sizeof(VxVector), &m->m_Positions[0], sizeof(VxVector));
                     positions = (VxVector4 *)((CKBYTE *)positions + 4 * data->PositionStride);
+#else
+                    VxCopyStructure(4, positions, data->Positions.Stride, sizeof(VxVector), &m->m_Positions[0], sizeof(VxVector));
+                    positions = (VxVector4 *)((CKBYTE *)positions + 4 * data->Positions.Stride);
+#endif
                 }
 
                 // Colors
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
                 VxFillStructure(4, colors, data->ColorStride, sizeof(CKDWORD), &m->m_ColorPacked);
                 colors = (CKDWORD *)((CKBYTE *)colors + 4 * data->ColorStride);
-
+#else
+                VxFillStructure(4, colors, data->Colors.Stride, sizeof(CKDWORD), &m->m_ColorPacked);
+                colors = (CKDWORD *)((CKBYTE *)colors + 4 * data->Colors.Stride);
+#endif
                 // Uvs
                 if (m->m_Mode & STANDARDUVS)
                 {
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
                     VxCopyStructure(4, uvs, data->TexCoordStride, sizeof(VxUV), singleuvs, sizeof(VxUV));
                     uvs = (VxUV *)((CKBYTE *)uvs + 4 * data->TexCoordStride);
+#else
+                    VxCopyStructure(4, uvs, data->TexCoord.Stride, sizeof(VxUV), singleuvs, sizeof(VxUV));
+                    uvs = (VxUV *)((CKBYTE *)uvs + 4 * data->TexCoord.Stride);
+#endif
                 }
                 else
                 {
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
+                    const unsigned int stride = data->TexCoordStride;
+#else
+                    const unsigned int stride = data->TexCoord.Stride;
+#endif
                     uvs->u = m->m_UVs.left;
                     uvs->v = m->m_UVs.top;
-                    uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoordStride);
+                    uvs = (VxUV *)((CKBYTE *)uvs + stride);
                     uvs->u = m->m_UVs.right;
                     uvs->v = m->m_UVs.top;
-                    uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoordStride);
+                    uvs = (VxUV *)((CKBYTE *)uvs + stride);
                     uvs->u = m->m_UVs.left;
                     uvs->v = m->m_UVs.bottom;
-                    uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoordStride);
+                    uvs = (VxUV *)((CKBYTE *)uvs + stride);
                     uvs->u = m->m_UVs.right;
                     uvs->v = m->m_UVs.bottom;
-                    uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoordStride);
+                    uvs = (VxUV *)((CKBYTE *)uvs + stride);
                 }
 
                 // Indices
@@ -873,15 +907,26 @@ void MarkSystem::RenderMarkSystem(CKRenderContext *dev, void *arg)
             else
             {
                 // Positions
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
                 VxCopyStructure(2, positions, data->PositionStride, sizeof(VxVector), &m->m_Positions[0], sizeof(VxVector));
                 positions = (VxVector4 *)((CKBYTE *)positions + 2 * data->PositionStride);
+#else
+                VxCopyStructure(2, positions, data->Positions.Stride, sizeof(VxVector), &m->m_Positions[0], sizeof(VxVector));
+                positions = (VxVector4 *)((CKBYTE *)positions + 2 * data->Positions.Stride);
+#endif
 
                 // Colors
                 CKDWORD col = RGBAFTOCOLOR(&m->m_Color);
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
                 VxFillStructure(2, colors, data->ColorStride, sizeof(CKDWORD), &col);
                 colors = (CKDWORD *)((CKBYTE *)colors + 2 * data->ColorStride);
+#else
+                VxFillStructure(2, colors, data->Colors.Stride, sizeof(CKDWORD), &col);
+                colors = (CKDWORD *)((CKBYTE *)colors + 2 * data->Colors.Stride);
+#endif
 
                 // Uvs
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
                 // Vertex 0
                 uvs->u = 0.0f;
                 uvs->v = factor * m->m_UVs.left;
@@ -890,6 +935,16 @@ void MarkSystem::RenderMarkSystem(CKRenderContext *dev, void *arg)
                 uvs->u = 1.0f;
                 uvs->v = factor * m->m_UVs.right;
                 uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoordStride);
+#else
+                // Vertex 0
+                uvs->u = 0.0f;
+                uvs->v = factor * m->m_UVs.left;
+                uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoord.Stride);
+                // Vertex 1
+                uvs->u = 1.0f;
+                uvs->v = factor * m->m_UVs.right;
+                uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoord.Stride);
+#endif
 
                 // indices
                 if (m->GetStyle() != MARKBANDSTART)
