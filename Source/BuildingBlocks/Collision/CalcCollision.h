@@ -1,8 +1,7 @@
 #ifndef CALC_COLLISION_H
 #define CALC_COLLISION_H
 
-#include "XSmartPtr.h"
-#include "VxVector.h"
+#include "VxMath.h"
 #include "CKMesh.h"
 
 class CollBallFace

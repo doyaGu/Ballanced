@@ -69,7 +69,12 @@ CKBOOL CheckResolution(CKBehavior *beh, VxDriverDesc *desc)
     int bpp;
     beh->GetInputParameterValue(IN_P_BPP, &bpp);
 
-    for (int i = 0; i < desc->DisplayModeCount; ++i)
+#if CKVERSION == 0x13022002
+    const int displayModeCount = desc->DisplayModeCount;
+#else
+    const int displayModeCount = desc->DisplayModes.Size();
+#endif
+    for (int i = 0; i < displayModeCount; ++i)
     {
         VxDisplayMode dm = desc->DisplayModes[i];
         if (dm.Width == (int)res.x && dm.Height == (int)res.y && dm.Bpp == bpp)
@@ -107,7 +112,12 @@ void EnumerateResolutions(CKDataArray *array, VxDriverDesc *desc)
     int bpp = 0;
     int row = 0;
 
-    for (int i = 0; i < desc->DisplayModeCount; ++i)
+#if CKVERSION == 0x13022002
+    const int displayModeCount = desc->DisplayModeCount;
+#else
+    const int displayModeCount = desc->DisplayModes.Size();
+#endif
+    for (int i = 0; i < displayModeCount; ++i)
     {
         VxDisplayMode dm = desc->DisplayModes[i];
         if (dm.Width != (int)res.x || dm.Height != (int)res.y || dm.Bpp != bpp)

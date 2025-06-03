@@ -171,7 +171,6 @@ void PolyhedronConstructor::WeldVertices()
     VxVector p, sp;
     for (int i = 0; i < faceCount; ++i)
     {
-
         for (int v = 0; v < 3; ++v)
         {
             CKWORD vi = m_FaceIndices[i * 3 + v];
@@ -249,10 +248,12 @@ void PolyhedronConstructor::Simplify(float threshold)
                 continue;
 
             if (face2poly[neighborFace].m_ReferenceFace == 0xffff)
-            { // not parsed yet
+            {
+                // not parsed yet
                 const VxVector &nn = m_Mesh->GetFaceNormal(neighborFace);
                 if (DotProduct(fn, nn) > threshold)
-                { // coplanar
+                {
+                    // coplanar
                     face2poly[neighborFace].m_ReferenceFace = refFace;
 
                     // add the face info to the ref face
