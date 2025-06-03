@@ -8,6 +8,7 @@ set(GAME_BUILDING_BLOCKS
         Lights
         Logics
         Materials-Textures
+        Narratives
         physics_RT
         TT_DatabaseManager_RT
         TT_Gravity_RT
