@@ -3,6 +3,7 @@ set(GAME_BUILDING_BLOCKS
         BuildingBlocksAddons1
         Cameras
         Collision
+        Controllers
         physics_RT
         TT_DatabaseManager_RT
         TT_Gravity_RT
