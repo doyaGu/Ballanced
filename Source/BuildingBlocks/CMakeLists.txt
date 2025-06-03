@@ -5,6 +5,7 @@ set(GAME_BUILDING_BLOCKS
         Collision
         Controllers
         Interface
+        Lights
         physics_RT
         TT_DatabaseManager_RT
         TT_Gravity_RT
