@@ -6,6 +6,7 @@ set(GAME_BUILDING_BLOCKS
         Controllers
         Interface
         Lights
+        Logics
         physics_RT
         TT_DatabaseManager_RT
         TT_Gravity_RT
