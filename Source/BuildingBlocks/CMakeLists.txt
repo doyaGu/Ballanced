@@ -10,6 +10,7 @@ set(GAME_BUILDING_BLOCKS
         Materials-Textures
         Narratives
         physics_RT
+        Sounds
         TT_DatabaseManager_RT
         TT_Gravity_RT
         TT_InterfaceManager_RT
