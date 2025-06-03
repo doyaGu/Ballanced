@@ -426,8 +426,13 @@ void RenderLensFlare(CKRenderContext *dev, void *arg)
     // it must be in the fore plane of the camera
     float dp = DotProduct(Normalize(lookAt), Normalize(lightpos));
     // We must now check if the flare is not occluded
+#if CKVERSION == 0x13022002
     CKPICKRESULT res;
     CKObject *object = dev->Pick((int)light2dpos.x, (int)light2dpos.y, &res);
+#else
+    VxIntersectionDesc res;
+    CKObject *object = dev->Pick((int)light2dpos.x, (int)light2dpos.y, &res);
+#endif
     if (object)
     {
         VxVector v;

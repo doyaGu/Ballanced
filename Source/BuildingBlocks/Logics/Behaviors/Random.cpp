@@ -7,6 +7,9 @@
 /////////////////////////////////////////////////////
 #include "CKAll.h"
 
+#undef min
+#undef max
+
 CKObjectDeclaration *FillBehaviorRandomDecl();
 CKERROR CreateRandomProto(CKBehaviorPrototype **);
 int Random(const CKBehaviorContext &behcontext);

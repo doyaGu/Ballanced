@@ -160,7 +160,6 @@ inline void ThreadObjectOBS(CK3dEntity *const CurrentEntity, CK3dEntity *const b
         box.Min.y - radius <= ball_pos.y && box.Max.y + radius >= ball_pos.y &&
         box.Min.z - radius <= ball_pos.z && box.Max.z + radius >= ball_pos.z)
     {
-
         CKMesh *CurrentMesh = CurrentEntity->GetCurrentMesh();
 
         //________________________________/ Rejection if no mesh
@@ -183,14 +182,15 @@ inline void ThreadObjectOBS(CK3dEntity *const CurrentEntity, CK3dEntity *const b
         int fcount = CurrentMesh->GetFaceCount();
 
         if (vcount > MINVERTICES_FORCLASSIFY)
-        { // we need to classify the vertices
+        {
+            // we need to classify the vertices
 
             // Get the vertices
             CKDWORD vStride = 0;
             CKBYTE *vPos = (CKBYTE *)collballface.mesh->GetPositionsPtr(&vStride);
 
             // Ask CK for a block of preallocated memory for our flags
-            CKDWORD *vFlags = new CKDWORD[vcount];
+            unsigned long *vFlags = new unsigned long[vcount];
 
             // we create the box of the sphere, locally to the object
             VxBbox spherebox;
@@ -201,7 +201,8 @@ inline void ThreadObjectOBS(CK3dEntity *const CurrentEntity, CK3dEntity *const b
             ////////////////////////
 
             if (vcount > fcount * 2)
-            { // Single axis classification
+            {
+                // Single axis classification
 
                 // we select the maximum axis
                 const VxBbox &localBox = CurrentMesh->GetLocalBox();
@@ -222,8 +223,8 @@ inline void ThreadObjectOBS(CK3dEntity *const CurrentEntity, CK3dEntity *const b
                 spherebox.ClassifyVerticesOneAxis(vcount, vPos, vStride, axis, vFlags);
             }
             else
-            { // 3 axis classification
-
+            {
+                // 3 axis classification
                 spherebox.ClassifyVertices(vcount, vPos, vStride, vFlags);
             }
 
@@ -251,7 +252,8 @@ inline void ThreadObjectOBS(CK3dEntity *const CurrentEntity, CK3dEntity *const b
             delete[] vFlags;
         }
         else
-        { // no need to bother the classification
+        {
+            // no need to bother the classification
 
             for (int f = 0; f < fcount; ++f, faceIndices += 3)
             {
@@ -332,7 +334,8 @@ int ObjectBallSlider(const CKBehaviorContext &behcontext)
     CKBehavior *beh = behcontext.Behavior;
 
     if (beh->IsInputActive(1))
-    { // enter by OFF
+    {
+        // enter by OFF
         beh->ActivateInput(1, FALSE);
         return CKBR_OK;
     }
@@ -353,7 +356,8 @@ int ObjectBallSlider(const CKBehaviorContext &behcontext)
     ball->GetPosition(&init_pos);
 
     if (beh->IsInputActive(0))
-    { // enter by ON
+    {
+        // enter by ON
         beh->ActivateInput(0, FALSE);
 
         obs->Old_Pos = init_pos;
@@ -405,7 +409,6 @@ int ObjectBallSlider(const CKBehaviorContext &behcontext)
     //--- if we parse a group of object
     if (!placeOptim)
     {
-
         do
         {
             if (precis)
@@ -429,7 +432,6 @@ int ObjectBallSlider(const CKBehaviorContext &behcontext)
     }
     else
     {
-
         CKContext *ctx = behcontext.Context;
 
         // get places count (if placeOptim)
@@ -448,13 +450,11 @@ int ObjectBallSlider(const CKBehaviorContext &behcontext)
 
             for (int a = 0; a < placeCount; ++a)
             {
-
                 currentPlace = (CKPlace *)ctx->GetObject(placeID[a]);
 
                 ParseHierarchyChildOBS(currentPlace, ball, ball_pos, collballface,
                                        radius, precis_tmp, touched_group, touched, group);
             }
-
         } while (precis_tmp--);
     }
 

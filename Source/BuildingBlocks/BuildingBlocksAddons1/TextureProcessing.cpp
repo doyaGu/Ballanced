@@ -469,7 +469,7 @@ BoucleW:
 
         movq MM6,MM2
         movq MM7,MM2
-            // Load matrix data for pixels (0,1)
+        // Load matrix data for pixels (0,1)
         movq		MM4,QWORD PTR [ebx]
         // Process first two pixels (0,1) :
         movq		MM0,QWORD PTR [esi-4] // MM0=R0|G0|B0|A0|R1|G1|B1|A1	Load pixels
@@ -483,7 +483,7 @@ BoucleW:
         pmaddwd		MM0,MM4 // MM0=B1*M1+B0*M0|A1*M1+A0*M0	Multiplication et addition
         paddd		MM6,MM3 // Ajout aux accumulateurs
         paddd		MM7,MM0 //
-            // Load matrix data for pixel (2)
+        // Load matrix data for pixel (2)
         movq		MM4,QWORD PTR [ebx+8]
         // Process next pixel (2) :
         movd		MM0,DWORD PTR [esi+4] // MM0=R0|G0|B0|A0|00|00|00|00	Load pixels
@@ -495,9 +495,9 @@ BoucleW:
         pmaddwd		MM0,MM4 // MM0=B0*M0	  |		 A0*M0	Multiplication et addition
         paddd		MM6,MM3 // Ajout aux accumulateurs
         paddd		MM7,MM0 //
-            // Next Line 
+        // Next Line
         add			esi,ecx
-            // Load matrix data for pixels (3,4)
+        // Load matrix data for pixels (3,4)
         movq		MM4,QWORD PTR [ebx+16]
         // Process first two pixels (3,4):
         movq		MM0,QWORD PTR [esi-4] // MM0=R0|G0|B0|A0|R1|G1|B1|A1	Load pixels
@@ -511,7 +511,7 @@ BoucleW:
         pmaddwd		MM0,MM4 // MM0=B1*M1+B0*M0|A1*M1+A0*M0	Multiplication et addition
         paddd		MM6,MM3 // Ajout aux accumulateurs
         paddd		MM7,MM0 //
-            // Load matrix data for pixel (5)
+        // Load matrix data for pixel (5)
         movq		MM4,QWORD PTR [ebx+24]
         // Process next pixel (5) :
         movd		MM0,DWORD PTR [esi+4] // MM0=R0|G0|B0|A0|00|00|00|00	Load pixels
@@ -523,9 +523,9 @@ BoucleW:
         pmaddwd		MM0,MM4 // MM0=B0*M0	  |		 A0*M0	Multiplication et addition
         paddd		MM6,MM3 // Ajout aux accumulateurs
         paddd		MM7,MM0 //
-            // Last Line 
+        // Last Line
         add			esi,ecx
-            // Load matrix data for pixels (6,7)
+        // Load matrix data for pixels (6,7)
         movq		MM4,QWORD PTR [ebx+32]
         // Process first two pixels (6,7) :
         movq		MM0,DWORD PTR [esi-4] // MM0=R0|G0|B0|A0|R1|G1|B1|A1	Load pixels
@@ -540,7 +540,7 @@ BoucleW:
         paddd		MM6,MM3 // Ajout aux accumulateurs
         paddd		MM7,MM0 //
 
-            // Load matrix data for pixel (8)
+        // Load matrix data for pixel (8)
         movq		MM4,QWORD PTR [ebx+40]
         // Process next pixel (8) :
         movd		MM0,DWORD PTR [esi+4] // MM0=R0|G0|B0|A0|00|00|00|00	Load pixels
@@ -555,28 +555,28 @@ BoucleW:
 
         pop esi
 
-                // Conversion to 32 bits
+        // Conversion to 32 bits
         psrad		MM7,8 // Divise par 256 ( decalage )
         psrad		MM6,8 // Divise par 256 ( decalage )
         packssdw	MM7,MM6 // MM7 & MM6 (Dword => Words) dans MM7
-            // MM7=00|RR|00|GG|00|BB|00|AA
+        // MM7=00|RR|00|GG|00|BB|00|AA
 
-            //--- Load Destination color
+        //--- Load Destination color
         movq		MM0,QWORD PTR [edi-4] // MM0=R0|G0|B0|A0|R1|G1|B1|A1	Load destination pixels
         punpckhbw	MM0,MM2 // MM0=00|R0|00|G0|00|B0|00|A0	Transfo Byte->Word (H)
 
-            //-----
+        //-----
         paddusw		MM7,MM7 // MM7=2*MM7	
         psubusw		MM7,MM0
 
-            //-----------------------------------------------------------
+        //-----------------------------------------------------------
         movq		MM6,MM7			
         movd		MM0,DWORD ptr Damping
         psrlw		MM6,MM0 // Divide Res by damping
         psubusw		MM7,MM6 // Res= Res - res*Damping
 
         packuswb	MM7,MM7 // Convertit les word en bytes avec clamping (0..255)
-            // MM7=RR|GG|BB|AA|RR|GG|BB|AA 	
+        // MM7=RR|GG|BB|AA|RR|GG|BB|AA
 
         movd		DWORD PTR [edi],MM7 // Store in destination
         add edi,4
@@ -624,8 +624,8 @@ void WaterEffectMMX(void *CurrentData, void *PreviousData, int width, int height
         movq		MM4,MM5
         paddusw     MM4,MM5
 
-            //--------- First line pixels don't have a top neighbour pixel
-            // Top Left Pixel 
+        //--------- First line pixels don't have a top neighbour pixel
+        // Top Left Pixel
         movd		MM1,DWORD PTR [esi+4]	
         movd		MM3,DWORD PTR [esi+ecx]	
         punpcklbw	MM1,MM7						
@@ -676,7 +676,7 @@ FirstLine:
         dec eax
         jnz FirstLine
 
-                // Top Right Pixel 
+        // Top Right Pixel
         movd		MM1,DWORD PTR [esi-4]	
         movd		MM3,DWORD PTR [esi+ecx]	
         punpcklbw	MM1,MM7						
@@ -727,7 +727,7 @@ BoucleH:
 
 BoucleW:
 
-            // Process upper pixel (0,-1) :
+        // Process upper pixel (0,-1) :
         movd		MM0,DWORD PTR [esi] // MM0=00|00|00|00|R0|G0|B0|A0	Load pixels
         movd		MM1,DWORD PTR [esi+ecx-4] // MM0=R0|G0|B0|A0|R1|G1|B1|A1	Load pixels
         
@@ -750,11 +750,11 @@ BoucleW:
 
         punpcklbw	MM0,MM7 // MM0=00|R0|00|G0|00|B0|00|A0	Transfo Byte->Word (H)
 
-            //-----
+        //-----
         paddusw		MM1,MM1
         psubusw		MM1,MM0
 
-            //-----------------------------------------------------------
+        //-----------------------------------------------------------
         movq		MM2,MM1			
         psrlw		MM2,MM6 // Divide Res by damping
         psubusw		MM1,MM2 // Res= Res - res*Damping
@@ -769,7 +769,7 @@ BoucleW:
         jz SuiteW
         jmp BoucleW
 SuiteW:
-            // Last Pixel of the raw => No right neightbourg
+        // Last Pixel of the raw => No right neightbourg
         movd		MM1,DWORD PTR [esi]			
         movd		MM2,DWORD PTR [esi+ecx-4]	
         punpcklbw	MM1,MM7						
@@ -797,9 +797,9 @@ SuiteW:
         jz finTot
         jmp BoucleH
 finTot:
-            //		sub esi,ecx
-            //--------- Last line pixels don't have a bottom neighbour pixel
-            // Bottom Left Pixel 
+        //		sub esi,ecx
+        //--------- Last line pixels don't have a bottom neighbour pixel
+        // Bottom Left Pixel
         movd		MM1,DWORD PTR [esi]	
         movd		MM3,DWORD PTR [esi+ecx+4]	
         punpcklbw	MM1,MM7						
@@ -850,7 +850,7 @@ LastLine:
         dec eax
         jnz LastLine
 
-                // Top Right Pixel 
+        // Top Right Pixel
         movd		MM1,DWORD PTR [esi+ecx-4]	
         movd		MM3,DWORD PTR [esi]	
         punpcklbw	MM1,MM7						
@@ -869,7 +869,6 @@ LastLine:
         movd		DWORD PTR [edi],MM1 // Store in destination
         add esi,4
         add edi,4
-
 
         EMMS
         popad
@@ -905,8 +904,8 @@ void WaterEffectWillamette(void *CurrentData, void *PreviousData, int width, int
         xorps		xmm7,xmm7
         movq2dq     xmm6,mm6
 
-            //--------- First line pixels don't have a top neighbour pixel
-            // Top Left Pixel 
+        //--------- First line pixels don't have a top neighbour pixel
+        // Top Left Pixel
         movd		MM1,DWORD PTR [esi+4]	
         movd		MM3,DWORD PTR [esi+ecx]	
         punpcklbw	MM1,MM7						
@@ -957,7 +956,7 @@ FirstLine:
         dec eax
         jnz FirstLine
 
-                // Top Right Pixel 
+        // Top Right Pixel
         movd		MM1,DWORD PTR [esi-4]	
         movd		MM3,DWORD PTR [esi+ecx]	
         punpcklbw	MM1,MM7						
@@ -1034,8 +1033,8 @@ BoucleH:
         movaps		xmm3,xmm0			
         psubusw		xmm2,xmm5
 
-            //------------------- Damping ----------------------------------------
-        movaps		xmm4,xmm2			
+        //------------------- Damping ----------------------------------------
+        movaps		xmm4,xmm2
         
         psrlw		xmm3,xmm6 // Divide Res by damping
         psrlw		xmm4,xmm6 // Divide Res by damping
@@ -1047,7 +1046,6 @@ BoucleH:
         movaps		[edi],xmm0 // Store in destination
 
         add edi,16
-
 
 BoucleW:
         movaps		xmm0,[esi] // Load upper line  ( T0|T1|T2|T3 )
@@ -1103,7 +1101,7 @@ BoucleW:
         movaps		xmm3,xmm0			
         psubusw		xmm2,xmm5
 
-            //------------------- Damping ----------------------------------------
+        //------------------- Damping ----------------------------------------
         movaps		xmm4,xmm2			
         
         psrlw		xmm3,xmm6 // Divide Res by damping
@@ -1120,7 +1118,6 @@ BoucleW:
         sub eax,4
         jz SuiteW
         jmp BoucleW
-
 
 SuiteW:
         movaps		xmm0,[esi] // Load upper line  ( T0|T1|T2|T3 )
@@ -1158,7 +1155,7 @@ SuiteW:
         paddusw		xmm2,xmm2
         movaps		xmm3,xmm0			
         psubusw		xmm2,xmm5
-            //------------------- Damping ----------------------------------------
+        //------------------- Damping ----------------------------------------
         movaps		xmm4,xmm2			
         psrlw		xmm3,xmm6 // Divide Res by damping
         psrlw		xmm4,xmm6 // Divide Res by damping
@@ -1173,9 +1170,9 @@ SuiteW:
         jz finTot
         jmp BoucleH
 finTot:
-             //		sub esi,ecx
-             //--------- Last line pixels don't have a bottom neighbour pixel
-            // Bottom Left Pixel 
+        //		sub esi,ecx
+        //--------- Last line pixels don't have a bottom neighbour pixel
+        // Bottom Left Pixel
         movd		MM1,DWORD PTR [esi]	
         movd		MM3,DWORD PTR [esi+ecx+4]	
         punpcklbw	MM1,MM7						
@@ -1226,7 +1223,7 @@ LastLine:
         dec eax
         jnz LastLine
 
-                // Top Right Pixel 
+        // Top Right Pixel
         movd		MM1,DWORD PTR [esi+ecx-4]	
         movd		MM3,DWORD PTR [esi]	
         punpcklbw	MM1,MM7						
@@ -1245,7 +1242,6 @@ LastLine:
         movd		DWORD PTR [edi],MM1 // Store in destination
         add esi,4
         add edi,4
-
 
         EMMS
         popad
