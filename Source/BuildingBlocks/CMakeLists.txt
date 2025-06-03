@@ -16,6 +16,7 @@ set(GAME_BUILDING_BLOCKS
         TT_InterfaceManager_RT
         TT_ParticleSystems_RT
         TT_Toolbox_RT
+        Visuals
         )
 
 foreach (BB IN LISTS GAME_BUILDING_BLOCKS)
