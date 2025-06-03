@@ -1,4 +1,5 @@
 set(GAME_BUILDING_BLOCKS
+        3DTrans
         physics_RT
         TT_DatabaseManager_RT
         TT_Gravity_RT
