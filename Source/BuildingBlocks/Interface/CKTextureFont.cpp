@@ -657,8 +657,8 @@ void CKTextureFont::DrawString(CKRenderContext *dev, CKSTRING string, int slen, 
     XPtrStrided<VxVector4> positions(data->PositionPtr, data->PositionStride);
     XPtrStrided<VxUV> uvs(data->TexCoordPtr, data->TexCoordStride);
 #else
-    XPtrStrided<VxVector4> &positions = data->Positions;
-    XPtrStrided<VxUV> &uvs = data->TexCoord;
+    XPtrStrided<VxVector4> positions(data->Positions.Ptr, data->Positions.Stride);
+    XPtrStrided<VxUV> uvs(data->TexCoord.Ptr, data->TexCoord.Stride);
 #endif
 
     int index = 0;

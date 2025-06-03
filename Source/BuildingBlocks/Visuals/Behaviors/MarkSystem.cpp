@@ -15,14 +15,14 @@ CKERROR CreateMarkSystemProto(CKBehaviorPrototype **);
 int MarkSystemFun(const CKBehaviorContext &behcontext);
 CKERROR MarkSystemCallback(const CKBehaviorContext &behcontext);
 
-#define MARKSINGLE 0
+#define MARKSINGLE    0
 #define MARKBANDSTART 1
-#define MARKBANDIN 2
-#define MARKBANDEND 3
+#define MARKBANDIN    2
+#define MARKBANDEND   3
 
-#define MARKSTYLE 3
+#define MARKSTYLE     3
 
-#define STANDARDUVS 4
+#define STANDARDUVS   4
 
 class Mark
 {

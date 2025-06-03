@@ -1206,7 +1206,7 @@ void PortalsManager::Occluder::RenderHull(CKRenderContext *iRC, CK3dEntity *iEnt
 #if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         XPtrStrided<VxVector> positions(data->PositionPtr, data->PositionStride);
 #else
-        XPtrStrided<VxVector4> &positions = data->Positions;
+        XPtrStrided<VxVector> positions(data->Positions.Ptr, data->Positions.Stride);
 #endif
 
         // positions
@@ -1234,7 +1234,7 @@ void PortalsManager::Occluder::RenderHull(CKRenderContext *iRC, CK3dEntity *iEnt
 #if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
     XPtrStrided<VxVector> positions(data->PositionPtr, data->PositionStride);
 #else
-    XPtrStrided<VxVector4> &positions = data->Positions;
+    XPtrStrided<VxVector> positions(data->Positions.Ptr, data->Positions.Stride);
 #endif
 
     int index = 0;

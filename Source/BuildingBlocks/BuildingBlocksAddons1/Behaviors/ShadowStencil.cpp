@@ -483,7 +483,7 @@ public:
 #if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         XPtrStrided<VxVector4> rectVPos(data->PositionPtr, data->PositionStride);
 #else
-        XPtrStrided<VxVector4> &rectVPos = data->Positions;
+        XPtrStrided<VxVector4> rectVPos(data->Positions.Ptr, data->Positions.Stride);
 #endif
 
         rectVPos->Set(rect.left, rect.top, 0.5f, 1.0f); // point0
