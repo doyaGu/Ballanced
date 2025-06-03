@@ -1203,7 +1203,11 @@ void PortalsManager::Occluder::RenderHull(CKRenderContext *iRC, CK3dEntity *iEnt
 
         // Data
         VxDrawPrimitiveData *data = iRC->GetDrawPrimitiveStructure(CKRST_DP_TR_CL_VC, it->vcount + 1);
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         XPtrStrided<VxVector> positions(data->PositionPtr, data->PositionStride);
+#else
+        XPtrStrided<VxVector4> &positions = data->Positions;
+#endif
 
         // positions
         int i;
@@ -1215,7 +1219,11 @@ void PortalsManager::Occluder::RenderHull(CKRenderContext *iRC, CK3dEntity *iEnt
 
         // Colors
         CKDWORD col = RGBAFTOCOLOR(0.0f, 1.0f, 0.0f, 1.0f);
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         VxFillStructure(it->vcount + 1, data->ColorPtr, data->ColorStride, 4, &col);
+#else
+        VxFillStructure(it->vcount + 1, data->Colors.Ptr, data->Colors.Stride, 4, &col);
+#endif
 
         iRC->DrawPrimitive(VX_LINESTRIP, NULL, it->vcount + 1, data);
     }
@@ -1223,7 +1231,11 @@ void PortalsManager::Occluder::RenderHull(CKRenderContext *iRC, CK3dEntity *iEnt
     // draw the faces normal
     int facesCount = m_HullFaces.Size();
     VxDrawPrimitiveData *data = iRC->GetDrawPrimitiveStructure(CKRST_DP_TR_CL_VC, facesCount * 2);
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
     XPtrStrided<VxVector> positions(data->PositionPtr, data->PositionStride);
+#else
+    XPtrStrided<VxVector4> &positions = data->Positions;
+#endif
 
     int index = 0;
     for (it = m_HullFaces.Begin(); it != m_HullFaces.End(); ++it)
@@ -1241,7 +1253,11 @@ void PortalsManager::Occluder::RenderHull(CKRenderContext *iRC, CK3dEntity *iEnt
     }
     // Colors
     CKDWORD col = RGBAFTOCOLOR(0.0f, 0.0f, 1.0f, 1.0f);
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
     VxFillStructure(facesCount * 2, data->ColorPtr, data->ColorStride, 4, &col);
+#else
+    VxFillStructure(facesCount * 2, data->Colors.Ptr, data->Colors.Stride, 4, &col);
+#endif
 
     iRC->DrawPrimitive(VX_LINELIST, NULL, facesCount * 2, data);
     iRC->SetState(VXRENDERSTATE_ZWRITEENABLE, TRUE);
@@ -1262,11 +1278,19 @@ void PortalsManager::Occluder::RenderSilhouette(CKRenderContext *iRC, const XArr
     VxDrawPrimitiveData *data = iRC->GetDrawPrimitiveStructure(CKRST_DP_TR_CL_VC, count);
 
     // positions
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
     VxCopyStructure(count, data->PositionPtr, data->PositionStride, sizeof(VxVector), iSilhouetteEdges.Begin(), sizeof(VxVector));
+#else
+    VxCopyStructure(count, data->Positions.Ptr, data->Positions.Stride, sizeof(VxVector), iSilhouetteEdges.Begin(), sizeof(VxVector));
+#endif
 
     // Colors
     CKDWORD col = RGBAFTOCOLOR(1.0f, 0.0f, 1.0f, 1.0f);
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
     VxFillStructure(count, data->ColorPtr, data->ColorStride, 4, &col);
+#else
+    VxFillStructure(count, data->Colors.Ptr, data->Colors.Stride, 4, &col);
+#endif
 
     iRC->DrawPrimitive(VX_LINELIST, NULL, count, data);
 }

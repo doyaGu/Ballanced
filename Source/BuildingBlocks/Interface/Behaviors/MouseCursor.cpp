@@ -160,6 +160,7 @@ void MouseCursorRender(CKRenderContext *dev, void *arg)
     CKDWORD colors[4];
     float uv[8] = {0, 0, 1, 0, 1, 1, 0, 1};
 
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
     VxDrawPrimitiveDataSimple data = {
         4,
         CKRST_DP_STAGES0,
@@ -174,6 +175,16 @@ void MouseCursorRender(CKRenderContext *dev, void *arg)
         uv,                // A pointer to texture coordinates  data
         sizeof(float) * 2, // ...
     };
+#else
+    VxDrawPrimitiveDataSimple data;
+    data.VertexCount = 4;
+    data.Flags = CKRST_DP_STAGES0;
+    data.Positions.Set(vertices, sizeof(VxVector4));
+    data.Normals.Set(NULL, 0);
+    data.Colors.Set(colors, sizeof(CKDWORD));
+    data.SpecularColors.Set(NULL, 0);
+    data.TexCoord.Set(uv, sizeof(float) * 2);
+#endif
 
     // we get the input parameters
 
@@ -218,6 +229,7 @@ void MouseCursorRender(CKRenderContext *dev, void *arg)
         offsetx = -shadowdistance * cosf(shadowangle);
         offsety = shadowdistance * sinf(shadowangle);
 
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         ((VxVector4 *)data.PositionPtr)[0].x = rect.left + offsetx;
         ((VxVector4 *)data.PositionPtr)[0].y = rect.top + offsety;
         ((VxVector4 *)data.PositionPtr)[1].x = rect.right + offsetx;
@@ -226,6 +238,16 @@ void MouseCursorRender(CKRenderContext *dev, void *arg)
         ((VxVector4 *)data.PositionPtr)[2].y = rect.bottom + offsety;
         ((VxVector4 *)data.PositionPtr)[3].x = rect.left + offsetx;
         ((VxVector4 *)data.PositionPtr)[3].y = rect.bottom + offsety;
+#else
+        ((VxVector4 *)data.Positions.Ptr)[0].x = rect.left + offsetx;
+        ((VxVector4 *)data.Positions.Ptr)[0].y = rect.top + offsety;
+        ((VxVector4 *)data.Positions.Ptr)[1].x = rect.right + offsetx;
+        ((VxVector4 *)data.Positions.Ptr)[1].y = rect.top + offsety;
+        ((VxVector4 *)data.Positions.Ptr)[2].x = rect.right + offsetx;
+        ((VxVector4 *)data.Positions.Ptr)[2].y = rect.bottom + offsety;
+        ((VxVector4 *)data.Positions.Ptr)[3].x = rect.left + offsetx;
+        ((VxVector4 *)data.Positions.Ptr)[3].y = rect.bottom + offsety;
+#endif
 
         for (int i = 0; i < 4; i++)
         {
@@ -237,6 +259,7 @@ void MouseCursorRender(CKRenderContext *dev, void *arg)
     ////////////////
     // Cursor
 
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
     ((VxVector4 *)data.PositionPtr)[0].x = rect.left;
     ((VxVector4 *)data.PositionPtr)[0].y = rect.top;
     ((VxVector4 *)data.PositionPtr)[1].x = rect.right;
@@ -245,6 +268,16 @@ void MouseCursorRender(CKRenderContext *dev, void *arg)
     ((VxVector4 *)data.PositionPtr)[2].y = rect.bottom;
     ((VxVector4 *)data.PositionPtr)[3].x = rect.left;
     ((VxVector4 *)data.PositionPtr)[3].y = rect.bottom;
+#else
+    ((VxVector4 *)data.Positions.Ptr)[0].x = rect.left;
+    ((VxVector4 *)data.Positions.Ptr)[0].y = rect.top;
+    ((VxVector4 *)data.Positions.Ptr)[1].x = rect.right;
+    ((VxVector4 *)data.Positions.Ptr)[1].y = rect.top;
+    ((VxVector4 *)data.Positions.Ptr)[2].x = rect.right;
+    ((VxVector4 *)data.Positions.Ptr)[2].y = rect.bottom;
+    ((VxVector4 *)data.Positions.Ptr)[3].x = rect.left;
+    ((VxVector4 *)data.Positions.Ptr)[3].y = rect.bottom;
+#endif
 
     CKDWORD col = RGBAFTOCOLOR(&cursorcolor);
 

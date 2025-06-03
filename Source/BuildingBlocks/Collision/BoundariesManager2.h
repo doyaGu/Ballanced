@@ -1,7 +1,7 @@
 #ifndef BOUNDARIESMANAGER2
 #define BOUNDARIESMANAGER2
 
-#include "XHashTable.h"
+#include "VxMath.h"
 #include "FixedSizeAllocator.h"
 #include "CK3dEntity.h"
 

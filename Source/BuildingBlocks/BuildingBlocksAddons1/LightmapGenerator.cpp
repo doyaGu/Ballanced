@@ -1513,14 +1513,22 @@ int LightmapGenerator::LightMapsRender(CKRenderContext *dev, CKRenderObject *ro,
                     CKDWORD uniqueColor = RGBAFTOCOLOR(float(rand()) / RAND_MAX, float(rand()) / RAND_MAX, float(rand()) / RAND_MAX, 1.0f);
 
                     // color filling
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
                     VxFillStructure(data->VertexCount, data->ColorPtr, data->ColorStride, sizeof(CKDWORD), &uniqueColor);
+#else
+                    VxFillStructure(data->VertexCount, data->Colors.Ptr, data->Colors.Stride, sizeof(CKDWORD), &uniqueColor);
+#endif
 
                     // The drawing
                     dev->DrawPrimitive(VX_TRIANGLELIST, texture->indices.Begin(), texture->indices.Size(), data);
 
                     // Restorng the initial color
                     uniqueColor = 0xffffffff;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
                     VxFillStructure(data->VertexCount, data->ColorPtr, data->ColorStride, sizeof(CKDWORD), &uniqueColor);
+#else
+                    VxFillStructure(data->VertexCount, data->Colors.Ptr, data->Colors.Stride, sizeof(CKDWORD), &uniqueColor);
+#endif
                 }
                 break; // we only draw one entity
                 ++it;
@@ -1606,7 +1614,11 @@ int LightmapGenerator::LightMapsRender(CKRenderContext *dev, CKRenderObject *ro,
                     if (texture->vertices[0].diffuse != lg->m_Opacity)
                     {
                         // we fill only if different
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
                         VxFillStructure(data->VertexCount, data->ColorPtr, data->ColorStride, sizeof(CKDWORD), &lg->m_Opacity);
+#else
+                        VxFillStructure(data->VertexCount, data->Colors.Ptr, data->Colors.Stride, sizeof(CKDWORD), &lg->m_Opacity);
+#endif
                     }
 
                     // We set the good texture

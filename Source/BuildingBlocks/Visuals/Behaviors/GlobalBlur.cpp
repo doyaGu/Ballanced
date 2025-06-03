@@ -175,7 +175,11 @@ void BlurRender(CKRenderContext *rc, void *arg)
     // DrawPrimitive
     VxDrawPrimitiveData *data = rc->GetDrawPrimitiveStructure(CKRST_DP_VCT, 4);
 
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
     VxUV *uvs = (VxUV *)data->TexCoordPtr;
+#else
+    VxUV *uvs = (VxUV *)data->TexCoord.Ptr;
+#endif
 
     /////////////////
     // UVs
@@ -193,6 +197,7 @@ void BlurRender(CKRenderContext *rc, void *arg)
     VxRect rect;
     rc->GetViewRect(rect);
 
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
     // Positions
     ((VxVector4 *)data->PositionPtr)[0].x = rect.left;
     ((VxVector4 *)data->PositionPtr)[0].y = rect.top;
@@ -218,6 +223,33 @@ void BlurRender(CKRenderContext *rc, void *arg)
     fcolor.a = 0.01f + (float)(rand() & 1023) * 0.0002f;
     CKDWORD col = RGBAFTOCOLOR(&fcolor);
     VxFillStructure(4, data->ColorPtr, data->ColorStride, 4, &col);
+#else
+    // Positions
+    ((VxVector4 *)data->Positions.Ptr)[0].x = rect.left;
+    ((VxVector4 *)data->Positions.Ptr)[0].y = rect.top;
+
+    ((VxVector4 *)data->Positions.Ptr)[1].x = rect.right;
+    ((VxVector4 *)data->Positions.Ptr)[1].y = rect.top;
+
+    ((VxVector4 *)data->Positions.Ptr)[2].x = rect.right;
+    ((VxVector4 *)data->Positions.Ptr)[2].y = rect.bottom;
+
+    ((VxVector4 *)data->Positions.Ptr)[3].x = rect.left;
+    ((VxVector4 *)data->Positions.Ptr)[3].y = rect.bottom;
+
+    for (int i = 0; i < 4; ++i)
+    {
+        ((VxVector4 *)data->Positions.Ptr)[i].z = 0;
+        ((VxVector4 *)data->Positions.Ptr)[i].w = 1.0f;
+    }
+    // Colors
+    VxColor fcolor = mat->GetDiffuse();
+    if (fcolor.a == 1.0f)
+        fcolor.a = 0.9f;
+    fcolor.a = 0.01f + (float)(rand() & 1023) * 0.0002f;
+    CKDWORD col = RGBAFTOCOLOR(&fcolor);
+    VxFillStructure(4, data->Colors.Ptr, data->Colors.Stride, 4, &col);
+#endif
 
     CKWORD indices[4] = {0, 1, 2, 3};
     rc->DrawPrimitive(VX_TRIANGLEFAN, indices, 4, data);

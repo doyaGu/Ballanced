@@ -130,10 +130,16 @@ void RenderTube(CKRenderContext *dev, CKCurve *curve, int rtc, VxVector &startup
 
         /////////////////
         // Colors
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         CKDWORD *colors = (CKDWORD *)data->ColorPtr;
         VxFillStructure(vcount, colors, data->ColorStride, 4, &col);
+#else
+        CKDWORD *colors = (CKDWORD *)data->Colors.Ptr;
+        VxFillStructure(vcount, colors, data->Colors.Stride, 4, &col);
+#endif
     }
 
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
     // Positions
     VxVector *positions = (VxVector *)data->PositionPtr;
 
@@ -142,6 +148,16 @@ void RenderTube(CKRenderContext *dev, CKCurve *curve, int rtc, VxVector &startup
 
     // UVs
     VxUV *uvs = (VxUV *)data->TexCoordPtr;
+#else
+    // Positions
+    VxVector *positions = (VxVector *)data->Positions.Ptr;
+
+    // Normals
+    VxVector *normals = (VxVector *)data->Normals.Ptr;
+
+    // UVs
+    VxUV *uvs = (VxUV *)data->TexCoord.Ptr;
+#endif
 
     float delta = 1.0f / tc;
     float a = 0.0f;
@@ -186,19 +202,31 @@ void RenderTube(CKRenderContext *dev, CKCurve *curve, int rtc, VxVector &startup
 
             // Positions Up
             *positions = pos + offset;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
             positions = (VxVector *)((CKBYTE *)positions + data->PositionStride);
+#else
+            positions = (VxVector *)((CKBYTE *)positions + data->Positions.Stride);
+#endif
 
             if (lighting)
             {
                 // Normals
                 *normals = Normalize(offset);
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
                 normals = (VxVector *)((CKBYTE *)normals + data->NormalStride);
+#else
+                normals = (VxVector *)((CKBYTE *)normals + data->Normals.Stride);
+#endif
             }
 
             // UVs
             uvs->u = ustart + a * texscale.x;
             uvs->v = texscale.y * p * inv2pi;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
             uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoordStride);
+#else
+            uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoord.Stride);
+#endif
 
             a += delta;
             cp = (VxVector *)((CKBYTE *)cp + Stride);
@@ -257,6 +285,7 @@ void RenderPlane(CKRenderContext *dev, CKCurve *curve, VxVector &startup, Vx2DVe
     /////////////////
     // Colors
 
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
     CKDWORD *colors = (CKDWORD *)data->ColorPtr;
     VxFillStructure((tc + 1) * 2, colors, data->ColorStride, 4, &col);
 
@@ -264,6 +293,15 @@ void RenderPlane(CKRenderContext *dev, CKCurve *curve, VxVector &startup, Vx2DVe
     VxVector *positions = (VxVector *)data->PositionPtr;
     // UVs
     VxUV *uvs = (VxUV *)data->TexCoordPtr;
+#else
+    CKDWORD *colors = (CKDWORD *)data->Colors.Ptr;
+    VxFillStructure((tc + 1) * 2, colors, data->Colors.Stride, 4, &col);
+
+    // Positions
+    VxVector *positions = (VxVector *)data->Positions.Ptr;
+    // UVs
+    VxUV *uvs = (VxUV *)data->TexCoord.Ptr;
+#endif
 
     float delta = 1.0f / tc;
     float a = 0.0f;
@@ -287,19 +325,34 @@ void RenderPlane(CKRenderContext *dev, CKCurve *curve, VxVector &startup, Vx2DVe
         up = Normalize(CrossProduct(dir, right));
 
         // Positions
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         *positions = pos - right;
         positions = (VxVector *)((CKBYTE *)positions + data->PositionStride);
         *positions = pos + right;
         positions = (VxVector *)((CKBYTE *)positions + data->PositionStride);
+#else
+        *positions = pos - right;
+        positions = (VxVector *)((CKBYTE *)positions + data->Positions.Stride);
+        *positions = pos + right;
+        positions = (VxVector *)((CKBYTE *)positions + data->Positions.Stride);
+#endif
 
         // UVs
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         uvs->u = ustart + a * texscale.x;
         uvs->v = 0.0f;
         uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoordStride);
         uvs->u = ustart + a * texscale.x;
         uvs->v = texscale.y;
         uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoordStride);
-
+#else
+        uvs->u = ustart + a * texscale.x;
+        uvs->v = 0.0f;
+        uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoord.Stride);
+        uvs->u = ustart + a * texscale.x;
+        uvs->v = texscale.y;
+        uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoord.Stride);
+#endif
         a += delta;
         cp = (VxVector *)((CKBYTE *)cp + Stride);
     }
@@ -326,6 +379,7 @@ void RenderCross(CKRenderContext *dev, CKCurve *curve, VxVector &startup, Vx2DVe
     /////////////////
     // Colors
 
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
     CKDWORD *colors = (CKDWORD *)data->ColorPtr;
     VxFillStructure((tc + 1) * 2, colors, data->ColorStride, 4, &col);
 
@@ -334,6 +388,16 @@ void RenderCross(CKRenderContext *dev, CKCurve *curve, VxVector &startup, Vx2DVe
     VxVector *positions2 = (VxVector *)((CKBYTE *)data->PositionPtr + 2 * (tc + 1) * data->PositionStride);
     // UVs
     VxUV *uvs = (VxUV *)data->TexCoordPtr;
+#else
+    CKDWORD *colors = (CKDWORD *)data->Colors.Ptr;
+    VxFillStructure((tc + 1) * 2, colors, data->Colors.Stride, 4, &col);
+
+    // Positions
+    VxVector *positions = (VxVector *)data->Positions.Ptr;
+    VxVector *positions2 = (VxVector *)((CKBYTE *)data->Positions.Ptr + 2 * (tc + 1) * data->Positions.Stride);
+    // UVs
+    VxUV *uvs = (VxUV *)data->TexCoord.Ptr;
+#endif
 
     float delta = 1.0f / tc;
     float a = 0.0f;
@@ -355,6 +419,7 @@ void RenderCross(CKRenderContext *dev, CKCurve *curve, VxVector &startup, Vx2DVe
         VxVector right = Normalize(CrossProduct(up, dir));
         up = Normalize(CrossProduct(dir, right));
 
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         // Positions Up
         *positions = pos + up * size.x;
         positions = (VxVector *)((CKBYTE *)positions + data->PositionStride);
@@ -374,6 +439,27 @@ void RenderCross(CKRenderContext *dev, CKCurve *curve, VxVector &startup, Vx2DVe
         uvs->u = ustart + a * texscale.x;
         uvs->v = texscale.y;
         uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoordStride);
+#else
+        // Positions Up
+        *positions = pos + up * size.x;
+        positions = (VxVector *)((CKBYTE *)positions + data->Positions.Stride);
+        *positions = pos - up * size.x;
+        positions = (VxVector *)((CKBYTE *)positions + data->Positions.Stride);
+
+        // Positions Right
+        *positions2 = pos + right * size.y;
+        positions2 = (VxVector *)((CKBYTE *)positions2 + data->Positions.Stride);
+        *positions2 = pos - right * size.y;
+        positions2 = (VxVector *)((CKBYTE *)positions2 + data->Positions.Stride);
+
+        // UVs
+        uvs->u = ustart + a * texscale.x;
+        uvs->v = 0.0f;
+        uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoord.Stride);
+        uvs->u = ustart + a * texscale.x;
+        uvs->v = texscale.y;
+        uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoord.Stride);
+#endif
 
         a += delta;
         cp = (VxVector *)((CKBYTE *)cp + Stride);
@@ -383,6 +469,7 @@ void RenderCross(CKRenderContext *dev, CKCurve *curve, VxVector &startup, Vx2DVe
     data->VertexCount = 2 * (tc + 1);
     dev->DrawPrimitive(VX_TRIANGLESTRIP, NULL, 0, data);
 
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
     void *oldpp = data->PositionPtr;
     data->PositionPtr = (CKBYTE *)data->PositionPtr + data->VertexCount * data->PositionStride;
     dev->DrawPrimitive(VX_TRIANGLESTRIP, NULL, 0, data);
@@ -390,6 +477,15 @@ void RenderCross(CKRenderContext *dev, CKCurve *curve, VxVector &startup, Vx2DVe
     // we restore the pointers
     data->VertexCount = 4 * (tc + 1);
     data->PositionPtr = oldpp;
+#else
+    void *oldpp = data->Positions.Ptr;
+    data->Positions.Ptr = (CKBYTE *)data->Positions.Ptr + data->VertexCount * data->Positions.Stride;
+    dev->DrawPrimitive(VX_TRIANGLESTRIP, NULL, 0, data);
+
+    // we restore the pointers
+    data->VertexCount = 4 * (tc + 1);
+    data->Positions.Ptr = oldpp;
+#endif
 }
 
 // Line Rendering
@@ -442,12 +538,17 @@ void RenderTwoDim(CKRenderContext *dev, CKCurve *curve, Vx2DVector &size, Vx2DVe
 
     VxDrawPrimitiveData *data = dev->GetDrawPrimitiveStructure(CKRST_DP_TR_CL_VCT, 2 * (tc + 1));
     VxStridedData SrcVertices(curvepoints, Stride);
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
     VxStridedData DstVertices(data->PositionPtr, 2 * data->PositionStride);
+#else
+    VxStridedData DstVertices(data->Positions.Ptr, 2 * data->Positions.Stride);
+#endif
     Vx3DMultiplyMatrixVectorStrided(&DstVertices, &SrcVertices, TransformMat, tc + 1);
 
     /////////////////
     // Colors
 
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
     CKDWORD *colors = (CKDWORD *)data->ColorPtr;
     VxFillStructure((tc + 1) * 2, colors, data->ColorStride, 4, &col);
 
@@ -455,6 +556,15 @@ void RenderTwoDim(CKRenderContext *dev, CKCurve *curve, Vx2DVector &size, Vx2DVe
     VxVector *positions = (VxVector *)data->PositionPtr;
     // UVs
     VxUV *uvs = (VxUV *)data->TexCoordPtr;
+#else
+    CKDWORD *colors = (CKDWORD *)data->Colors.Ptr;
+    VxFillStructure((tc + 1) * 2, colors, data->Colors.Stride, 4, &col);
+
+    // Positions
+    VxVector *positions = (VxVector *)data->Positions.Ptr;
+    // UVs
+    VxUV *uvs = (VxUV *)data->TexCoord.Ptr;
+#endif
 
     float delta = 1.0f / tc;
     float a = 0.0f;
@@ -462,7 +572,11 @@ void RenderTwoDim(CKRenderContext *dev, CKCurve *curve, Vx2DVector &size, Vx2DVe
     VxVector pos, oldpos, dir, right;
     VxVector up(0, 0, 1.0f);
 
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
     memcpy(&pos, positions + 2 * data->PositionStride, sizeof(VxVector));
+#else
+    memcpy(&pos, positions + 2 * data->Positions.Stride, sizeof(VxVector));
+#endif
     memcpy(&oldpos, positions, sizeof(VxVector));
     pos = oldpos - Normalize(pos - oldpos);
 
@@ -479,6 +593,7 @@ void RenderTwoDim(CKRenderContext *dev, CKCurve *curve, Vx2DVector &size, Vx2DVe
         right.x *= pos.z * dx;
         right.y *= pos.z * dy;
 
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         // Positions
         *positions = pos - right;
         positions = (VxVector *)((CKBYTE *)positions + data->PositionStride);
@@ -492,6 +607,21 @@ void RenderTwoDim(CKRenderContext *dev, CKCurve *curve, Vx2DVector &size, Vx2DVe
         uvs->u = ustart + a * texscale.x;
         uvs->v = 0.0f;
         uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoordStride);
+#else
+        // Positions
+        *positions = pos - right;
+        positions = (VxVector *)((CKBYTE *)positions + data->Positions.Stride);
+        *positions = pos + right;
+        positions = (VxVector *)((CKBYTE *)positions + data->Positions.Stride);
+
+        // UVs
+        uvs->u = ustart + a * texscale.x;
+        uvs->v = texscale.y;
+        uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoord.Stride);
+        uvs->u = ustart + a * texscale.x;
+        uvs->v = 0.0f;
+        uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoord.Stride);
+#endif
 
         a += delta;
     }

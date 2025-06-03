@@ -511,9 +511,15 @@ void RenderLensFlare(CKRenderContext *dev, void *arg)
     // TODO : changer les inverses transform par des multiplications de matrices (peut etre)
     VxVector pos, vec = lightpos - lookAt;
 
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
     XPtrStrided<VxUV> uvs(data->TexCoordPtr, data->TexCoordStride);
     XPtrStrided<VxVector4> positions(data->PositionPtr, data->PositionStride);
     XPtrStrided<CKDWORD> colors(data->ColorPtr, data->ColorStride);
+#else
+    XPtrStrided<VxUV> &uvs = data->TexCoord;
+    XPtrStrided<VxVector4> &positions = data->Positions;
+    XPtrStrided<unsigned long> &colors = data->Colors;
+#endif
 
     int index = 0;
     for (int i = 0; i < flarescount; ++i)
@@ -603,7 +609,11 @@ void RenderLensFlare(CKRenderContext *dev, void *arg)
         f->m_Color.a *= alpha;
         CKDWORD col = RGBAFTOCOLOR(&(f->m_Color));
         f->m_Color.a = oldalpha;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         VxFillStructure(4, data->ColorPtr, data->ColorStride, 4, &col);
+#else
+        VxFillStructure(4, data->Colors.Ptr, data->Colors.Stride, 4, &col);
+#endif
         colors += 4;
 
         ///

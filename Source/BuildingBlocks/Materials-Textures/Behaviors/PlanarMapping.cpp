@@ -136,6 +136,7 @@ int PlanarMapping(const CKBehaviorContext &behcontext)
 
     // The transfo itself
     VxStridedData dest, src;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
     dest.Ptr = data->NormalPtr;
     dest.Stride = data->NormalStride;
     src.Ptr = vertices;
@@ -144,6 +145,16 @@ int PlanarMapping(const CKBehaviorContext &behcontext)
 
     VxVector *pos = (VxVector *)data->NormalPtr;
     CKDWORD pStride = data->NormalStride;
+#else
+    dest.Ptr = data->Normals.Ptr;
+    dest.Stride = data->Normals.Stride;
+    src.Ptr = vertices;
+    src.Stride = vStride;
+    Vx3DMultiplyMatrixVectorStrided(&dest, &src, mat2, verticescount);
+
+    VxVector *pos = (VxVector *)data->Normals.Ptr;
+    CKDWORD pStride = data->Normals.Stride;
+#endif
 
     int FaceCount = mesh->GetFaceCount();
     CKWORD *Indices = mesh->GetFacesIndices();
@@ -187,6 +198,7 @@ int PlanarMapping(const CKBehaviorContext &behcontext)
                 VtxFlags[i] |= VXCLIP_BOTTOM;
         }
 
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         int ChannelMask = CKCHANNELMASK(channel);
         pos = (VxVector *)data->NormalPtr;
 
@@ -215,6 +227,27 @@ int PlanarMapping(const CKBehaviorContext &behcontext)
                 }
             }
         }
+#else
+        int FaceCount = mesh->GetFaceCount();
+        unsigned short *Indices = mesh->GetFacesIndices();
+
+        VxVector MapperZ = VxVector::axisZ();
+        ent->InverseTransformVector(&MapperZ,&MapperZ,mapper);
+
+        pos = (VxVector*)data->Normals.Ptr;
+        XArray<WORD> ChannelIndices;
+        for ( i=0; i < FaceCount; ++i, Indices+=3, FaceNormal+=NormStride) {
+            // Face is correctly oriented to be mapped, check if
+            // all its vertices are inside the projection frustrum
+            if (!(VtxFlags[Indices[0]]&VtxFlags[Indices[1]]&VtxFlags[Indices[2]])
+                && (DotProduct(*(VxVector *)FaceNormal,MapperZ)<0)) {
+                ChannelIndices.PushBack(Indices[0]);
+                ChannelIndices.PushBack(Indices[1]);
+                ChannelIndices.PushBack(Indices[2]);
+                }
+        }
+        mesh->SetChannelFaceIndices(channel,ChannelIndices.Size(), ChannelIndices.Begin());
+#endif
 
         delete[] VtxFlags;
     }

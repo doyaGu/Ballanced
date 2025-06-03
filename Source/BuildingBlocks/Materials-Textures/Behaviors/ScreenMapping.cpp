@@ -109,10 +109,17 @@ int ScreenMapping(const CKBehaviorContext &behcontext)
     VxTransformData tdata;
     tdata.InVertices = vertices;
     tdata.InStride = vStride;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
     tdata.OutVertices = data->NormalPtr;
     tdata.OutStride = data->NormalStride;
     tdata.ScreenVertices = data->PositionPtr;
     tdata.ScreenStride = data->PositionStride;
+#else
+    tdata.OutVertices = data->Normals.Ptr;
+    tdata.OutStride = data->Normals.Stride;
+    tdata.ScreenVertices = data->Positions.Ptr;
+    tdata.ScreenStride = data->Positions.Stride;
+#endif
     tdata.ClipFlags = NULL;
 
     dev->TransformVertices(verticescount, &tdata, ent);
@@ -135,7 +142,11 @@ int ScreenMapping(const CKBehaviorContext &behcontext)
     beh->GetInputParameterValue(0, &channel);
     CKDWORD uStride;
     VxUV *uvs = (VxUV *)mesh->GetTextureCoordinatesPtr(&uStride, channel);
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
     VxVector *positions = (VxVector *)data->NormalPtr;
+#else
+    VxVector *positions = (VxVector *)data->Normals.Ptr;
+#endif
 
     if (XAbs(angle) > EPSILON) // Rotation desired
     {
@@ -161,7 +172,11 @@ int ScreenMapping(const CKBehaviorContext &behcontext)
             uvs->v = -0.5f + vhx.y + vhy.y;
 
             uvs = (VxUV *)((CKBYTE *)uvs + uStride);
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
             positions = (VxVector *)((CKBYTE *)positions + data->NormalStride);
+#else
+            positions = (VxVector *)((CKBYTE *)positions + data->Normals.Stride);
+#endif
         }
     }
     else // No rotation
@@ -176,7 +191,11 @@ int ScreenMapping(const CKBehaviorContext &behcontext)
             uvs->v = -0.5f + rect.top - positions->y * invheight * invz;
 
             uvs = (VxUV *)((CKBYTE *)uvs + uStride);
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
             positions = (VxVector *)((CKBYTE *)positions + data->NormalStride);
+#else
+            positions = (VxVector *)((CKBYTE *)positions + data->Normals.Stride);
+#endif
         }
     }
 
@@ -236,8 +255,13 @@ int ScreenMappingRenderCallBack(CKRenderContext *Dev, CKRenderObject *ent, void 
     tdata.InStride = vStride;
     tdata.OutVertices = NULL;
     tdata.OutStride = 0;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
     tdata.ScreenVertices = data->PositionPtr;
     tdata.ScreenStride = data->PositionStride;
+#else
+    tdata.ScreenVertices = data->Positions.Ptr;
+    tdata.ScreenStride = data->Positions.Stride;
+#endif
     tdata.ClipFlags = NULL;
 
     Dev->TransformVertices(VertexCount, &tdata, Ent);
@@ -258,9 +282,15 @@ int ScreenMappingRenderCallBack(CKRenderContext *Dev, CKRenderObject *ent, void 
     float invwidth = 1.0f / Rect.GetWidth();
     float invheight = 1.0f / Rect.GetHeight();
 
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
     VxUV *uvs = (VxUV *)data->TexCoordPtr;
     VxVector4 *positions = (VxVector4 *)data->PositionPtr;
     CKDWORD *Colors = (CKDWORD *)data->ColorPtr;
+#else
+    VxUV *uvs = (VxUV *)data->TexCoord.Ptr;
+    VxVector4 *positions = (VxVector4 *)data->Positions.Ptr;
+    CKDWORD *Colors = (CKDWORD *)data->Colors.Ptr;
+#endif
 
     if (XAbs(Angle) > EPSILON) // Rotation desired
     {
@@ -285,9 +315,15 @@ int ScreenMappingRenderCallBack(CKRenderContext *Dev, CKRenderObject *ent, void 
             positions->w = 1.0f;
             *Colors = 0xFFFFFFFF;
 
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
             uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoordStride);
             positions = (VxVector4 *)((CKBYTE *)positions + data->PositionStride);
             Colors = (CKDWORD *)((CKBYTE *)Colors + data->ColorStride);
+#else
+            uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoord.Stride);
+            positions = (VxVector4 *)((CKBYTE *)positions + data->Positions.Stride);
+            Colors = (CKDWORD *)((CKBYTE *)Colors + data->Colors.Stride);
+#endif
         }
     }
     else // No rotation
@@ -300,9 +336,15 @@ int ScreenMappingRenderCallBack(CKRenderContext *Dev, CKRenderObject *ent, void 
             positions->w = 1.0f;
             *Colors = 0xFFFFFFFF;
 
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
             uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoordStride);
             positions = (VxVector4 *)((CKBYTE *)positions + data->PositionStride);
             Colors = (CKDWORD *)((CKBYTE *)Colors + data->ColorStride);
+#else
+            uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoord.Stride);
+            positions = (VxVector4 *)((CKBYTE *)positions + data->Positions.Stride);
+            Colors = (CKDWORD *)((CKBYTE *)Colors + data->Colors.Stride);
+#endif
         }
     }
 

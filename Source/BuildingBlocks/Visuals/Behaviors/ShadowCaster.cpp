@@ -195,45 +195,62 @@ void DrawFillRectangleGradient(CKRenderContext *dev, VxRect &rect, const VxColor
     VxDrawPrimitiveData *data;
     data = dev->GetDrawPrimitiveStructure(CKRST_DP_CL_VC, 4);
 
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
     VxVector4 *positions = (VxVector4 *)data->PositionPtr;
     VxVector *normals = (VxVector *)data->NormalPtr;
     CKDWORD *colors = (CKDWORD *)data->ColorPtr;
+#else
+    VxVector4 *positions = (VxVector4 *)data->Positions.Ptr;
+    VxVector *normals = (VxVector *)data->Normals.Ptr;
+    CKDWORD *colors = (CKDWORD *)data->Colors.Ptr;
+#endif
 
     /////////////////
     // Colors
 
     CKDWORD col = RGBAFTOCOLOR(&start);
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
     VxFillStructure(2, colors, data->ColorStride, sizeof(CKDWORD), &col);
     col = RGBAFTOCOLOR(&end);
     VxFillStructure(2, (CKBYTE *)colors + 2 * data->ColorStride, data->ColorStride, sizeof(CKDWORD), &col);
-
+#else
+    VxFillStructure(2, colors, data->Colors.Stride, sizeof(CKDWORD), &col);
+    col = RGBAFTOCOLOR(&end);
+    VxFillStructure(2, (CKBYTE *)colors + 2 * data->Colors.Stride, data->Colors.Stride, sizeof(CKDWORD), &col);
+#endif
     /////////////////
     // Positions
+
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
+    const unsigned int positionStride = data->PositionStride;
+#else
+    const unsigned int positionStride = data->Positions.Stride;
+#endif
 
     // Vertex 0
     positions->x = rect.left;
     positions->y = rect.top;
     positions->z = 0.0f;
     positions->w = 1.0f;
-    positions = (VxVector4 *)((CKBYTE *)positions + data->PositionStride);
+    positions = (VxVector4 *)((CKBYTE *)positions + positionStride);
     // Vertex 1
     positions->x = rect.right;
     positions->y = rect.top;
     positions->z = 0.0f;
     positions->w = 1.0f;
-    positions = (VxVector4 *)((CKBYTE *)positions + data->PositionStride);
+    positions = (VxVector4 *)((CKBYTE *)positions + positionStride);
     // Vertex 2
     positions->x = rect.right;
     positions->y = rect.bottom;
     positions->z = 0.0f;
     positions->w = 1.0f;
-    positions = (VxVector4 *)((CKBYTE *)positions + data->PositionStride);
+    positions = (VxVector4 *)((CKBYTE *)positions + positionStride);
     // Vertex 3
     positions->x = rect.left;
     positions->y = rect.bottom;
     positions->z = 0.0f;
     positions->w = 1.0f;
-    positions = (VxVector4 *)((CKBYTE *)positions + data->PositionStride);
+    positions = (VxVector4 *)((CKBYTE *)positions + positionStride);
 
     // Indices
     CKWORD *indices = dev->GetDrawPrimitiveIndices(4);
@@ -658,6 +675,7 @@ int ShadowCaster(const CKBehaviorContext &behcontext)
             }
             mesh->UVChanged();
 
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
             int FaceCount = mesh->GetFaceCount();
             CKWORD *Indices = mesh->GetFacesIndices();
             CKDWORD NormStride = 0;
@@ -688,6 +706,32 @@ int ShadowCaster(const CKBehaviorContext &behcontext)
                     }
                 }
             }
+#else
+            int FaceCount = mesh->GetFaceCount();
+            WORD *Indices = mesh->GetFacesIndices();
+            CKDWORD NormStride = 0;
+            BYTE *FaceNormal = mesh->GetFaceNormalsPtr(&NormStride);
+            XArray<WORD> channelIndices;
+
+            for (int i = 0; i < FaceCount; ++i, Indices += 3, FaceNormal += NormStride)
+            {
+                // Face is corretly oriented to be mapped , check if
+                // all its vertices are inside the projection frustrum ( z >0 for the moment)
+                if (!((VtxFlags[Indices[0]] & VtxFlags[Indices[1]] & VtxFlags[Indices[2]])) && (DotProduct(*(VxVector *)FaceNormal, camdir) < 0))
+                {
+                    channelIndices.PushBack(Indices[0]);
+                    channelIndices.PushBack(Indices[1]);
+                    channelIndices.PushBack(Indices[2]);
+                }
+            }
+            if (!channelIndices.Size())
+                mesh->ActivateChannel(channel, FALSE);
+            else
+            {
+                mesh->UVChanged(channel);
+                mesh->SetChannelFaceIndices(channel, channelIndices.Size(), channelIndices.Begin());
+            }
+#endif
 
             delete[] VtxFlags;
         }

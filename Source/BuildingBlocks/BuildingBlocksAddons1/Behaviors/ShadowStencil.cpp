@@ -392,8 +392,13 @@ public:
 
         // init variables
         m_Data->VertexCount = 0; // will be recalculated further
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         m_DataPos = (VxVector *)m_Data->PositionPtr;
         m_DataPosStride = m_Data->PositionStride;
+#else
+        m_DataPos = (VxVector *)m_Data->Positions.Ptr;
+        m_DataPosStride = m_Data->Positions.Stride;
+#endif
         m_RenderContext->SetWorldTransformationMatrix(obj->GetWorldMatrix());
         m_LightPos = *lightPos;
         m_Mesh = obj->GetCurrentMesh();
@@ -475,7 +480,11 @@ public:
         VxRect rect;
         m_RenderContext->GetViewRect(rect);
 
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         XPtrStrided<VxVector4> rectVPos(data->PositionPtr, data->PositionStride);
+#else
+        XPtrStrided<VxVector4> &rectVPos = data->Positions;
+#endif
 
         rectVPos->Set(rect.left, rect.top, 0.5f, 1.0f); // point0
         ++rectVPos;
@@ -491,7 +500,11 @@ public:
 
         if (dwcol)
         {
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
             VxFillStructure(4, data->ColorPtr, data->ColorStride, sizeof(CKDWORD), dwcol);
+#else
+            VxFillStructure(4, data->Colors.Ptr, data->Colors.Stride, sizeof(CKDWORD), dwcol);
+#endif
         }
 
         m_RenderContext->SetState(VXRENDERSTATE_CULLMODE, VXCULL_NONE);
@@ -507,7 +520,11 @@ public:
         if (colPtr)
         {
             CKDWORD dwcol = colPtr->GetRGBA();
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
             VxFillStructure(m_Data->VertexCount, m_Data->ColorPtr, m_Data->ColorStride, sizeof(CKDWORD), &dwcol);
+#else
+            VxFillStructure(m_Data->VertexCount, m_Data->Colors.Ptr, m_Data->Colors.Stride, sizeof(CKDWORD), &dwcol);
+#endif
         }
 
         m_RenderContext->SetState(VXRENDERSTATE_CULLMODE, VXCULL_CCW);

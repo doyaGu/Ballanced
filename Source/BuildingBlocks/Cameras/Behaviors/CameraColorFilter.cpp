@@ -143,6 +143,7 @@ void CameraColorFilterRender(CKRenderContext *rc, void *arg)
     VxRect rect;
     rc->GetViewRect(rect);
 
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
     ((VxVector4 *)data->PositionPtr)[0].x = rect.left;
     ((VxVector4 *)data->PositionPtr)[0].y = rect.top;
     ((VxVector4 *)data->PositionPtr)[0].z = 0.0f;
@@ -159,11 +160,35 @@ void CameraColorFilterRender(CKRenderContext *rc, void *arg)
     ((VxVector4 *)data->PositionPtr)[3].y = rect.bottom;
     ((VxVector4 *)data->PositionPtr)[3].z = 0.0f;
     ((VxVector4 *)data->PositionPtr)[3].w = 1.0f;
+#else
+    ((VxVector4 *)data->Positions.Ptr)[0].x = rect.left;
+    ((VxVector4 *)data->Positions.Ptr)[0].y = rect.top;
+    ((VxVector4 *)data->Positions.Ptr)[0].z = 0.0f;
+    ((VxVector4 *)data->Positions.Ptr)[0].w = 1.0f;
+    ((VxVector4 *)data->Positions.Ptr)[1].x = rect.right;
+    ((VxVector4 *)data->Positions.Ptr)[1].y = rect.top;
+    ((VxVector4 *)data->Positions.Ptr)[1].z = 0.0f;
+    ((VxVector4 *)data->Positions.Ptr)[1].w = 1.0f;
+    ((VxVector4 *)data->Positions.Ptr)[2].x = rect.right;
+    ((VxVector4 *)data->Positions.Ptr)[2].y = rect.bottom;
+    ((VxVector4 *)data->Positions.Ptr)[2].z = 0.0f;
+    ((VxVector4 *)data->Positions.Ptr)[2].w = 1.0f;
+    ((VxVector4 *)data->Positions.Ptr)[3].x = rect.left;
+    ((VxVector4 *)data->Positions.Ptr)[3].y = rect.bottom;
+    ((VxVector4 *)data->Positions.Ptr)[3].z = 0.0f;
+    ((VxVector4 *)data->Positions.Ptr)[3].w = 1.0f;
+#endif
 
     // colors
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
     CKDWORD *colors = (CKDWORD *)data->ColorPtr;
     CKDWORD col = RGBAFTOCOLOR(&fcolor);
     VxFillStructure(4, colors, data->ColorStride, 4, &col);
+#else
+    CKDWORD *colors = (CKDWORD *)data->Colors.Ptr;
+    CKDWORD col = RGBAFTOCOLOR(&fcolor);
+    VxFillStructure(4, colors, data->Colors.Stride, 4, &col);
+#endif
 
     // indices
     CKWORD *indices = rc->GetDrawPrimitiveIndices(4);

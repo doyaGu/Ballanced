@@ -426,10 +426,17 @@ void DrawFillRectangle(CKRenderContext *dev, CKMaterial *mat, VxRect &rect, CKBO
 
     CKWORD *indices = dev->GetDrawPrimitiveIndices(4);
 
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
     VxUV *uvs = (VxUV *)data->TexCoordPtr;
     VxVector4 *positions = (VxVector4 *)data->PositionPtr;
     VxVector *normals = (VxVector *)data->NormalPtr;
     CKDWORD *colors = (CKDWORD *)data->ColorPtr;
+#else
+    VxUV *uvs = (VxUV *)data->TexCoord.Ptr;
+    VxVector4 *positions = (VxVector4 *)data->Positions.Ptr;
+    VxVector *normals = (VxVector *)data->Normals.Ptr;
+    CKDWORD *colors = (CKDWORD *)data->Colors.Ptr;
+#endif
 
     // TODO handle the multi lines
     mat->SetAsCurrent(dev);
@@ -440,95 +447,119 @@ void DrawFillRectangle(CKRenderContext *dev, CKMaterial *mat, VxRect &rect, CKBO
         /////////////////
         // Normals
 
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
+        const unsigned int normalStride = data->NormalStride;
+#else
+        const unsigned int normalStride = data->Normals.Stride;
+#endif
+
         // Normal 0
         normals->x = 0;
         normals->y = 0;
         normals->z = 1.0f;
-        normals = (VxVector *)((CKBYTE *)normals + data->NormalStride);
+        normals = (VxVector *)((CKBYTE *)normals + normalStride);
         // Normal 1
         normals->x = 0;
         normals->y = 0;
         normals->z = 1.0f;
-        normals = (VxVector *)((CKBYTE *)normals + data->NormalStride);
+        normals = (VxVector *)((CKBYTE *)normals + normalStride);
         // Normal 2
         normals->x = 0;
         normals->y = 0;
         normals->z = 1.0f;
-        normals = (VxVector *)((CKBYTE *)normals + data->NormalStride);
+        normals = (VxVector *)((CKBYTE *)normals + normalStride);
         // Normal 3
         normals->x = 0;
         normals->y = 0;
         normals->z = 1.0f;
-        normals = (VxVector *)((CKBYTE *)normals + data->NormalStride);
+        normals = (VxVector *)((CKBYTE *)normals + normalStride);
     }
     else
     {
         /////////////////
         // Colors
 
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
+        const unsigned int colorStride = data->ColorStride;
+#else
+        const unsigned int colorStride = data->Colors.Stride;
+#endif
+
         VxColor vxcol = mat->GetDiffuse();
         CKDWORD col = RGBAFTOCOLOR(&vxcol);
         // Vertex 0
         *colors = col;
-        colors = (CKDWORD *)((CKBYTE *)colors + data->ColorStride);
+        colors = (CKDWORD *)((CKBYTE *)colors + colorStride);
         // Vertex 1
         *colors = col;
-        colors = (CKDWORD *)((CKBYTE *)colors + data->ColorStride);
+        colors = (CKDWORD *)((CKBYTE *)colors + colorStride);
         // Vertex 2
         *colors = col;
-        colors = (CKDWORD *)((CKBYTE *)colors + data->ColorStride);
+        colors = (CKDWORD *)((CKBYTE *)colors + colorStride);
         // Vertex 3
         *colors = col;
-        colors = (CKDWORD *)((CKBYTE *)colors + data->ColorStride);
+        colors = (CKDWORD *)((CKBYTE *)colors + colorStride);
     }
 
     /////////////////
     // UVs
 
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
+    const unsigned int texCoordStride = data->TexCoordStride;
+#else
+    const unsigned int texCoordStride = data->TexCoord.Stride;
+#endif
+
     // Vertex 0
     uvs->u = 0.0f;
     uvs->v = 0.0f;
-    uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoordStride);
+    uvs = (VxUV *)((CKBYTE *)uvs + texCoordStride);
     // Vertex 1
     uvs->u = 1.0f;
     uvs->v = 0.0f;
-    uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoordStride);
+    uvs = (VxUV *)((CKBYTE *)uvs + texCoordStride);
     // Vertex 2
     uvs->u = 1.0f;
     uvs->v = 1.0f;
-    uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoordStride);
+    uvs = (VxUV *)((CKBYTE *)uvs + texCoordStride);
     // Vertex 3
     uvs->u = 0.0f;
     uvs->v = 1.0f;
-    uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoordStride);
+    uvs = (VxUV *)((CKBYTE *)uvs + texCoordStride);
 
     /////////////////
     // Positions
 
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
+    const unsigned int positionStride = data->PositionStride;
+#else
+    const unsigned int positionStride = data->Positions.Stride;
+#endif
+
     // Vertex 0
     positions->x = rect.left;
     positions->y = rect.top;
     positions->z = 0.0f;
     positions->w = 1.0f;
-    positions = (VxVector4 *)((CKBYTE *)positions + data->PositionStride);
+    positions = (VxVector4 *)((CKBYTE *)positions + positionStride);
     // Vertex 1
     positions->x = rect.right;
     positions->y = rect.top;
     positions->z = 0.0f;
     positions->w = 1.0f;
-    positions = (VxVector4 *)((CKBYTE *)positions + data->PositionStride);
+    positions = (VxVector4 *)((CKBYTE *)positions + positionStride);
     // Vertex 2
     positions->x = rect.right;
     positions->y = rect.bottom;
     positions->z = 0.0f;
     positions->w = 1.0f;
-    positions = (VxVector4 *)((CKBYTE *)positions + data->PositionStride);
+    positions = (VxVector4 *)((CKBYTE *)positions + positionStride);
     // Vertex 3
     positions->x = rect.left;
     positions->y = rect.bottom;
     positions->z = 0.0f;
     positions->w = 1.0f;
-    positions = (VxVector4 *)((CKBYTE *)positions + data->PositionStride);
+    positions = (VxVector4 *)((CKBYTE *)positions + positionStride);
 
     indices[0] = 0;
     indices[1] = 1;
@@ -622,8 +653,13 @@ void CKTextureFont::DrawString(CKRenderContext *dev, CKSTRING string, int slen, 
     float texelheight = /*m_Scale.y */ 0.25f / tex->GetHeight();
 
     CKWORD *indices = IndicesPtr;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
     XPtrStrided<VxVector4> positions(data->PositionPtr, data->PositionStride);
     XPtrStrided<VxUV> uvs(data->TexCoordPtr, data->TexCoordStride);
+#else
+    XPtrStrided<VxVector4> &positions = data->Positions;
+    XPtrStrided<VxUV> &uvs = data->TexCoord;
+#endif
 
     int index = 0;
 
@@ -858,7 +894,11 @@ void CKTextureFont::DrawString(CKRenderContext *dev, CKSTRING string, int slen, 
         // Normals
 
         VxVector norm(0, 0, 1.0f);
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         VxFillStructure(len * 4, data->NormalPtr, data->NormalStride, sizeof(VxVector), &norm);
+#else
+        VxFillStructure(len * 4, data->Normals.Ptr, data->Normals.Stride, sizeof(VxVector), &norm);
+#endif
     }
     else
     {
@@ -903,7 +943,11 @@ void CKTextureFont::DrawString(CKRenderContext *dev, CKSTRING string, int slen, 
         }
 
         // WARNING : this works only because all the colors are contiguous...
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         VxFillStructure(len, data->ColorPtr, 4 * data->ColorStride, 4 * sizeof(CKDWORD), &cols);
+#else
+        VxFillStructure(len, data->Colors.Ptr, 4 * data->Colors.Stride, 4 * sizeof(CKDWORD), &cols);
+#endif
     }
 
     if (ctdata)
@@ -931,6 +975,7 @@ void CKTextureFont::DrawCaret(CKRenderContext *context, float posx, float posy, 
     CKDWORD col = RGBAFTOCOLOR(&diffuse);
     CKDWORD colors[4] = {col, col, col, col};
     data.Flags = flags;
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
     data.PositionPtr = &positions;
     data.PositionStride = sizeof(VxVector4);
     data.TexCoordPtr = &uvs;
@@ -939,6 +984,16 @@ void CKTextureFont::DrawCaret(CKRenderContext *context, float posx, float posy, 
     data.ColorStride = sizeof(CKDWORD);
     data.NormalPtr = NULL;
     data.SpecularColorPtr = NULL;
+#else
+    data.Positions.Ptr = &positions;
+    data.Positions.Stride = sizeof(VxVector4);
+    data.TexCoord.Ptr = &uvs;
+    data.TexCoord.Stride = 2 * sizeof(float);
+    data.Colors.Ptr = &colors;
+    data.Colors.Stride = sizeof(CKDWORD);
+    data.Normals.Ptr = NULL;
+    data.SpecularColors.Ptr = NULL;
+#endif
     context->DrawPrimitive(VX_TRIANGLEFAN, NULL, 4, &data);
 }
 

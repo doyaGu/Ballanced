@@ -37,43 +37,60 @@ void DrawFillRectangle(CKRenderContext *dev, CKDWORD col, CKMaterial *mat, const
     else
         data = dev->GetDrawPrimitiveStructure(CKRST_DP_CL_VCT, 4);
 
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
     VxUV *uvs = (VxUV *)data->TexCoordPtr;
     VxVector4 *positions = (VxVector4 *)data->PositionPtr;
     VxVector *normals = (VxVector *)data->NormalPtr;
     CKDWORD *colors = (CKDWORD *)data->ColorPtr;
+#else
+    VxUV *uvs = (VxUV *)data->TexCoord.Ptr;
+    VxVector4 *positions = (VxVector4 *)data->Positions.Ptr;
+    VxVector *normals = (VxVector *)data->Normals.Ptr;
+    CKDWORD *colors = (CKDWORD *)data->Colors.Ptr;
+#endif
 
     if (mode & LIGHTING)
     {
         /////////////////
         // Normals
 
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
+        const unsigned int normalStride = data->NormalStride;
+#else
+        const unsigned int normalStride = data->Normals.Stride;
+#endif
+
         // Normal 0
         normals->x = 0;
         normals->y = 0;
         normals->z = 1.0f;
-        normals = (VxVector *)((CKBYTE *)normals + data->NormalStride);
+        normals = (VxVector *)((CKBYTE *)normals + normalStride);
         // Normal 1
         normals->x = 0;
         normals->y = 0;
         normals->z = 1.0f;
-        normals = (VxVector *)((CKBYTE *)normals + data->NormalStride);
+        normals = (VxVector *)((CKBYTE *)normals + normalStride);
         // Normal 2
         normals->x = 0;
         normals->y = 0;
         normals->z = 1.0f;
-        normals = (VxVector *)((CKBYTE *)normals + data->NormalStride);
+        normals = (VxVector *)((CKBYTE *)normals + normalStride);
         // Normal 3
         normals->x = 0;
         normals->y = 0;
         normals->z = 1.0f;
-        normals = (VxVector *)((CKBYTE *)normals + data->NormalStride);
+        normals = (VxVector *)((CKBYTE *)normals + normalStride);
     }
     else
     {
         /////////////////
         // Colors
 
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
         VxFillStructure(4, colors, data->ColorStride, 4, &col);
+#else
+        VxFillStructure(4, colors, data->Colors.Stride, 4, &col);
+#endif
     }
 
     /////////////////
@@ -92,30 +109,36 @@ void DrawFillRectangle(CKRenderContext *dev, CKDWORD col, CKMaterial *mat, const
     /////////////////
     // Positions
 
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
+    const unsigned int positionStride = data->PositionStride;
+#else
+    const unsigned int positionStride = data->Positions.Stride;
+#endif
+
     // Vertex 0
     positions->x = rect.left;
     positions->y = rect.top;
     positions->z = 0.0f;
     positions->w = 1.0f;
-    positions = (VxVector4 *)((CKBYTE *)positions + data->PositionStride);
+    positions = (VxVector4 *)((CKBYTE *)positions + positionStride);
     // Vertex 1
     positions->x = rect.right;
     positions->y = rect.top;
     positions->z = 0.0f;
     positions->w = 1.0f;
-    positions = (VxVector4 *)((CKBYTE *)positions + data->PositionStride);
+    positions = (VxVector4 *)((CKBYTE *)positions + positionStride);
     // Vertex 2
     positions->x = rect.right;
     positions->y = rect.bottom;
     positions->z = 0.0f;
     positions->w = 1.0f;
-    positions = (VxVector4 *)((CKBYTE *)positions + data->PositionStride);
+    positions = (VxVector4 *)((CKBYTE *)positions + positionStride);
     // Vertex 3
     positions->x = rect.left;
     positions->y = rect.bottom;
     positions->z = 0.0f;
     positions->w = 1.0f;
-    positions = (VxVector4 *)((CKBYTE *)positions + data->PositionStride);
+    positions = (VxVector4 *)((CKBYTE *)positions + positionStride);
 
     // the drawing itself
     dev->DrawPrimitive(VX_TRIANGLEFAN, NULL, 4, data);
@@ -149,41 +172,56 @@ void DrawBorderRectangle(CKRenderContext *dev, CKDWORD col, CKMaterial *mat, con
     VxDrawPrimitiveData *data;
     data = dev->GetDrawPrimitiveStructure(CKRST_DP_CL_VC, 8);
 
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
     VxVector4 *positions = (VxVector4 *)data->PositionPtr;
     CKDWORD *colors = (CKDWORD *)data->ColorPtr;
+#else
+    VxVector4 *positions = (VxVector4 *)data->Positions.Ptr;
+    CKDWORD *colors = (CKDWORD *)data->Colors.Ptr;
+#endif
 
     /////////////////
     // Colors
 
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
     VxFillStructure(8, colors, data->ColorStride, 4, &col);
+#else
+    VxFillStructure(8, colors, data->Colors.Stride, 4, &col);
+#endif
 
     /////////////////
     // Positions
+
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
+    const unsigned int positionStride = data->PositionStride;
+#else
+    const unsigned int positionStride = data->Positions.Stride;
+#endif
 
     // Vertex 0
     positions->x = rect.left;
     positions->y = rect.top;
     positions->z = 0.0f;
     positions->w = 1.0f;
-    positions = (VxVector4 *)((CKBYTE *)positions + data->PositionStride);
+    positions = (VxVector4 *)((CKBYTE *)positions + positionStride);
     // Vertex 1
     positions->x = rect.right;
     positions->y = rect.top;
     positions->z = 0.0f;
     positions->w = 1.0f;
-    positions = (VxVector4 *)((CKBYTE *)positions + data->PositionStride);
+    positions = (VxVector4 *)((CKBYTE *)positions + positionStride);
     // Vertex 2
     positions->x = rect.right;
     positions->y = rect.bottom;
     positions->z = 0.0f;
     positions->w = 1.0f;
-    positions = (VxVector4 *)((CKBYTE *)positions + data->PositionStride);
+    positions = (VxVector4 *)((CKBYTE *)positions + positionStride);
     // Vertex 3
     positions->x = rect.left;
     positions->y = rect.bottom;
     positions->z = 0.0f;
     positions->w = 1.0f;
-    positions = (VxVector4 *)((CKBYTE *)positions + data->PositionStride);
+    positions = (VxVector4 *)((CKBYTE *)positions + positionStride);
 
     rect.Inflate(Vx2DVector(-bsize, -bsize));
 
@@ -192,25 +230,25 @@ void DrawBorderRectangle(CKRenderContext *dev, CKDWORD col, CKMaterial *mat, con
     positions->y = rect.top;
     positions->z = 0.0f;
     positions->w = 1.0f;
-    positions = (VxVector4 *)((CKBYTE *)positions + data->PositionStride);
+    positions = (VxVector4 *)((CKBYTE *)positions + positionStride);
     // Vertex 5
     positions->x = rect.right;
     positions->y = rect.top;
     positions->z = 0.0f;
     positions->w = 1.0f;
-    positions = (VxVector4 *)((CKBYTE *)positions + data->PositionStride);
+    positions = (VxVector4 *)((CKBYTE *)positions + positionStride);
     // Vertex 6
     positions->x = rect.right;
     positions->y = rect.bottom;
     positions->z = 0.0f;
     positions->w = 1.0f;
-    positions = (VxVector4 *)((CKBYTE *)positions + data->PositionStride);
+    positions = (VxVector4 *)((CKBYTE *)positions + positionStride);
     // Vertex 7
     positions->x = rect.left;
     positions->y = rect.bottom;
     positions->z = 0.0f;
     positions->w = 1.0f;
-    positions = (VxVector4 *)((CKBYTE *)positions + data->PositionStride);
+    positions = (VxVector4 *)((CKBYTE *)positions + positionStride);
 
     // Indices
     CKWORD *indices = dev->GetDrawPrimitiveIndices(24);

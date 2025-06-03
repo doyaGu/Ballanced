@@ -212,6 +212,7 @@ void PlanarFilterRender(CKRenderContext *rc, void *arg)
     VxRect rect;
     rc->GetViewRect(rect);
 
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
     ((VxVector4 *)data->PositionPtr)[0].x = rect.left;
     ((VxVector4 *)data->PositionPtr)[0].y = rect.top;
     ((VxVector4 *)data->PositionPtr)[0].z = 0.0f;
@@ -228,11 +229,30 @@ void PlanarFilterRender(CKRenderContext *rc, void *arg)
     ((VxVector4 *)data->PositionPtr)[3].y = rect.bottom;
     ((VxVector4 *)data->PositionPtr)[3].z = 0.0f;
     ((VxVector4 *)data->PositionPtr)[3].w = 1.0f;
+#else
+    ((VxVector4 *)data->Positions.Ptr)[0].x = rect.left;
+    ((VxVector4 *)data->Positions.Ptr)[0].y = rect.top;
+    ((VxVector4 *)data->Positions.Ptr)[0].z = 0.0f;
+    ((VxVector4 *)data->Positions.Ptr)[0].w = 1.0f;
+    ((VxVector4 *)data->Positions.Ptr)[1].x = rect.right;
+    ((VxVector4 *)data->Positions.Ptr)[1].y = rect.top;
+    ((VxVector4 *)data->Positions.Ptr)[1].z = 0.0f;
+    ((VxVector4 *)data->Positions.Ptr)[1].w = 1.0f;
+    ((VxVector4 *)data->Positions.Ptr)[2].x = rect.right;
+    ((VxVector4 *)data->Positions.Ptr)[2].y = rect.bottom;
+    ((VxVector4 *)data->Positions.Ptr)[2].z = 0.0f;
+    ((VxVector4 *)data->Positions.Ptr)[2].w = 1.0f;
+    ((VxVector4 *)data->Positions.Ptr)[3].x = rect.left;
+    ((VxVector4 *)data->Positions.Ptr)[3].y = rect.bottom;
+    ((VxVector4 *)data->Positions.Ptr)[3].z = 0.0f;
+    ((VxVector4 *)data->Positions.Ptr)[3].w = 1.0f;
+#endif
 
     // Colors
     CKDWORD col = RGBAFTOCOLOR(&fcolor);
     CKDWORD cols = RGBAFTOCOLOR(&acolor);
 
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
     VxFillStructure(4, data->ColorPtr, data->ColorStride, 4, &col);
     VxFillStructure(4, data->SpecularColorPtr, data->SpecularColorStride, 4, &cols);
 
@@ -250,6 +270,25 @@ void PlanarFilterRender(CKRenderContext *rc, void *arg)
     uvs->u = 0.0f;
     uvs->v = 1.0f;
     uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoordStride);
+#else
+    VxFillStructure(4, data->Colors.Ptr, data->Colors.Stride, 4, &col);
+    VxFillStructure(4, data->SpecularColors.Ptr, data->SpecularColors.Stride, 4, &cols);
+
+    // UVs
+    VxUV *uvs = (VxUV *)data->TexCoord.Ptr;
+    uvs->u = 0.0f;
+    uvs->v = 0.0f;
+    uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoord.Stride);
+    uvs->u = 1.0f;
+    uvs->v = 0.0f;
+    uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoord.Stride);
+    uvs->u = 1.0f;
+    uvs->v = 1.0f;
+    uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoord.Stride);
+    uvs->u = 0.0f;
+    uvs->v = 1.0f;
+    uvs = (VxUV *)((CKBYTE *)uvs + data->TexCoord.Stride);
+#endif
 
     // indices
     CKWORD *indices = rc->GetDrawPrimitiveIndices(4);
