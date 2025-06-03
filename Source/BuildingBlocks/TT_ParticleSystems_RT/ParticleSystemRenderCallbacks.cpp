@@ -416,9 +416,9 @@ int RenderParticles_FS(CKRenderContext *dev, CKRenderObject *obj, void *arg)
     XPtrStrided<VxVector> positions(data->PositionPtr, data->PositionStride);
     XPtrStrided<CKDWORD> colors(data->ColorPtr, data->ColorStride);
 #else
-    XPtrStrided<VxUV> &uvs = data->TexCoord;
-    XPtrStrided<VxVector4> &positions = data->Positions;
-    XPtrStrided<DWORD> &colors = data->Colors;
+    XPtrStrided<VxUV> uvs(data->TexCoord.Ptr, data->TexCoord.Stride);
+    XPtrStrided<VxVector> positions(data->Positions.Ptr, data->Positions.Stride);
+    XPtrStrided<CKDWORD> colors(data->Colors.Ptr, data->Colors.Stride);
 #endif
 
     // Render States

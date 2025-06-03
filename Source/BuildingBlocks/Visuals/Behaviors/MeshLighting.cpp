@@ -300,8 +300,8 @@ int render(CKRenderContext *rc, CKRenderObject *obj, void *arg)
     XPtrStrided<VxVector> positions(data->PositionPtr, data->PositionStride);
     XPtrStrided<VxUV> uvs(data->TexCoordPtr, data->TexCoordStride);
 #else
-    XPtrStrided<VxVector4> &positions = data->Positions;
-    XPtrStrided<VxUV> &uvs = data->TexCoord;
+    XPtrStrided<VxVector> positions(data->Positions.Ptr, data->Positions.Stride);
+    XPtrStrided<VxUV> uvs(data->TexCoord.Ptr, data->TexCoord.Stride);
 #endif
 
     VxVector *pos = (VxVector *)ckmesh->GetPositionsPtr(&Stride);
