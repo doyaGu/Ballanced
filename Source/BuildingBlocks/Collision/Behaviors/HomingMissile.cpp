@@ -1,0 +1,220 @@
+/////////////////////////////////////////////////////
+/////////////////////////////////////////////////////
+//
+//		       Homing Missile
+//
+/////////////////////////////////////////////////////
+/////////////////////////////////////////////////////
+#include "CKAll.h"
+
+CKObjectDeclaration *FillBehaviorHomingMissileDecl();
+CKERROR CreateHomingMissileProto(CKBehaviorPrototype **);
+int HomingMissile(const CKBehaviorContext &behcontext);
+
+CKObjectDeclaration *FillBehaviorHomingMissileDecl()
+{
+    CKObjectDeclaration *od = CreateCKObjectDeclaration("Home on Entity");
+    od->SetDescription("Leads a 3D Entity towards its target, avoiding obstacles.");
+    /* rem:
+    <SPAN CLASS=in>In: </SPAN>triggers the process<BR>
+    <SPAN CLASS=in>Loop In: </SPAN>triggers the next step in the process loop.<BR>
+    <BR>
+    <SPAN CLASS=out>Target Reach: </SPAN>is activated when the missile reaches the target.<BR>
+    <SPAN CLASS=out>Obstacle Reach: </SPAN>is activated when the missile touches an obstacle.<BR>
+    <SPAN CLASS=out>Loop Out: </SPAN>is activated when the needs to loop.<BR>
+    <BR>
+    <SPAN CLASS=pin>Destination: </SPAN>the object which is supposed to be destroyed.<BR>
+    <SPAN CLASS=pin>Initial Velocity: </SPAN>magnitude of the Initial Velocity Vector. The initial direction of this vector corresponds to the local Z axis of the missile.<BR>
+    <SPAN CLASS=pin>Inertia: </SPAN>this factor allows you to calibrate the inertia of the missile. If this factor is near zero, the missile will rotate very fastly to reach his target. On another hand, if it is near one, the missile will make large circles (because of its own velocity) around the target before reach it.<BR>
+    <SPAN CLASS=pin>Obstacle Influence factor: </SPAN>the radius of the influence zone of each obstacle (the place where the obstacles repulse the missile) is equal to : Influence Factor * Radius of the Bounding sphere.<BR>
+    <BR>
+    <SPAN CLASS=pout>Object Hit: </SPAN>object hit by the missile.<BR>
+    */
+    /* warning:
+    - Each obstacle has to be add to the 'collision manager' with the 'Add Obstacle' building block.
+    - This building block doesn't prevent object to intersect from each other. It best acts to avoid collisions with influence spheres.<BR>
+    */
+    od->SetCategory("Collisions/Influence");
+    od->SetType(CKDLL_BEHAVIORPROTOTYPE);
+    od->SetGuid(CKGUID(0x71234f96, 0x34321e45));
+    od->SetAuthorGuid(VIRTOOLS_GUID);
+    od->SetAuthorName("Virtools");
+    od->SetVersion(0x00010000);
+    od->SetCreationFunction(CreateHomingMissileProto);
+    od->SetCompatibleClassId(CKCID_3DENTITY);
+    od->NeedManager(COLLISION_MANAGER_GUID);
+    return od;
+}
+
+CKERROR CreateHomingMissileProto(CKBehaviorPrototype **pproto)
+{
+    CKBehaviorPrototype *proto = CreateCKBehaviorPrototype("Home on Entity");
+    if (!proto)
+        return CKERR_OUTOFMEMORY;
+
+    proto->DeclareInput("In");
+    proto->DeclareInput("Loop In");
+
+    proto->DeclareOutput("Target Reach");
+    proto->DeclareOutput("Obstacle Reach");
+    proto->DeclareOutput("Loop Out");
+
+    proto->DeclareInParameter("Destination", CKPGUID_3DENTITY);
+    proto->DeclareInParameter("Initial Velocity", CKPGUID_FLOAT, "1");
+    proto->DeclareInParameter("Inertia (0 to 1)", CKPGUID_FLOAT, "0.5");
+    proto->DeclareInParameter("Obstacle Influence Factor", CKPGUID_FLOAT, "1.5");
+
+    proto->DeclareOutParameter("Object Hit", CKPGUID_3DENTITY);
+
+    proto->SetFlags(CK_BEHAVIORPROTOTYPE_NORMAL);
+    proto->SetFunction(HomingMissile);
+    proto->SetBehaviorFlags(CKBEHAVIOR_TARGETABLE);
+
+    *pproto = proto;
+    return CK_OK;
+}
+
+int HomingMissile(const CKBehaviorContext &behcontext)
+{
+    CKBehavior *beh = behcontext.Behavior;
+
+    // Set Input states
+    if (beh->IsInputActive(0))
+        beh->ActivateInput(0, FALSE);
+    else if (beh->IsInputActive(1))
+        beh->ActivateInput(1, FALSE);
+
+    CKContext *ctx = behcontext.Context;
+    CKCollisionManager *cm = (CKCollisionManager *)ctx->GetManagerByGuid(COLLISION_MANAGER_GUID);
+    if (!cm)
+    {
+        beh->ActivateOutput(2, FALSE);
+        return CKBR_OK;
+    }
+
+    CK3dEntity *Missile = (CK3dEntity *)beh->GetTarget();
+    if (!Missile)
+    {
+        beh->ActivateOutput(2, FALSE);
+        return CKBR_OWNERERROR;
+    }
+
+    // Get Target
+    CK3dEntity *Target = (CK3dEntity *)beh->GetInputParameterObject(0);
+    if (!Target)
+    {
+        beh->ActivateOutput(2, FALSE);
+        return CKBR_OWNERERROR;
+    }
+
+    // Get Initial velocity
+    float V0;
+    beh->GetInputParameterValue(1, &V0);
+
+    // Get Inertia
+    float Inertia = 0.5f;
+    beh->GetInputParameterValue(2, &Inertia);
+    Inertia = 0.9f + Inertia / 10.0f;
+
+    // Get Influence Factor
+    float Factor = 1.5f;
+    beh->GetInputParameterValue(3, &Factor);
+
+    // Compute Missile direction, store it in VelocityVector
+    VxVector Dir, Up, Right;
+    Missile->GetOrientation(&Dir, &Up, &Right);
+
+    VxVector VelocityVector = Dir;
+    VelocityVector.Normalize();
+
+    // Compute deviation generated by the Target, store it in Deviation
+    VxVector MissileCenter, TargetCenter;
+    Missile->GetPosition(&MissileCenter);
+    Target->GetPosition(&TargetCenter);
+
+    VxVector Deviation = TargetCenter - MissileCenter;
+    Deviation.Normalize();
+
+    // Compute deviation generated by the Obstacles, store it in Deviation
+    CKLevel *Level = ctx->GetCurrentLevel();
+
+    CK3dEntity *Obstacle;
+    VxVector ObstacleCenter, V;
+
+    float R, dist, amplitude, A = 10.0f;
+
+    for (int i = 0; i < cm->GetObstacleCount(); i++)
+    {
+        Obstacle = cm->GetObstacle(i);
+
+        Obstacle->GetBaryCenter(&ObstacleCenter);
+        R = Obstacle->GetRadius();
+
+        dist = Magnitude(ObstacleCenter - MissileCenter);
+        if (dist < Factor * R)
+        {
+            amplitude = A * (1 - dist / (Factor * R));
+            V = (MissileCenter - ObstacleCenter) * (amplitude / dist);
+            V.Normalize();
+            Deviation += V;
+            Deviation.Normalize();
+        }
+    }
+
+    Deviation = VelocityVector * Inertia + Deviation * (1 - Inertia);
+    Deviation.Normalize();
+    /*
+        Up = CrossProduct(Deviation,Dir);
+        Dir = Deviation;
+        Right = CrossProduct(Up,Dir);
+        Missile->SetOrientation(&Dir,&Up,&Right);
+    */
+    Up = CrossProduct(Deviation, Dir);
+    Up.Normalize();
+
+    Dir = Deviation;
+    Dir.Normalize();
+
+    Right = CrossProduct(Up, Dir);
+
+    VxVector Scale;
+    Missile->GetScale(&Scale);
+    Missile->SetOrientation(&Dir, &Up, &Right);
+    Missile->SetScale(&Scale);
+
+    VxVector NewPosition = MissileCenter + VelocityVector * V0;
+    Missile->SetPosition(&NewPosition);
+
+    if (Magnitude(NewPosition - TargetCenter) < Target->GetRadius())
+    {
+        // Set Output Parameter
+        beh->SetOutputParameterObject(0, Target);
+
+        // Set Output states
+        beh->ActivateOutput(0, TRUE);
+
+        return CKBR_OK;
+    }
+
+    for (int j = 0; j < cm->GetObstacleCount(); j++)
+    {
+        Obstacle = cm->GetObstacle(j);
+        Obstacle->GetBaryCenter(&ObstacleCenter);
+
+        if (Magnitude(NewPosition - ObstacleCenter) < Obstacle->GetRadius())
+        {
+            // Set Output Parameter
+            beh->SetOutputParameterObject(0, Obstacle);
+
+            // Set Output states
+            beh->ActivateOutput(1, TRUE);
+
+            return CKBR_OK;
+        }
+    }
+
+    // Set Output states
+    beh->ActivateOutput(2, TRUE);
+
+    return CKBR_OK;
+}
