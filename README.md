@@ -6,22 +6,35 @@ This repository is a work-in-progress reverse-engineering project for the game *
 
 The status of the project's main components is as follows:
 
-| Filename                                  | Completion Status |
-| ----------------------------------------- | :---------------- |
-| `Bin/Player.exe`                          | Completed         |
-| `Bin/ResDll.dll`                          | Completed         |
-| `BuildingBlocks/physics_RT.dll`           | Completed         |
-| `BuildingBlocks/TT_DatabaseManager_RT.dll`| Completed         |
-| `BuildingBlocks/TT_Gravity_RT.dll`        | Completed         |
+| Filename                                   | Completion Status |
+| -----------------------------------------  | :---------------- |
+| `Bin/Player.exe`                           | Completed         |
+| `Bin/ResDll.dll`                           | Completed         |
+| `BuildingBlocks/3DTransfo.dll`             | Completed         |
+| `BuildingBlocks/BuildingBlocksAddons1.dll` | Completed         |
+| `BuildingBlocks/Cameras.dll`               | Completed         |
+| `BuildingBlocks/Collision.dll`             | Completed         |
+| `BuildingBlocks/Controllers.dll`           | Completed         |
+| `BuildingBlocks/Interface.dll`             | Completed         |
+| `BuildingBlocks/Lights.dll`                | Completed         |
+| `BuildingBlocks/Logics.dll`                | Completed         |
+| `BuildingBlocks/Materials.dll`             | Completed         |
+| `BuildingBlocks/Narratives.dll`            | Completed         |
+| `BuildingBlocks/physics_RT.dll`            | Completed         |
+| `BuildingBlocks/Sounds.dll`                | Completed         |
+| `BuildingBlocks/TT_DatabaseManager_RT.dll` | Completed         |
+| `BuildingBlocks/TT_Gravity_RT.dll`         | Completed         |
 | `BuildingBlocks/TT_InterfaceManager_RT.dll`| Completed         |
-| `BuildingBlocks/TT_ParticleSystems_RT.dll`| Completed         |
-| `BuildingBlocks/TT_Toolbox_RT.dll`        | Completed*        |
+| `BuildingBlocks/TT_ParticleSystems_RT.dll` | Completed         |
+| `BuildingBlocks/TT_Toolbox_RT.dll`         | Completed*        |
+| `BuildingBlocks/Visuals.dll`               | Completed         |
+| `BuildingBlocks/WorldEnvironments.dll`     | Completed         |
 
 _\* Some unused building blocks are not implemented._
 
 ## Installation
 
-To run **Ballanced**, you will need the original game assets as well as some components that are still under development. Here’s how to get started:
+To run **Ballanced**, you will need the original game assets and some components that are still under development. Here’s how to get started:
 
 ### Option 1: Download Pre-Built Binaries
 - Download the latest build from the [releases](https://github.com/doyaGu/Ballanced/releases) section.
@@ -49,7 +62,7 @@ If you prefer building from source, follow these steps:
 
 ## Game Assets
 
-**Ballanced** requires assets and **Virtools** dlls from the original Ballance game to function.
+**Ballanced** requires assets and **Virtools** DLLs from the original Ballance game to function.
 
 Once you have these, place them in the appropriate directories in your build folder.
 
