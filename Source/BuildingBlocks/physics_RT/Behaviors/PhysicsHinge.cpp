@@ -16,7 +16,7 @@ CKERROR PhysicsHingeCallBack(const CKBehaviorContext &behcontext);
 
 CKObjectDeclaration *FillBehaviorPhysicsHingeDecl()
 {
-    CKObjectDeclaration *od = CreateCKObjectDeclaration("Physics Hinge");
+    CKObjectDeclaration *od = CreateCKObjectDeclaration("Set Physics Hinge");
     od->SetDescription("Set a Physics Hinge joint...");
     od->SetCategory("Physics");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);

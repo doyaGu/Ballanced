@@ -16,7 +16,7 @@ CKERROR PhysicsForceCallBack(const CKBehaviorContext &behcontext);
 
 CKObjectDeclaration *FillBehaviorPhysicsForceDecl()
 {
-    CKObjectDeclaration *od = CreateCKObjectDeclaration("Physics Force");
+    CKObjectDeclaration *od = CreateCKObjectDeclaration("SetPhysicsForce");
     od->SetDescription("Physics Force");
     od->SetCategory("Physics");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
