@@ -16,7 +16,7 @@ CKERROR PhysicsBallJointCallBack(const CKBehaviorContext &behcontext);
 
 CKObjectDeclaration *FillBehaviorPhysicsBallJointDecl()
 {
-    CKObjectDeclaration *od = CreateCKObjectDeclaration("Physics Balljoint");
+    CKObjectDeclaration *od = CreateCKObjectDeclaration("Set Physics Ball Joint");
     od->SetDescription("Sets a Physics Balljoint ...");
     od->SetCategory("Physics");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
