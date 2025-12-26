@@ -10,31 +10,18 @@ The status of the project's main components is as follows:
 | -----------------------------------------  | :---------------- |
 | `Bin/Player.exe`                           | Completed         |
 | `Bin/ResDll.dll`                           | Completed         |
-| `BuildingBlocks/3DTransfo.dll`             | Completed         |
-| `BuildingBlocks/BuildingBlocksAddons1.dll` | Completed         |
-| `BuildingBlocks/Cameras.dll`               | Completed         |
-| `BuildingBlocks/Collision.dll`             | Completed         |
-| `BuildingBlocks/Controllers.dll`           | Completed         |
-| `BuildingBlocks/Interface.dll`             | Completed         |
-| `BuildingBlocks/Lights.dll`                | Completed         |
-| `BuildingBlocks/Logics.dll`                | Completed         |
-| `BuildingBlocks/Materials.dll`             | Completed         |
-| `BuildingBlocks/Narratives.dll`            | Completed         |
 | `BuildingBlocks/physics_RT.dll`            | Completed         |
-| `BuildingBlocks/Sounds.dll`                | Completed         |
 | `BuildingBlocks/TT_DatabaseManager_RT.dll` | Completed         |
 | `BuildingBlocks/TT_Gravity_RT.dll`         | Completed         |
 | `BuildingBlocks/TT_InterfaceManager_RT.dll`| Completed         |
 | `BuildingBlocks/TT_ParticleSystems_RT.dll` | Completed         |
 | `BuildingBlocks/TT_Toolbox_RT.dll`         | Completed*        |
-| `BuildingBlocks/Visuals.dll`               | Completed         |
-| `BuildingBlocks/WorldEnvironments.dll`     | Completed         |
 
 _\* Some unused building blocks are not implemented._
 
 ## Installation
 
-To run **Ballanced**, you will need the original game assets and some components that are still under development. Here’s how to get started:
+To run **Ballanced**, you will need the original game assets and some components that are still under development. Here's how to get started:
 
 ### Option 1: Download Pre-Built Binaries
 - Download the latest build from the [releases](https://github.com/doyaGu/Ballanced/releases) section.
@@ -64,31 +51,9 @@ If you prefer building from source, follow these steps:
 
 **Ballanced** requires assets and **Virtools** DLLs from the original Ballance game to function.
 
+**Important:** This repository does **NOT** include Virtools itself or its DLLs. You must obtain the original Ballance game and extract the required Virtools DLLs from your own copy.
+
 Once you have these, place them in the appropriate directories in your build folder.
-
-## Roadmap
-
-Our vision for **Ballanced** is to fully recreate the original **Ballance** game while extending its capabilities and ensuring long-term compatibility with modern systems. Below are the key milestones we aim to achieve:
-
-1. **Complete Decompilation**  
-   - Continue reverse-engineering and implementing missing components, particularly focusing on the remaining **Virtools DLLs**.
-   - Refactor existing implementations for improved performance and stability.
-
-2. **Cross-Platform Support**  
-   - Expand support beyond Windows, with future versions planned for **Linux** and **macOS**.
-   - Ensure compatibility with Wine for better support on Linux systems.
-
-3. **Enhanced Modding Support**  
-   - Extend the modding capabilities beyond the original game, providing tools for easier mod creation and integration.
-   - Create documentation and modding guides for the community.
-
-4. **Performance Optimizations**  
-   - Analyze the current codebase for bottlenecks and optimize it to improve performance on both legacy and modern systems.
-   - Implement multi-threading and other modern techniques to enhance gameplay smoothness on high-end hardware.
-
-5. **Improved User Experience and Interface**  
-   - Modernize the user interface where appropriate, maintaining the original aesthetic but enhancing usability on higher resolutions and widescreen displays.
-   - Improve input methods, including better support for modern controllers and remappable keys.
 
 ## Acknowledgments
 
