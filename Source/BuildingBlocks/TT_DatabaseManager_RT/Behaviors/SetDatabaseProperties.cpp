@@ -64,7 +64,8 @@ int SetDatabaseProperties(const CKBehaviorContext &behcontext)
     }
 
     CKSTRING filename = (CKSTRING)beh->GetInputParameterReadDataPtr(0);
-    CKBOOL crypted = (CKBOOL)beh->GetInputParameterReadDataPtr(1);
+    CKBOOL crypted = TRUE;
+    beh->GetInputParameterValue(1, &crypted);
 
     if (!filename)
     {
