@@ -58,10 +58,17 @@ int CopyFile(const CKBehaviorContext &behcontext)
     CKBehavior *beh = behcontext.Behavior;
 
     CKSTRING src = (CKSTRING)beh->GetInputParameterReadDataPtr(0);
-    CKSTRING dest = (CKSTRING)beh->GetInputParameterReadDataPtr(0);
+    CKSTRING dest = (CKSTRING)beh->GetInputParameterReadDataPtr(1);
     CKBOOL overwrite = FALSE;
     beh->GetInputParameterValue(2, &overwrite);
-    if (::CopyFileA(src, dest, overwrite) == TRUE)
+
+    if (!src || !dest)
+    {
+        beh->ActivateOutput(1, TRUE);
+        return CKBR_OK;
+    }
+
+    if (::CopyFileA(src, dest, !overwrite) == TRUE)
     {
         beh->ActivateOutput(0, TRUE);
     }
