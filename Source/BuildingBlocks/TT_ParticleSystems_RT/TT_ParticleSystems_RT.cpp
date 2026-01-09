@@ -4,19 +4,19 @@
 #include "ParticleGuids.h"
 
 #ifdef CK_LIB
-#define RegisterBehaviorDeclarations Register_TT_ParticleSystems_BehaviorDeclarations
-#define InitInstance _TT_ParticleSystems_InitInstance
-#define ExitInstance _TT_ParticleSystems_ExitInstance
-#define CKGetPluginInfoCount CKGet_TT_ParticleSystems_PluginInfoCount
-#define CKGetPluginInfo CKGet_TT_ParticleSystems_PluginInfo
-#define g_PluginInfo g_TT_ParticleSystems_PluginInfo
+#define RegisterBehaviorDeclarations    Register_TT_ParticleSystems_BehaviorDeclarations
+#define InitInstance                    _TT_ParticleSystems_InitInstance
+#define ExitInstance                    _TT_ParticleSystems_ExitInstance
+#define CKGetPluginInfoCount            CKGet_TT_ParticleSystems_PluginInfoCount
+#define CKGetPluginInfo                 CKGet_TT_ParticleSystems_PluginInfo
+#define g_PluginInfo                    g_TT_ParticleSystems_PluginInfo
 #else
-#define RegisterBehaviorDeclarations RegisterBehaviorDeclarations
-#define InitInstance InitInstance
-#define ExitInstance ExitInstance
-#define CKGetPluginInfoCount CKGetPluginInfoCount
-#define CKGetPluginInfo CKGetPluginInfo
-#define g_PluginInfo g_PluginInfo
+#define RegisterBehaviorDeclarations    RegisterBehaviorDeclarations
+#define InitInstance                    InitInstance
+#define ExitInstance                    ExitInstance
+#define CKGetPluginInfoCount            CKGetPluginInfoCount
+#define CKGetPluginInfo                 CKGetPluginInfo
+#define g_PluginInfo                    g_PluginInfo
 #endif
 
 CKERROR InitInstance(CKContext *context)
@@ -106,33 +106,33 @@ CKERROR ExitInstance(CKContext *context)
 
 #define PARTICLES_BEHAVIOR CKGUID(0x5E7B2D90, 0x40CC0AB4)
 
-CKPluginInfo g_ParticleSystems_PluginInfo[2];
+CKPluginInfo g_PluginInfo[2];
 
 PLUGIN_EXPORT int CKGetPluginInfoCount() { return 2; }
 
 PLUGIN_EXPORT CKPluginInfo *CKGetPluginInfo(int Index)
 {
-    g_ParticleSystems_PluginInfo[0].m_Author = "Virtools";
-    g_ParticleSystems_PluginInfo[0].m_Description = "Particle Systems Building Blocks";
-    g_ParticleSystems_PluginInfo[0].m_Extension = "";
-    g_ParticleSystems_PluginInfo[0].m_Type = CKPLUGIN_BEHAVIOR_DLL;
-    g_ParticleSystems_PluginInfo[0].m_Version = 0x000001;
-    g_ParticleSystems_PluginInfo[0].m_InitInstanceFct = NULL;
-    g_ParticleSystems_PluginInfo[0].m_ExitInstanceFct = NULL;
-    g_ParticleSystems_PluginInfo[0].m_GUID = PARTICLES_BEHAVIOR;
-    g_ParticleSystems_PluginInfo[0].m_Summary = "Particle Systems Building Blocks";
+    g_PluginInfo[0].m_Author = "Virtools";
+    g_PluginInfo[0].m_Description = "Particle Systems Building Blocks";
+    g_PluginInfo[0].m_Extension = "";
+    g_PluginInfo[0].m_Type = CKPLUGIN_BEHAVIOR_DLL;
+    g_PluginInfo[0].m_Version = 0x000001;
+    g_PluginInfo[0].m_InitInstanceFct = NULL;
+    g_PluginInfo[0].m_ExitInstanceFct = NULL;
+    g_PluginInfo[0].m_GUID = PARTICLES_BEHAVIOR;
+    g_PluginInfo[0].m_Summary = "Particle Systems Building Blocks";
 
-    g_ParticleSystems_PluginInfo[1].m_Author = "Virtools";
-    g_ParticleSystems_PluginInfo[1].m_Description = "Particle Systems Manager";
-    g_ParticleSystems_PluginInfo[1].m_Extension = "";
-    g_ParticleSystems_PluginInfo[1].m_Type = CKPLUGIN_MANAGER_DLL;
-    g_ParticleSystems_PluginInfo[1].m_Version = 0x000001;
-    g_ParticleSystems_PluginInfo[1].m_InitInstanceFct = InitInstance;
-    g_ParticleSystems_PluginInfo[1].m_ExitInstanceFct = ExitInstance;
-    g_ParticleSystems_PluginInfo[1].m_GUID = PARTICLE_MANAGER_GUID;
-    g_ParticleSystems_PluginInfo[1].m_Summary = "Particle Manager";
+    g_PluginInfo[1].m_Author = "Virtools";
+    g_PluginInfo[1].m_Description = "Particle Systems Manager";
+    g_PluginInfo[1].m_Extension = "";
+    g_PluginInfo[1].m_Type = CKPLUGIN_MANAGER_DLL;
+    g_PluginInfo[1].m_Version = 0x000001;
+    g_PluginInfo[1].m_InitInstanceFct = InitInstance;
+    g_PluginInfo[1].m_ExitInstanceFct = ExitInstance;
+    g_PluginInfo[1].m_GUID = PARTICLE_MANAGER_GUID;
+    g_PluginInfo[1].m_Summary = "Particle Manager";
 
-    return &g_ParticleSystems_PluginInfo[Index];
+    return &g_PluginInfo[Index];
 }
 
 //	This function should be present and exported for Nemo

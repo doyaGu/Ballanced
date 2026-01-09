@@ -3,19 +3,19 @@
 #include "CKIpionManager.h"
 
 #ifdef CK_LIB
-#define RegisterBehaviorDeclarations Register_TT_Physics_BehaviorDeclarations
-#define InitInstance _TT_Physics_InitInstance
-#define ExitInstance _TT_Physics_ExitInstance
-#define CKGetPluginInfoCount CKGet_TT_Physics_PluginInfoCount
-#define CKGetPluginInfo CKGet_TT_Physics_PluginInfo
-#define g_PluginInfo g_TT_Physics_PluginInfo
+#define RegisterBehaviorDeclarations    Register_TT_Physics_BehaviorDeclarations
+#define InitInstance                    _TT_Physics_InitInstance
+#define ExitInstance                    _TT_Physics_ExitInstance
+#define CKGetPluginInfoCount            CKGet_TT_Physics_PluginInfoCount
+#define CKGetPluginInfo                 CKGet_TT_Physics_PluginInfo
+#define g_PluginInfo                    g_TT_Physics_PluginInfo
 #else
-#define RegisterBehaviorDeclarations RegisterBehaviorDeclarations
-#define InitInstance InitInstance
-#define ExitInstance ExitInstance
-#define CKGetPluginInfoCount CKGetPluginInfoCount
-#define CKGetPluginInfo CKGetPluginInfo
-#define g_PluginInfo g_PluginInfo
+#define RegisterBehaviorDeclarations    RegisterBehaviorDeclarations
+#define InitInstance                    InitInstance
+#define ExitInstance                    ExitInstance
+#define CKGetPluginInfoCount            CKGetPluginInfoCount
+#define CKGetPluginInfo                 CKGetPluginInfo
+#define g_PluginInfo                    g_PluginInfo
 #endif
 
 CKERROR InitInstance(CKContext *context)
