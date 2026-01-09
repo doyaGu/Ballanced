@@ -60,16 +60,26 @@ int GetGroupBoundingBox(const CKBehaviorContext &behcontext)
     }
 
     CKGroup *group = (CKGroup *)beh->GetInputParameterObject(0);
-
     int count = group->GetObjectCount();
 
-    VxBbox bbox(-10000);
+    // Initialize with large values (10000 for min, -10000 for max)
+    VxBbox bbox;
+    bbox.Min.Set(10000.0f, 10000.0f, 10000.0f);
+    bbox.Max.Set(-10000.0f, -10000.0f, -10000.0f);
 
     for (int i = 0; i < count; ++i)
     {
         CK3dEntity *entity = (CK3dEntity *)group->GetObject(i);
         if (CKIsChildClassOf(entity, CKCID_3DENTITY))
-            bbox.Intersect(entity->GetBoundingBox());
+        {
+            const VxBbox &entBox = entity->GetBoundingBox(FALSE);
+            if (entBox.Min.x < bbox.Min.x) bbox.Min.x = entBox.Min.x;
+            if (entBox.Min.y < bbox.Min.y) bbox.Min.y = entBox.Min.y;
+            if (entBox.Min.z < bbox.Min.z) bbox.Min.z = entBox.Min.z;
+            if (entBox.Max.x > bbox.Max.x) bbox.Max.x = entBox.Max.x;
+            if (entBox.Max.y > bbox.Max.y) bbox.Max.y = entBox.Max.y;
+            if (entBox.Max.z > bbox.Max.z) bbox.Max.z = entBox.Max.z;
+        }
     }
 
     beh->SetOutputParameterValue(0, &bbox);

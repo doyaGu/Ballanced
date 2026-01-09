@@ -3,21 +3,29 @@
 #include "DXManager.h"
 #include "DebugManager.h"
 #include "TimeManager.h"
+#include "MotorSettings.h"
+
+// Global motor sound settings
+float g_MotorVolume = 1.0f;
+MotorChannelSettings g_MotorChannel1 = {0};
+MotorChannelSettings g_MotorChannel2 = {0};
+MotorChannelSettings g_MotorChannel3 = {0};
+float g_MotorGlobalVolume = 1.0f;
 
 #ifdef CK_LIB
-#define RegisterBehaviorDeclarations Register_TT_Toolbox_BehaviorDeclarations
-#define InitInstance _TT_Toolbox_InitInstance
-#define ExitInstance _TT_Toolbox_ExitInstance
-#define CKGetPluginInfoCount CKGet_TT_Toolbox_PluginInfoCount
-#define CKGetPluginInfo CKGet_TT_Toolbox_PluginInfo
-#define g_PluginInfo g_TT_Toolbox_PluginInfo
+#define RegisterBehaviorDeclarations    Register_TT_Toolbox_BehaviorDeclarations
+#define InitInstance                    _TT_Toolbox_InitInstance
+#define ExitInstance                    _TT_Toolbox_ExitInstance
+#define CKGetPluginInfoCount            CKGet_TT_Toolbox_PluginInfoCount
+#define CKGetPluginInfo                 CKGet_TT_Toolbox_PluginInfo
+#define g_PluginInfo                    g_TT_Toolbox_PluginInfo
 #else
-#define RegisterBehaviorDeclarations RegisterBehaviorDeclarations
-#define InitInstance InitInstance
-#define ExitInstance ExitInstance
-#define CKGetPluginInfoCount CKGetPluginInfoCount
-#define CKGetPluginInfo CKGetPluginInfo
-#define g_PluginInfo g_PluginInfo
+#define RegisterBehaviorDeclarations    RegisterBehaviorDeclarations
+#define InitInstance                    InitInstance
+#define ExitInstance                    ExitInstance
+#define CKGetPluginInfoCount            CKGetPluginInfoCount
+#define CKGetPluginInfo                 CKGetPluginInfo
+#define g_PluginInfo                    g_PluginInfo
 #endif
 
 CKERROR InitInstance(CKContext *context)
@@ -151,112 +159,112 @@ PLUGIN_EXPORT void RegisterBehaviorDeclarations(XObjectDeclarationArray *reg);
 
 void RegisterBehaviorDeclarations(XObjectDeclarationArray *reg)
 {
-//    RegisterBehavior(reg, FillBehaviorHomingMissileDecl);
+    RegisterBehavior(reg, FillBehaviorHomingMissileDecl);
     RegisterBehavior(reg, FillBehaviorSetDynamicPositionDecl);
-//    RegisterBehavior(reg, FillBehaviorFollowCameraDecl);
+    RegisterBehavior(reg, FillBehaviorFollowCameraDecl);
 
-//    RegisterBehavior(reg, FillBehaviorGetCurvePointDecl);
-//    RegisterBehavior(reg, FillBehaviorBoundingSphereIntersectionDecl);
-//    RegisterBehavior(reg, FillBehaviorCheckCurveCollisionDecl);
+    RegisterBehavior(reg, FillBehaviorGetCurvePointDecl);
+    RegisterBehavior(reg, FillBehaviorBoundingSphereIntersectionDecl);
+    RegisterBehavior(reg, FillBehaviorCheckCurveCollisionDecl);
 
-//    RegisterBehavior(reg, FillBehaviorBitmapFontDecl);
-//    RegisterBehavior(reg, FillBehaviorLensFlareDecl);
-//    RegisterBehavior(reg, FillBehaviorSetFSAADecl);
-//    RegisterBehavior(reg, FillBehaviorSkyAroundDecl);
-//    RegisterBehavior(reg, FillBehaviorSceneStencilShadowDecl);
-//    RegisterBehavior(reg, FillBehaviorShadowMappingDecl);
-//    RegisterBehavior(reg, FillBehaviorShadowPlaneDecl);
-//    RegisterBehavior(reg, FillBehaviorSwitchonLayerDecl);
-//    RegisterBehavior(reg, FillBehaviorConvertBoxDecl);
-//    RegisterBehavior(reg, FillBehaviorFindSubStringDecl);
-//    RegisterBehavior(reg, FillBehaviorGetFullAngleDecl);
-//    RegisterBehavior(reg, FillBehaviorGetGroupBoundingBoxDecl);
-//    RegisterBehavior(reg, FillBehaviorGetNearestCurvePositionDecl);
-//    RegisterBehavior(reg, FillBehaviorGetZOrderDecl);
+    RegisterBehavior(reg, FillBehaviorBitmapFontDecl);
+    RegisterBehavior(reg, FillBehaviorLensFlareDecl);
+    RegisterBehavior(reg, FillBehaviorSetFSAADecl);
+    RegisterBehavior(reg, FillBehaviorSkyAroundDecl);
+    RegisterBehavior(reg, FillBehaviorSceneStencilShadowDecl);
+    RegisterBehavior(reg, FillBehaviorShadowMappingDecl);
+    RegisterBehavior(reg, FillBehaviorShadowPlaneDecl);
+    RegisterBehavior(reg, FillBehaviorSwitchonLayerDecl);
+    RegisterBehavior(reg, FillBehaviorConvertBoxDecl);
+    RegisterBehavior(reg, FillBehaviorFindSubStringDecl);
+    RegisterBehavior(reg, FillBehaviorGetFullAngleDecl);
+    RegisterBehavior(reg, FillBehaviorGetGroupBoundingBoxDecl);
+    RegisterBehavior(reg, FillBehaviorGetNearestCurvePositionDecl);
+    RegisterBehavior(reg, FillBehaviorGetZOrderDecl);
     RegisterBehavior(reg, FillBehaviorLookAtDecl);
-//    RegisterBehavior(reg, FillBehaviorShowVectorDecl);
-//    RegisterBehavior(reg, FillBehaviorViewFrustumClippingDecl);
+    RegisterBehavior(reg, FillBehaviorShowVectorDecl);
+    RegisterBehavior(reg, FillBehaviorViewFrustumClippingDecl);
 
-//    RegisterBehavior(reg, FillBehaviorChronoDecl);
-//    RegisterBehavior(reg, FillBehaviorSearchRowDecl);
-//    RegisterBehavior(reg, FillBehaviorChildrenIteratorDecl);
+    RegisterBehavior(reg, FillBehaviorChronoDecl);
+    RegisterBehavior(reg, FillBehaviorSearchRowDecl);
+    RegisterBehavior(reg, FillBehaviorChildrenIteratorDecl);
     RegisterBehavior(reg, FillBehaviorConvertPixelHomogenDecl);
-//    RegisterBehavior(reg, FillBehaviorConvertTimeToStringDecl);
-//    RegisterBehavior(reg, FillBehaviorParameterMapperDecl);
+    RegisterBehavior(reg, FillBehaviorConvertTimeToStringDecl);
+    RegisterBehavior(reg, FillBehaviorParameterMapperDecl);
     RegisterBehavior(reg, FillBehaviorCounterDecl);
     RegisterBehavior(reg, FillBehaviorSplitStringDecl);
 
-//    RegisterBehavior(reg, FillBehaviorBumpMapDecl);
-//    RegisterBehavior(reg, FillBehaviorSetMappingDecl);
+    RegisterBehavior(reg, FillBehaviorBumpMapDecl);
+    RegisterBehavior(reg, FillBehaviorSetMappingDecl);
     RegisterBehavior(reg, FillBehaviorReflectionMappingDecl);
-//    RegisterBehavior(reg, FillBehaviorRefractionMappingDecl);
-//    RegisterBehavior(reg, FillBehaviorSetMaterialValuesDecl);
-   RegisterBehavior(reg, FillBehaviorSetMipMappingDecl);
-//    RegisterBehavior(reg, FillBehaviorAnisoMappingDecl);
-//    RegisterBehavior(reg, FillBehaviorSaveAlphaDecl);
+    RegisterBehavior(reg, FillBehaviorRefractionMappingDecl);
+    RegisterBehavior(reg, FillBehaviorSetMaterialValuesDecl);
+    RegisterBehavior(reg, FillBehaviorSetMipMappingDecl);
+    RegisterBehavior(reg, FillBehaviorAnisoMappingDecl);
+    RegisterBehavior(reg, FillBehaviorSaveAlphaDecl);
 
     RegisterBehavior(reg, FillBehaviorTextureInfoDecl);
     RegisterBehavior(reg, FillBehaviorFlushTexturesDecl);
     RegisterBehavior(reg, FillBehaviorPreloadTexturesDecl);
-//    RegisterBehavior(reg, FillBehaviorListAllCurrentUsedTexturesDecl);
-//    RegisterBehavior(reg, FillBehaviorCelShadingDecl);
-//    RegisterBehavior(reg, FillBehaviorGeneratePlaneDecl);
+    RegisterBehavior(reg, FillBehaviorListAllCurrentUsedTexturesDecl);
+    RegisterBehavior(reg, FillBehaviorCelShadingDecl);
+    RegisterBehavior(reg, FillBehaviorGeneratePlaneDecl);
 
-//    RegisterBehavior(reg, FillBehaviorHighMapMeshformDecl);
-//    RegisterBehavior(reg, FillBehaviorMagnetMeshFormDecl);
-//    RegisterBehavior(reg, FillBehaviorSinusMeshdeformDecl);
-//    RegisterBehavior(reg, FillBehaviorPMSMeshdeformDecl);
-//    RegisterBehavior(reg, FillBehaviorRippleWaveDecl);
+    RegisterBehavior(reg, FillBehaviorHighMapMeshformDecl);
+    RegisterBehavior(reg, FillBehaviorMagnetMeshFormDecl);
+    RegisterBehavior(reg, FillBehaviorSinusMeshdeformDecl);
+    RegisterBehavior(reg, FillBehaviorPMSMeshdeformDecl);
+    RegisterBehavior(reg, FillBehaviorRippleWaveDecl);
 
-//    RegisterBehavior(reg, FillBehaviorIsObjectActiveDecl);
+    RegisterBehavior(reg, FillBehaviorIsObjectActiveDecl);
     RegisterBehavior(reg, FillBehaviorScaleableProximityDecl);
-//    RegisterBehavior(reg, FillBehaviorIsScriptActiveDecl);
-//    RegisterBehavior(reg, FillBehaviorIsObjectVisibleDecl);
-//    RegisterBehavior(reg, FillBehaviorActivateObjectDecl);
-//    RegisterBehavior(reg, FillBehaviorRestoreDynamicICDecl);
+    RegisterBehavior(reg, FillBehaviorIsScriptActiveDecl);
+    RegisterBehavior(reg, FillBehaviorIsObjectVisibleDecl);
+    RegisterBehavior(reg, FillBehaviorActivateObjectDecl);
+    RegisterBehavior(reg, FillBehaviorRestoreDynamicICDecl);
     RegisterBehavior(reg, FillBehaviorRestoreICDecl);
     RegisterBehavior(reg, FillBehaviorSaveICDecl);
-//    RegisterBehavior(reg, FillBehaviorReplaceInputparameterDecl);
-//    RegisterBehavior(reg, FillBehaviorWriteBackDecl);
+    RegisterBehavior(reg, FillBehaviorReplaceInputparameterDecl);
+    RegisterBehavior(reg, FillBehaviorWriteBackDecl);
 
     RegisterBehavior(reg, FillBehaviorGetEnvironmentVariableDecl);
-//    RegisterBehavior(reg, FillBehaviorCopyFileDecl);
+    RegisterBehavior(reg, FillBehaviorCopyFileDecl);
     RegisterBehavior(reg, FillBehaviorGetCurrentDirectoryDecl);
-//    RegisterBehavior(reg, FillBehaviorSetCurrentDirectoryDecl);
-//    RegisterBehavior(reg, FillBehaviorCreateDirectoryDecl);
-//    RegisterBehavior(reg, FillBehaviorExistFileDecl);
-//    RegisterBehavior(reg, FillBehaviorDeleteFileDecl);
-//    RegisterBehavior(reg, FillBehaviorRemoveDirectoryDecl);
+    RegisterBehavior(reg, FillBehaviorSetCurrentDirectoryDecl);
+    RegisterBehavior(reg, FillBehaviorCreateDirectoryDecl);
+    RegisterBehavior(reg, FillBehaviorExistFileDecl);
+    RegisterBehavior(reg, FillBehaviorDeleteFileDecl);
+    RegisterBehavior(reg, FillBehaviorRemoveDirectoryDecl);
     RegisterBehavior(reg, FillBehaviorReplacePathDecl);
-//    RegisterBehavior(reg, FillBehaviorListDirDecl);
-//    RegisterBehavior(reg, FillBehaviorGetFileNameFromPathDecl);
+    RegisterBehavior(reg, FillBehaviorListDirDecl);
+    RegisterBehavior(reg, FillBehaviorGetFileNameFromPathDecl);
 
-//    RegisterBehavior(reg, FillBehaviorPushButtonDecl);
+    RegisterBehavior(reg, FillBehaviorPushButtonDecl);
     RegisterBehavior(reg, FillBehaviorPushButton2Decl);
 
-//    RegisterBehavior(reg, FillBehaviorJoystickVectorMapperDecl);
-//    RegisterBehavior(reg, FillBehaviorKeySwitchDecl);
+    RegisterBehavior(reg, FillBehaviorJoystickVectorMapperDecl);
+    RegisterBehavior(reg, FillBehaviorKeySwitchDecl);
     RegisterBehavior(reg, FillBehaviorInputStringDecl);
-//    RegisterBehavior(reg, FillBehaviorTestForJoystickDecl);
+    RegisterBehavior(reg, FillBehaviorTestForJoystickDecl);
     RegisterBehavior(reg, FillBehaviorKeyWaiterDecl);
-//    RegisterBehavior(reg, FillBehaviorJoystickWaiterDecl);
+    RegisterBehavior(reg, FillBehaviorJoystickWaiterDecl);
 
     RegisterBehavior(reg, FillBehaviorTimerDecl);
-//    RegisterBehavior(reg, FillBehaviorGetTimeDecl);
+    RegisterBehavior(reg, FillBehaviorGetTimeDecl);
 
-//    RegisterBehavior(reg, FillBehaviorMotorSoundDecl);
-//    RegisterBehavior(reg, FillBehaviorLoadMotorSettingsDecl);
+    RegisterBehavior(reg, FillBehaviorMotorSoundDecl);
+    RegisterBehavior(reg, FillBehaviorLoadMotorSettingsDecl);
     RegisterBehavior(reg, FillBehaviorLinearVolumeDecl);
 
     RegisterBehavior(reg, FillBehaviorDebugONDecl);
     RegisterBehavior(reg, FillBehaviorDebugOFFDecl);
     RegisterBehavior(reg, FillBehaviorDebugDecl);
 
-//    RegisterBehavior(reg, FillBehaviorSet2DSpriteOldDecl);
+    RegisterBehavior(reg, FillBehaviorSet2DSpriteOldDecl);
     RegisterBehavior(reg, FillBehaviorSet2DSpriteDecl);
-//    RegisterBehavior(reg, FillBehaviorSet3DSpriteDecl);
-//    RegisterBehavior(reg, FillBehaviorGetUV2DSpriteDecl);
-//    RegisterBehavior(reg, FillBehaviorFontCoordinatesToDataArrayDecl);
+    RegisterBehavior(reg, FillBehaviorSet3DSpriteDecl);
+    RegisterBehavior(reg, FillBehaviorGetUV2DSpriteDecl);
+    RegisterBehavior(reg, FillBehaviorFontCoordinatesToDataArrayDecl);
     RegisterBehavior(reg, FillBehaviorCreateFontExDecl);
 
     RegisterBehavior(reg, FillBehaviorGetMemoryStatusDecl);

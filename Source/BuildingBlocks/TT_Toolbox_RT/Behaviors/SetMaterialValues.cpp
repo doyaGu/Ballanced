@@ -50,6 +50,43 @@ CKERROR CreateSetMaterialValuesProto(CKBehaviorPrototype **pproto)
 int SetMaterialValues(const CKBehaviorContext& behcontext)
 {
 	CKBehavior* beh = behcontext.Behavior;
-	// TODO: To be finished.
+	
+	CKMaterial *targetMat = (CKMaterial *)beh->GetTarget();
+	CKMaterial *srcMat = (CKMaterial *)beh->GetInputParameterObject(0);
+	
+	if (!targetMat || !srcMat)
+		return CKBR_PARAMETERERROR;
+	
+	// Copy all material properties
+	targetMat->SetAmbient(srcMat->GetAmbient());
+	targetMat->SetDiffuse(srcMat->GetDiffuse());
+	targetMat->SetEmissive(srcMat->GetEmissive());
+	targetMat->SetPower(srcMat->GetPower());
+	targetMat->SetSpecular(srcMat->GetSpecular());
+	
+	// Texture settings
+	targetMat->SetTexture0(srcMat->GetTexture());
+	targetMat->SetTextureBlendMode(srcMat->GetTextureBlendMode());
+	targetMat->SetTextureMinMode(srcMat->GetTextureMinMode());
+	targetMat->SetTextureMagMode(srcMat->GetTextureMagMode());
+	targetMat->SetTextureAddressMode(srcMat->GetTextureAddressMode());
+	targetMat->SetTextureBorderColor(srcMat->GetTextureBorderColor());
+	
+	// Rendering settings
+	targetMat->EnablePerspectiveCorrection(srcMat->PerspectiveCorrectionEnabled());
+	targetMat->SetSourceBlend(srcMat->GetSourceBlend());
+	targetMat->SetDestBlend(srcMat->GetDestBlend());
+	targetMat->EnableAlphaBlend(srcMat->AlphaBlendEnabled());
+	targetMat->SetTwoSided(srcMat->IsTwoSided());
+	targetMat->EnableZWrite(srcMat->ZWriteEnabled());
+	targetMat->SetZFunc(srcMat->GetZFunc());
+	targetMat->SetFillMode(srcMat->GetFillMode());
+	targetMat->SetShadeMode(srcMat->GetShadeMode());
+	targetMat->EnableAlphaTest(srcMat->AlphaTestEnabled());
+	targetMat->SetAlphaFunc(srcMat->GetAlphaFunc());
+	targetMat->SetAlphaRef(srcMat->GetAlphaRef());
+	
+	beh->ActivateInput(0, FALSE);
+	beh->ActivateOutput(0, TRUE);
 	return CKBR_OK;
 }

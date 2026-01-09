@@ -53,6 +53,74 @@ CKERROR CreateSearchRowProto(CKBehaviorPrototype **pproto)
 int SearchRow(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
-    // TODO: To be finished.
+    CKContext *ctx = behcontext.Context;
+
+    beh->ActivateInput(0, FALSE);
+    beh->ActivateOutput(0, TRUE);
+
+    CKDataArray *array = (CKDataArray *)beh->GetTarget();
+    if (!array)
+        return CKBR_OWNERERROR;
+
+    int column = 0;
+    beh->GetInputParameterValue(0, &column);
+
+    CKParameterIn *searchParam = beh->GetInputParameter(1);
+    CKParameter *param = searchParam->GetRealSource();
+
+    void *searchData = NULL;
+    int dataSize = 0;
+
+    CK_ARRAYTYPE colType = array->GetColumnType(column);
+    CKGUID paramGuid = param->GetGUID();
+
+    switch (colType)
+    {
+    case CKARRAYTYPE_INT:
+        if (paramGuid == CKPGUID_INT)
+        {
+            param->GetValue(&searchData, TRUE);
+        }
+        break;
+
+    case CKARRAYTYPE_FLOAT:
+        if (paramGuid == CKPGUID_FLOAT)
+        {
+            param->GetValue(&searchData, TRUE);
+        }
+        break;
+
+    case CKARRAYTYPE_STRING:
+        searchData = param->GetReadDataPtr(TRUE);
+        if (searchData)
+            dataSize = strlen((char *)searchData) + 1;
+        break;
+
+    case CKARRAYTYPE_OBJECT:
+        if (paramGuid == CKPGUID_BEOBJECT)
+        {
+            param->GetValue(&searchData, TRUE);
+        }
+        break;
+
+    case CKARRAYTYPE_PARAMETER:
+    {
+        CKGUID colGuid = array->GetColumnParameterGuid(column);
+        if (paramGuid == colGuid)
+        {
+            searchData = param->GetReadDataPtr(TRUE);
+            dataSize = param->GetDataSize();
+        }
+    }
+    break;
+
+    default:
+        ctx->OutputToConsole("Wrong value type", TRUE);
+        return CKBR_OK;
+    }
+
+    int rowIndex = array->FindRowIndex(column, CKEQUAL, (CKDWORD)searchData, dataSize, 0);
+    beh->SetOutputParameterValue(0, &rowIndex);
+
     return CKBR_OK;
 }

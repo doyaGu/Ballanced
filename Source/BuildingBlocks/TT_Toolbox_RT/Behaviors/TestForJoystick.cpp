@@ -49,6 +49,17 @@ CKERROR CreateTestForJoystickProto(CKBehaviorPrototype **pproto)
 int TestForJoystick(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
-    // TODO: To be finished.
+    CKContext *ctx = behcontext.Context;
+
+    int joystickNr = 0;
+    beh->GetInputParameterValue(0, &joystickNr);
+
+    CKInputManager *inputManager = (CKInputManager *)ctx->GetManagerByGuid(INPUT_MANAGER_GUID);
+    CKBOOL hasJoystick = inputManager->IsJoystickAttached(joystickNr);
+
+    // Output 0 = Yes (joystick present), Output 1 = No (joystick not present)
+    beh->ActivateOutput(hasJoystick ? 0 : 1, TRUE);
+    beh->ActivateInput(0, FALSE);
+
     return CKBR_OK;
 }

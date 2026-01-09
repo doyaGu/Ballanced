@@ -7,6 +7,9 @@
 ////////////////////////////////////////
 #include "CKAll.h"
 #include "ToolboxGuids.h"
+#include "MotorSettings.h"
+
+#include <stdio.h>
 
 CKObjectDeclaration *FillBehaviorLoadMotorSettingsDecl();
 CKERROR CreateLoadMotorSettingsProto(CKBehaviorPrototype **pproto);
@@ -52,6 +55,56 @@ CKERROR CreateLoadMotorSettingsProto(CKBehaviorPrototype **pproto)
 int LoadMotorSettings(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
-    // TODO: To be finished.
+    CKContext *ctx = behcontext.Context;
+
+    beh->ActivateInput(0, FALSE);
+
+    // Get the settings file name
+    char fileName[240];
+    beh->GetInputParameterValue(0, fileName);
+
+    FILE *file = fopen(fileName, "rt");
+    if (file)
+    {
+        // Read volume
+        fscanf(file, "Volume:%f\n", &g_MotorVolume);
+
+        // Read channel 1 settings (low speed)
+        fscanf(file, "PitchMax:%f PitchMin:%f vMax:%f vMin:%f vFadeIn:%f vFadeOut:%f\n",
+               &g_MotorChannel1.pitchMax,
+               &g_MotorChannel1.pitchMin,
+               &g_MotorChannel1.vMax,
+               &g_MotorChannel1.vMin,
+               &g_MotorChannel1.vFadeIn,
+               &g_MotorChannel1.vFadeOut);
+
+        // Read channel 2 settings (mid speed)
+        fscanf(file, "PitchMax:%f PitchMin:%f vMax:%f vMin:%f vFadeIn:%f vFadeOut:%f\n",
+               &g_MotorChannel2.pitchMax,
+               &g_MotorChannel2.pitchMin,
+               &g_MotorChannel2.vMax,
+               &g_MotorChannel2.vMin,
+               &g_MotorChannel2.vFadeIn,
+               &g_MotorChannel2.vFadeOut);
+
+        // Read channel 3 settings (high speed)
+        fscanf(file, "PitchMax:%f PitchMin:%f vMax:%f vMin:%f vFadeIn:%f vFadeOut:%f\n",
+               &g_MotorChannel3.pitchMax,
+               &g_MotorChannel3.pitchMin,
+               &g_MotorChannel3.vMax,
+               &g_MotorChannel3.vMin,
+               &g_MotorChannel3.vFadeIn,
+               &g_MotorChannel3.vFadeOut);
+
+        fclose(file);
+        beh->ActivateOutput(0, TRUE);
+    }
+    else
+    {
+        // File not found - show error message
+        ctx->OutputToConsoleExBeep("File Motor.txt nicht gefunden!");
+        beh->ActivateOutput(1, TRUE);
+    }
+
     return CKBR_OK;
 }

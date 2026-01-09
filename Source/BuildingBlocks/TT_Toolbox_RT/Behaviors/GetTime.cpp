@@ -7,6 +7,7 @@
 //////////////////////////////
 #include "CKAll.h"
 #include "ToolboxGuids.h"
+#include "TimeManager.h"
 
 CKObjectDeclaration *FillBehaviorGetTimeDecl();
 CKERROR CreateGetTimeProto(CKBehaviorPrototype **pproto);
@@ -48,6 +49,21 @@ CKERROR CreateGetTimeProto(CKBehaviorPrototype **pproto)
 int GetTime(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
-    // TODO: To be finished.
+    CKContext *context = behcontext.Context;
+
+    TimeManager *timeMan = TimeManager::GetManager(context);
+    float gameTime = 0.0f;
+
+    if (beh->IsInputActive(0))
+    {
+        beh->ActivateInput(0, FALSE);
+        beh->ActivateOutput(0, TRUE);
+    }
+
+    if (timeMan)
+        gameTime = timeMan->Now();
+
+    beh->SetOutputParameterValue(0, &gameTime);
+
     return CKBR_OK;
 }

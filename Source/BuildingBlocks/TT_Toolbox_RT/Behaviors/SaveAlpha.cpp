@@ -50,6 +50,31 @@ CKERROR CreateSaveAlphaProto(CKBehaviorPrototype **pproto)
 int SaveAlpha(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
-    // TODO: To be finished.
+    CKTexture *texture = (CKTexture *)beh->GetTarget();
+    if (!texture)
+        return CKBR_PARAMETERERROR;
+
+    int width = texture->GetWidth();
+    int height = texture->GetHeight();
+
+    // Copy alpha channel to RGB
+    for (int y = 0; y < height; y++)
+    {
+        for (int x = 0; x < width; x++)
+        {
+            CKDWORD pixel = texture->GetPixel(x, y);
+            // Extract alpha and put it in RGB (alpha -> RGB, same value in R, G, B)
+            CKDWORD alpha = (pixel >> 24) & 0xFF;
+            CKDWORD newPixel = (alpha << 16) | (alpha << 8) | alpha;
+            texture->SetPixel(x, y, newPixel);
+        }
+    }
+
+    // Get filename and save
+    CKSTRING filename = (CKSTRING)beh->GetInputParameterReadDataPtr(0);
+    texture->SaveImage(filename, 0);
+
+    beh->ActivateInput(0, FALSE);
+    beh->ActivateOutput(0, TRUE);
     return CKBR_OK;
 }
