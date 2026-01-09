@@ -104,10 +104,18 @@ int ProximityVolumeControl(const CKBehaviorContext &behcontext)
     nearDistance = nearDistance * nearDistance;
     farDistance = farDistance * farDistance;
 
-    if (distance < farDistance)
-        distance = (distance > nearDistance) ? 1.0f - (distance - nearDistance) / (farDistance - nearDistance) : 1.0f;
+    float range = farDistance - nearDistance;
+    if (range > 0.0f)
+    {
+        if (distance < farDistance)
+            distance = (distance > nearDistance) ? 1.0f - (distance - nearDistance) / range : 1.0f;
+        else
+            distance = 0.0f;
+    }
     else
-        distance = 0.0f;
+    {
+        distance = (distance <= nearDistance) ? 1.0f : 0.0f;
+    }
 
     CKWaveSound *sound = (CKWaveSound *)beh->GetInputParameterObject(4);
     if (!sound)

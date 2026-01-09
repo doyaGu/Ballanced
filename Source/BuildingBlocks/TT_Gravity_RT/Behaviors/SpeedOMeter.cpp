@@ -90,7 +90,11 @@ int SpeedOMeter(const CKBehaviorContext &behcontext)
         float maxSpeed = 0.0f;
         beh->GetInputParameterValue(1, &maxSpeed);
 
-        speed = (speed - minSpeed) / (maxSpeed - minSpeed);
+        float range = maxSpeed - minSpeed;
+        if (range != 0.0f)
+            speed = (speed - minSpeed) / range;
+        else
+            speed = 0.0f;
         if (speed > 1.0f)
             speed = 1.0f;
         else if (speed < 0.0f)
@@ -129,7 +133,7 @@ CKERROR SpeedOMeterCallBack(const CKBehaviorContext &behcontext)
             CKDestroyObject(pin);
             pin = beh->RemoveInputParameter(0);
             CKDestroyObject(pin);
-            CKParameterOut *pout = beh->RemoveOutputParameter(0);
+            CKParameterOut *pout = beh->RemoveOutputParameter(1);
             CKDestroyObject(pout);
         }
     }

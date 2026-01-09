@@ -55,6 +55,8 @@ int GetSoundProperties(const CKBehaviorContext &behcontext)
     CKBehavior *beh = behcontext.Behavior;
 
     CKWaveSound *sound = (CKWaveSound *)beh->GetTarget();
+    if (!sound)
+        return CKBR_PARAMETERERROR;
 
     float gain = sound->GetGain();
     float pitch = sound->GetPitch();

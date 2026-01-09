@@ -142,6 +142,7 @@ struct SmallBall
 };
 
 const char *indices[] = {"1", "2", "3", "4", "5", "6", "7", "8", "9"};
+static const int kMaxSmallBallCount = sizeof(indices) / sizeof(indices[0]);
 
 CK3dEntity *GetChildOfTarget(int prefixLength, const char *name, CK3dEntity *target)
 {
@@ -262,6 +263,8 @@ int InitializeExtra(const CKBehaviorContext &behcontext)
     beh->GetInputParameterValue(NUM_SMALLBALLS, &smallBallCount);
     if (smallBallCount <= 0)
         smallBallCount = 1;
+    if (smallBallCount > kMaxSmallBallCount)
+        smallBallCount = kMaxSmallBallCount;
 
     beh->SetLocalParameterValue(BALL_COUNTER, &smallBallCount);
 
@@ -479,6 +482,7 @@ int ExecuteExtraOnIdle(const CKBehaviorContext &behcontext)
         int i = 0;
         for (SmallBall *node = smallBalls; node != NULL; node = node->next)
         {
+            vec.Set(0.0f, 1.0f, 0.0f);
             switch (i++)
             {
             case 0:
@@ -669,6 +673,7 @@ int ExecuteExtraOnHit(const CKBehaviorContext &behcontext)
 
         float collDistance = 2.0f;
         beh->GetInputParameterValue(EXTRA_POINTS_COLLDISTANCE, &collDistance);
+        collDistance *= collDistance;
         if (SquareMagnitude(ballPos - pos) <= collDistance)
         {
             ++activatedBallCount;
@@ -693,18 +698,21 @@ int ExecuteExtraOnHit(const CKBehaviorContext &behcontext)
             node->ball->Show(CKHIDE);
 
             CKGroup *hitFrameGroup = (CKGroup *)beh->GetInputParameterObject(HIT_FRAME_GROUP);
-            CK3dEntity *hitFrame = (CK3dEntity *)hitFrameGroup->GetObject(i);
-            if (hitFrame)
+            if (hitFrameGroup)
             {
-                VxVector position;
-                node->ball->GetPosition(&position);
-                hitFrame->SetPosition(&position);
+                CK3dEntity *hitFrame = (CK3dEntity *)hitFrameGroup->GetObject(i);
+                if (hitFrame)
+                {
+                    VxVector position;
+                    node->ball->GetPosition(&position);
+                    hitFrame->SetPosition(&position);
 
-                CKBehavior *script = hitFrame->GetScript(0);
-                if (script)
-                    scene->Activate(script, TRUE);
-                else
-                    context->OutputToConsoleEx("19Script not found %s", child->GetName());
+                    CKBehavior *script = hitFrame->GetScript(0);
+                    if (script)
+                        scene->Activate(script, TRUE);
+                    else
+                        context->OutputToConsoleEx("19Script not found %s", child->GetName());
+                }
             }
         }
         else
