@@ -239,12 +239,30 @@ int LensFlareRenderCallback(CKRenderContext *dev, void *arg, CKBehavior *beh)
     dev->SetTextureStageState(CKRST_TSS_MAGFILTER, VXTEXTUREFILTER_LINEAR, 0);
 
     // Allocate vertex/index buffers
-    VxDrawPrimitiveData dpData;
-    dpData.VertexCount = flareCount * 4;
+    const int maxVertexCount = flareCount * 4;
+    VxDrawPrimitiveData *dpData = dev->GetDrawPrimitiveStructure(CKRST_DP_TR_CL_VCT, maxVertexCount);
+    if (!dpData)
+        return 1;
+
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
+    VxVector *positions = (VxVector *)dpData->PositionPtr;
+    CKDWORD *colors = (CKDWORD *)dpData->ColorPtr;
+    VxUV *uvs = (VxUV *)dpData->TexCoordPtr;
+#else
+    VxVector *positions = (VxVector *)dpData->Positions.Ptr;
+    CKDWORD *colors = (CKDWORD *)dpData->Colors.Ptr;
+    VxUV *uvs = (VxUV *)dpData->TexCoord.Ptr;
+#endif
 
     CKWORD *indices = new CKWORD[flareCount * 6];
     int indexCount = 0;
     int vertexIndex = 0;
+
+    // Screen center
+    int screenWidth = dev->GetWidth();
+    int screenHeight = dev->GetHeight();
+    float centerX = (float)screenWidth * 0.5f;
+    float centerY = (float)screenHeight * 0.5f;
 
     // Process each flare element
     for (int i = 0; i < flareCount; i++)
@@ -283,22 +301,16 @@ int LensFlareRenderCallback(CKRenderContext *dev, void *arg, CKBehavior *beh)
             continue;
         }
 
-        // Calculate position on flare line
-        float linePosX = e->distance * flareX;
-        float linePosY = e->distance * flareY;
-        float linePosZ = e->distance * flareZ + depth;
-
-        // Transform to screen coordinates
-        float lineLength = depth + depth;
-        float screenFactorX = linePosX * (lineLength / screenPos.z);
-        float screenFactorY = linePosY * (lineLength / screenPos.z);
+        // Position on flare line (0 = screen center, 1 = source)
+        float elemX = centerX + (flareX - centerX) * e->distance;
+        float elemY = centerY + (flareY - centerY) * e->distance;
 
         // Calculate rotation
         float cosRot = 1.0f;
         float sinRot = 0.0f;
         if (e->rotationFactor != 0.0f)
         {
-            float angle = (screenFactorX + screenFactorY) * e->rotationFactor;
+            float angle = (elemX + elemY) * e->rotationFactor;
             cosRot = cosf(angle);
             sinRot = sinf(angle);
         }
@@ -307,13 +319,63 @@ int LensFlareRenderCallback(CKRenderContext *dev, void *arg, CKBehavior *beh)
         float halfWidth = sizeMultiplier.x * e->sizeX;
         float halfHeight = sizeMultiplier.y * e->sizeY;
         
-        float rotW = halfWidth * cosRot;
-        float rotWN = halfWidth * -sinRot;
-        float rotH = halfHeight * sinRot;
-        float rotHC = halfHeight * cosRot;
+        // Resolve UVs (accept either normalized 0..1 or pixel space)
+        float u0 = e->uvLeft;
+        float v0 = e->uvTop;
+        float u1 = e->uvRight;
+        float v1 = e->uvBottom;
 
-        // Build 4 vertices for this quad
-        // ... vertex setup omitted for brevity ...
+        if (u1 <= u0 && v1 <= v0)
+        {
+            u0 = 0.0f;
+            v0 = 0.0f;
+            u1 = 1.0f;
+            v1 = 1.0f;
+        }
+        else if (texture && (u0 > 1.0f || u1 > 1.0f || v0 > 1.0f || v1 > 1.0f))
+        {
+            u0 *= invTexWidth;
+            u1 *= invTexWidth;
+            v0 *= invTexHeight;
+            v1 *= invTexHeight;
+        }
+
+        // Modulate color by intensity
+        VxColor c = e->color;
+        c.r *= e->intensity;
+        c.g *= e->intensity;
+        c.b *= e->intensity;
+        c.a *= e->intensity;
+        CKDWORD packedColor = RGBAFTOCOLOR(&c);
+
+        // Offsets for a rotated quad
+        const float ox[4] = {-halfWidth, halfWidth, halfWidth, -halfWidth};
+        const float oy[4] = {-halfHeight, -halfHeight, halfHeight, halfHeight};
+        const float tu[4] = {u0, u1, u1, u0};
+        const float tv[4] = {v0, v0, v1, v1};
+
+        for (int v = 0; v < 4; ++v)
+        {
+            float rx = ox[v] * cosRot - oy[v] * sinRot;
+            float ry = ox[v] * sinRot + oy[v] * cosRot;
+
+            positions->x = elemX + rx;
+            positions->y = elemY + ry;
+            positions->z = 0.0f;
+            *colors = packedColor;
+            uvs->u = tu[v];
+            uvs->v = tv[v];
+
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
+            positions = (VxVector *)((CKBYTE *)positions + dpData->PositionStride);
+            colors = (CKDWORD *)((CKBYTE *)colors + dpData->ColorStride);
+            uvs = (VxUV *)((CKBYTE *)uvs + dpData->TexCoordStride);
+#else
+            positions = (VxVector *)((CKBYTE *)positions + dpData->Positions.Stride);
+            colors = (CKDWORD *)((CKBYTE *)colors + dpData->Colors.Stride);
+            uvs = (VxUV *)((CKBYTE *)uvs + dpData->TexCoord.Stride);
+#endif
+        }
 
         // Build 2 triangles (6 indices)
         indices[indexCount++] = vertexIndex;
@@ -329,7 +391,8 @@ int LensFlareRenderCallback(CKRenderContext *dev, void *arg, CKBehavior *beh)
     // Draw
     if (indexCount > 0)
     {
-        dev->DrawPrimitive(VX_TRIANGLELIST, indices, indexCount, &dpData);
+        dpData->VertexCount = vertexIndex;
+        dev->DrawPrimitive(VX_TRIANGLELIST, indices, indexCount, dpData);
     }
 
     delete[] indices;
