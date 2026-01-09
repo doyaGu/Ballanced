@@ -41,7 +41,7 @@
 | TT_GetZOrder                    | Completed |           |
 | TT_HighMapMeshform              | Completed |           |
 | TT Homing Missile               | Completed |           |
-| **TT InputString**              | Completed | Need Fix? |
+| **TT InputString**              | Completed |           |
 | TT_IsObjectActive               | Completed |           |
 | TT_IsObjectVisible              | Completed |           |
 | TT_IsScriptActive               | Completed |           |
