@@ -162,7 +162,7 @@ CKERROR RealShadowMappingCallBack(const CKBehaviorContext &behcontext)
         RealShadowStruct *tss = (RealShadowStruct *)beh->GetLocalParameterWriteDataPtr(0);
 
         CKMaterial *mat = (CKMaterial *)ctx->GetObject(tss->matID);
-        if (!mat)
+        if (mat)
             A_Delete_SoftShadow_From_Floors(tss->floor, mat, tss->nb_floors_under);
     }
     break;
@@ -245,7 +245,7 @@ void RealShadowMappingRenderCallBack(CKRenderContext *dev, void *arg)
     CKMesh *dMesh;
     int matChannel;
 
-    for (int a = 0; a < tss->nb_floors_under; a++)
+    for (int a = 0; a < old_nb_floors_under; a++)
     {
         // list of OLD floors
         CKBOOL out = TRUE;
@@ -298,11 +298,9 @@ void RealShadowMappingRenderCallBack(CKRenderContext *dev, void *arg)
 
                 // There were no shadow channel applied to the mesh
                 if (matChannel < 0)
-                {
                     matChannel = dMesh->AddChannel(mat, FALSE);
-                    dMesh->SetChannelSourceBlend(matChannel, VXBLEND_ZERO);
-                    dMesh->SetChannelDestBlend(matChannel, VXBLEND_SRCCOLOR);
-                }
+                dMesh->SetChannelSourceBlend(matChannel, srcBlend);
+                dMesh->SetChannelDestBlend(matChannel, destBlend);
 
                 ////////////////////////////////////////////////////////
                 //  We now change the U,V coords of the shadow channel
@@ -449,7 +447,7 @@ void A_GetFloors(RealShadowStruct *tss, CK3dEntity *ent, CKBehavior *beh)
                 {
                     floor->InverseTransform(&vMax, &vMax);
                     floor->InverseTransform(&vMin, &vMin);
-                    RealShadowFloor &f = tss->floor[n];
+                    RealShadowFloor &f = tss->floor[nbf_under];
                     f.max = vMax;
                     f.min = vMin;
                     f.id = floor->GetID();
