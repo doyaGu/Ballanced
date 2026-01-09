@@ -49,7 +49,7 @@ CKERROR CreateDebugProto(CKBehaviorPrototype **pproto)
     return CK_OK;
 }
 
-void sub_10027870(char *buf, CKBehavior *beh, CKBehavior *ownerScript)
+void BuildBehaviorLocationPath(char *buf, CKBehavior *beh, CKBehavior *ownerScript)
 {
     char v5[256];
     char v6[256];
@@ -91,7 +91,7 @@ int Debug(const CKBehaviorContext &behcontext)
             CKBehavior *ownerScript = beh->GetOwnerScript();
             CKBeObject *owner = beh->GetOwner();
             char buf[256];
-            sub_10027870(buf, beh, ownerScript);
+            BuildBehaviorLocationPath(buf, beh, ownerScript);
 
             if (console)
             {
