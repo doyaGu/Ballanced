@@ -182,7 +182,11 @@ int LensFlareRenderCallback(CKRenderContext *dev, void *arg, CKBehavior *beh)
     int screenWidth = dev->GetWidth();
 
     // Check visibility (screen pick)
+#if CKVERSION == 0x13022002
     CKPICKRESULT pickRes;
+#else
+    VxIntersectionDesc pickRes;
+#endif
     CKRenderObject *picked = dev->Pick((int)screenPos.x, (int)screenPos.y, &pickRes, FALSE);
     CKBOOL visible = (picked == NULL) || (picked == (CKRenderObject *)target);
 
