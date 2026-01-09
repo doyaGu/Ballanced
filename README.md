@@ -15,9 +15,7 @@ The status of the project's main components is as follows:
 | `BuildingBlocks/TT_Gravity_RT.dll`         | Completed         |
 | `BuildingBlocks/TT_InterfaceManager_RT.dll`| Completed         |
 | `BuildingBlocks/TT_ParticleSystems_RT.dll` | Completed         |
-| `BuildingBlocks/TT_Toolbox_RT.dll`         | Completed*        |
-
-_\* Some unused building blocks are not implemented._
+| `BuildingBlocks/TT_Toolbox_RT.dll`         | Completed         |
 
 ## Installation
 
