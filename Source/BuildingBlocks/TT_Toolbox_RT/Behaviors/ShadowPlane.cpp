@@ -118,22 +118,52 @@ int ShadowPlaneRenderCallback(CKRenderContext *dev, CKRenderObject *obj, void *a
     dev->SetTextureStageState(CKRST_TSS_MINFILTER, VXTEXTUREFILTER_LINEAR, 0);
     dev->SetTextureStageState(CKRST_TSS_MAGFILTER, VXTEXTUREFILTER_LINEAR, 0);
 
-    // Create vertex buffer for quad
-    VxDrawPrimitiveData dpData;
-    dpData.VertexCount = 4;
-
     CKWORD indices[4] = {0, 1, 2, 3};
 
-    // Build vertices with positions, colors and UVs
-    // Position data
-    float *positions = (float *)dpData.PositionPtr;
-    // UV data
-    float uvs[8] = {0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, 1.0f};
-    // Color data - white
-    VxColor white(1.0f, 1.0f, 1.0f, 1.0f);
-    CKDWORD color = RGBAFTOCOLOR(&white);
+    // Create and fill vertex buffer for quad (positions + colors + texcoords)
+    VxDrawPrimitiveData *dpData = dev->GetDrawPrimitiveStructure(CKRST_DP_TR_CL_VCT, 4);
+    if (dpData)
+    {
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
+        VxVector *positions = (VxVector *)dpData->PositionPtr;
+        CKDWORD *colors = (CKDWORD *)dpData->ColorPtr;
+        VxUV *uvs = (VxUV *)dpData->TexCoordPtr;
+#else
+        VxVector *positions = (VxVector *)dpData->Positions.Ptr;
+        CKDWORD *colors = (CKDWORD *)dpData->Colors.Ptr;
+        VxUV *uvs = (VxUV *)dpData->TexCoord.Ptr;
+#endif
 
-    dev->DrawPrimitive(VX_TRIANGLEFAN, indices, 4, &dpData);
+        VxColor white(1.0f, 1.0f, 1.0f, 1.0f);
+        CKDWORD color = RGBAFTOCOLOR(&white);
+
+        const VxUV quadUVs[4] = {
+            {0.0f, 0.0f},
+            {1.0f, 0.0f},
+            {1.0f, 1.0f},
+            {0.0f, 1.0f},
+        };
+
+        for (int i = 0; i < 4; ++i)
+        {
+            *positions = data->corners[i];
+            *colors = color;
+            uvs->u = quadUVs[i].u;
+            uvs->v = quadUVs[i].v;
+
+#if CKVERSION == 0x13022002 || CKVERSION == 0x05082002
+            positions = (VxVector *)((CKBYTE *)positions + dpData->PositionStride);
+            colors = (CKDWORD *)((CKBYTE *)colors + dpData->ColorStride);
+            uvs = (VxUV *)((CKBYTE *)uvs + dpData->TexCoordStride);
+#else
+            positions = (VxVector *)((CKBYTE *)positions + dpData->Positions.Stride);
+            colors = (CKDWORD *)((CKBYTE *)colors + dpData->Colors.Stride);
+            uvs = (VxUV *)((CKBYTE *)uvs + dpData->TexCoord.Stride);
+#endif
+        }
+
+        dev->DrawPrimitive(VX_TRIANGLEFAN, indices, 4, dpData);
+    }
 
     // Restore render states
     dev->SetState(VXRENDERSTATE_FOGENABLE, TRUE);
