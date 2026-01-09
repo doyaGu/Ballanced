@@ -21,14 +21,14 @@ CKERROR CreateWriteRegistryProto(CKBehaviorPrototype **pproto);
 int WriteRegistry(const CKBehaviorContext &behcontext);
 CKERROR WriteRegistryCallBack(const CKBehaviorContext &behcontext);
 
-int WriteIntegerToRegistry(const char *subKey, CKBehavior *beh, CKContext *context, int value, const char *valueName);
-int WriteFloatToRegistry(const char *subKey, CKBehavior *beh, CKContext *context, float value, const char *valueName);
-int WriteStringToRegistry(const char *subKey, CKBehavior *beh, CKContext *context, const char *str, const char *valueName);
+static CKBOOL WriteIntegerToRegistry(const char *subKey, CKContext *context, int value, const char *valueName);
+static CKBOOL WriteFloatToRegistry(const char *subKey, CKContext *context, float value, const char *valueName);
+static CKBOOL WriteStringToRegistry(const char *subKey, CKContext *context, const char *str, const char *valueName);
 
 CKObjectDeclaration *FillBehaviorWriteRegistryDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT_WriteRegistry");
-    od->SetDescription("Writes an integer value to the registry");
+    od->SetDescription("Writes a value to the registry");
     od->SetCategory("TT InterfaceManager/Registry");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
     od->SetGuid(CKGUID(0x7aa8084e, 0x1ee229b7));
@@ -74,8 +74,8 @@ int WriteRegistry(const CKBehaviorContext &behcontext)
     BOOL saveArrayMode = false;
     beh->GetLocalParameterValue(0, &saveArrayMode);
 
-    char regSection[200];
-    char regEntry[200];
+    char regSection[200] = {0};
+    char regEntry[200] = {0};
     beh->GetInputParameterValue(0, regSection);
     beh->GetInputParameterValue(1, regEntry);
 
@@ -84,6 +84,12 @@ int WriteRegistry(const CKBehaviorContext &behcontext)
     if (saveArrayMode)
     {
         CKDataArray *array = (CKDataArray *)beh->GetInputParameterObject(2);
+        if (!array)
+        {
+            context->OutputToConsoleExBeep("TT_WriteRegistry: Destination array is NULL");
+            beh->ActivateOutput(1);
+            return CKBR_OK;
+        }
         int cols = array->GetColumnCount();
         int rows = array->GetRowCount();
         strcat(regSection, "\\");
@@ -113,7 +119,11 @@ int WriteRegistry(const CKBehaviorContext &behcontext)
                         strcpy(regEntry, num);
                         int val;
                         array->GetElementValue(i, c, &val);
-                        WriteIntegerToRegistry(regSection, beh, context, val, regEntry);
+                        if (!WriteIntegerToRegistry(regSection, context, val, regEntry))
+                        {
+                            beh->ActivateOutput(1);
+                            return CKBR_OK;
+                        }
                     }
                     break;
 
@@ -123,7 +133,11 @@ int WriteRegistry(const CKBehaviorContext &behcontext)
                         strcpy(regEntry, num);
                         float val;
                         array->GetElementValue(i, c, &val);
-                        WriteFloatToRegistry(regSection, beh, context, val, regEntry);
+                        if (!WriteFloatToRegistry(regSection, context, val, regEntry))
+                        {
+                            beh->ActivateOutput(1);
+                            return CKBR_OK;
+                        }
                     }
                     break;
 
@@ -140,7 +154,11 @@ int WriteRegistry(const CKBehaviorContext &behcontext)
                         strcpy(regEntry, num);
                         int val;
                         array->GetElementValue(i, c, &val);
-                        WriteIntegerToRegistry(regSection, beh, context, val, regEntry);
+                        if (!WriteIntegerToRegistry(regSection, context, val, regEntry))
+                        {
+                            beh->ActivateOutput(1);
+                            return CKBR_OK;
+                        }
                     }
                     break;
                     case CKARRAYTYPE_STRING:
@@ -148,7 +166,11 @@ int WriteRegistry(const CKBehaviorContext &behcontext)
                         _itoa(i, num, 10);
                         strcpy(regEntry, num);
                         array->GetElementStringValue(i, c, buffer);
-                        WriteStringToRegistry(regSection, beh, context, buffer, regEntry);
+                        if (!WriteStringToRegistry(regSection, context, buffer, regEntry))
+                        {
+                            beh->ActivateOutput(1);
+                            return CKBR_OK;
+                        }
                     }
                     default:
                         break;
@@ -164,18 +186,30 @@ int WriteRegistry(const CKBehaviorContext &behcontext)
         {
             int val;
             beh->GetInputParameterValue(3, &val);
-            WriteIntegerToRegistry(regSection, beh, context, val, regEntry);
+            if (!WriteIntegerToRegistry(regSection, context, val, regEntry))
+            {
+                beh->ActivateOutput(1);
+                return CKBR_OK;
+            }
         }
         else if (guid == CKPGUID_FLOAT)
         {
             float val;
             beh->GetInputParameterValue(3, &val);
-            WriteFloatToRegistry(regSection, beh, context, val, regEntry);
+            if (!WriteFloatToRegistry(regSection, context, val, regEntry))
+            {
+                beh->ActivateOutput(1);
+                return CKBR_OK;
+            }
         }
         else if (guid == CKPGUID_STRING)
         {
             beh->GetInputParameterValue(3, buffer);
-            WriteStringToRegistry(regSection, beh, context, buffer, regEntry);
+            if (!WriteStringToRegistry(regSection, context, buffer, regEntry))
+            {
+                beh->ActivateOutput(1);
+                return CKBR_OK;
+            }
         }
     }
 
@@ -202,18 +236,21 @@ CKERROR WriteRegistryCallBack(const CKBehaviorContext &behcontext)
         if (!data)
         {
             sprintf(buffer, "Data");
-            beh->CreateOutputParameter(buffer, CKPGUID_INT);
+            data = beh->CreateInputParameter(buffer, CKPGUID_INT);
         }
 
-        CKGUID guid = data->GetGUID();
-        if (guid != CKPGUID_INT &&
-            guid != CKPGUID_FLOAT &&
-            guid != CKPGUID_BOOL &&
-            guid != CKPGUID_STRING)
+        if (data)
         {
-            sprintf(buffer, "Data");
-            data->SetGUID(CKPGUID_INT, TRUE, buffer);
-            context->OutputToConsoleExBeep("TT_WriteRegistry: ArrayColumnType invalid(use string/bool/int/float)");
+            CKGUID guid = data->GetGUID();
+            if (guid != CKPGUID_INT &&
+                guid != CKPGUID_FLOAT &&
+                guid != CKPGUID_BOOL &&
+                guid != CKPGUID_STRING)
+            {
+                sprintf(buffer, "Data");
+                data->SetGUID(CKPGUID_INT, TRUE, buffer);
+                context->OutputToConsoleExBeep("TT_WriteRegistry: ArrayColumnType invalid(use string/bool/int/float)");
+            }
         }
     }
     default:
@@ -238,68 +275,68 @@ CKERROR WriteRegistryCallBack(const CKBehaviorContext &behcontext)
     return CKBR_OK;
 }
 
-int WriteIntegerToRegistry(const char *subKey, CKBehavior *beh, CKContext *context, int value, const char *valueName)
+static CKBOOL WriteIntegerToRegistry(const char *subKey, CKContext *context, int value, const char *valueName)
 {
-    HKEY hkResult;
+    HKEY hkResult = NULL;
     DWORD dwDisposition;
     if (::RegCreateKeyExA(HKEY_CURRENT_USER, subKey, 0, 0, 0, KEY_ALL_ACCESS, 0, &hkResult, &dwDisposition) != ERROR_SUCCESS)
     {
-        ::RegCloseKey(hkResult);
-        beh->ActivateOutput(1);
-        return CKBR_OK;
+        context->OutputToConsoleExBeep("TT_WriteRegistry: failed to create : HKEY_CURRENT_USER\\%s", subKey);
+        return FALSE;
     }
 
     if (::RegSetValueExA(hkResult, valueName, 0, REG_DWORD, (LPBYTE)&value, sizeof(value)) != ERROR_SUCCESS)
     {
         ::RegCloseKey(hkResult);
-        beh->ActivateOutput(1);
-        return CKBR_OK;
+        context->OutputToConsoleExBeep("TT_WriteRegistry: failed to set : %s.", valueName);
+        return FALSE;
     }
 
     ::RegCloseKey(hkResult);
-    return CKBR_OK;
+    return TRUE;
 }
 
-int WriteFloatToRegistry(const char *subKey, CKBehavior *beh, CKContext *context, float value, const char *valueName)
+static CKBOOL WriteFloatToRegistry(const char *subKey, CKContext *context, float value, const char *valueName)
 {
-    HKEY hkResult;
+    HKEY hkResult = NULL;
     DWORD dwDisposition;
     if (::RegCreateKeyExA(HKEY_CURRENT_USER, subKey, 0, 0, 0, KEY_ALL_ACCESS, 0, &hkResult, &dwDisposition) != ERROR_SUCCESS)
     {
-        ::RegCloseKey(hkResult);
-        beh->ActivateOutput(1);
-        return CKBR_OK;
+        context->OutputToConsoleExBeep("TT_WriteRegistry: failed to create : HKEY_CURRENT_USER\\%s", subKey);
+        return FALSE;
     }
 
     if (::RegSetValueExA(hkResult, valueName, 0, REG_DWORD, (LPBYTE)&value, sizeof(value)) != ERROR_SUCCESS)
     {
         ::RegCloseKey(hkResult);
-        beh->ActivateOutput(1);
-        return CKBR_OK;
+        context->OutputToConsoleExBeep("TT_WriteRegistry: failed to set : %s.", valueName);
+        return FALSE;
     }
 
     ::RegCloseKey(hkResult);
-    return CKBR_OK;
+    return TRUE;
 }
 
-int WriteStringToRegistry(const char *subKey, CKBehavior *beh, CKContext *context, const char *str, const char *valueName)
+static CKBOOL WriteStringToRegistry(const char *subKey, CKContext *context, const char *str, const char *valueName)
 {
-    HKEY hkResult;
+    if (!str)
+        str = "";
+
+    HKEY hkResult = NULL;
     DWORD dwDisposition;
     if (::RegCreateKeyExA(HKEY_CURRENT_USER, subKey, 0, 0, 0, KEY_ALL_ACCESS, 0, &hkResult, &dwDisposition) != ERROR_SUCCESS)
     {
-        ::RegCloseKey(hkResult);
-        beh->ActivateOutput(1);
-        return CKBR_OK;
+        context->OutputToConsoleExBeep("TT_WriteRegistry: failed to create : HKEY_CURRENT_USER\\%s", subKey);
+        return FALSE;
     }
 
-    if (::RegSetValueExA(hkResult, valueName, 0, REG_SZ, (LPBYTE)str, strlen(str)) != ERROR_SUCCESS)
+    if (::RegSetValueExA(hkResult, valueName, 0, REG_SZ, (LPBYTE)str, (DWORD)strlen(str) + 1) != ERROR_SUCCESS)
     {
         ::RegCloseKey(hkResult);
-        beh->ActivateOutput(1);
-        return CKBR_OK;
+        context->OutputToConsoleExBeep("TT_WriteRegistry: failed to set : %s.", valueName);
+        return FALSE;
     }
 
     ::RegCloseKey(hkResult);
-    return CKBR_OK;
+    return TRUE;
 }
