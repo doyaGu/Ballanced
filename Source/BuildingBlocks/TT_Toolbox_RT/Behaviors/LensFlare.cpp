@@ -178,8 +178,11 @@ int LensFlareRenderCallback(CKRenderContext *dev, void *arg, CKBehavior *beh)
     float flareY = screenPos.y;
     float flareZ = screenPos.z - depth;
 
-    // Get screen center
+    // Get screen size / center
     int screenWidth = dev->GetWidth();
+    int screenHeight = dev->GetHeight();
+    float centerX = (float)screenWidth * 0.5f;
+    float centerY = (float)screenHeight * 0.5f;
 
     // Check visibility (screen pick)
 #if CKVERSION == 0x13022002
@@ -257,12 +260,6 @@ int LensFlareRenderCallback(CKRenderContext *dev, void *arg, CKBehavior *beh)
     CKWORD *indices = new CKWORD[flareCount * 6];
     int indexCount = 0;
     int vertexIndex = 0;
-
-    // Screen center
-    int screenWidth = dev->GetWidth();
-    int screenHeight = dev->GetHeight();
-    float centerX = (float)screenWidth * 0.5f;
-    float centerY = (float)screenHeight * 0.5f;
 
     // Process each flare element
     for (int i = 0; i < flareCount; i++)
