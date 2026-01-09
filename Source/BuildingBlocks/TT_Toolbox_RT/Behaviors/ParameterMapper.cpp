@@ -55,13 +55,59 @@ CKERROR CreateParameterMapperProto(CKBehaviorPrototype **pproto)
 int ParameterMapper(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
-    // TODO: To be finished.
+
+    int inputCount = beh->GetInputCount();
+    int outputCount = beh->GetOutputCount();
+
+    for (int i = 0; i < inputCount; i++)
+    {
+        if (beh->IsInputActive(i))
+        {
+            beh->ActivateInput(i, FALSE);
+
+            int paramValue = 0;
+            beh->GetInputParameterValue(i, &paramValue);
+
+            // Route to corresponding output: paramValue + 1 (since 0 is NONE)
+            if (paramValue < 0 || paramValue >= outputCount - 1)
+            {
+                // Invalid or out of range -> NONE output
+                beh->ActivateOutput(0, TRUE);
+            }
+            else
+            {
+                beh->ActivateOutput(paramValue + 1, TRUE);
+            }
+        }
+    }
+
     return CKBR_OK;
 }
 
 CKERROR ParameterMapperCallBack(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
-    // TODO: To be finished.
+
+    if (behcontext.CallbackMessage == CKM_BEHAVIOREDITED)
+    {
+        int inputCount = beh->GetInputCount();
+        int paramCount = beh->GetInputParameterCount();
+
+        // Sync input parameter count with input count
+        while (inputCount > paramCount)
+        {
+            char buffer[32];
+            sprintf(buffer, "pIn %d", paramCount);
+            beh->CreateInputParameter(buffer, CKPGUID_INT);
+            paramCount++;
+        }
+
+        while (paramCount > inputCount)
+        {
+            CKParameterIn *param = beh->RemoveInputParameter(--paramCount);
+            CKDestroyObject(param);
+        }
+    }
+
     return CKBR_OK;
 }

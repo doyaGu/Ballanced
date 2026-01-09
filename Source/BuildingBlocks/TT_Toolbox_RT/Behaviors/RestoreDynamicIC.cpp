@@ -47,9 +47,97 @@ CKERROR CreateRestoreDynamicICProto(CKBehaviorPrototype **pproto)
     return CK_OK;
 }
 
+// Helper to check if an entity type is a 3D entity or derived
+static CKBOOL Is3DEntityClass(CK3dEntity *entity)
+{
+    CK_CLASSID classId = entity->GetClassID();
+    return (classId == CKCID_3DENTITY ||
+            classId == CKCID_CAMERA ||
+            classId == CKCID_TARGETCAMERA ||
+            classId == CKCID_CURVEPOINT ||
+            classId == CKCID_SPRITE3D ||
+            classId == CKCID_LIGHT ||
+            classId == CKCID_TARGETLIGHT ||
+            classId == CKCID_CHARACTER ||
+            classId == CKCID_3DOBJECT ||
+            classId == CKCID_BODYPART ||
+            classId == CKCID_CURVE);
+}
+
+// Helper to restore a single entity's IC
+static void RestoreEntityIC(CK3dEntity *entity, CKScene *scene)
+{
+    if (!entity->IsInScene(scene))
+        return;
+
+    CKStateChunk *chunk = scene->GetObjectInitialValue(entity);
+    if (!chunk)
+        return;
+
+    CKDWORD flags = entity->GetObjectFlags();
+    CKBOOL wasDynamic = (flags & CK_OBJECT_DYNAMIC) && (flags & CK_OBJECT_HIERACHICALHIDE);
+
+    if (wasDynamic)
+    {
+        // Clear dynamic flags temporarily
+        entity->ModifyObjectFlags(0, CK_OBJECT_DYNAMIC | CK_OBJECT_HIERACHICALHIDE);
+
+        // Preserve current mesh
+        CKMesh *currentMesh = NULL;
+        if (Is3DEntityClass(entity))
+            currentMesh = entity->GetCurrentMesh();
+
+        // Restore IC
+        CKReadObjectState(entity, chunk);
+
+        // Restore flags
+        entity->ModifyObjectFlags(CK_OBJECT_DYNAMIC | CK_OBJECT_HIERACHICALHIDE, 0);
+
+        // Restore mesh if it was changed
+        if (currentMesh)
+            entity->SetCurrentMesh(currentMesh, TRUE);
+    }
+    else
+    {
+        CKReadObjectState(entity, chunk);
+    }
+}
+
 int RestoreDynamicIC(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
-    // TODO: To be finished.
+
+    beh->ActivateInput(0, FALSE);
+    beh->ActivateOutput(0, TRUE);
+
+    CK3dEntity *entity = (CK3dEntity *)beh->GetTarget();
+    if (!entity)
+        return CKBR_OWNERERROR;
+
+    CKScene *scene = behcontext.CurrentScene;
+    if (!scene)
+        return CKBR_GENERICERROR;
+
+    // Restore the main entity
+    RestoreEntityIC(entity, scene);
+
+    // Handle hierarchy if requested
+    if (Is3DEntityClass(entity))
+    {
+        CKBOOL hierarchy = FALSE;
+        beh->GetInputParameterValue(0, &hierarchy);
+
+        if (hierarchy)
+        {
+            int childCount = entity->GetChildrenCount();
+            CK3dEntity *child = NULL;
+            while ((child = entity->HierarchyParser(child)) != NULL)
+            {
+                RestoreEntityIC(child, scene);
+                child->SetParent(entity, TRUE);
+            }
+        }
+    }
+
     return CKBR_OK;
 }

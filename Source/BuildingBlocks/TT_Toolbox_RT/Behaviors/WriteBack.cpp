@@ -51,6 +51,34 @@ CKERROR CreateWriteBackProto(CKBehaviorPrototype **pproto)
 int WriteBack(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
-    // TODO: To be finished.
+
+    CKParameterIn *paramIn = beh->GetInputParameter(0);
+    CKParameterIn *valueIn = beh->GetInputParameter(1);
+
+    if (paramIn)
+    {
+        // Treat shared inputs as shortcuts (not directly writable).
+        if (!paramIn->GetSharedSource())
+        {
+            CKParameter *destParam = paramIn->GetDirectSource();
+            if (destParam)
+            {
+                CKParameter *srcParam = valueIn ? valueIn->GetRealSource() : NULL;
+
+                if (srcParam && destParam->IsCompatibleWith(srcParam) && srcParam->IsCompatibleWith(destParam))
+                {
+                    void *data = srcParam->GetReadDataPtr(TRUE);
+                    int dataSize = srcParam->GetDataSize();
+                    if (dataSize <= 0)
+                        dataSize = destParam->GetDataSize();
+                    if (data && dataSize > 0)
+                        destParam->SetValue(data, dataSize);
+                }
+            }
+        }
+    }
+
+    beh->ActivateInput(0, FALSE);
+    beh->ActivateOutput(0, TRUE);
     return CKBR_OK;
 }

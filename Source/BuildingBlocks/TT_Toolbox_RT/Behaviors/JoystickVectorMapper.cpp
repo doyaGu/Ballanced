@@ -54,6 +54,144 @@ CKERROR CreateJoystickVectorMapperProto(CKBehaviorPrototype **pproto)
 int JoystickVectorMapper(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
-    // TODO: To be finished.
+
+    VxVector inVector(0.0f, 0.0f, 0.0f);
+    VxVector outVector(0.0f, 0.0f, 0.0f);
+    int unused = 0;
+
+    beh->GetInputParameterValue(0, &inVector);
+
+    int jxPlus = 0;
+    beh->GetInputParameterValue(1, &jxPlus);
+
+    int jxMinus = 0;
+    beh->GetInputParameterValue(2, &jxMinus);
+
+    int jyPlus = 0;
+    beh->GetInputParameterValue(3, &jyPlus);
+
+    int jyMinus = 0;
+    beh->GetInputParameterValue(4, &jyMinus);
+
+    // Map JX+ to output X positive
+    switch (jxPlus)
+    {
+    case 0: // X+
+        if (inVector.x >= 0.0f)
+            outVector.x = inVector.x;
+        break;
+    case 1: // X-
+        if (inVector.x < 0.0f)
+            outVector.x = -inVector.x;
+        break;
+    case 2: // Y+
+        if (inVector.y >= 0.0f)
+            outVector.x = inVector.y;
+        break;
+    case 3: // Y-
+        if (inVector.y < 0.0f)
+            outVector.x = -inVector.y;
+        break;
+    case 4: // Z+
+        if (inVector.z >= 0.0f)
+            outVector.x = inVector.z;
+        break;
+    case 5: // Z-
+        if (inVector.z < 0.0f)
+            outVector.x = -inVector.z;
+        break;
+    }
+
+    // Map JX- to output X negative
+    switch (jxMinus)
+    {
+    case 0: // X+
+        if (inVector.x >= 0.0f)
+            outVector.x = -inVector.x;
+        break;
+    case 1: // X-
+        if (inVector.x < 0.0f)
+            outVector.x = inVector.x;
+        break;
+    case 2: // Y+
+        if (inVector.y >= 0.0f)
+            outVector.x = -inVector.y;
+        break;
+    case 3: // Y-
+        if (inVector.y < 0.0f)
+            outVector.x = inVector.y;
+        break;
+    case 4: // Z+
+        if (inVector.z >= 0.0f)
+            outVector.x = -inVector.z;
+        break;
+    case 5: // Z-
+        if (inVector.z < 0.0f)
+            outVector.x = inVector.z;
+        break;
+    }
+
+    // Map JY+ to output Y positive
+    switch (jyPlus)
+    {
+    case 0: // X+
+        if (inVector.x >= 0.0f)
+            outVector.y = inVector.x;
+        break;
+    case 1: // X-
+        if (inVector.x < 0.0f)
+            outVector.y = -inVector.x;
+        break;
+    case 2: // Y+
+        if (inVector.y >= 0.0f)
+            outVector.y = inVector.y;
+        break;
+    case 3: // Y-
+        if (inVector.y < 0.0f)
+            outVector.y = -inVector.y;
+        break;
+    case 4: // Z+
+        if (inVector.z >= 0.0f)
+            outVector.y = inVector.z;
+        break;
+    case 5: // Z-
+        if (inVector.z < 0.0f)
+            outVector.y = -inVector.z;
+        break;
+    }
+
+    // Map JY- to output Y negative
+    switch (jyMinus)
+    {
+    case 0: // X+
+        if (inVector.x >= 0.0f)
+            outVector.y = -inVector.x;
+        break;
+    case 1: // X-
+        if (inVector.x < 0.0f)
+            outVector.y = inVector.x;
+        break;
+    case 2: // Y+
+        if (inVector.y >= 0.0f)
+            outVector.y = -inVector.y;
+        break;
+    case 3: // Y-
+        if (inVector.y < 0.0f)
+            outVector.y = inVector.y;
+        break;
+    case 4: // Z+
+        if (inVector.z >= 0.0f)
+            outVector.y = -inVector.z;
+        break;
+    case 5: // Z-
+        if (inVector.z < 0.0f)
+            outVector.y = inVector.z;
+        break;
+    }
+
+    beh->SetOutputParameterValue(0, &outVector);
+    beh->ActivateInput(0, FALSE);
+    beh->ActivateOutput(0, TRUE);
+
     return CKBR_OK;
 }

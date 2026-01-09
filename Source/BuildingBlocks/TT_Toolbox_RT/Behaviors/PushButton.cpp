@@ -59,6 +59,135 @@ CKERROR CreatePushButtonProto(CKBehaviorPrototype **pproto)
 int PushButton(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
-    // TODO: To be finished.
-    return CKBR_OK;
+    CKContext *ctx = behcontext.Context;
+
+    CK2dEntity *target = (CK2dEntity *)beh->GetTarget();
+    if (!target)
+        return CKBR_ACTIVATENEXTFRAME;
+
+    // Handle On input
+    if (beh->IsInputActive(0))
+    {
+        beh->ActivateInput(0, FALSE);
+        int state = 0;
+        beh->SetLocalParameterValue(0, &state);
+        CKBOOL mouseDown = FALSE;
+        beh->SetLocalParameterValue(1, &mouseDown);
+    }
+
+    // Handle Off input
+    if (beh->IsInputActive(1))
+    {
+        beh->ActivateInput(1, FALSE);
+        return CKBR_OK;
+    }
+
+    // Get input manager
+    CKInputManager *inputManager = (CKInputManager *)ctx->GetManagerByGuid(INPUT_MANAGER_GUID);
+    if (!inputManager)
+        return CKBR_ACTIVATENEXTFRAME;
+
+    // Get render context
+    CKRenderContext *renderCtx = ctx->GetPlayerRenderContext();
+    if (!renderCtx)
+        return CKBR_ACTIVATENEXTFRAME;
+
+    int lastState = 0;
+    int newState = 0;
+    CKBOOL mouseDown = FALSE;
+    int wasMouseDown = 0;
+    CKBOOL mouseStateChanged = FALSE;
+
+    // Get mouse position
+    Vx2DVector mousePos;
+    inputManager->GetMousePosition(mousePos, FALSE);
+
+    // Get window rect and adjust mouse position
+    VxRect windowRect;
+    renderCtx->GetWindowRect(windowRect);
+    mousePos.x += windowRect.left;
+    mousePos.y += windowRect.top;
+
+    // Pick under mouse
+    CKRenderObject *pickedObject = renderCtx->Pick2D(mousePos);
+
+    // Check if mouse is over target
+    int isOver = 0;
+    if ((CK2dEntity *)pickedObject == target)
+        isOver = 1;
+
+    // Check mouse button state
+    mouseDown = inputManager->IsMouseButtonDown(CK_MOUSEBUTTON_LEFT);
+
+    // Get previous states
+    beh->GetLocalParameterValue(0, &lastState);
+    beh->GetLocalParameterValue(1, &wasMouseDown);
+
+    // Update over state
+    if (isOver)
+        newState |= 1;
+
+    // Track mouse button state changes
+    if (mouseDown)
+    {
+        if (!wasMouseDown)
+        {
+            wasMouseDown = 1;
+            beh->SetLocalParameterValue(1, &wasMouseDown);
+            mouseStateChanged = TRUE;
+        }
+    }
+    else
+    {
+        if (wasMouseDown)
+        {
+            wasMouseDown = 0;
+            beh->SetLocalParameterValue(1, &wasMouseDown);
+            mouseStateChanged = TRUE;
+        }
+    }
+
+    // Check for state changes
+    if (newState != lastState)
+    {
+        beh->SetLocalParameterValue(0, &newState);
+
+        // Was over, now not over - Released
+        if ((lastState & 1) && !(newState & 1))
+        {
+            CKMaterial *releasedMat = (CKMaterial *)beh->GetInputParameterObject(0);
+            target->SetMaterial(releasedMat);
+            beh->ActivateOutput(0, TRUE);
+        }
+
+        // Was not over, now over - Roll Over
+        if (!(lastState & 1) && (newState & 1))
+        {
+            CKMaterial *rollOverMat = (CKMaterial *)beh->GetInputParameterObject(2);
+            target->SetMaterial(rollOverMat);
+            beh->ActivateOutput(1, TRUE);
+        }
+    }
+
+    // Check for mouse button events while over the button
+    if (mouseStateChanged && newState == 1)
+    {
+        if (mouseDown)
+        {
+            // Mouse down
+            CKMaterial *pressedMat = (CKMaterial *)beh->GetInputParameterObject(1);
+            target->SetMaterial(pressedMat);
+            beh->ActivateOutput(2, TRUE);
+            return CKBR_ACTIVATENEXTFRAME;
+        }
+        else
+        {
+            // Mouse up
+            CKMaterial *rollOverMat = (CKMaterial *)beh->GetInputParameterObject(2);
+            target->SetMaterial(rollOverMat);
+            beh->ActivateOutput(3, TRUE);
+        }
+    }
+
+    return CKBR_ACTIVATENEXTFRAME;
 }

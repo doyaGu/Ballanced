@@ -49,9 +49,43 @@ CKERROR CreateChronoProto(CKBehaviorPrototype **pproto)
     return CK_OK;
 }
 
+static CKBOOL chronoOn = FALSE;
+
 int Chrono(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
-    // TODO: To be finished.
-    return CKBR_OK;
+    float elapsed = 0.0f;
+
+    if (beh->IsInputActive(0))
+    {
+        beh->ActivateInput(0, FALSE);
+        beh->ActivateOutput(0, TRUE);
+        if (chronoOn)
+        {
+            chronoOn = FALSE;
+            return CKBR_ACTIVATENEXTFRAME;
+        }
+        beh->SetOutputParameterValue(0, &elapsed);
+    }
+
+    if (beh->IsInputActive(2))
+    {
+        beh->ActivateInput(2, FALSE);
+        beh->ActivateOutput(2, TRUE);
+        return CKBR_OK;
+    }
+
+    if (beh->IsInputActive(1))
+    {
+        beh->ActivateInput(1, FALSE);
+        beh->ActivateOutput(1, TRUE);
+        chronoOn = TRUE;
+        return CKBR_OK;
+    }
+
+    beh->GetOutputParameterValue(0, &elapsed);
+    elapsed += behcontext.DeltaTime;
+    beh->SetOutputParameterValue(0, &elapsed);
+
+    return CKBR_ACTIVATENEXTFRAME;
 }

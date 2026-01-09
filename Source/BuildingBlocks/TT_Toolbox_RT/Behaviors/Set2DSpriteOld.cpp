@@ -57,13 +57,92 @@ CKERROR CreateSet2DSpriteOldProto(CKBehaviorPrototype **pproto)
 int Set2DSpriteOld(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
-    // TODO: To be finished.
+
+    if (beh->IsInputActive(0))
+    {
+        beh->ActivateInput(0, FALSE);
+        beh->ActivateOutput(0, TRUE);
+    }
+
+    CK2dEntity *target = (CK2dEntity *)beh->GetTarget();
+    if (!target)
+        return CKBR_PARAMETERERROR;
+
+    // Get settings flags (what inputs to use)
+    int flags = 0;
+    beh->GetLocalParameterValue(0, &flags);
+
+    int paramIndex = 0;
+
+    Vx2DVector position;
+    position.x = 0.0f;
+    position.y = 0.0f;
+
+    // Check if Position input is enabled (flag 4)
+    if (flags >= 4)
+    {
+        flags -= 4;
+        beh->GetInputParameterValue(paramIndex++, &position);
+    }
+    else
+    {
+        // Use current position
+        target->GetPosition(position, TRUE);
+    }
+
+    Vx2DVector size;
+    size.x = 0.0f;
+    size.y = 0.0f;
+
+    // Check if Size input is enabled (flag 2)
+    if (flags >= 2)
+    {
+        flags -= 2;
+        beh->GetInputParameterValue(paramIndex++, &size);
+    }
+    else
+    {
+        // Use current size
+        target->GetSize(size, TRUE);
+    }
+
+    // Check if UV-Mapping is enabled (flag 1)
+    if (flags >= 1)
+    {
+        VxRect uvRect;
+        uvRect.left = 0;
+        uvRect.top = 0;
+        uvRect.right = 0;
+        uvRect.bottom = 0;
+
+        Vx2DVector uvLR, uvTB;
+        beh->GetInputParameterValue(paramIndex, &uvLR);
+        uvRect.left = uvLR.x;
+        uvRect.right = uvLR.y;
+
+        beh->GetInputParameterValue(paramIndex + 1, &uvTB);
+        uvRect.top = uvTB.x;
+        uvRect.bottom = uvTB.y;
+
+        target->SetSourceRect(uvRect);
+    }
+
+    // Set rect (position + size)
+    VxRect rect;
+    rect.left = position.x;
+    rect.top = position.y;
+    rect.right = position.x + size.x;
+    rect.bottom = position.y + size.y;
+
+    target->SetHomogeneousCoordinates(TRUE);
+    target->SetRect(rect);
+
     return CKBR_OK;
 }
 
 CKERROR Set2DSpriteOldCallBack(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
-    // TODO: To be finished.
+    // Callback not used in this implementation
     return CKBR_OK;
 }

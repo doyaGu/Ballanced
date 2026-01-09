@@ -55,13 +55,66 @@ CKERROR CreateViewFrustumClippingProto(CKBehaviorPrototype **pproto)
 int ViewFrustumClipping(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
-    // TODO: To be finished.
-    return CKBR_OK;
+    CKContext *ctx = behcontext.Context;
+    CKRenderContext *rc = behcontext.CurrentRenderContext;
+
+    if (beh->IsInputActive(0))
+    {
+        beh->ActivateInput(0, FALSE);
+        beh->ActivateOutput(0, TRUE);
+    }
+
+    CKCamera *camera = (CKCamera *)beh->GetInputParameterObject(0);
+    CKScene *scene = ctx->GetCurrentScene();
+
+    // Save current camera
+    CKCamera *prevCamera = rc->GetAttachedCamera();
+
+    // Attach custom camera if provided
+    if (camera)
+        rc->AttachViewpointToCamera(camera);
+
+    // Trigger scene draw to calculate visibility
+    rc->DrawScene(CK_RENDER_USECURRENTSETTINGS);
+
+    // Iterate through scene objects
+    XObjectPointerArray objectArray = scene->ComputeObjectList(CKCID_3DENTITY);
+    for (CKObject **it = objectArray.Begin(); it != objectArray.End(); ++it)
+    {
+        CK3dEntity *entity = (CK3dEntity *)*it;
+        if (entity)
+        {
+            // Check if entity is in view frustum
+            if (entity->IsInViewFrustrum(rc, 0xFF))
+                entity->Show(CKSHOW);
+            else
+                entity->Show(CKHIDE);
+        }
+    }
+
+    // Restore original camera
+    rc->AttachViewpointToCamera(prevCamera);
+
+    return CKBR_ACTIVATENEXTFRAME;
 }
 
 CKERROR ViewFrustumClippingCallBack(const CKBehaviorContext &behcontext)
 {
     CKBehavior *beh = behcontext.Behavior;
-    // TODO: To be finished.
+    CKContext *ctx = behcontext.Context;
+
+    if (behcontext.CallbackMessage == CKM_BEHAVIORPAUSE)
+    {
+        // Show all hidden objects when pausing
+        CKScene *scene = ctx->GetCurrentScene();
+        XObjectPointerArray objectArray = scene->ComputeObjectList(CKCID_3DENTITY);
+        for (CKObject **it = objectArray.Begin(); it != objectArray.End(); ++it)
+        {
+            CK3dEntity *entity = (CK3dEntity *)*it;
+            if (entity)
+                entity->Show(CKSHOW);
+        }
+    }
+
     return CKBR_OK;
 }
