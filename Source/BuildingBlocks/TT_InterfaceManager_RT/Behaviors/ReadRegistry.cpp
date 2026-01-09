@@ -21,14 +21,14 @@ CKERROR CreateReadRegistryProto(CKBehaviorPrototype **pproto);
 int ReadRegistry(const CKBehaviorContext &behcontext);
 CKERROR ReadRegistryCallBack(const CKBehaviorContext &behcontext);
 
-int ReadIntegerFromRegistry(const char *subKey, CKBehavior *beh, CKContext *context, const char *valueName);
-float ReadFloatFromRegistry(const char *subKey, CKBehavior *beh, CKContext *context, const char *valueName);
-char *ReadStringFromRegistry(const char *subKey, CKBehavior *beh, CKContext *context, const char *valueName);
+static CKBOOL ReadIntegerFromRegistry(const char *subKey, CKContext *context, const char *valueName, int *value);
+static CKBOOL ReadFloatFromRegistry(const char *subKey, CKContext *context, const char *valueName, float *value);
+static CKBOOL ReadStringFromRegistry(const char *subKey, CKContext *context, const char *valueName, char *buffer, DWORD bufferSize);
 
 CKObjectDeclaration *FillBehaviorReadRegistryDecl()
 {
     CKObjectDeclaration *od = CreateCKObjectDeclaration("TT_ReadRegistry");
-    od->SetDescription("Writes an integer value to the registry");
+    od->SetDescription("Reads a value from the registry");
     od->SetCategory("TT InterfaceManager/Registry");
     od->SetType(CKDLL_BEHAVIORPROTOTYPE);
     od->SetGuid(CKGUID(0x460044b5, 0x6e927b66));
@@ -77,9 +77,9 @@ int ReadRegistry(const CKBehaviorContext &behcontext)
     BOOL saveArrayMode = false;
     beh->GetLocalParameterValue(0, &saveArrayMode);
 
-    char regSection[200];
-    char regEntry[64];
-    char arrayToLoad[64];
+    char regSection[200] = {0};
+    char regEntry[64] = {0};
+    char arrayToLoad[64] = {0};
     beh->GetInputParameterValue(0, regSection);
 
     if (saveArrayMode)
@@ -90,10 +90,23 @@ int ReadRegistry(const CKBehaviorContext &behcontext)
     if (saveArrayMode)
     {
         CKDataArray *array = (CKDataArray *)beh->GetInputParameterObject(2);
+        if (!array)
+        {
+            context->OutputToConsoleExBeep("TT_ReadRegistry: Destination array is NULL");
+            beh->ActivateOutput(1);
+            return CKBR_OK;
+        }
         int cols = array->GetColumnCount();
         int rows = array->GetRowCount();
+        const char *arrayName = (arrayToLoad[0] != '\0') ? arrayToLoad : array->GetName();
+        if (!arrayName || arrayName[0] == '\0')
+        {
+            context->OutputToConsoleExBeep("TT_ReadRegistry: Array name is empty");
+            beh->ActivateOutput(1);
+            return CKBR_OK;
+        }
         strcat(regSection, "\\");
-        strcat(regSection, array->GetName());
+        strcat(regSection, arrayName);
         strcat(regSection, "\\");
 
         char buffer[200];
@@ -118,8 +131,13 @@ int ReadRegistry(const CKBehaviorContext &behcontext)
                     {
                         _itoa(i, num, 10);
                         strcpy(regEntry, num);
-                        int val = ReadIntegerFromRegistry(regSection, beh, context, regEntry);
-                        array->SetElementValue(i, c, &val);
+                        int val = 0;
+                        if (!ReadIntegerFromRegistry(regSection, context, regEntry, &val))
+                        {
+                            beh->ActivateOutput(1);
+                            return CKBR_OK;
+                        }
+                        array->SetElementValue(i, c, &val, sizeof(val));
                     }
                     break;
 
@@ -127,8 +145,13 @@ int ReadRegistry(const CKBehaviorContext &behcontext)
                     {
                         _itoa(i, num, 10);
                         strcpy(regEntry, num);
-                        float val = ReadFloatFromRegistry(regSection, beh, context, regEntry);
-                        array->SetElementValue(i, c, &val);
+                        float val = 0.0f;
+                        if (!ReadFloatFromRegistry(regSection, context, regEntry, &val))
+                        {
+                            beh->ActivateOutput(1);
+                            return CKBR_OK;
+                        }
+                        array->SetElementValue(i, c, &val, sizeof(val));
                     }
                     break;
 
@@ -143,16 +166,26 @@ int ReadRegistry(const CKBehaviorContext &behcontext)
                         }
                         _itoa(i, num, 10);
                         strcpy(regEntry, num);
-                        int val = ReadIntegerFromRegistry(regSection, beh, context, regEntry);
-                        array->SetElementValue(i, c, &val);
+                        int val = 0;
+                        if (!ReadIntegerFromRegistry(regSection, context, regEntry, &val))
+                        {
+                            beh->ActivateOutput(1);
+                            return CKBR_OK;
+                        }
+                        array->SetElementValue(i, c, &val, sizeof(val));
                     }
                     break;
                     case CKARRAYTYPE_STRING:
                     {
                         _itoa(i, num, 10);
                         strcpy(regEntry, num);
-                        char *str = ReadStringFromRegistry(regSection, beh, context, regEntry);
-                        array->SetElementValue(i, c, str);
+                        char str[256] = {0};
+                        if (!ReadStringFromRegistry(regSection, context, regEntry, str, sizeof(str)))
+                        {
+                            beh->ActivateOutput(1);
+                            return CKBR_OK;
+                        }
+                        array->SetElementStringValue(i, c, str);
                     }
                     default:
                         break;
@@ -166,18 +199,33 @@ int ReadRegistry(const CKBehaviorContext &behcontext)
         CKGUID guid = beh->GetOutputParameter(0)->GetGUID();
         if (guid == CKPGUID_INT || guid == CKPGUID_BOOL)
         {
-            int val = ReadIntegerFromRegistry(regSection, beh, context, regEntry);
+            int val = 0;
+            if (!ReadIntegerFromRegistry(regSection, context, regEntry, &val))
+            {
+                beh->ActivateOutput(1);
+                return CKBR_OK;
+            }
             beh->SetOutputParameterValue(0, &val);
         }
         else if (guid == CKPGUID_FLOAT)
         {
-            float val = ReadFloatFromRegistry(regSection, beh, context, regEntry);
+            float val = 0.0f;
+            if (!ReadFloatFromRegistry(regSection, context, regEntry, &val))
+            {
+                beh->ActivateOutput(1);
+                return CKBR_OK;
+            }
             beh->SetOutputParameterValue(0, &val);
         }
         else if (guid == CKPGUID_STRING)
         {
-            char *str = ReadStringFromRegistry(regSection, beh, context, regEntry);
-            beh->SetOutputParameterValue(0, str, 256);
+            char str[256] = {0};
+            if (!ReadStringFromRegistry(regSection, context, regEntry, str, sizeof(str)))
+            {
+                beh->ActivateOutput(1);
+                return CKBR_OK;
+            }
+            beh->SetOutputParameterValue(0, str, (int)strlen(str) + 1);
         }
     }
 
@@ -204,21 +252,27 @@ CKERROR ReadRegistryCallBack(const CKBehaviorContext &behcontext)
         if (!data)
         {
             sprintf(buffer, "Data");
-            beh->CreateOutputParameter(buffer, CKPGUID_INT);
+            data = beh->CreateOutputParameter(buffer, CKPGUID_INT);
         }
 
-        CKGUID guid = data->GetGUID();
-        if (guid != CKPGUID_INT &&
-            guid != CKPGUID_FLOAT &&
-            guid != CKPGUID_BOOL &&
-            guid != CKPGUID_STRING)
+        if (data)
         {
-            sprintf(buffer, "Data");
-            context->DestroyObject(data);
-            beh->CreateOutputParameter(buffer, CKPGUID_INT);
-            int zero = 0;
-            data->SetValue(&zero, sizeof(zero));
-            context->OutputToConsoleExBeep("TT_ReadRegistry: ArrayColumnType invalid(use string/bool/int/float)");
+            CKGUID guid = data->GetGUID();
+            if (guid != CKPGUID_INT &&
+                guid != CKPGUID_FLOAT &&
+                guid != CKPGUID_BOOL &&
+                guid != CKPGUID_STRING)
+            {
+                sprintf(buffer, "Data");
+                context->DestroyObject(data);
+                data = beh->CreateOutputParameter(buffer, CKPGUID_INT);
+                if (data)
+                {
+                    int zero = 0;
+                    data->SetValue(&zero, sizeof(zero));
+                }
+                context->OutputToConsoleExBeep("TT_ReadRegistry: ArrayColumnType invalid(use string/bool/int/float)");
+            }
         }
     }
     default:
@@ -231,94 +285,94 @@ CKERROR ReadRegistryCallBack(const CKBehaviorContext &behcontext)
     {
         beh->EnableInputParameter(1, FALSE);
         beh->EnableInputParameter(2, TRUE);
-        beh->EnableInputParameter(3, FALSE);
+        beh->EnableInputParameter(3, TRUE);
         beh->EnableOutputParameter(0, FALSE);
     }
     else
     {
         beh->EnableInputParameter(1, TRUE);
         beh->EnableInputParameter(2, FALSE);
-        beh->EnableInputParameter(3, TRUE);
+        beh->EnableInputParameter(3, FALSE);
         beh->EnableOutputParameter(0, TRUE);
     }
 
     return CKBR_OK;
 }
 
-int ReadIntegerFromRegistry(const char *subKey, CKBehavior *beh, CKContext *context, const char *valueName)
+static CKBOOL ReadIntegerFromRegistry(const char *subKey, CKContext *context, const char *valueName, int *value)
 {
-    HKEY hkResult;
-    if (::RegOpenKeyExA(HKEY_LOCAL_MACHINE, subKey, 0, KEY_ALL_ACCESS, &hkResult) != ERROR_SUCCESS)
+    if (!value)
+        return FALSE;
+
+    HKEY hkResult = NULL;
+    if (::RegOpenKeyExA(HKEY_CURRENT_USER, subKey, 0, KEY_READ, &hkResult) != ERROR_SUCCESS)
     {
-        ::RegCloseKey(hkResult);
-        context->OutputToConsoleExBeep("TT_ReadRegistry: failed to open : HKEY_LOCAL_MACHINE\\%s", subKey);
-        beh->ActivateOutput(1);
-        return 0;
+        context->OutputToConsoleExBeep("TT_ReadRegistry: failed to open : HKEY_CURRENT_USER\\%s", subKey);
+        return FALSE;
     }
 
-    int value;
     DWORD dwType = REG_DWORD;
-    DWORD cbData = sizeof(int);
-    if (::RegQueryValueExA(hkResult, valueName, NULL, &dwType, (LPBYTE)&value, &cbData) != ERROR_SUCCESS)
+    DWORD cbData = sizeof(*value);
+    if (::RegQueryValueExA(hkResult, valueName, NULL, &dwType, (LPBYTE)value, &cbData) != ERROR_SUCCESS)
     {
         ::RegCloseKey(hkResult);
         context->OutputToConsoleExBeep("TT_ReadRegistry:  ReadError: %s.", valueName);
-        beh->ActivateOutput(1);
-        return 0;
+        return FALSE;
     }
 
     ::RegCloseKey(hkResult);
-    return value;
+    return TRUE;
 }
 
-float ReadFloatFromRegistry(const char *subKey, CKBehavior *beh, CKContext *context, const char *valueName)
+static CKBOOL ReadFloatFromRegistry(const char *subKey, CKContext *context, const char *valueName, float *value)
 {
-    HKEY hkResult;
-    if (::RegOpenKeyExA(HKEY_LOCAL_MACHINE, subKey, 0, KEY_ALL_ACCESS, &hkResult) != ERROR_SUCCESS)
+    if (!value)
+        return FALSE;
+
+    HKEY hkResult = NULL;
+    if (::RegOpenKeyExA(HKEY_CURRENT_USER, subKey, 0, KEY_READ, &hkResult) != ERROR_SUCCESS)
     {
-        ::RegCloseKey(hkResult);
-        context->OutputToConsoleExBeep("TT_ReadRegistry: failed to open : HKEY_LOCAL_MACHINE\\%s", subKey);
-        beh->ActivateOutput(1);
-        return 0;
+        context->OutputToConsoleExBeep("TT_ReadRegistry: failed to open : HKEY_CURRENT_USER\\%s", subKey);
+        return FALSE;
     }
 
-    float value;
     DWORD dwType = REG_DWORD;
-    DWORD cbData = sizeof(float);
-    if (::RegQueryValueExA(hkResult, valueName, NULL, &dwType, (LPBYTE)&value, &cbData) != ERROR_SUCCESS)
+    DWORD cbData = sizeof(*value);
+    if (::RegQueryValueExA(hkResult, valueName, NULL, &dwType, (LPBYTE)value, &cbData) != ERROR_SUCCESS)
     {
         ::RegCloseKey(hkResult);
         context->OutputToConsoleExBeep("TT_ReadRegistry:  ReadError: %s.", valueName);
-        beh->ActivateOutput(1);
-        return 0;
+        return FALSE;
     }
 
     ::RegCloseKey(hkResult);
-    return value;
+    return TRUE;
 }
 
-char *ReadStringFromRegistry(const char *subKey, CKBehavior *beh, CKContext *context, const char *valueName)
+static CKBOOL ReadStringFromRegistry(const char *subKey, CKContext *context, const char *valueName, char *buffer, DWORD bufferSize)
 {
-    HKEY hkResult;
-    if (::RegOpenKeyExA(HKEY_LOCAL_MACHINE, subKey, 0, KEY_ALL_ACCESS, &hkResult) != ERROR_SUCCESS)
+    if (!buffer || bufferSize == 0)
+        return FALSE;
+
+    buffer[0] = '\0';
+
+    HKEY hkResult = NULL;
+    if (::RegOpenKeyExA(HKEY_CURRENT_USER, subKey, 0, KEY_READ, &hkResult) != ERROR_SUCCESS)
     {
-        ::RegCloseKey(hkResult);
-        context->OutputToConsoleExBeep("TT_ReadRegistry: failed to open : HKEY_LOCAL_MACHINE\\%s", subKey);
-        beh->ActivateOutput(1);
-        return NULL;
+        context->OutputToConsoleExBeep("TT_ReadRegistry: failed to open : HKEY_CURRENT_USER\\%s", subKey);
+        return FALSE;
     }
 
-    static char str[256];
-    DWORD dwType = REG_DWORD;
-    DWORD cbData = sizeof(str);
-    if (::RegQueryValueExA(hkResult, valueName, NULL, &dwType, (LPBYTE)str, &cbData) != ERROR_SUCCESS)
+    DWORD dwType = REG_SZ;
+    DWORD cbData = bufferSize;
+    if (::RegQueryValueExA(hkResult, valueName, NULL, &dwType, (LPBYTE)buffer, &cbData) != ERROR_SUCCESS)
     {
         ::RegCloseKey(hkResult);
         context->OutputToConsoleExBeep("TT_ReadRegistry:  ReadError: %s.", valueName);
-        beh->ActivateOutput(1);
-        return NULL;
+        return FALSE;
     }
 
     ::RegCloseKey(hkResult);
-    return &str[0];
+    buffer[bufferSize - 1] = '\0';
+    return TRUE;
 }
