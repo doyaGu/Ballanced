@@ -157,6 +157,10 @@ CK3dEntity *GetChildOfTarget(int prefixLength, const char *name, CK3dEntity *tar
     {
         CK3dEntity *child = target->GetChild(i);
         CKSTRING childName = child->GetName();
+        if (!childName)
+            continue;
+        if ((int)strlen(childName) <= prefixLength)
+            continue;
         childName += prefixLength;
         if (strncmp(name, childName, length) == 0)
         {
@@ -186,20 +190,26 @@ int DestroyExtra(const CKBehaviorContext &behcontext)
         do
         {
             CK3dEntity *child = cur->ball->GetChild(0);
-            CKBehavior *script = child->GetScript(0);
-            if (script)
-                scene->DeActivate(script);
-            else
-                context->OutputToConsoleEx("4Script not found %s", child->GetName());
+            if (child)
+            {
+                CKBehavior *script = child->GetScript(0);
+                if (script)
+                    scene->DeActivate(script);
+                else
+                    context->OutputToConsoleEx("4Script not found %s", child->GetName());
+            }
 
             child = cur->ball->GetChild(0);
-            script = child->GetScript(0);
-            if (script)
-                scene->DeActivate(script);
-            else
-                context->OutputToConsoleEx("5Script not found %s", child->GetName());
+            if (child)
+            {
+                CKBehavior *script = child->GetScript(0);
+                if (script)
+                    scene->DeActivate(script);
+                else
+                    context->OutputToConsoleEx("5Script not found %s", child->GetName());
+            }
 
-            cur->ball->Show(CKHIDE);
+            cur->ball->Show();
 
             next = smallBalls->next;
             delete smallBalls;
@@ -247,7 +257,10 @@ int InitializeExtra(const CKBehaviorContext &behcontext)
     if (status == EXTRA_NONE)
     {
         if (smallBalls)
+        {
             smallBalls = NULL;
+            beh->SetLocalParameterValue(SMALLBALL_LIST, &smallBalls, sizeof(SmallBall *));
+        }
     }
     else if (status == EXTRA_ACTIVATED)
     {
@@ -340,7 +353,8 @@ int InitializeExtra(const CKBehaviorContext &behcontext)
         VxVector pos;
         ball->GetPosition(&pos);
 
-        SmallBall *current = new SmallBall(NULL, ball, pos, force + forceWidth, true);
+        force += forceWidth;
+        SmallBall *current = new SmallBall(NULL, ball, pos, force, true);
         if (i == 0)
             smallBalls = current;
 
@@ -408,18 +422,21 @@ int ActivateExtra(const CKBehaviorContext &behcontext)
     for (SmallBall *node = smallBalls; node != NULL; node = node->next)
     {
         CK3dEntity *child = node->ball->GetChild(0);
-        CKBehavior *script = child->GetScript(0);
-        if (script)
-            scene->Activate(script, TRUE);
-        else
-            context->OutputToConsoleEx("8Script not found %s", child->GetName());
+        if (child)
+        {
+            CKBehavior *script = child->GetScript(0);
+            if (script)
+                scene->Activate(script, TRUE);
+            else
+                context->OutputToConsoleEx("8Script not found %s", child->GetName());
+        }
 
         node->ball->Show();
 
         child = node->ball->GetChild(0);
         if (child)
         {
-            script = child->GetScript(0);
+            CKBehavior *script = child->GetScript(0);
             if (script)
                 scene->Activate(script, TRUE);
             else
@@ -586,10 +603,11 @@ int ExecuteExtraOnActivated(const CKBehaviorContext &behcontext)
     beh->GetLocalParameterValue(TIME_COUNTER, &timeCount);
     timeCount -= behcontext.DeltaTime;
 
-    if (timeCount <= 0)
+    if (timeCount <= 0.0f)
     {
         ExtraState status = EXTRA_HIT;
         beh->SetLocalParameterValue(STATUS, &status);
+        return CKBR_OK;
     }
 
     beh->SetLocalParameterValue(TIME_COUNTER, &timeCount);
@@ -673,10 +691,10 @@ int ExecuteExtraOnHit(const CKBehaviorContext &behcontext)
 
         float collDistance = 2.0f;
         beh->GetInputParameterValue(EXTRA_POINTS_COLLDISTANCE, &collDistance);
-        collDistance *= collDistance;
         if (SquareMagnitude(ballPos - pos) <= collDistance)
         {
             ++activatedBallCount;
+            node->flag = false;
             --ballCount;
             beh->SetLocalParameterValue(BALL_COUNTER, &ballCount);
             CK3dEntity *child = node->ball->GetChild(0);
@@ -687,14 +705,18 @@ int ExecuteExtraOnHit(const CKBehaviorContext &behcontext)
                     scene->DeActivate(script);
                 else
                     context->OutputToConsoleEx("17Script not found %s", child->GetName());
+            }
 
-                child = node->ball->GetChild(0);
-                script = child->GetScript(0);
+            child = node->ball->GetChild(0);
+            if (child)
+            {
+                CKBehavior *script = child->GetScript(0);
                 if (script)
                     scene->DeActivate(script);
                 else
                     context->OutputToConsoleEx("18Script not found %s", child->GetName());
             }
+
             node->ball->Show(CKHIDE);
 
             CKGroup *hitFrameGroup = (CKGroup *)beh->GetInputParameterObject(HIT_FRAME_GROUP);
@@ -711,7 +733,7 @@ int ExecuteExtraOnHit(const CKBehaviorContext &behcontext)
                     if (script)
                         scene->Activate(script, TRUE);
                     else
-                        context->OutputToConsoleEx("19Script not found %s", child->GetName());
+                        context->OutputToConsoleEx("19Script not found %s", hitFrame->GetName());
                 }
             }
         }
@@ -784,11 +806,14 @@ int DeactivateExtra(const CKBehaviorContext &behcontext)
     if (centerObject)
     {
         CK3dEntity *child = centerObject->GetChild(0);
-        CKBehavior *script = child->GetScript(0);
-        if (script)
-            scene->DeActivate(script);
-        else
-            context->OutputToConsoleEx("9Script not found %s", child->GetName());
+        if (child)
+        {
+            CKBehavior *script = child->GetScript(0);
+            if (script)
+                scene->DeActivate(script);
+            else
+                context->OutputToConsoleEx("9Script not found %s", child->GetName());
+        }
         centerObject->Show(CKHIDE);
     }
 
@@ -798,18 +823,21 @@ int DeactivateExtra(const CKBehaviorContext &behcontext)
     for (SmallBall *node = smallBalls; node != NULL; node = node->next)
     {
         CK3dEntity *child = node->ball->GetChild(0);
-        CKBehavior *script = child->GetScript(0);
-        if (script)
-            scene->DeActivate(script);
-        else
-            context->OutputToConsoleEx("11Script not found %s", child->GetName());
+        if (child)
+        {
+            CKBehavior *script = child->GetScript(0);
+            if (script)
+                scene->DeActivate(script);
+            else
+                context->OutputToConsoleEx("11Script not found %s", child->GetName());
+        }
 
         node->ball->Show(CKHIDE);
 
         child = node->ball->GetChild(0);
         if (child)
         {
-            script = child->GetScript(0);
+            CKBehavior *script = child->GetScript(0);
             if (script)
                 scene->DeActivate(script);
             else
@@ -818,7 +846,7 @@ int DeactivateExtra(const CKBehaviorContext &behcontext)
 
         if (child)
         {
-            script = child->GetScript(0);
+            CKBehavior *script = child->GetScript(0);
             if (script)
                 scene->DeActivate(script);
             else
@@ -952,7 +980,7 @@ CKERROR ExtraCallBack(const CKBehaviorContext &behcontext)
     case CKM_BEHAVIORLOAD:
     {
         SmallBall *smallBalls = NULL;
-        beh->SetLocalParameterValue(SMALLBALL_LIST, &smallBalls);
+        beh->SetLocalParameterValue(SMALLBALL_LIST, &smallBalls, sizeof(SmallBall *));
 
         CKBOOL initialized = FALSE;
         beh->SetLocalParameterValue(INITIALIZED, &initialized);
