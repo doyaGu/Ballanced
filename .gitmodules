@@ -1,0 +1,27 @@
+[submodule "Source/Player"]
+	path = Source/Player
+	url = https://github.com/doyaGu/BallancePlayer.git
+[submodule "Source/VxMath"]
+	path = Source/VxMath
+	url = https://github.com/doyaGu/VxMath.git
+[submodule "Source/CK2"]
+	path = Source/CK2
+	url = https://github.com/doyaGu/CK2.git
+[submodule "Source/RenderEngine"]
+	path = Source/RenderEngine
+	url = https://github.com/doyaGu/CKRenderEngine.git
+[submodule "Source/BuildingBlocks"]
+	path = Source/BuildingBlocks
+	url = https://github.com/doyaGu/CKBuildingBlocks.git
+[submodule "Source/Plugins"]
+	path = Source/Plugins
+	url = https://github.com/doyaGu/CKPlugins.git
+[submodule "Source/Managers/Dx8InputManager"]
+	path = Source/Managers/Dx8InputManager
+	url = https://github.com/doyaGu/Dx8InputManager
+[submodule "Source/Managers/Dx8SoundManager"]
+	path = Source/Managers/Dx8SoundManager
+	url = https://github.com/doyaGu/Dx8SoundManager
+[submodule "Source/Managers/ParameterOperations"]
+	path = Source/Managers/ParameterOperations
+	url = https://github.com/doyaGu/CKParameterOperations.git
