@@ -1,3 +1,0 @@
-[submodule "Source/BuildingBlocks/physics_RT/ivp"]
-	path = Source/BuildingBlocks/physics_RT/ivp
-	url = https://github.com/doyaGu/ivp.git
