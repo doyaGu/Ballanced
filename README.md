@@ -65,7 +65,6 @@ ctest --test-dir build -C Release
 Important notes:
 
 - This repository does **NOT** ship Ballance assets.
-- This repository does **NOT** ship Virtools runtime DLLs.
 - Obtain the original game legally and use files from your own copy.
 
 ### Asset staging (optional)
