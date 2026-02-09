@@ -47,27 +47,24 @@ endif ()
 get_property(_is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
 
 if (NOT _is_multi_config AND NOT CMAKE_BUILD_TYPE)
-    message(STATUS "[Ballanced] Setting build type to 'Release'")
+    message(STATUS "[Ballance] Setting build type to 'Release'")
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the build type" FORCE)
     set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "RelWithDebInfo" "MinSizeRel")
 endif ()
 
 # --- User options ---
-_set_cache_default(BALLANCED_BUILD_ROOT "${CMAKE_BINARY_DIR}/Ballance" PATH
-        "Build-tree output root (Bin/, Managers/, RenderEngines/, etc.)")
-
-_set_cache_default(BALLANCED_ASSETS_ROOT "" PATH
+_set_cache_default(BALLANCE_ASSETS_ROOT "" PATH
         "Path to Ballance game root for asset staging (base.cmo, Textures/, etc.)")
 
 _set_cache_default(BALLANCE_DIR "" PATH
         "Optional: Ballance game directory for manual deployment")
 
-_set_cache_default(BALLANCED_TEST_CONFIG "Release" STRING
+_set_cache_default(BALLANCE_TEST_CONFIG "Release" STRING
         "CTest configuration for multi-config generators")
 
 if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/stage" CACHE PATH "Staging root" FORCE)
-    message(STATUS "[Ballanced] Install prefix: ${CMAKE_INSTALL_PREFIX}")
+    message(STATUS "[Ballance] Install prefix: ${CMAKE_INSTALL_PREFIX}")
 endif ()
 
 # --- Compiler settings ---
@@ -103,13 +100,13 @@ if (MSVC)
 endif ()
 
 # --- Output directories (Ballance runtime layout) ---
-_set_cache_default(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${BALLANCED_BUILD_ROOT}/Bin" PATH "")
-_set_cache_default(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${BALLANCED_BUILD_ROOT}/Bin" PATH "")
+_set_cache_default(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${BALLANCE_BUILD_ROOT}/Bin" PATH "")
+_set_cache_default(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${BALLANCE_BUILD_ROOT}/Bin" PATH "")
 _set_cache_default(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib" PATH "")
 
 foreach (_cfg IN ITEMS Debug Release RelWithDebInfo MinSizeRel)
-    _set_cache_default(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${_cfg} "${BALLANCED_BUILD_ROOT}/Bin" PATH "")
-    _set_cache_default(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${_cfg} "${BALLANCED_BUILD_ROOT}/Bin" PATH "")
+    _set_cache_default(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${_cfg} "${BALLANCE_BUILD_ROOT}/Bin" PATH "")
+    _set_cache_default(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${_cfg} "${BALLANCE_BUILD_ROOT}/Bin" PATH "")
     _set_cache_default(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${_cfg} "${CMAKE_BINARY_DIR}/lib" PATH "")
 endforeach ()
 
@@ -171,45 +168,45 @@ foreach (_target IN LISTS _runtime_targets)
 endforeach ()
 
 # --- Asset staging ---
-if (BALLANCED_ASSETS_ROOT AND EXISTS "${BALLANCED_ASSETS_ROOT}")
-    message(STATUS "[Ballanced] Staging assets from: ${BALLANCED_ASSETS_ROOT}")
+if (BALLANCE_ASSETS_ROOT AND EXISTS "${BALLANCE_ASSETS_ROOT}")
+    message(STATUS "[Ballance] Staging assets from: ${BALLANCE_ASSETS_ROOT}")
 
     install(DIRECTORY
-            "${BALLANCED_ASSETS_ROOT}/Textures"
-            "${BALLANCED_ASSETS_ROOT}/Sounds"
-            "${BALLANCED_ASSETS_ROOT}/Text"
-            "${BALLANCED_ASSETS_ROOT}/3D Entities"
+            "${BALLANCE_ASSETS_ROOT}/Textures"
+            "${BALLANCE_ASSETS_ROOT}/Sounds"
+            "${BALLANCE_ASSETS_ROOT}/Text"
+            "${BALLANCE_ASSETS_ROOT}/3D Entities"
             DESTINATION . OPTIONAL
     )
 
     install(FILES
-            "${BALLANCED_ASSETS_ROOT}/base.cmo"
-            "${BALLANCED_ASSETS_ROOT}/Database.tdb"
+            "${BALLANCE_ASSETS_ROOT}/base.cmo"
+            "${BALLANCE_ASSETS_ROOT}/Database.tdb"
             DESTINATION . OPTIONAL
     )
-elseif (BALLANCED_ASSETS_ROOT)
-    message(WARNING "[Ballanced] Asset path not found: ${BALLANCED_ASSETS_ROOT}")
+elseif (BALLANCE_ASSETS_ROOT)
+    message(WARNING "[Ballance] Asset path not found: ${BALLANCE_ASSETS_ROOT}")
 endif ()
 
 if (BALLANCE_DIR AND EXISTS "${BALLANCE_DIR}")
-    message(STATUS "[Ballanced] Deploy target: ${BALLANCE_DIR}")
+    message(STATUS "[Ballance] Deploy target: ${BALLANCE_DIR}")
     message(STATUS "  Sync ${CMAKE_INSTALL_PREFIX} manually after staging")
 elseif (BALLANCE_DIR)
-    message(NOTICE "[Ballanced] Deploy path not found: ${BALLANCE_DIR}")
+    message(NOTICE "[Ballance] Deploy path not found: ${BALLANCE_DIR}")
 endif ()
 
 # --- Tests ---
 add_test(NAME StageInstall
         COMMAND "${CMAKE_COMMAND}"
         -DBUILD_DIR:PATH=${CMAKE_BINARY_DIR}
-        -DCONFIG:STRING=${BALLANCED_TEST_CONFIG}
+        -DCONFIG:STRING=${BALLANCE_TEST_CONFIG}
         -P "${CMAKE_CURRENT_LIST_DIR}/cmake/RunStageInstall.cmake"
 )
 
 add_test(NAME StageLayout
         COMMAND "${CMAKE_COMMAND}"
         -DSTAGE_ROOT:PATH=${CMAKE_INSTALL_PREFIX}
-        -DCHECK_ASSETS:BOOL=$<BOOL:${BALLANCED_ASSETS_ROOT}>
+        -DCHECK_ASSETS:BOOL=$<BOOL:${BALLANCE_ASSETS_ROOT}>
         -P "${CMAKE_CURRENT_LIST_DIR}/cmake/VerifyStage.cmake"
 )
 
@@ -217,6 +214,6 @@ set_tests_properties(StageLayout PROPERTIES DEPENDS StageInstall)
 
 if (_is_multi_config)
     set_tests_properties(StageInstall StageLayout PROPERTIES
-            CONFIGURATIONS "${BALLANCED_TEST_CONFIG}"
+            CONFIGURATIONS "${BALLANCE_TEST_CONFIG}"
     )
 endif ()

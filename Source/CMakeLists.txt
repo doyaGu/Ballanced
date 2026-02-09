@@ -13,7 +13,7 @@ endfunction()
 
 # Set output directories for a component group
 function(_set_output_dirs subdir)
-    set(_root "${BALLANCED_BUILD_ROOT}/${subdir}")
+    set(_root "${BALLANCE_BUILD_ROOT}/${subdir}")
 
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${_root}" PARENT_SCOPE)
     set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${_root}" PARENT_SCOPE)
@@ -33,7 +33,7 @@ function(_fix_target_output_dir target subdir)
         return()
     endif ()
 
-    set(_root "${BALLANCED_BUILD_ROOT}/${subdir}")
+    set(_root "${BALLANCE_BUILD_ROOT}/${subdir}")
 
     set_target_properties(${target} PROPERTIES
             RUNTIME_OUTPUT_DIRECTORY "${_root}"
@@ -51,7 +51,7 @@ endfunction()
 # --- Components ---
 
 # Core (VxMath, CK2) -> Bin/
-message(STATUS "[Ballanced] Adding core components...")
+message(STATUS "[Ballance] Adding core components...")
 _set_output_dirs("Bin")
 add_subdirectory(VxMath)
 add_subdirectory(CK2)
@@ -67,7 +67,7 @@ if (MSVC)
 endif ()
 
 # Render Engine -> RenderEngines/
-message(STATUS "[Ballanced] Adding render engine...")
+message(STATUS "[Ballance] Adding render engine...")
 _set_output_dirs("RenderEngines")
 add_subdirectory(RenderEngine)
 _fix_target_output_dir(CK2_3D "RenderEngines")
@@ -82,7 +82,7 @@ if (MSVC)
 endif ()
 
 # Managers -> Managers/
-message(STATUS "[Ballanced] Adding managers...")
+message(STATUS "[Ballance] Adding managers...")
 _set_output_dirs("Managers")
 foreach (_mgr IN ITEMS Dx8InputManager Dx8SoundManager ParameterOperations)
     if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/Managers/${_mgr}/CMakeLists.txt")
@@ -94,7 +94,7 @@ foreach (_mgr IN ITEMS Dx8InputManager Dx8SoundManager ParameterOperations)
 endforeach ()
 
 # Plugins -> Plugins/
-message(STATUS "[Ballanced] Adding plugins...")
+message(STATUS "[Ballance] Adding plugins...")
 _set_output_dirs("Plugins")
 add_subdirectory(Plugins)
 foreach (_plugin IN ITEMS AVIReader ImageReader WavReader VirtoolsLoader)
@@ -105,7 +105,7 @@ foreach (_plugin IN ITEMS AVIReader ImageReader WavReader VirtoolsLoader)
 endforeach ()
 
 # Building Blocks -> BuildingBlocks/
-message(STATUS "[Ballanced] Adding building blocks...")
+message(STATUS "[Ballance] Adding building blocks...")
 _set_output_dirs("BuildingBlocks")
 add_subdirectory(BuildingBlocks)
 if (MSVC)
@@ -131,7 +131,7 @@ if (MSVC)
 endif ()
 
 # Player -> Bin/
-message(STATUS "[Ballanced] Adding player...")
+message(STATUS "[Ballance] Adding player...")
 _set_output_dirs("Bin")
 add_subdirectory(Player)
 if (MSVC)
@@ -140,5 +140,5 @@ if (MSVC)
 endif ()
 
 # Summary
-message(STATUS "[Ballanced] Build outputs: ${BALLANCED_BUILD_ROOT}/")
-message(STATUS "[Ballanced] Install outputs: ${CMAKE_INSTALL_PREFIX}/")
+message(STATUS "[Ballance] Build outputs: ${BALLANCE_BUILD_ROOT}/")
+message(STATUS "[Ballance] Install outputs: ${CMAKE_INSTALL_PREFIX}/")
