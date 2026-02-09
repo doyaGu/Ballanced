@@ -2,20 +2,24 @@
 name: Build
 
 on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
   workflow_call:
     inputs:
-      branch:  
-        required: true
-        type: string
-        default: "main"
       configuration:
-        required: true
+        required: false
         type: string
         default: "Release"
 
 jobs:
   build:
     runs-on: windows-latest
+
+    strategy:
+      matrix:
+        configuration: ${{ fromJson(github.event_name == 'workflow_call' && format('["{0}"]', inputs.configuration) || '["Release","Debug"]') }}
 
     env:
       PROJECT_NAME: Ballanced
@@ -25,40 +29,41 @@ jobs:
 
     steps:
     - name: Checkout source code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6.0.2
       with:
-        ref: ${{ inputs.branch }}
-        submodules: true
+        fetch-depth: 0
+        submodules: recursive
 
     - name: Get current branch and commit hash
       shell: bash
+      env:
+        REF_NAME: ${{ github.head_ref || github.ref_name }}
       run: |
-        echo "GIT_BRANCH=$(echo ${GITHUB_REF#refs/heads/})" >> "$GITHUB_ENV"
-        echo "GIT_SHA=$(git rev-parse --short "$GITHUB_SHA")" >> "$GITHUB_ENV"
+        echo "GIT_BRANCH=${REF_NAME}" >> "$GITHUB_ENV"
+        echo "GIT_SHA=${GITHUB_SHA::7}" >> "$GITHUB_ENV"
 
     - name: Setup CMake
       uses: lukka/get-cmake@latest
 
     - name: Setup MSVC
-      uses: TheMrMilchmann/setup-msvc-dev@v3.0.0
+      uses: TheMrMilchmann/setup-msvc-dev@v4.0.0
       with:
         arch: x86
 
     - name: Configure CMake
       run: >
-        cmake -S "${{ github.workspace }}" -G "${{ env.CMAKE_GENERATOR }}" -B ${{ env.BASE_BUILD_DIR }}/${{ inputs.configuration }}
-        -DCMAKE_BUILD_TYPE=${{ inputs.configuration }}
-        -DCMAKE_INSTALL_PREFIX=${{ env.BASE_DIST_DIR }}/${{ inputs.configuration }}
+        cmake -S "${{ github.workspace }}" -G "${{ env.CMAKE_GENERATOR }}" -B ${{ env.BASE_BUILD_DIR }}/${{ matrix.configuration }}
+        -DCMAKE_BUILD_TYPE=${{ matrix.configuration }}
+        -DCMAKE_INSTALL_PREFIX=${{ env.BASE_DIST_DIR }}/${{ matrix.configuration }}
 
     - name: Build the project
-      run: cmake --build ${{ env.BASE_BUILD_DIR }}/${{ inputs.configuration }}
+      run: cmake --build ${{ env.BASE_BUILD_DIR }}/${{ matrix.configuration }}
 
     - name: Install binaries to distribution folder
-      run: cmake --install ${{ env.BASE_BUILD_DIR }}/${{ inputs.configuration }} --prefix ${{ env.BASE_DIST_DIR }}/${{ inputs.configuration }}
+      run: cmake --install ${{ env.BASE_BUILD_DIR }}/${{ matrix.configuration }} --prefix ${{ env.BASE_DIST_DIR }}/${{ matrix.configuration }}
 
     - name: Upload build artifacts
-      uses: actions/upload-artifact@v4.3.3
+      uses: actions/upload-artifact@v6.0.0
       with:
-        name: ${{ env.PROJECT_NAME }}-${{ env.GIT_BRANCH }}-${{ env.GIT_SHA }}-${{ inputs.configuration }}
-        path: ${{ env.BASE_DIST_DIR }}/${{ inputs.configuration }}
-
+        name: ${{ env.PROJECT_NAME }}-${{ env.GIT_BRANCH }}-${{ env.GIT_SHA }}-${{ matrix.configuration }}
+        path: ${{ env.BASE_DIST_DIR }}/${{ matrix.configuration }}
