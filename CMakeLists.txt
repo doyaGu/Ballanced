@@ -99,17 +99,6 @@ if (MSVC)
             "MSVC runtime library (default: /MD, /MDd)")
 endif ()
 
-# --- Output directories (Ballance runtime layout) ---
-_set_cache_default(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${BALLANCE_BUILD_ROOT}/Bin" PATH "")
-_set_cache_default(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${BALLANCE_BUILD_ROOT}/Bin" PATH "")
-_set_cache_default(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib" PATH "")
-
-foreach (_cfg IN ITEMS Debug Release RelWithDebInfo MinSizeRel)
-    _set_cache_default(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${_cfg} "${BALLANCE_BUILD_ROOT}/Bin" PATH "")
-    _set_cache_default(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${_cfg} "${BALLANCE_BUILD_ROOT}/Bin" PATH "")
-    _set_cache_default(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${_cfg} "${CMAKE_BINARY_DIR}/lib" PATH "")
-endforeach ()
-
 # --- Component options ---
 foreach (_component IN ITEMS VXMATH CK2 CKRE)
     _set_cache_default(${_component}_BUILD_SHARED ON BOOL "")
