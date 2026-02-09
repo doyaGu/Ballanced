@@ -8,10 +8,6 @@ on:
         required: true
         type: string
         default: "main"
-      sdk_version:
-        required: true
-        type: string
-        default: "2.1"
       configuration:
         required: true
         type: string
@@ -34,12 +30,6 @@ jobs:
         ref: ${{ inputs.branch }}
         submodules: true
 
-    - name: Checkout Virtools SDK
-      uses: actions/checkout@v4
-      with:
-        repository: doyaGu/Virtools-SDK-${{ inputs.sdk_version }}
-        path: ${{ github.workspace }}/Virtools-SDK-${{ inputs.sdk_version }}
-
     - name: Get current branch and commit hash
       shell: bash
       run: |
@@ -56,19 +46,19 @@ jobs:
 
     - name: Configure CMake
       run: >
-        cmake -G "${{ env.CMAKE_GENERATOR }}" -B ${{ env.BASE_BUILD_DIR }}/${{ inputs.sdk_version }}/${{ inputs.configuration }}
+        cmake -S "${{ github.workspace }}" -G "${{ env.CMAKE_GENERATOR }}" -B ${{ env.BASE_BUILD_DIR }}/${{ inputs.configuration }}
         -DCMAKE_BUILD_TYPE=${{ inputs.configuration }}
-        -DVIRTOOLS_SDK_PATH=${{ github.workspace }}/Virtools-SDK-${{ inputs.sdk_version }}
-        -DCMAKE_INSTALL_PREFIX=${{ env.BASE_DIST_DIR }}/${{ inputs.sdk_version }}/${{ inputs.configuration }}
+        -DCMAKE_INSTALL_PREFIX=${{ env.BASE_DIST_DIR }}/${{ inputs.configuration }}
 
     - name: Build the project
-      run: cmake --build ${{ env.BASE_BUILD_DIR }}/${{ inputs.sdk_version }}/${{ inputs.configuration }}
+      run: cmake --build ${{ env.BASE_BUILD_DIR }}/${{ inputs.configuration }}
 
     - name: Install binaries to distribution folder
-      run: cmake --install ${{ env.BASE_BUILD_DIR }}/${{ inputs.sdk_version }}/${{ inputs.configuration }} --prefix ${{ env.BASE_DIST_DIR }}/${{ inputs.sdk_version }}/${{ inputs.configuration }}
+      run: cmake --install ${{ env.BASE_BUILD_DIR }}/${{ inputs.configuration }} --prefix ${{ env.BASE_DIST_DIR }}/${{ inputs.configuration }}
 
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4.3.3
       with:
-        name: ${{ env.PROJECT_NAME }}-${{ inputs.sdk_version }}-${{ env.GIT_BRANCH }}-${{ env.GIT_SHA }}-${{ inputs.configuration }}
-        path: ${{ env.BASE_DIST_DIR }}/${{ inputs.sdk_version }}/${{ inputs.configuration }}
+        name: ${{ env.PROJECT_NAME }}-${{ env.GIT_BRANCH }}-${{ env.GIT_SHA }}-${{ inputs.configuration }}
+        path: ${{ env.BASE_DIST_DIR }}/${{ inputs.configuration }}
+
