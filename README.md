@@ -74,7 +74,7 @@ If you point CMake at an existing Ballance install directory, the `stage` target
 
 ```powershell
 cmake -S . -B build -G "Visual Studio 17 2022" -A Win32 `
-  -DBALLANCED_ASSETS_ROOT=C:/path/to/your/Ballance
+  -DBALLANCE_ASSETS_ROOT=C:/path/to/your/Ballance
 cmake --build build --config Release --target stage
 ```
 
