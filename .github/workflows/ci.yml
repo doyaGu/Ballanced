@@ -1,0 +1,19 @@
+# .github/workflows/ci.yml
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        configuration: [Release, Debug]
+
+    uses: ./.github/workflows/build.yml
+    with:
+      branch: "${{ github.ref_name }}"
+      configuration: "${{ matrix.configuration }}"
