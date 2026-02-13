@@ -61,7 +61,7 @@ if (MSVC)
     # Organize building block modules
     foreach (_bb_module IN ITEMS
             3DTrans BuildingBlocksAddons1 Cameras Characters Collision Controllers
-            Grids Interface Lights Logics Materials-Textures MeshModifiers
+            Grids Interface Lights Logics Materials MeshModifiers
             MidiManager Narratives Sounds Visuals WorldEnvironment
             physics_RT TT_DatabaseManager_RT TT_Gravity_RT TT_InterfaceManager_RT
             TT_ParticleSystems_RT TT_Toolbox_RT)
