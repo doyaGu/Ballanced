@@ -21,6 +21,27 @@ function(_require_file rel)
     endif()
 endfunction()
 
+function(_require_dll rel_without_ext)
+    if(EXISTS "${STAGE_ROOT}/${rel_without_ext}.dll")
+        return()
+    endif()
+
+    # MinGW names DLL outputs with a "lib" prefix by default.
+    get_filename_component(_dll_dir "${rel_without_ext}" DIRECTORY)
+    get_filename_component(_dll_name "${rel_without_ext}" NAME)
+    if(_dll_dir STREQUAL "")
+        set(_alt_rel "lib${_dll_name}.dll")
+    else()
+        set(_alt_rel "${_dll_dir}/lib${_dll_name}.dll")
+    endif()
+
+    if(EXISTS "${STAGE_ROOT}/${_alt_rel}")
+        return()
+    endif()
+
+    message(FATAL_ERROR "Missing file: ${STAGE_ROOT}/${rel_without_ext}.dll (or ${STAGE_ROOT}/${_alt_rel})")
+endfunction()
+
 message(STATUS "[StageLayout] Verifying: ${STAGE_ROOT}")
 message(STATUS "[StageLayout] Check assets: ${CHECK_ASSETS}")
 
@@ -30,36 +51,36 @@ foreach(_dir IN ITEMS Bin Managers RenderEngines Plugins BuildingBlocks)
 endforeach()
 
 # Core binaries
-foreach(_bin IN ITEMS Bin/Player.exe Bin/CK2.dll Bin/VxMath.dll)
-    _require_file(${_bin})
-endforeach()
+_require_file(Bin/Player.exe)
+_require_dll(Bin/CK2)
+_require_dll(Bin/VxMath)
 
 # Managers
 foreach(_mgr IN ITEMS Dx8InputManager Dx8SoundManager ParameterOperations)
-    _require_file("Managers/${_mgr}.dll")
+    _require_dll("Managers/${_mgr}")
 endforeach()
 
 # Render engine
-_require_file("RenderEngines/CK2_3D.dll")
+_require_dll("RenderEngines/CK2_3D")
 
 set(_has_rasterizer OFF)
 foreach(_rast IN ITEMS CKDX9Rasterizer CKGLRasterizer)
-    if(EXISTS "${STAGE_ROOT}/RenderEngines/${_rast}.dll")
+    if(EXISTS "${STAGE_ROOT}/RenderEngines/${_rast}.dll" OR EXISTS "${STAGE_ROOT}/RenderEngines/lib${_rast}.dll")
         set(_has_rasterizer ON)
     endif()
 endforeach()
 if(NOT _has_rasterizer)
-    message(FATAL_ERROR "Missing rasterizer (CKDX9Rasterizer.dll or CKGLRasterizer.dll)")
+    message(FATAL_ERROR "Missing rasterizer (CKDX9Rasterizer.dll/libCKDX9Rasterizer.dll or CKGLRasterizer.dll/libCKGLRasterizer.dll)")
 endif()
 
 # Plugins
 foreach(_plugin IN ITEMS AVIReader ImageReader WavReader VirtoolsLoader)
-    _require_file("Plugins/${_plugin}.dll")
+    _require_dll("Plugins/${_plugin}")
 endforeach()
 
 # Sample building blocks
 foreach(_bb IN ITEMS 3DTransfo Cameras Collisions)
-    _require_file("BuildingBlocks/${_bb}.dll")
+    _require_dll("BuildingBlocks/${_bb}")
 endforeach()
 
 # Game assets (optional)
