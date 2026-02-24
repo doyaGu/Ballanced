@@ -10,18 +10,31 @@ The project builds a complete runtime layout from source. You still need the ori
 
 ## Requirements
 
-- Windows (this project currently targets Win32 builds)
+- Windows
 - Visual Studio 2022 (or another CMake-supported MSVC toolchain)
 - CMake 3.16+
+
+Supported Windows architectures:
+
+- `Win32` (x86)
+- `x64`
+- `ARM64`
 
 ## Quick Start (Build)
 
 ### Configure
 
-PowerShell example (Visual Studio 2022, Win32):
+PowerShell examples (Visual Studio 2022):
 
 ```powershell
+# Win32 (x86)
 cmake -S . -B build -G "Visual Studio 17 2022" -A Win32
+
+# x64
+cmake -S . -B build-x64 -G "Visual Studio 17 2022" -A x64
+
+# ARM64
+cmake -S . -B build-arm64 -G "Visual Studio 17 2022" -A ARM64
 ```
 
 ### Build
@@ -72,7 +85,7 @@ Important notes:
 If you point CMake at an existing Ballance install directory, the `stage` target can copy assets into the staged layout:
 
 ```powershell
-cmake -S . -B build -G "Visual Studio 17 2022" -A Win32 `
+cmake -S . -B build -G "Visual Studio 17 2022" -A x64 `
   -DBALLANCE_ASSETS_ROOT=C:/path/to/your/Ballance
 cmake --build build --config Release --target stage
 ```
