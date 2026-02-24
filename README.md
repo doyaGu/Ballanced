@@ -11,7 +11,7 @@ The project builds a complete runtime layout from source. You still need the ori
 ## Requirements
 
 - Windows
-- Visual Studio 2022 (or another CMake-supported MSVC toolchain)
+- Visual Studio 2022 (MSVC) or MinGW-w64
 - CMake 3.16+
 
 Supported Windows architectures:
@@ -37,10 +37,20 @@ cmake -S . -B build-x64 -G "Visual Studio 17 2022" -A x64
 cmake -S . -B build-arm64 -G "Visual Studio 17 2022" -A ARM64
 ```
 
+PowerShell example (MinGW-w64):
+
+```powershell
+cmake -S . -B build-mingw -G "MinGW Makefiles"
+```
+
 ### Build
 
 ```powershell
+# Multi-config generators (Visual Studio)
 cmake --build build --config Release
+
+# Single-config generators (MinGW Makefiles)
+cmake --build build-mingw
 ```
 
 Build-tree outputs are placed in:
@@ -50,7 +60,11 @@ Build-tree outputs are placed in:
 ### Stage (Install) a runnable layout
 
 ```powershell
+# Multi-config generators (Visual Studio)
 cmake --build build --config Release --target stage
+
+# Single-config generators (MinGW Makefiles)
+cmake --build build-mingw --target stage
 ```
 
 Staged outputs are placed in:
@@ -68,7 +82,11 @@ After staging, the primary entry point is:
 The repo includes CTest checks that validate the staged runtime layout:
 
 ```powershell
+# Multi-config generators (Visual Studio)
 ctest --test-dir build -C Release
+
+# Single-config generators (MinGW Makefiles)
+ctest --test-dir build-mingw
 ```
 
 ## Game Assets (Original Ballance)
@@ -88,6 +106,10 @@ If you point CMake at an existing Ballance install directory, the `stage` target
 cmake -S . -B build -G "Visual Studio 17 2022" -A x64 `
   -DBALLANCE_ASSETS_ROOT=C:/path/to/your/Ballance
 cmake --build build --config Release --target stage
+
+cmake -S . -B build-mingw -G "MinGW Makefiles" `
+  -DBALLANCE_ASSETS_ROOT=C:/path/to/your/Ballance
+cmake --build build-mingw --target stage
 ```
 
 ## Releases
