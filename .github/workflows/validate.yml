@@ -1,0 +1,89 @@
+name: Validate
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validate-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: windows-latest
+    timeout-minutes: 20
+
+    defaults:
+      run:
+        shell: pwsh
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v6.0.2
+      with:
+        submodules: recursive
+
+    - name: Check submodule pointers
+      run: |
+        $status = git submodule status --recursive
+        $status
+        $bad = $status | Where-Object { $_ -match '^[\+\-U]' }
+        if ($bad) {
+          Write-Error "Submodule pointers are not clean:`n$($bad -join "`n")"
+        }
+
+    - name: Check CMake presets load
+      run: |
+        $presetFiles = Get-ChildItem -Path . -Filter CMakePresets.json -Recurse |
+          Where-Object { $_.FullName -notmatch '\\build\\|\\.build\\|\\.git\\' }
+
+        foreach ($presetFile in $presetFiles) {
+          $dir = Split-Path -Parent $presetFile.FullName
+          Write-Host "cmake --list-presets in $dir"
+          cmake --list-presets -S $dir
+          if ($LASTEXITCODE -ne 0) {
+            exit $LASTEXITCODE
+          }
+        }
+
+    - name: Check workflow preset references
+      run: |
+        $rootPresets = Get-Content CMakePresets.json -Raw | ConvertFrom-Json
+        $configurePresets = @($rootPresets.configurePresets | ForEach-Object { $_.name })
+        $buildPresets = @($rootPresets.buildPresets | ForEach-Object { $_.name })
+        $workflow = Get-Content .github/workflows/build.yml -Raw
+
+        $configureRefs = [regex]::Matches($workflow, 'configure_preset:\s*([A-Za-z0-9_.-]+)') |
+          ForEach-Object { $_.Groups[1].Value }
+        $buildRefs = [regex]::Matches($workflow, 'build_preset:\s*([A-Za-z0-9_.-]+)') |
+          ForEach-Object { $_.Groups[1].Value }
+
+        $missing = @()
+        foreach ($ref in $configureRefs) {
+          if ($configurePresets -notcontains $ref) {
+            $missing += "missing configure preset: $ref"
+          }
+        }
+        foreach ($ref in $buildRefs) {
+          if ($buildPresets -notcontains $ref) {
+            $missing += "missing build preset: $ref"
+          }
+        }
+        foreach ($ref in $buildRefs) {
+          if ($ref -match '-tests-') {
+            $missing += "build workflow must not reference test build preset: $ref"
+          }
+        }
+
+        if ($missing.Count -gt 0) {
+          Write-Error ($missing -join "`n")
+        }
+
+        Write-Host "Workflow preset references OK"

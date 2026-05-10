@@ -7,6 +7,19 @@ on:
   pull_request:
     branches: [ "main" ]
   workflow_call:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Build target"
+        required: false
+        type: choice
+        default: all
+        options:
+          - all
+          - runtime-win32
+          - runtime-x64
+          - static-player-win32
+          - static-player-x64
 
 permissions:
   contents: read
@@ -59,21 +72,25 @@ jobs:
 
     steps:
     - name: Checkout
+      if: ${{ github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == matrix.name }}
       uses: actions/checkout@v6.0.2
       with:
         submodules: recursive
 
     - name: Configure
+      if: ${{ github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == matrix.name }}
       run: cmake --preset ${{ matrix.configure_preset }}
 
     - name: Build
+      if: ${{ github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == matrix.name }}
       run: cmake --build --preset ${{ matrix.build_preset }}
 
     - name: Test
+      if: ${{ github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == matrix.name }}
       run: ctest --test-dir ${{ matrix.test_dir }} -C Release --output-on-failure
 
     - name: Upload staged runtime
-      if: ${{ matrix.artifact_path != '' }}
+      if: ${{ (github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == matrix.name) && matrix.artifact_path != '' }}
       uses: actions/upload-artifact@v6.0.0
       with:
         name: ballance-${{ matrix.name }}-${{ github.run_number }}-${{ github.sha }}
