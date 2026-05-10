@@ -11,83 +11,32 @@ The project builds a complete runtime layout from source. You still need the ori
 ## Requirements
 
 - Windows
-- Visual Studio 2022 (MSVC) or MinGW-w64
-- CMake 3.16+
+- Visual Studio 2022 (MSVC)
+- CMake 3.25+ for presets
 
-Supported Windows architectures:
+Supported preset architectures are `Win32` and `x64`.
 
-- `Win32` (x86)
-- `x64`
-- `ARM64`
-
-## Quick Start (Build)
-
-### Configure
-
-PowerShell examples (Visual Studio 2022):
+## Quick Start
 
 ```powershell
-# Win32 (x86)
-cmake -S . -B build -G "Visual Studio 17 2022" -A Win32
-
-# x64
-cmake -S . -B build-x64 -G "Visual Studio 17 2022" -A x64
-
-# ARM64
-cmake -S . -B build-arm64 -G "Visual Studio 17 2022" -A ARM64
+cmake --preset ballance-runtime-msvc-win32
+cmake --build --preset ballance-runtime-win32-stage-release
+ctest --preset ballance-runtime-win32-stage-release
 ```
 
-PowerShell example (MinGW-w64):
+The staged runtime is written to:
 
-```powershell
-cmake -S . -B build-mingw -G "MinGW Makefiles"
+```text
+build/ballance-runtime-msvc-win32/stage/
 ```
 
-### Build
+Run:
 
-```powershell
-# Multi-config generators (Visual Studio)
-cmake --build build --config Release
-
-# Single-config generators (MinGW Makefiles)
-cmake --build build-mingw
+```text
+build/ballance-runtime-msvc-win32/stage/Bin/Player.exe
 ```
 
-Build-tree outputs are placed in:
-
-- `build/Ballance/`
-
-### Stage (Install) a runnable layout
-
-```powershell
-# Multi-config generators (Visual Studio)
-cmake --build build --config Release --target stage
-
-# Single-config generators (MinGW Makefiles)
-cmake --build build-mingw --target stage
-```
-
-Staged outputs are placed in:
-
-- `build/stage/`
-
-### Run
-
-After staging, the primary entry point is:
-
-- `build/stage/Bin/Player.exe`
-
-## Tests
-
-The repo includes CTest checks that validate the staged runtime layout:
-
-```powershell
-# Multi-config generators (Visual Studio)
-ctest --test-dir build -C Release
-
-# Single-config generators (MinGW Makefiles)
-ctest --test-dir build-mingw
-```
+See [BUILD.md](BUILD.md) for the full preset matrix, static Player builds, RenderEngine standalone builds, and manual fallback commands.
 
 ## Game Assets (Original Ballance)
 
@@ -103,13 +52,9 @@ Important notes:
 If you point CMake at an existing Ballance install directory, the `stage` target can copy assets into the staged layout:
 
 ```powershell
-cmake -S . -B build -G "Visual Studio 17 2022" -A x64 `
+cmake --preset ballance-runtime-msvc-win32 `
   -DBALLANCE_ASSETS_ROOT=C:/path/to/your/Ballance
-cmake --build build --config Release --target stage
-
-cmake -S . -B build-mingw -G "MinGW Makefiles" `
-  -DBALLANCE_ASSETS_ROOT=C:/path/to/your/Ballance
-cmake --build build-mingw --target stage
+cmake --build --preset ballance-runtime-win32-stage-release
 ```
 
 ## Releases
