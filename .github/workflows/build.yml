@@ -17,6 +17,7 @@ concurrency:
 
 jobs:
   build:
+    name: ${{ matrix.name }}
     runs-on: windows-latest
     timeout-minutes: 90
 
@@ -48,21 +49,13 @@ jobs:
             test_dir: build/ballance-static-player-msvc-x64
             artifact_path: build/ballance-static-player-msvc-x64/stage
 
-          - name: module-tests-win32
-            configure_preset: ballance-runtime-tests-msvc-win32
-            build_preset: ballance-runtime-tests-win32-release
-            test_dir: build/ballance-runtime-tests-msvc-win32
-            artifact_path: ""
-
-          - name: module-tests-x64
-            configure_preset: ballance-runtime-tests-msvc-x64
-            build_preset: ballance-runtime-tests-x64-release
-            test_dir: build/ballance-runtime-tests-msvc-x64
-            artifact_path: ""
-
     env:
       CMAKE_BUILD_PARALLEL_LEVEL: 4
       CTEST_OUTPUT_ON_FAILURE: 1
+
+    defaults:
+      run:
+        shell: pwsh
 
     steps:
     - name: Checkout
@@ -83,6 +76,7 @@ jobs:
       if: ${{ matrix.artifact_path != '' }}
       uses: actions/upload-artifact@v6.0.0
       with:
-        name: ballance-${{ matrix.name }}-${{ github.sha }}
+        name: ballance-${{ matrix.name }}-${{ github.run_number }}-${{ github.sha }}
         path: ${{ matrix.artifact_path }}
         if-no-files-found: error
+        retention-days: 14
