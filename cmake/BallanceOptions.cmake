@@ -1,7 +1,21 @@
 # Root-only options and child-project defaults for the superproject.
 
-ballance_set_cache_default(BALLANCE_ASSETS_ROOT "" PATH
+ballance_set_cache_default(BALLANCE_AUTO_DETECT_ASSETS ON BOOL
+        "Use the repository-local assets directory for staging when it exists")
+
+set(_ballance_detected_assets_root "")
+if (BALLANCE_AUTO_DETECT_ASSETS AND EXISTS "${PROJECT_SOURCE_DIR}/assets")
+    set(_ballance_detected_assets_root "${PROJECT_SOURCE_DIR}/assets")
+endif ()
+
+ballance_set_cache_default(BALLANCE_ASSETS_ROOT "${_ballance_detected_assets_root}" PATH
         "Path to Ballance game root for asset staging (base.cmo, Textures/, etc.)")
+
+if (BALLANCE_AUTO_DETECT_ASSETS AND NOT BALLANCE_ASSETS_ROOT AND _ballance_detected_assets_root)
+    set(BALLANCE_ASSETS_ROOT "${_ballance_detected_assets_root}" CACHE PATH
+            "Path to Ballance game root for asset staging (base.cmo, Textures/, etc.)"
+            FORCE)
+endif ()
 
 ballance_set_cache_default(BALLANCE_DIR "" PATH
         "Optional: Ballance game directory for manual deployment")
