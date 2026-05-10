@@ -7,63 +7,82 @@ on:
   pull_request:
     branches: [ "main" ]
   workflow_call:
-    inputs:
-      configuration:
-        required: false
-        type: string
-        default: "Release"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
     runs-on: windows-latest
+    timeout-minutes: 90
 
     strategy:
+      fail-fast: false
       matrix:
-        configuration: ${{ fromJson(github.event_name == 'workflow_call' && format('["{0}"]', inputs.configuration) || '["Release","Debug"]') }}
+        include:
+          - name: runtime-win32
+            configure_preset: ballance-runtime-msvc-win32
+            build_preset: ballance-runtime-win32-stage-release
+            test_dir: build/ballance-runtime-msvc-win32
+            artifact_path: build/ballance-runtime-msvc-win32/stage
+
+          - name: runtime-x64
+            configure_preset: ballance-runtime-msvc-x64
+            build_preset: ballance-runtime-x64-stage-release
+            test_dir: build/ballance-runtime-msvc-x64
+            artifact_path: build/ballance-runtime-msvc-x64/stage
+
+          - name: static-player-win32
+            configure_preset: ballance-static-player-msvc-win32
+            build_preset: ballance-static-player-win32-stage-release
+            test_dir: build/ballance-static-player-msvc-win32
+            artifact_path: build/ballance-static-player-msvc-win32/stage
+
+          - name: static-player-x64
+            configure_preset: ballance-static-player-msvc-x64
+            build_preset: ballance-static-player-x64-stage-release
+            test_dir: build/ballance-static-player-msvc-x64
+            artifact_path: build/ballance-static-player-msvc-x64/stage
+
+          - name: module-tests-win32
+            configure_preset: ballance-runtime-tests-msvc-win32
+            build_preset: ballance-runtime-tests-win32-release
+            test_dir: build/ballance-runtime-tests-msvc-win32
+            artifact_path: ""
+
+          - name: module-tests-x64
+            configure_preset: ballance-runtime-tests-msvc-x64
+            build_preset: ballance-runtime-tests-x64-release
+            test_dir: build/ballance-runtime-tests-msvc-x64
+            artifact_path: ""
 
     env:
-      PROJECT_NAME: Ballanced
-      BASE_BUILD_DIR: ${{ github.workspace }}/build
-      BASE_DIST_DIR: ${{ github.workspace }}/dist
-      CMAKE_GENERATOR: "Ninja"
+      CMAKE_BUILD_PARALLEL_LEVEL: 4
+      CTEST_OUTPUT_ON_FAILURE: 1
 
     steps:
-    - name: Checkout source code
+    - name: Checkout
       uses: actions/checkout@v6.0.2
       with:
-        fetch-depth: 0
         submodules: recursive
 
-    - name: Get current branch and commit hash
-      shell: bash
-      env:
-        REF_NAME: ${{ github.head_ref || github.ref_name }}
-      run: |
-        echo "GIT_BRANCH=${REF_NAME}" >> "$GITHUB_ENV"
-        echo "GIT_SHA=${GITHUB_SHA::7}" >> "$GITHUB_ENV"
+    - name: Configure
+      run: cmake --preset ${{ matrix.configure_preset }}
 
-    - name: Setup CMake
-      uses: lukka/get-cmake@latest
+    - name: Build
+      run: cmake --build --preset ${{ matrix.build_preset }}
 
-    - name: Setup MSVC
-      uses: TheMrMilchmann/setup-msvc-dev@v4.0.0
-      with:
-        arch: x86
+    - name: Test
+      run: ctest --test-dir ${{ matrix.test_dir }} -C Release --output-on-failure
 
-    - name: Configure CMake
-      run: >
-        cmake -S "${{ github.workspace }}" -G "${{ env.CMAKE_GENERATOR }}" -B ${{ env.BASE_BUILD_DIR }}/${{ matrix.configuration }}
-        -DCMAKE_BUILD_TYPE=${{ matrix.configuration }}
-        -DCMAKE_INSTALL_PREFIX=${{ env.BASE_DIST_DIR }}/${{ matrix.configuration }}
-
-    - name: Build the project
-      run: cmake --build ${{ env.BASE_BUILD_DIR }}/${{ matrix.configuration }}
-
-    - name: Install binaries to distribution folder
-      run: cmake --install ${{ env.BASE_BUILD_DIR }}/${{ matrix.configuration }} --prefix ${{ env.BASE_DIST_DIR }}/${{ matrix.configuration }}
-
-    - name: Upload build artifacts
+    - name: Upload staged runtime
+      if: ${{ matrix.artifact_path != '' }}
       uses: actions/upload-artifact@v6.0.0
       with:
-        name: ${{ env.PROJECT_NAME }}-${{ env.GIT_BRANCH }}-${{ env.GIT_SHA }}-${{ matrix.configuration }}
-        path: ${{ env.BASE_DIST_DIR }}/${{ matrix.configuration }}
+        name: ballance-${{ matrix.name }}-${{ github.sha }}
+        path: ${{ matrix.artifact_path }}
+        if-no-files-found: error
