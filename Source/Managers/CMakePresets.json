@@ -1,0 +1,93 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 25,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "base",
+      "hidden": true,
+      "generator": "Visual Studio 17 2022",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/${presetName}/stage"
+      }
+    },
+    {
+      "name": "managers-runtime-msvc-win32",
+      "inherits": "base",
+      "architecture": "Win32",
+      "cacheVariables": {
+        "DX8INPUT_BUILD_SHARED": "ON",
+        "DX8INPUT_BUILD_STATIC": "OFF",
+        "DX8SOUND_BUILD_SHARED": "ON",
+        "DX8SOUND_BUILD_STATIC": "OFF",
+        "CKPARAMOP_BUILD_SHARED": "ON",
+        "CKPARAMOP_BUILD_STATIC": "OFF"
+      }
+    },
+    {
+      "name": "managers-runtime-msvc-x64",
+      "inherits": "base",
+      "architecture": "x64",
+      "cacheVariables": {
+        "DX8INPUT_BUILD_SHARED": "ON",
+        "DX8INPUT_BUILD_STATIC": "OFF",
+        "DX8SOUND_BUILD_SHARED": "ON",
+        "DX8SOUND_BUILD_STATIC": "OFF",
+        "CKPARAMOP_BUILD_SHARED": "ON",
+        "CKPARAMOP_BUILD_STATIC": "OFF"
+      }
+    },
+    {
+      "name": "managers-static-msvc-win32",
+      "inherits": "base",
+      "architecture": "Win32",
+      "cacheVariables": {
+        "DX8INPUT_BUILD_SHARED": "OFF",
+        "DX8INPUT_BUILD_STATIC": "ON",
+        "DX8SOUND_BUILD_SHARED": "OFF",
+        "DX8SOUND_BUILD_STATIC": "ON",
+        "CKPARAMOP_BUILD_SHARED": "OFF",
+        "CKPARAMOP_BUILD_STATIC": "ON"
+      }
+    },
+    {
+      "name": "managers-static-msvc-x64",
+      "inherits": "base",
+      "architecture": "x64",
+      "cacheVariables": {
+        "DX8INPUT_BUILD_SHARED": "OFF",
+        "DX8INPUT_BUILD_STATIC": "ON",
+        "DX8SOUND_BUILD_SHARED": "OFF",
+        "DX8SOUND_BUILD_STATIC": "ON",
+        "CKPARAMOP_BUILD_SHARED": "OFF",
+        "CKPARAMOP_BUILD_STATIC": "ON"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "managers-runtime-win32-release",
+      "configurePreset": "managers-runtime-msvc-win32",
+      "configuration": "Release"
+    },
+    {
+      "name": "managers-runtime-x64-release",
+      "configurePreset": "managers-runtime-msvc-x64",
+      "configuration": "Release"
+    },
+    {
+      "name": "managers-static-win32-release",
+      "configurePreset": "managers-static-msvc-win32",
+      "configuration": "Release"
+    },
+    {
+      "name": "managers-static-x64-release",
+      "configurePreset": "managers-static-msvc-x64",
+      "configuration": "Release"
+    }
+  ]
+}

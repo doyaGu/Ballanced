@@ -9,6 +9,14 @@ if(NOT DEFINED CHECK_ASSETS)
     set(CHECK_ASSETS OFF)
 endif()
 
+if(NOT DEFINED CHECK_RENDER_CONFIGS)
+    set(CHECK_RENDER_CONFIGS OFF)
+endif()
+
+if(NOT DEFINED STATIC_PLAYER)
+    set(STATIC_PLAYER OFF)
+endif()
+
 function(_require_dir rel)
     if(NOT IS_DIRECTORY "${STAGE_ROOT}/${rel}")
         message(FATAL_ERROR "Missing directory: ${STAGE_ROOT}/${rel}")
@@ -44,14 +52,53 @@ endfunction()
 
 message(STATUS "[StageLayout] Verifying: ${STAGE_ROOT}")
 message(STATUS "[StageLayout] Check assets: ${CHECK_ASSETS}")
+message(STATUS "[StageLayout] Check render configs: ${CHECK_RENDER_CONFIGS}")
+message(STATUS "[StageLayout] Static player: ${STATIC_PLAYER}")
 
 # Required directories
-foreach(_dir IN ITEMS Bin Managers RenderEngines Plugins BuildingBlocks)
+_require_dir(Bin)
+
+_require_file(Bin/Player.exe)
+
+if(STATIC_PLAYER)
+    _require_dir(lib)
+    foreach(_lib IN ITEMS CK2Static VxMathStatic CK2_3DStatic)
+        _require_file("lib/${_lib}.lib")
+    endforeach()
+
+    set(_has_static_rasterizer OFF)
+    foreach(_rast IN ITEMS CKBgfxRasterizerStatic CKDX9RasterizerStatic CKGLRasterizerStatic)
+        if(EXISTS "${STAGE_ROOT}/lib/${_rast}.lib")
+            set(_has_static_rasterizer ON)
+        endif()
+    endforeach()
+    if(NOT _has_static_rasterizer)
+        message(FATAL_ERROR "Missing static rasterizer library")
+    endif()
+
+    if(CHECK_RENDER_CONFIGS AND EXISTS "${STAGE_ROOT}/Bin/CK2_3D.ini")
+        _require_file(Bin/CK2_3D.ini)
+    endif()
+
+    if(CHECK_ASSETS)
+        message(STATUS "[StageLayout] Verifying game assets...")
+        foreach(_dir IN ITEMS Textures Sounds Text "3D Entities")
+            _require_dir(${_dir})
+        endforeach()
+        foreach(_file IN ITEMS base.cmo Database.tdb)
+            _require_file(${_file})
+        endforeach()
+    endif()
+
+    message(STATUS "[StageLayout] Verification complete")
+    return()
+endif()
+
+foreach(_dir IN ITEMS Managers RenderEngines Plugins BuildingBlocks)
     _require_dir(${_dir})
 endforeach()
 
 # Core binaries
-_require_file(Bin/Player.exe)
 _require_dll(Bin/CK2)
 _require_dll(Bin/VxMath)
 
@@ -62,15 +109,21 @@ endforeach()
 
 # Render engine
 _require_dll("RenderEngines/CK2_3D")
+if(CHECK_RENDER_CONFIGS)
+    _require_file(RenderEngines/CK2_3D.ini)
+endif()
 
 set(_has_rasterizer OFF)
-foreach(_rast IN ITEMS CKDX9Rasterizer CKGLRasterizer)
+foreach(_rast IN ITEMS CKBgfxRasterizer CKDX9Rasterizer CKGLRasterizer)
     if(EXISTS "${STAGE_ROOT}/RenderEngines/${_rast}.dll" OR EXISTS "${STAGE_ROOT}/RenderEngines/lib${_rast}.dll")
         set(_has_rasterizer ON)
+        if(CHECK_RENDER_CONFIGS AND _rast STREQUAL CKBgfxRasterizer)
+            _require_file(RenderEngines/CKBgfxRasterizer.ini)
+        endif()
     endif()
 endforeach()
 if(NOT _has_rasterizer)
-    message(FATAL_ERROR "Missing rasterizer (CKDX9Rasterizer.dll/libCKDX9Rasterizer.dll or CKGLRasterizer.dll/libCKGLRasterizer.dll)")
+    message(FATAL_ERROR "Missing rasterizer (CKBgfxRasterizer.dll/libCKBgfxRasterizer.dll, CKDX9Rasterizer.dll/libCKDX9Rasterizer.dll, or CKGLRasterizer.dll/libCKGLRasterizer.dll)")
 endif()
 
 # Plugins
