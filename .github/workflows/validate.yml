@@ -58,27 +58,35 @@ jobs:
         $rootPresets = Get-Content CMakePresets.json -Raw | ConvertFrom-Json
         $configurePresets = @($rootPresets.configurePresets | ForEach-Object { $_.name })
         $buildPresets = @($rootPresets.buildPresets | ForEach-Object { $_.name })
-        $workflow = Get-Content .github/workflows/build.yml -Raw
+        $workflowPaths = @(
+          ".github/workflows/build.yml",
+          ".github/workflows/release.yml"
+        ) | Where-Object { Test-Path $_ }
 
-        $configureRefs = [regex]::Matches($workflow, 'configure_preset:\s*([A-Za-z0-9_.-]+)') |
-          ForEach-Object { $_.Groups[1].Value }
-        $buildRefs = [regex]::Matches($workflow, 'build_preset:\s*([A-Za-z0-9_.-]+)') |
-          ForEach-Object { $_.Groups[1].Value }
+        $configureRefs = @()
+        $buildRefs = @()
+        foreach ($workflowPath in $workflowPaths) {
+          $workflow = Get-Content $workflowPath -Raw
+          $configureRefs += [regex]::Matches($workflow, 'configure_preset:\s*([A-Za-z0-9_.-]+)') |
+            ForEach-Object { [PSCustomObject]@{ Path = $workflowPath; Name = $_.Groups[1].Value } }
+          $buildRefs += [regex]::Matches($workflow, 'build_preset:\s*([A-Za-z0-9_.-]+)') |
+            ForEach-Object { [PSCustomObject]@{ Path = $workflowPath; Name = $_.Groups[1].Value } }
+        }
 
         $missing = @()
         foreach ($ref in $configureRefs) {
-          if ($configurePresets -notcontains $ref) {
-            $missing += "missing configure preset: $ref"
+          if ($configurePresets -notcontains $ref.Name) {
+            $missing += "$($ref.Path): missing configure preset: $($ref.Name)"
           }
         }
         foreach ($ref in $buildRefs) {
-          if ($buildPresets -notcontains $ref) {
-            $missing += "missing build preset: $ref"
+          if ($buildPresets -notcontains $ref.Name) {
+            $missing += "$($ref.Path): missing build preset: $($ref.Name)"
           }
         }
         foreach ($ref in $buildRefs) {
-          if ($ref -match '-tests-') {
-            $missing += "build workflow must not reference test build preset: $ref"
+          if ($ref.Name -match '-tests-') {
+            $missing += "$($ref.Path): workflow must not reference test build preset: $($ref.Name)"
           }
         }
 
