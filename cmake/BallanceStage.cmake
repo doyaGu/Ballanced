@@ -5,9 +5,9 @@ include(CTest)
 get_property(_ballance_stage_is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
 
 if (_ballance_stage_is_multi_config)
-    set(_ballance_install_cmd "${CMAKE_COMMAND}" --install "${CMAKE_BINARY_DIR}" --config "$<CONFIG>")
+    set(_ballance_install_cmd "${CMAKE_COMMAND}" --install "${CMAKE_BINARY_DIR}" --config "$<CONFIG>" --component Runtime)
 else ()
-    set(_ballance_install_cmd "${CMAKE_COMMAND}" --install "${CMAKE_BINARY_DIR}")
+    set(_ballance_install_cmd "${CMAKE_COMMAND}" --install "${CMAKE_BINARY_DIR}" --component Runtime)
 endif ()
 
 add_custom_target(stage
@@ -44,7 +44,7 @@ if (BALLANCE_BUILD_STATIC_PLAYER)
     )
     foreach (_config IN LISTS _ballance_static_player_configs)
         if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${_config}")
-            install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/${_config}" DESTINATION Bin)
+            install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/${_config}" DESTINATION Bin COMPONENT Runtime)
         endif ()
     endforeach ()
 endif ()
@@ -67,12 +67,14 @@ if (BALLANCE_ASSETS_ROOT AND EXISTS "${BALLANCE_ASSETS_ROOT}")
             "${BALLANCE_ASSETS_ROOT}/Text"
             "${BALLANCE_ASSETS_ROOT}/3D Entities"
             DESTINATION . OPTIONAL
+            COMPONENT Runtime
     )
 
     install(FILES
             "${BALLANCE_ASSETS_ROOT}/base.cmo"
             "${BALLANCE_ASSETS_ROOT}/Database.tdb"
             DESTINATION . OPTIONAL
+            COMPONENT Runtime
     )
 elseif (BALLANCE_ASSETS_ROOT)
     message(WARNING "[Ballance] Asset path not found: ${BALLANCE_ASSETS_ROOT}")
