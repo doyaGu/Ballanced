@@ -27,24 +27,28 @@ jobs:
             build_preset: ballance-runtime-win32-stage-release
             test_dir: build/ballance-runtime-msvc-win32
             stage_path: build/ballance-runtime-msvc-win32/stage
+            static_player: "OFF"
 
           - name: runtime-x64
             configure_preset: ballance-runtime-msvc-x64
             build_preset: ballance-runtime-x64-stage-release
             test_dir: build/ballance-runtime-msvc-x64
             stage_path: build/ballance-runtime-msvc-x64/stage
+            static_player: "OFF"
 
           - name: static-player-win32
             configure_preset: ballance-static-player-msvc-win32
             build_preset: ballance-static-player-win32-stage-release
             test_dir: build/ballance-static-player-msvc-win32
             stage_path: build/ballance-static-player-msvc-win32/stage
+            static_player: "ON"
 
           - name: static-player-x64
             configure_preset: ballance-static-player-msvc-x64
             build_preset: ballance-static-player-x64-stage-release
             test_dir: build/ballance-static-player-msvc-x64
             stage_path: build/ballance-static-player-msvc-x64/stage
+            static_player: "ON"
 
     env:
       CMAKE_BUILD_PARALLEL_LEVEL: 4
@@ -81,6 +85,12 @@ jobs:
         }
 
         Compress-Archive -Path (Join-Path $stage "*") -DestinationPath $archive -CompressionLevel Optimal
+
+    - name: Verify release archive
+      run: |
+        $archive = Join-Path $env:GITHUB_WORKSPACE "dist/ballance-${{ matrix.name }}.zip"
+        $extractRoot = Join-Path $env:RUNNER_TEMP "release-${{ matrix.name }}"
+        cmake "-DARCHIVE_PATH:PATH=$archive" "-DEXTRACT_ROOT:PATH=$extractRoot" "-DSTATIC_PLAYER:BOOL=${{ matrix.static_player }}" -P cmake/VerifyReleaseArchive.cmake
 
     - name: Upload release archive
       uses: actions/upload-artifact@v6.0.0
