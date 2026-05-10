@@ -29,6 +29,12 @@ function(_require_file rel)
     endif()
 endfunction()
 
+function(_forbid_path rel)
+    if(EXISTS "${STAGE_ROOT}/${rel}")
+        message(FATAL_ERROR "Staged runtime must not contain development artifact path: ${STAGE_ROOT}/${rel}")
+    endif()
+endfunction()
+
 function(_require_dll rel_without_ext)
     if(EXISTS "${STAGE_ROOT}/${rel_without_ext}.dll")
         return()
@@ -57,25 +63,12 @@ message(STATUS "[StageLayout] Static player: ${STATIC_PLAYER}")
 
 # Required directories
 _require_dir(Bin)
+_forbid_path(include)
+_forbid_path(lib)
 
 _require_file(Bin/Player.exe)
 
 if(STATIC_PLAYER)
-    _require_dir(lib)
-    foreach(_lib IN ITEMS CK2Static VxMathStatic CK2_3DStatic)
-        _require_file("lib/${_lib}.lib")
-    endforeach()
-
-    set(_has_static_rasterizer OFF)
-    foreach(_rast IN ITEMS CKBgfxRasterizerStatic CKDX9RasterizerStatic CKGLRasterizerStatic)
-        if(EXISTS "${STAGE_ROOT}/lib/${_rast}.lib")
-            set(_has_static_rasterizer ON)
-        endif()
-    endforeach()
-    if(NOT _has_static_rasterizer)
-        message(FATAL_ERROR "Missing static rasterizer library")
-    endif()
-
     if(CHECK_RENDER_CONFIGS AND EXISTS "${STAGE_ROOT}/Bin/CK2_3D.ini")
         _require_file(Bin/CK2_3D.ini)
     endif()
