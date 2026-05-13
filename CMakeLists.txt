@@ -13,6 +13,10 @@ include(BallanceCache)
 include(BallanceProject)
 include(BallanceOptions)
 include(BallanceCompiler)
+include(BallanceVersion)
+
+set(BALLANCE_PLAYER_VERSION_OVERRIDE "${BALLANCE_RUNTIME_VERSION}")
+set(BALLANCE_MODULE_VERSION_OVERRIDE "${BALLANCE_RUNTIME_VERSION}")
 
 add_subdirectory(Source)
 
