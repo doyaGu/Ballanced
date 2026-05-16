@@ -16,12 +16,6 @@
 [submodule "Source/Plugins"]
 	path = Source/Plugins
 	url = https://github.com/doyaGu/CKPlugins.git
-[submodule "Source/Managers/Dx8InputManager"]
-	path = Source/Managers/Dx8InputManager
-	url = https://github.com/doyaGu/Dx8InputManager
-[submodule "Source/Managers/Dx8SoundManager"]
-	path = Source/Managers/Dx8SoundManager
-	url = https://github.com/doyaGu/Dx8SoundManager
 [submodule "Source/Managers/ParameterOperations"]
 	path = Source/Managers/ParameterOperations
 	url = https://github.com/doyaGu/CKParameterOperations.git

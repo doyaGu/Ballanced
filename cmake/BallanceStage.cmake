@@ -2,6 +2,20 @@
 
 include(CTest)
 
+if (BUILD_TESTING AND TARGET SDL3::SDL3)
+    add_executable(PlayerSdlShortcutsTest
+            "${CMAKE_SOURCE_DIR}/Source/Player/tests/PlayerSdlShortcutsTest.cpp"
+            "${CMAKE_SOURCE_DIR}/Source/Player/src/PlayerSdlShortcuts.cpp"
+    )
+    target_compile_features(PlayerSdlShortcutsTest PRIVATE cxx_std_17)
+    target_include_directories(PlayerSdlShortcutsTest PRIVATE
+            "${CMAKE_SOURCE_DIR}/Source/Player/src"
+    )
+    target_link_libraries(PlayerSdlShortcutsTest PRIVATE SDL3::SDL3)
+    set_target_properties(PlayerSdlShortcutsTest PROPERTIES FOLDER "Tests")
+    add_test(NAME PlayerSdlShortcutsTest COMMAND PlayerSdlShortcutsTest)
+endif ()
+
 get_property(_ballance_stage_is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
 
 if (_ballance_stage_is_multi_config)
@@ -18,10 +32,10 @@ add_custom_target(stage
 )
 
 set(_ballance_runtime_targets
-        VxMath CK2 CK2_3D CKDX9Rasterizer CKBgfxRasterizer
-        Dx8InputManager Dx8SoundManager SdlInputManager SdlSoundManager ParameterOperations
+        VxMath CK2 CK2_3D CKBgfxRasterizer
+        SdlInputManager SdlSoundManager ParameterOperations
         AVIReader ImageReader WavReader VirtoolsLoader
-        Player ConfigTool
+        Player
 
         # Building blocks (DLL output names may differ from target names)
         3DTrans Cameras Collision Controllers Grids Interface Lights Logics Materials
@@ -37,7 +51,11 @@ foreach (_target IN LISTS _ballance_runtime_targets)
     endif ()
 endforeach ()
 
-if (BALLANCE_ENABLE_SDL3 AND TARGET SDL3::SDL3)
+if (TARGET PlayerSdlShortcutsTest)
+    add_dependencies(stage PlayerSdlShortcutsTest)
+endif ()
+
+if (TARGET SDL3::SDL3)
     get_target_property(_ballance_sdl3_runtime SDL3::SDL3 IMPORTED_LOCATION_RELEASE)
     if (NOT _ballance_sdl3_runtime)
         get_target_property(_ballance_sdl3_runtime SDL3::SDL3 IMPORTED_LOCATION)
@@ -110,7 +128,6 @@ add_test(NAME StageLayout
         COMMAND "${CMAKE_COMMAND}"
         -DSTAGE_ROOT:PATH=${CMAKE_INSTALL_PREFIX}
         -DSTATIC_PLAYER:BOOL=${BALLANCE_BUILD_STATIC_PLAYER}
-        -DSDL3_BACKEND:BOOL=${BALLANCE_ENABLE_SDL3}
         -DCHECK_ASSETS:BOOL=$<BOOL:${BALLANCE_ASSETS_ROOT}>
         -DCHECK_RENDER_CONFIGS:BOOL=${_ballance_check_render_configs}
         -P "${CMAKE_CURRENT_LIST_DIR}/VerifyStage.cmake"
