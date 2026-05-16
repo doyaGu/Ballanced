@@ -34,8 +34,6 @@ add_subdirectory(RenderEngine)
 if (MSVC)
     _set_vs_folder(CK2_3D "Core")
     _set_vs_folder(CK2_3DStatic "Core")
-    _set_vs_folder(CKDX9Rasterizer "RenderEngines")
-    _set_vs_folder(CKDX9RasterizerStatic "RenderEngines")
     _set_vs_folder(CKBgfxRasterizer "RenderEngines")
     _set_vs_folder(CKBgfxRasterizerStatic "RenderEngines")
     _set_vs_folder(CKGLRasterizer "RenderEngines")
@@ -47,8 +45,6 @@ message(STATUS "[Ballance] Adding managers...")
 add_subdirectory(Managers)
 if (MSVC)
     foreach (_mgr IN ITEMS
-            Dx8InputManager Dx8InputManagerStatic
-            Dx8SoundManager Dx8SoundManagerStatic
             SdlInputManager SdlInputManagerStatic
             SdlSoundManager SdlSoundManagerStatic
             ParameterOperations ParameterOperationsStatic)
@@ -95,7 +91,6 @@ message(STATUS "[Ballance] Adding player...")
 add_subdirectory(Player)
 if (MSVC)
     _set_vs_folder(Player "Applications")
-    _set_vs_folder(ConfigTool "Applications")
 endif ()
 
 # Summary
