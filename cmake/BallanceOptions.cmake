@@ -68,6 +68,5 @@ endforeach ()
 
 ballance_set_cache_default(CKRE_BUILD_BGFX_RASTERIZER ON BOOL "")
 if (NOT WIN32)
-    ballance_set_cache_default(CKPLUGINS_BUILD_AVIREADER OFF BOOL "")
     ballance_set_cache_default(CKBB_BUILD_MidiManager OFF BOOL "")
 endif ()
