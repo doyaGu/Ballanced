@@ -46,7 +46,12 @@ endif ()
 message(STATUS "[Ballance] Adding managers...")
 add_subdirectory(Managers)
 if (MSVC)
-    foreach (_mgr IN ITEMS Dx8InputManager Dx8InputManagerStatic Dx8SoundManager Dx8SoundManagerStatic ParameterOperations ParameterOperationsStatic)
+    foreach (_mgr IN ITEMS
+            Dx8InputManager Dx8InputManagerStatic
+            Dx8SoundManager Dx8SoundManagerStatic
+            SdlInputManager SdlInputManagerStatic
+            SdlSoundManager SdlSoundManagerStatic
+            ParameterOperations ParameterOperationsStatic)
         _set_vs_folder(${_mgr} "Managers")
     endforeach ()
 endif ()

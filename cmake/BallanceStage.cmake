@@ -19,7 +19,7 @@ add_custom_target(stage
 
 set(_ballance_runtime_targets
         VxMath CK2 CK2_3D CKDX9Rasterizer CKBgfxRasterizer
-        Dx8InputManager Dx8SoundManager ParameterOperations
+        Dx8InputManager Dx8SoundManager SdlInputManager SdlSoundManager ParameterOperations
         AVIReader ImageReader WavReader VirtoolsLoader
         Player ConfigTool
 
@@ -36,6 +36,18 @@ foreach (_target IN LISTS _ballance_runtime_targets)
         add_dependencies(stage ${_target})
     endif ()
 endforeach ()
+
+if (BALLANCE_ENABLE_SDL3 AND TARGET SDL3::SDL3)
+    get_target_property(_ballance_sdl3_runtime SDL3::SDL3 IMPORTED_LOCATION_RELEASE)
+    if (NOT _ballance_sdl3_runtime)
+        get_target_property(_ballance_sdl3_runtime SDL3::SDL3 IMPORTED_LOCATION)
+    endif ()
+    if (_ballance_sdl3_runtime)
+        install(FILES "${_ballance_sdl3_runtime}" DESTINATION Bin COMPONENT Runtime)
+    else ()
+        message(WARNING "[Ballance] Could not determine SDL3 runtime artifact for staging")
+    endif ()
+endif ()
 
 if (BALLANCE_BUILD_STATIC_PLAYER)
     set(_ballance_static_player_configs
@@ -98,6 +110,7 @@ add_test(NAME StageLayout
         COMMAND "${CMAKE_COMMAND}"
         -DSTAGE_ROOT:PATH=${CMAKE_INSTALL_PREFIX}
         -DSTATIC_PLAYER:BOOL=${BALLANCE_BUILD_STATIC_PLAYER}
+        -DSDL3_BACKEND:BOOL=${BALLANCE_ENABLE_SDL3}
         -DCHECK_ASSETS:BOOL=$<BOOL:${BALLANCE_ASSETS_ROOT}>
         -DCHECK_RENDER_CONFIGS:BOOL=${_ballance_check_render_configs}
         -P "${CMAKE_CURRENT_LIST_DIR}/VerifyStage.cmake"

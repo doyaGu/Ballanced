@@ -4,10 +4,6 @@ if (CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
     message(FATAL_ERROR "In-source builds are not allowed. Use: cmake -B build")
 endif ()
 
-if (NOT WIN32)
-    message(FATAL_ERROR "Only Windows is supported.")
-endif ()
-
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "CMakeTargets")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)

@@ -17,6 +17,10 @@ if(NOT DEFINED STATIC_PLAYER)
     set(STATIC_PLAYER OFF)
 endif()
 
+if(NOT DEFINED SDL3_BACKEND)
+    set(SDL3_BACKEND OFF)
+endif()
+
 function(_require_dir rel)
     if(NOT IS_DIRECTORY "${STAGE_ROOT}/${rel}")
         message(FATAL_ERROR "Missing directory: ${STAGE_ROOT}/${rel}")
@@ -60,6 +64,7 @@ message(STATUS "[StageLayout] Verifying: ${STAGE_ROOT}")
 message(STATUS "[StageLayout] Check assets: ${CHECK_ASSETS}")
 message(STATUS "[StageLayout] Check render configs: ${CHECK_RENDER_CONFIGS}")
 message(STATUS "[StageLayout] Static player: ${STATIC_PLAYER}")
+message(STATUS "[StageLayout] SDL3 backend: ${SDL3_BACKEND}")
 
 # Required directories
 _require_dir(Bin)
@@ -96,7 +101,12 @@ _require_dll(Bin/CK2)
 _require_dll(Bin/VxMath)
 
 # Managers
-foreach(_mgr IN ITEMS Dx8InputManager Dx8SoundManager ParameterOperations)
+if(SDL3_BACKEND)
+    set(_required_managers SdlInputManager SdlSoundManager ParameterOperations)
+else()
+    set(_required_managers Dx8InputManager Dx8SoundManager ParameterOperations)
+endif()
+foreach(_mgr IN LISTS _required_managers)
     _require_dll("Managers/${_mgr}")
 endforeach()
 
