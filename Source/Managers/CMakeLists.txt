@@ -20,10 +20,6 @@ if (CKMANAGERS_IS_TOP_LEVEL AND CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
     message(FATAL_ERROR "In-source builds not allowed. Run CMake from a separate directory: cmake -B build")
 endif ()
 
-if (NOT WIN32)
-    message(FATAL_ERROR "CKManagers only supports Windows.")
-endif ()
-
 if (CKMANAGERS_IS_TOP_LEVEL)
     set_property(GLOBAL PROPERTY USE_FOLDERS ON)
     set_property(GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER "CMakeTargets")
@@ -44,21 +40,44 @@ if (CKMANAGERS_IS_TOP_LEVEL)
     endif ()
 endif ()
 
+option(CKMANAGERS_ENABLE_SDL3 "Build SDL3 manager backends" OFF)
 option(CKMANAGERS_BUILD_ALL "Build all available manager plugins" ON)
 option(CKMANAGERS_BUILD_DX8INPUT "Build Dx8InputManager" ON)
 option(CKMANAGERS_BUILD_DX8SOUND "Build Dx8SoundManager" ON)
+option(CKMANAGERS_BUILD_SDLINPUT "Build SdlInputManager" ON)
+option(CKMANAGERS_BUILD_SDLSOUND "Build SdlSoundManager" ON)
 option(CKMANAGERS_BUILD_PARAMETEROPERATIONS "Build ParameterOperations" ON)
+
+if (NOT WIN32 AND NOT CKMANAGERS_ENABLE_SDL3)
+    message(FATAL_ERROR "CKManagers only supports non-Windows builds with CKMANAGERS_ENABLE_SDL3=ON.")
+endif ()
+
+if (CKMANAGERS_ENABLE_SDL3 AND NOT TARGET SDL3::SDL3)
+    find_package(SDL3 CONFIG REQUIRED)
+endif ()
 
 set(CKMANAGERS_COMPONENTS "")
 
-if (CKMANAGERS_BUILD_ALL OR CKMANAGERS_BUILD_DX8INPUT)
-    add_subdirectory(Dx8InputManager)
-    list(APPEND CKMANAGERS_COMPONENTS Dx8InputManager)
-endif ()
+if (CKMANAGERS_ENABLE_SDL3)
+    if (CKMANAGERS_BUILD_ALL OR CKMANAGERS_BUILD_SDLINPUT)
+        add_subdirectory(SdlInputManager)
+        list(APPEND CKMANAGERS_COMPONENTS SdlInputManager)
+    endif ()
 
-if (CKMANAGERS_BUILD_ALL OR CKMANAGERS_BUILD_DX8SOUND)
-    add_subdirectory(Dx8SoundManager)
-    list(APPEND CKMANAGERS_COMPONENTS Dx8SoundManager)
+    if (CKMANAGERS_BUILD_ALL OR CKMANAGERS_BUILD_SDLSOUND)
+        add_subdirectory(SdlSoundManager)
+        list(APPEND CKMANAGERS_COMPONENTS SdlSoundManager)
+    endif ()
+elseif (WIN32)
+    if (CKMANAGERS_BUILD_ALL OR CKMANAGERS_BUILD_DX8INPUT)
+        add_subdirectory(Dx8InputManager)
+        list(APPEND CKMANAGERS_COMPONENTS Dx8InputManager)
+    endif ()
+
+    if (CKMANAGERS_BUILD_ALL OR CKMANAGERS_BUILD_DX8SOUND)
+        add_subdirectory(Dx8SoundManager)
+        list(APPEND CKMANAGERS_COMPONENTS Dx8SoundManager)
+    endif ()
 endif ()
 
 if (CKMANAGERS_BUILD_ALL OR CKMANAGERS_BUILD_PARAMETEROPERATIONS)
@@ -67,7 +86,12 @@ if (CKMANAGERS_BUILD_ALL OR CKMANAGERS_BUILD_PARAMETEROPERATIONS)
 endif ()
 
 if (MSVC)
-    foreach (_manager IN ITEMS Dx8InputManager Dx8InputManagerStatic Dx8SoundManager Dx8SoundManagerStatic ParameterOperations ParameterOperationsStatic)
+    foreach (_manager IN ITEMS
+            Dx8InputManager Dx8InputManagerStatic
+            Dx8SoundManager Dx8SoundManagerStatic
+            SdlInputManager SdlInputManagerStatic
+            SdlSoundManager SdlSoundManagerStatic
+            ParameterOperations ParameterOperationsStatic)
         if (TARGET ${_manager})
             set_target_properties(${_manager} PROPERTIES FOLDER "Managers")
         endif ()

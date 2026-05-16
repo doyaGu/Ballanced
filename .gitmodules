@@ -25,3 +25,9 @@
 [submodule "Source/Managers/ParameterOperations"]
 	path = Source/Managers/ParameterOperations
 	url = https://github.com/doyaGu/CKParameterOperations.git
+[submodule "Source/Managers/SdlInputManager"]
+	path = Source/Managers/SdlInputManager
+	url = https://github.com/doyaGu/SdlInputManager.git
+[submodule "Source/Managers/SdlSoundManager"]
+	path = Source/Managers/SdlSoundManager
+	url = https://github.com/doyaGu/SdlSoundManager.git
