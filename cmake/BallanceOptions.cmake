@@ -26,6 +26,9 @@ ballance_set_cache_default(BALLANCE_TEST_CONFIG "Release" STRING
 ballance_set_cache_default(BALLANCE_BUILD_STATIC_PLAYER OFF BOOL
         "Build Player with Virtools modules linked statically")
 
+ballance_set_cache_default(BALLANCE_TARGET_ARCH "" STRING
+        "Optional target architecture label used by platform presets")
+
 find_package(SDL3 CONFIG REQUIRED)
 
 foreach (_component IN ITEMS VXMATH CK2 CKRE)

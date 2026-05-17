@@ -7,60 +7,234 @@
   },
   "configurePresets": [
     {
-      "name": "msvc-win32-base",
+      "name": "windows-x86-base",
       "hidden": true,
       "generator": "Visual Studio 17 2022",
       "architecture": "Win32",
-      "binaryDir": "${sourceDir}/build/${presetName}"
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
     },
     {
-      "name": "msvc-x64-base",
+      "name": "windows-x64-base",
       "hidden": true,
       "generator": "Visual Studio 17 2022",
       "architecture": "x64",
-      "binaryDir": "${sourceDir}/build/${presetName}"
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
     },
     {
-      "name": "ballance-runtime-msvc-win32",
-      "displayName": "Ballance Runtime (MSVC Win32)",
-      "description": "Build the standard Ballance runtime layout with shared DLL modules.",
-      "inherits": "msvc-win32-base",
+      "name": "windows-arm64-base",
+      "hidden": true,
+      "generator": "Visual Studio 17 2022",
+      "architecture": "ARM64",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    },
+    {
+      "name": "linux-x64-base",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "BALLANCE_TARGET_ARCH": "x64"
+      }
+    },
+    {
+      "name": "linux-arm64-base",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "BALLANCE_TARGET_ARCH": "arm64"
+      }
+    },
+    {
+      "name": "macos-x64-base",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_OSX_ARCHITECTURES": "x86_64",
+        "BALLANCE_TARGET_ARCH": "x64"
+      }
+    },
+    {
+      "name": "macos-arm64-base",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_OSX_ARCHITECTURES": "arm64",
+        "BALLANCE_TARGET_ARCH": "arm64"
+      }
+    },
+    {
+      "name": "windows-x86-runtime",
+      "displayName": "Windows x86 Runtime",
+      "description": "Build the SDL3 Windows x86 runtime layout with shared modules.",
+      "inherits": "windows-x86-base",
       "cacheVariables": {
         "BALLANCE_BUILD_STATIC_PLAYER": "OFF"
       }
     },
     {
-      "name": "ballance-runtime-msvc-x64",
-      "displayName": "Ballance Runtime (MSVC x64)",
-      "description": "Build the x64 Ballance runtime layout with shared DLL modules.",
-      "inherits": "msvc-x64-base",
+      "name": "windows-x64-runtime",
+      "displayName": "Windows x64 Runtime",
+      "description": "Build the SDL3 Windows x64 runtime layout with shared modules.",
+      "inherits": "windows-x64-base",
       "cacheVariables": {
         "BALLANCE_BUILD_STATIC_PLAYER": "OFF"
       }
     },
     {
-      "name": "ballance-static-player-msvc-win32",
-      "displayName": "Ballance Static Player (MSVC Win32)",
-      "description": "Build Player with Virtools modules linked statically.",
-      "inherits": "msvc-win32-base",
+      "name": "windows-arm64-runtime",
+      "displayName": "Windows ARM64 Runtime",
+      "description": "Build the SDL3 Windows ARM64 runtime layout with shared modules.",
+      "inherits": "windows-arm64-base",
+      "cacheVariables": {
+        "BALLANCE_BUILD_STATIC_PLAYER": "OFF"
+      }
+    },
+    {
+      "name": "linux-x64-runtime",
+      "displayName": "Linux x64 Runtime",
+      "description": "Build the SDL3 Linux x64 runtime layout with shared modules.",
+      "inherits": "linux-x64-base",
+      "cacheVariables": {
+        "BALLANCE_BUILD_STATIC_PLAYER": "OFF"
+      }
+    },
+    {
+      "name": "linux-arm64-runtime",
+      "displayName": "Linux ARM64 Runtime",
+      "description": "Build the SDL3 Linux ARM64 runtime layout with shared modules.",
+      "inherits": "linux-arm64-base",
+      "cacheVariables": {
+        "BALLANCE_BUILD_STATIC_PLAYER": "OFF"
+      }
+    },
+    {
+      "name": "macos-x64-runtime",
+      "displayName": "macOS x64 Runtime",
+      "description": "Build the SDL3 macOS x64 runtime layout with shared modules.",
+      "inherits": "macos-x64-base",
+      "cacheVariables": {
+        "BALLANCE_BUILD_STATIC_PLAYER": "OFF"
+      }
+    },
+    {
+      "name": "macos-arm64-runtime",
+      "displayName": "macOS ARM64 Runtime",
+      "description": "Build the SDL3 macOS ARM64 runtime layout with shared modules.",
+      "inherits": "macos-arm64-base",
+      "cacheVariables": {
+        "BALLANCE_BUILD_STATIC_PLAYER": "OFF"
+      }
+    },
+    {
+      "name": "windows-x86-static-player",
+      "displayName": "Windows x86 Static Player",
+      "description": "Build the SDL3 Windows x86 Player with modules linked statically.",
+      "inherits": "windows-x86-base",
       "cacheVariables": {
         "BALLANCE_BUILD_STATIC_PLAYER": "ON"
       }
     },
     {
-      "name": "ballance-static-player-msvc-x64",
-      "displayName": "Ballance Static Player (MSVC x64)",
-      "description": "Build x64 Player with Virtools modules linked statically.",
-      "inherits": "msvc-x64-base",
+      "name": "windows-x64-static-player",
+      "displayName": "Windows x64 Static Player",
+      "description": "Build the SDL3 Windows x64 Player with modules linked statically.",
+      "inherits": "windows-x64-base",
       "cacheVariables": {
         "BALLANCE_BUILD_STATIC_PLAYER": "ON"
       }
     },
     {
-      "name": "ballance-runtime-tests-msvc-win32",
-      "displayName": "Ballance Runtime Tests (MSVC Win32)",
-      "description": "Build the shared runtime plus module test targets.",
-      "inherits": "ballance-runtime-msvc-win32",
+      "name": "windows-arm64-static-player",
+      "displayName": "Windows ARM64 Static Player",
+      "description": "Build the SDL3 Windows ARM64 Player with modules linked statically.",
+      "inherits": "windows-arm64-base",
+      "cacheVariables": {
+        "BALLANCE_BUILD_STATIC_PLAYER": "ON"
+      }
+    },
+    {
+      "name": "linux-x64-static-player",
+      "displayName": "Linux x64 Static Player",
+      "description": "Build the SDL3 Linux x64 Player with modules linked statically.",
+      "inherits": "linux-x64-base",
+      "cacheVariables": {
+        "BALLANCE_BUILD_STATIC_PLAYER": "ON"
+      }
+    },
+    {
+      "name": "linux-arm64-static-player",
+      "displayName": "Linux ARM64 Static Player",
+      "description": "Build the SDL3 Linux ARM64 Player with modules linked statically.",
+      "inherits": "linux-arm64-base",
+      "cacheVariables": {
+        "BALLANCE_BUILD_STATIC_PLAYER": "ON"
+      }
+    },
+    {
+      "name": "macos-x64-static-player",
+      "displayName": "macOS x64 Static Player",
+      "description": "Build the SDL3 macOS x64 Player with modules linked statically.",
+      "inherits": "macos-x64-base",
+      "cacheVariables": {
+        "BALLANCE_BUILD_STATIC_PLAYER": "ON"
+      }
+    },
+    {
+      "name": "macos-arm64-static-player",
+      "displayName": "macOS ARM64 Static Player",
+      "description": "Build the SDL3 macOS ARM64 Player with modules linked statically.",
+      "inherits": "macos-arm64-base",
+      "cacheVariables": {
+        "BALLANCE_BUILD_STATIC_PLAYER": "ON"
+      }
+    },
+    {
+      "name": "windows-x86-tests",
+      "displayName": "Windows x86 Tests",
+      "description": "Build the SDL3 Windows x86 runtime plus module tests.",
+      "inherits": "windows-x86-runtime",
       "cacheVariables": {
         "CK2_BUILD_TESTS": "ON",
         "VXMATH_BUILD_TESTS": "ON",
@@ -69,10 +243,70 @@
       }
     },
     {
-      "name": "ballance-runtime-tests-msvc-x64",
-      "displayName": "Ballance Runtime Tests (MSVC x64)",
-      "description": "Build the x64 shared runtime plus module test targets.",
-      "inherits": "ballance-runtime-msvc-x64",
+      "name": "windows-x64-tests",
+      "displayName": "Windows x64 Tests",
+      "description": "Build the SDL3 Windows x64 runtime plus module tests.",
+      "inherits": "windows-x64-runtime",
+      "cacheVariables": {
+        "CK2_BUILD_TESTS": "ON",
+        "VXMATH_BUILD_TESTS": "ON",
+        "CKRE_BUILD_TESTS": "ON",
+        "CKPLUGINS_BUILD_TESTS": "ON"
+      }
+    },
+    {
+      "name": "windows-arm64-tests",
+      "displayName": "Windows ARM64 Tests",
+      "description": "Build the SDL3 Windows ARM64 runtime plus module tests.",
+      "inherits": "windows-arm64-runtime",
+      "cacheVariables": {
+        "CK2_BUILD_TESTS": "ON",
+        "VXMATH_BUILD_TESTS": "ON",
+        "CKRE_BUILD_TESTS": "ON",
+        "CKPLUGINS_BUILD_TESTS": "ON"
+      }
+    },
+    {
+      "name": "linux-x64-tests",
+      "displayName": "Linux x64 Tests",
+      "description": "Build the SDL3 Linux x64 runtime plus module tests.",
+      "inherits": "linux-x64-runtime",
+      "cacheVariables": {
+        "CK2_BUILD_TESTS": "ON",
+        "VXMATH_BUILD_TESTS": "ON",
+        "CKRE_BUILD_TESTS": "ON",
+        "CKPLUGINS_BUILD_TESTS": "ON"
+      }
+    },
+    {
+      "name": "linux-arm64-tests",
+      "displayName": "Linux ARM64 Tests",
+      "description": "Build the SDL3 Linux ARM64 runtime plus module tests.",
+      "inherits": "linux-arm64-runtime",
+      "cacheVariables": {
+        "CK2_BUILD_TESTS": "ON",
+        "VXMATH_BUILD_TESTS": "ON",
+        "CKRE_BUILD_TESTS": "ON",
+        "CKPLUGINS_BUILD_TESTS": "ON"
+      }
+    },
+    {
+      "name": "macos-x64-tests",
+      "displayName": "macOS x64 Tests",
+      "description": "Build the SDL3 macOS x64 runtime plus module tests.",
+      "inherits": "macos-x64-runtime",
+      "cacheVariables": {
+        "CK2_BUILD_TESTS": "ON",
+        "VXMATH_BUILD_TESTS": "ON",
+        "CKRE_BUILD_TESTS": "ON",
+        "CKPLUGINS_BUILD_TESTS": "ON"
+      }
+    },
+    {
+      "name": "macos-arm64-tests",
+      "displayName": "macOS ARM64 Tests",
+      "description": "Build the SDL3 macOS ARM64 runtime plus module tests.",
+      "inherits": "macos-arm64-runtime",
       "cacheVariables": {
         "CK2_BUILD_TESTS": "ON",
         "VXMATH_BUILD_TESTS": "ON",
@@ -83,111 +317,471 @@
   ],
   "buildPresets": [
     {
-      "name": "ballance-runtime-win32-release",
-      "displayName": "Ballance Runtime Win32 Release",
-      "configurePreset": "ballance-runtime-msvc-win32",
+      "name": "windows-x86-runtime-release",
+      "displayName": "Windows x86 Runtime Release",
+      "configurePreset": "windows-x86-runtime",
       "configuration": "Release"
     },
     {
-      "name": "ballance-runtime-x64-release",
-      "displayName": "Ballance Runtime x64 Release",
-      "configurePreset": "ballance-runtime-msvc-x64",
+      "name": "windows-x64-runtime-release",
+      "displayName": "Windows x64 Runtime Release",
+      "configurePreset": "windows-x64-runtime",
       "configuration": "Release"
     },
     {
-      "name": "ballance-runtime-win32-stage-release",
-      "displayName": "Ballance Runtime Win32 Stage Release",
-      "configurePreset": "ballance-runtime-msvc-win32",
+      "name": "windows-arm64-runtime-release",
+      "displayName": "Windows ARM64 Runtime Release",
+      "configurePreset": "windows-arm64-runtime",
+      "configuration": "Release"
+    },
+    {
+      "name": "linux-x64-runtime-release",
+      "displayName": "Linux x64 Runtime Release",
+      "configurePreset": "linux-x64-runtime"
+    },
+    {
+      "name": "linux-arm64-runtime-release",
+      "displayName": "Linux ARM64 Runtime Release",
+      "configurePreset": "linux-arm64-runtime"
+    },
+    {
+      "name": "macos-x64-runtime-release",
+      "displayName": "macOS x64 Runtime Release",
+      "configurePreset": "macos-x64-runtime"
+    },
+    {
+      "name": "macos-arm64-runtime-release",
+      "displayName": "macOS ARM64 Runtime Release",
+      "configurePreset": "macos-arm64-runtime"
+    },
+    {
+      "name": "windows-x86-runtime-stage-release",
+      "displayName": "Windows x86 Runtime Stage Release",
+      "configurePreset": "windows-x86-runtime",
       "configuration": "Release",
       "targets": [
         "stage"
       ]
     },
     {
-      "name": "ballance-runtime-x64-stage-release",
-      "displayName": "Ballance Runtime x64 Stage Release",
-      "configurePreset": "ballance-runtime-msvc-x64",
+      "name": "windows-x64-runtime-stage-release",
+      "displayName": "Windows x64 Runtime Stage Release",
+      "configurePreset": "windows-x64-runtime",
       "configuration": "Release",
       "targets": [
         "stage"
       ]
     },
     {
-      "name": "ballance-static-player-win32-release",
-      "displayName": "Ballance Static Player Win32 Release",
-      "configurePreset": "ballance-static-player-msvc-win32",
-      "configuration": "Release"
-    },
-    {
-      "name": "ballance-static-player-x64-release",
-      "displayName": "Ballance Static Player x64 Release",
-      "configurePreset": "ballance-static-player-msvc-x64",
-      "configuration": "Release"
-    },
-    {
-      "name": "ballance-static-player-win32-stage-release",
-      "displayName": "Ballance Static Player Win32 Stage Release",
-      "configurePreset": "ballance-static-player-msvc-win32",
+      "name": "windows-arm64-runtime-stage-release",
+      "displayName": "Windows ARM64 Runtime Stage Release",
+      "configurePreset": "windows-arm64-runtime",
       "configuration": "Release",
       "targets": [
         "stage"
       ]
     },
     {
-      "name": "ballance-static-player-x64-stage-release",
-      "displayName": "Ballance Static Player x64 Stage Release",
-      "configurePreset": "ballance-static-player-msvc-x64",
+      "name": "linux-x64-runtime-stage-release",
+      "displayName": "Linux x64 Runtime Stage Release",
+      "configurePreset": "linux-x64-runtime",
+      "targets": [
+        "stage"
+      ]
+    },
+    {
+      "name": "linux-arm64-runtime-stage-release",
+      "displayName": "Linux ARM64 Runtime Stage Release",
+      "configurePreset": "linux-arm64-runtime",
+      "targets": [
+        "stage"
+      ]
+    },
+    {
+      "name": "macos-x64-runtime-stage-release",
+      "displayName": "macOS x64 Runtime Stage Release",
+      "configurePreset": "macos-x64-runtime",
+      "targets": [
+        "stage"
+      ]
+    },
+    {
+      "name": "macos-arm64-runtime-stage-release",
+      "displayName": "macOS ARM64 Runtime Stage Release",
+      "configurePreset": "macos-arm64-runtime",
+      "targets": [
+        "stage"
+      ]
+    },
+    {
+      "name": "windows-x86-static-player-release",
+      "displayName": "Windows x86 Static Player Release",
+      "configurePreset": "windows-x86-static-player",
+      "configuration": "Release"
+    },
+    {
+      "name": "windows-x64-static-player-release",
+      "displayName": "Windows x64 Static Player Release",
+      "configurePreset": "windows-x64-static-player",
+      "configuration": "Release"
+    },
+    {
+      "name": "windows-arm64-static-player-release",
+      "displayName": "Windows ARM64 Static Player Release",
+      "configurePreset": "windows-arm64-static-player",
+      "configuration": "Release"
+    },
+    {
+      "name": "linux-x64-static-player-release",
+      "displayName": "Linux x64 Static Player Release",
+      "configurePreset": "linux-x64-static-player"
+    },
+    {
+      "name": "linux-arm64-static-player-release",
+      "displayName": "Linux ARM64 Static Player Release",
+      "configurePreset": "linux-arm64-static-player"
+    },
+    {
+      "name": "macos-x64-static-player-release",
+      "displayName": "macOS x64 Static Player Release",
+      "configurePreset": "macos-x64-static-player"
+    },
+    {
+      "name": "macos-arm64-static-player-release",
+      "displayName": "macOS ARM64 Static Player Release",
+      "configurePreset": "macos-arm64-static-player"
+    },
+    {
+      "name": "windows-x86-static-player-stage-release",
+      "displayName": "Windows x86 Static Player Stage Release",
+      "configurePreset": "windows-x86-static-player",
       "configuration": "Release",
       "targets": [
         "stage"
       ]
     },
     {
-      "name": "ballance-runtime-tests-win32-release",
-      "displayName": "Ballance Runtime Tests Win32 Release",
-      "configurePreset": "ballance-runtime-tests-msvc-win32",
+      "name": "windows-x64-static-player-stage-release",
+      "displayName": "Windows x64 Static Player Stage Release",
+      "configurePreset": "windows-x64-static-player",
+      "configuration": "Release",
+      "targets": [
+        "stage"
+      ]
+    },
+    {
+      "name": "windows-arm64-static-player-stage-release",
+      "displayName": "Windows ARM64 Static Player Stage Release",
+      "configurePreset": "windows-arm64-static-player",
+      "configuration": "Release",
+      "targets": [
+        "stage"
+      ]
+    },
+    {
+      "name": "linux-x64-static-player-stage-release",
+      "displayName": "Linux x64 Static Player Stage Release",
+      "configurePreset": "linux-x64-static-player",
+      "targets": [
+        "stage"
+      ]
+    },
+    {
+      "name": "linux-arm64-static-player-stage-release",
+      "displayName": "Linux ARM64 Static Player Stage Release",
+      "configurePreset": "linux-arm64-static-player",
+      "targets": [
+        "stage"
+      ]
+    },
+    {
+      "name": "macos-x64-static-player-stage-release",
+      "displayName": "macOS x64 Static Player Stage Release",
+      "configurePreset": "macos-x64-static-player",
+      "targets": [
+        "stage"
+      ]
+    },
+    {
+      "name": "macos-arm64-static-player-stage-release",
+      "displayName": "macOS ARM64 Static Player Stage Release",
+      "configurePreset": "macos-arm64-static-player",
+      "targets": [
+        "stage"
+      ]
+    },
+    {
+      "name": "windows-x86-tests-release",
+      "displayName": "Windows x86 Tests Release",
+      "configurePreset": "windows-x86-tests",
       "configuration": "Release"
     },
     {
-      "name": "ballance-runtime-tests-x64-release",
-      "displayName": "Ballance Runtime Tests x64 Release",
-      "configurePreset": "ballance-runtime-tests-msvc-x64",
+      "name": "windows-x64-tests-release",
+      "displayName": "Windows x64 Tests Release",
+      "configurePreset": "windows-x64-tests",
       "configuration": "Release"
+    },
+    {
+      "name": "windows-arm64-tests-release",
+      "displayName": "Windows ARM64 Tests Release",
+      "configurePreset": "windows-arm64-tests",
+      "configuration": "Release"
+    },
+    {
+      "name": "linux-x64-tests-release",
+      "displayName": "Linux x64 Tests Release",
+      "configurePreset": "linux-x64-tests"
+    },
+    {
+      "name": "linux-arm64-tests-release",
+      "displayName": "Linux ARM64 Tests Release",
+      "configurePreset": "linux-arm64-tests"
+    },
+    {
+      "name": "macos-x64-tests-release",
+      "displayName": "macOS x64 Tests Release",
+      "configurePreset": "macos-x64-tests"
+    },
+    {
+      "name": "macos-arm64-tests-release",
+      "displayName": "macOS ARM64 Tests Release",
+      "configurePreset": "macos-arm64-tests"
+    },
+    {
+      "name": "windows-x86-tests-stage-release",
+      "displayName": "Windows x86 Tests Stage Release",
+      "configurePreset": "windows-x86-tests",
+      "configuration": "Release",
+      "targets": [
+        "stage"
+      ]
+    },
+    {
+      "name": "windows-x64-tests-stage-release",
+      "displayName": "Windows x64 Tests Stage Release",
+      "configurePreset": "windows-x64-tests",
+      "configuration": "Release",
+      "targets": [
+        "stage"
+      ]
+    },
+    {
+      "name": "windows-arm64-tests-stage-release",
+      "displayName": "Windows ARM64 Tests Stage Release",
+      "configurePreset": "windows-arm64-tests",
+      "configuration": "Release",
+      "targets": [
+        "stage"
+      ]
+    },
+    {
+      "name": "linux-x64-tests-stage-release",
+      "displayName": "Linux x64 Tests Stage Release",
+      "configurePreset": "linux-x64-tests",
+      "targets": [
+        "stage"
+      ]
+    },
+    {
+      "name": "linux-arm64-tests-stage-release",
+      "displayName": "Linux ARM64 Tests Stage Release",
+      "configurePreset": "linux-arm64-tests",
+      "targets": [
+        "stage"
+      ]
+    },
+    {
+      "name": "macos-x64-tests-stage-release",
+      "displayName": "macOS x64 Tests Stage Release",
+      "configurePreset": "macos-x64-tests",
+      "targets": [
+        "stage"
+      ]
+    },
+    {
+      "name": "macos-arm64-tests-stage-release",
+      "displayName": "macOS ARM64 Tests Stage Release",
+      "configurePreset": "macos-arm64-tests",
+      "targets": [
+        "stage"
+      ]
     }
   ],
   "testPresets": [
     {
-      "name": "ballance-runtime-win32-stage-release",
-      "displayName": "Ballance Runtime Win32 Stage Tests Release",
-      "configurePreset": "ballance-runtime-msvc-win32",
+      "name": "windows-x86-runtime-stage-release",
+      "displayName": "Windows x86 Runtime Stage Tests Release",
+      "configurePreset": "windows-x86-runtime",
       "configuration": "Release",
       "output": {
         "outputOnFailure": true
       }
     },
     {
-      "name": "ballance-runtime-x64-stage-release",
-      "displayName": "Ballance Runtime x64 Stage Tests Release",
-      "configurePreset": "ballance-runtime-msvc-x64",
+      "name": "windows-x64-runtime-stage-release",
+      "displayName": "Windows x64 Runtime Stage Tests Release",
+      "configurePreset": "windows-x64-runtime",
       "configuration": "Release",
       "output": {
         "outputOnFailure": true
       }
     },
     {
-      "name": "ballance-runtime-tests-win32-release",
-      "displayName": "Ballance Runtime Module Tests Win32 Release",
-      "configurePreset": "ballance-runtime-tests-msvc-win32",
+      "name": "windows-arm64-runtime-stage-release",
+      "displayName": "Windows ARM64 Runtime Stage Tests Release",
+      "configurePreset": "windows-arm64-runtime",
       "configuration": "Release",
       "output": {
         "outputOnFailure": true
       }
     },
     {
-      "name": "ballance-runtime-tests-x64-release",
-      "displayName": "Ballance Runtime Module Tests x64 Release",
-      "configurePreset": "ballance-runtime-tests-msvc-x64",
+      "name": "linux-x64-runtime-stage-release",
+      "displayName": "Linux x64 Runtime Stage Tests Release",
+      "configurePreset": "linux-x64-runtime",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "linux-arm64-runtime-stage-release",
+      "displayName": "Linux ARM64 Runtime Stage Tests Release",
+      "configurePreset": "linux-arm64-runtime",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "macos-x64-runtime-stage-release",
+      "displayName": "macOS x64 Runtime Stage Tests Release",
+      "configurePreset": "macos-x64-runtime",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "macos-arm64-runtime-stage-release",
+      "displayName": "macOS ARM64 Runtime Stage Tests Release",
+      "configurePreset": "macos-arm64-runtime",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "windows-x86-static-player-stage-release",
+      "displayName": "Windows x86 Static Player Stage Tests Release",
+      "configurePreset": "windows-x86-static-player",
       "configuration": "Release",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "windows-x64-static-player-stage-release",
+      "displayName": "Windows x64 Static Player Stage Tests Release",
+      "configurePreset": "windows-x64-static-player",
+      "configuration": "Release",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "windows-arm64-static-player-stage-release",
+      "displayName": "Windows ARM64 Static Player Stage Tests Release",
+      "configurePreset": "windows-arm64-static-player",
+      "configuration": "Release",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "linux-x64-static-player-stage-release",
+      "displayName": "Linux x64 Static Player Stage Tests Release",
+      "configurePreset": "linux-x64-static-player",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "linux-arm64-static-player-stage-release",
+      "displayName": "Linux ARM64 Static Player Stage Tests Release",
+      "configurePreset": "linux-arm64-static-player",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "macos-x64-static-player-stage-release",
+      "displayName": "macOS x64 Static Player Stage Tests Release",
+      "configurePreset": "macos-x64-static-player",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "macos-arm64-static-player-stage-release",
+      "displayName": "macOS ARM64 Static Player Stage Tests Release",
+      "configurePreset": "macos-arm64-static-player",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "windows-x86-tests-release",
+      "displayName": "Windows x86 Module Tests Release",
+      "configurePreset": "windows-x86-tests",
+      "configuration": "Release",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "windows-x64-tests-release",
+      "displayName": "Windows x64 Module Tests Release",
+      "configurePreset": "windows-x64-tests",
+      "configuration": "Release",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "windows-arm64-tests-release",
+      "displayName": "Windows ARM64 Module Tests Release",
+      "configurePreset": "windows-arm64-tests",
+      "configuration": "Release",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "linux-x64-tests-release",
+      "displayName": "Linux x64 Module Tests Release",
+      "configurePreset": "linux-x64-tests",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "linux-arm64-tests-release",
+      "displayName": "Linux ARM64 Module Tests Release",
+      "configurePreset": "linux-arm64-tests",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "macos-x64-tests-release",
+      "displayName": "macOS x64 Module Tests Release",
+      "configurePreset": "macos-x64-tests",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "macos-arm64-tests-release",
+      "displayName": "macOS ARM64 Module Tests Release",
+      "configurePreset": "macos-arm64-tests",
       "output": {
         "outputOnFailure": true
       }

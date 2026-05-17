@@ -17,10 +17,6 @@ if(NOT DEFINED STATIC_PLAYER)
     set(STATIC_PLAYER OFF)
 endif()
 
-if(NOT DEFINED SDL3_BACKEND)
-    set(SDL3_BACKEND OFF)
-endif()
-
 function(_require_dir rel)
     if(NOT IS_DIRECTORY "${STAGE_ROOT}/${rel}")
         message(FATAL_ERROR "Missing directory: ${STAGE_ROOT}/${rel}")
@@ -90,7 +86,6 @@ message(STATUS "[StageLayout] Verifying: ${STAGE_ROOT}")
 message(STATUS "[StageLayout] Check assets: ${CHECK_ASSETS}")
 message(STATUS "[StageLayout] Check render configs: ${CHECK_RENDER_CONFIGS}")
 message(STATUS "[StageLayout] Static player: ${STATIC_PLAYER}")
-message(STATUS "[StageLayout] SDL3 backend: ${SDL3_BACKEND}")
 
 # Required directories
 _require_dir(Bin)
@@ -148,10 +143,19 @@ foreach(_plugin IN ITEMS AVIReader ImageReader WavReader VirtoolsLoader)
     _require_dll("Plugins/${_plugin}")
 endforeach()
 
-# Sample building blocks
-foreach(_bb IN ITEMS 3DTransfo Cameras Collisions)
+# Portable building blocks
+foreach(_bb IN ITEMS
+        3DTransfo BuildingBlocksAddons1 Cameras Characters Collisions Controllers
+        Grids Interface Lights Logics Materials MeshModifiers Narratives Sounds
+        Visuals WorldEnvironment physics_RT TT_DatabaseManager_RT TT_Gravity_RT
+        TT_InterfaceManager_RT TT_ParticleSystems_RT TT_Toolbox_RT)
     _require_dll("BuildingBlocks/${_bb}")
 endforeach()
+
+_shared_library_exists(_has_midi_manager "BuildingBlocks/MidiManager")
+if(_has_midi_manager)
+    message(STATUS "[StageLayout] MidiManager present")
+endif()
 
 # Game assets (optional)
 if(CHECK_ASSETS)
