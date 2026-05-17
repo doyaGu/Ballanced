@@ -7,31 +7,120 @@
   },
   "configurePresets": [
     {
-      "name": "base",
+      "name": "windows-x86-base",
       "hidden": true,
       "generator": "Visual Studio 17 2022",
+      "architecture": "Win32",
       "binaryDir": "${sourceDir}/build/${presetName}",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      },
       "cacheVariables": {
         "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/${presetName}/stage"
       }
     },
     {
-      "name": "managers-runtime-msvc-win32",
-      "inherits": "base",
-      "architecture": "Win32",
-      "cacheVariables": {
-        "SDLINPUT_BUILD_SHARED": "ON",
-        "SDLINPUT_BUILD_STATIC": "OFF",
-        "SDLSOUND_BUILD_SHARED": "ON",
-        "SDLSOUND_BUILD_STATIC": "OFF",
-        "CKPARAMOP_BUILD_SHARED": "ON",
-        "CKPARAMOP_BUILD_STATIC": "OFF"
-      }
-    },
-    {
-      "name": "managers-runtime-msvc-x64",
-      "inherits": "base",
+      "name": "windows-x64-base",
+      "hidden": true,
+      "generator": "Visual Studio 17 2022",
       "architecture": "x64",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      },
+      "cacheVariables": {
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/${presetName}/stage"
+      }
+    },
+    {
+      "name": "windows-arm64-base",
+      "hidden": true,
+      "generator": "Visual Studio 17 2022",
+      "architecture": "ARM64",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      },
+      "cacheVariables": {
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/${presetName}/stage"
+      }
+    },
+    {
+      "name": "linux-x64-base",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/${presetName}/stage",
+        "BALLANCE_TARGET_ARCH": "x64"
+      }
+    },
+    {
+      "name": "linux-arm64-base",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/${presetName}/stage",
+        "BALLANCE_TARGET_ARCH": "arm64"
+      }
+    },
+    {
+      "name": "macos-x64-base",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/${presetName}/stage",
+        "CMAKE_OSX_ARCHITECTURES": "x86_64",
+        "BALLANCE_TARGET_ARCH": "x64"
+      }
+    },
+    {
+      "name": "macos-arm64-base",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Darwin"
+      },
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/build/${presetName}/stage",
+        "CMAKE_OSX_ARCHITECTURES": "arm64",
+        "BALLANCE_TARGET_ARCH": "arm64"
+      }
+    },
+    {
+      "name": "windows-x86-runtime",
+      "displayName": "Managers Windows x86 Runtime",
+      "inherits": "windows-x86-base",
       "cacheVariables": {
         "SDLINPUT_BUILD_SHARED": "ON",
         "SDLINPUT_BUILD_STATIC": "OFF",
@@ -42,9 +131,87 @@
       }
     },
     {
-      "name": "managers-static-msvc-win32",
-      "inherits": "base",
-      "architecture": "Win32",
+      "name": "windows-x64-runtime",
+      "displayName": "Managers Windows x64 Runtime",
+      "inherits": "windows-x64-base",
+      "cacheVariables": {
+        "SDLINPUT_BUILD_SHARED": "ON",
+        "SDLINPUT_BUILD_STATIC": "OFF",
+        "SDLSOUND_BUILD_SHARED": "ON",
+        "SDLSOUND_BUILD_STATIC": "OFF",
+        "CKPARAMOP_BUILD_SHARED": "ON",
+        "CKPARAMOP_BUILD_STATIC": "OFF"
+      }
+    },
+    {
+      "name": "windows-arm64-runtime",
+      "displayName": "Managers Windows ARM64 Runtime",
+      "inherits": "windows-arm64-base",
+      "cacheVariables": {
+        "SDLINPUT_BUILD_SHARED": "ON",
+        "SDLINPUT_BUILD_STATIC": "OFF",
+        "SDLSOUND_BUILD_SHARED": "ON",
+        "SDLSOUND_BUILD_STATIC": "OFF",
+        "CKPARAMOP_BUILD_SHARED": "ON",
+        "CKPARAMOP_BUILD_STATIC": "OFF"
+      }
+    },
+    {
+      "name": "linux-x64-runtime",
+      "displayName": "Managers Linux x64 Runtime",
+      "inherits": "linux-x64-base",
+      "cacheVariables": {
+        "SDLINPUT_BUILD_SHARED": "ON",
+        "SDLINPUT_BUILD_STATIC": "OFF",
+        "SDLSOUND_BUILD_SHARED": "ON",
+        "SDLSOUND_BUILD_STATIC": "OFF",
+        "CKPARAMOP_BUILD_SHARED": "ON",
+        "CKPARAMOP_BUILD_STATIC": "OFF"
+      }
+    },
+    {
+      "name": "linux-arm64-runtime",
+      "displayName": "Managers Linux ARM64 Runtime",
+      "inherits": "linux-arm64-base",
+      "cacheVariables": {
+        "SDLINPUT_BUILD_SHARED": "ON",
+        "SDLINPUT_BUILD_STATIC": "OFF",
+        "SDLSOUND_BUILD_SHARED": "ON",
+        "SDLSOUND_BUILD_STATIC": "OFF",
+        "CKPARAMOP_BUILD_SHARED": "ON",
+        "CKPARAMOP_BUILD_STATIC": "OFF"
+      }
+    },
+    {
+      "name": "macos-x64-runtime",
+      "displayName": "Managers macOS x64 Runtime",
+      "inherits": "macos-x64-base",
+      "cacheVariables": {
+        "SDLINPUT_BUILD_SHARED": "ON",
+        "SDLINPUT_BUILD_STATIC": "OFF",
+        "SDLSOUND_BUILD_SHARED": "ON",
+        "SDLSOUND_BUILD_STATIC": "OFF",
+        "CKPARAMOP_BUILD_SHARED": "ON",
+        "CKPARAMOP_BUILD_STATIC": "OFF"
+      }
+    },
+    {
+      "name": "macos-arm64-runtime",
+      "displayName": "Managers macOS ARM64 Runtime",
+      "inherits": "macos-arm64-base",
+      "cacheVariables": {
+        "SDLINPUT_BUILD_SHARED": "ON",
+        "SDLINPUT_BUILD_STATIC": "OFF",
+        "SDLSOUND_BUILD_SHARED": "ON",
+        "SDLSOUND_BUILD_STATIC": "OFF",
+        "CKPARAMOP_BUILD_SHARED": "ON",
+        "CKPARAMOP_BUILD_STATIC": "OFF"
+      }
+    },
+    {
+      "name": "windows-x86-static",
+      "displayName": "Managers Windows x86 Static",
+      "inherits": "windows-x86-base",
       "cacheVariables": {
         "SDLINPUT_BUILD_SHARED": "OFF",
         "SDLINPUT_BUILD_STATIC": "ON",
@@ -55,9 +222,74 @@
       }
     },
     {
-      "name": "managers-static-msvc-x64",
-      "inherits": "base",
-      "architecture": "x64",
+      "name": "windows-x64-static",
+      "displayName": "Managers Windows x64 Static",
+      "inherits": "windows-x64-base",
+      "cacheVariables": {
+        "SDLINPUT_BUILD_SHARED": "OFF",
+        "SDLINPUT_BUILD_STATIC": "ON",
+        "SDLSOUND_BUILD_SHARED": "OFF",
+        "SDLSOUND_BUILD_STATIC": "ON",
+        "CKPARAMOP_BUILD_SHARED": "OFF",
+        "CKPARAMOP_BUILD_STATIC": "ON"
+      }
+    },
+    {
+      "name": "windows-arm64-static",
+      "displayName": "Managers Windows ARM64 Static",
+      "inherits": "windows-arm64-base",
+      "cacheVariables": {
+        "SDLINPUT_BUILD_SHARED": "OFF",
+        "SDLINPUT_BUILD_STATIC": "ON",
+        "SDLSOUND_BUILD_SHARED": "OFF",
+        "SDLSOUND_BUILD_STATIC": "ON",
+        "CKPARAMOP_BUILD_SHARED": "OFF",
+        "CKPARAMOP_BUILD_STATIC": "ON"
+      }
+    },
+    {
+      "name": "linux-x64-static",
+      "displayName": "Managers Linux x64 Static",
+      "inherits": "linux-x64-base",
+      "cacheVariables": {
+        "SDLINPUT_BUILD_SHARED": "OFF",
+        "SDLINPUT_BUILD_STATIC": "ON",
+        "SDLSOUND_BUILD_SHARED": "OFF",
+        "SDLSOUND_BUILD_STATIC": "ON",
+        "CKPARAMOP_BUILD_SHARED": "OFF",
+        "CKPARAMOP_BUILD_STATIC": "ON"
+      }
+    },
+    {
+      "name": "linux-arm64-static",
+      "displayName": "Managers Linux ARM64 Static",
+      "inherits": "linux-arm64-base",
+      "cacheVariables": {
+        "SDLINPUT_BUILD_SHARED": "OFF",
+        "SDLINPUT_BUILD_STATIC": "ON",
+        "SDLSOUND_BUILD_SHARED": "OFF",
+        "SDLSOUND_BUILD_STATIC": "ON",
+        "CKPARAMOP_BUILD_SHARED": "OFF",
+        "CKPARAMOP_BUILD_STATIC": "ON"
+      }
+    },
+    {
+      "name": "macos-x64-static",
+      "displayName": "Managers macOS x64 Static",
+      "inherits": "macos-x64-base",
+      "cacheVariables": {
+        "SDLINPUT_BUILD_SHARED": "OFF",
+        "SDLINPUT_BUILD_STATIC": "ON",
+        "SDLSOUND_BUILD_SHARED": "OFF",
+        "SDLSOUND_BUILD_STATIC": "ON",
+        "CKPARAMOP_BUILD_SHARED": "OFF",
+        "CKPARAMOP_BUILD_STATIC": "ON"
+      }
+    },
+    {
+      "name": "macos-arm64-static",
+      "displayName": "Managers macOS ARM64 Static",
+      "inherits": "macos-arm64-base",
       "cacheVariables": {
         "SDLINPUT_BUILD_SHARED": "OFF",
         "SDLINPUT_BUILD_STATIC": "ON",
@@ -70,24 +302,66 @@
   ],
   "buildPresets": [
     {
-      "name": "managers-runtime-win32-release",
-      "configurePreset": "managers-runtime-msvc-win32",
+      "name": "windows-x86-runtime-release",
+      "configurePreset": "windows-x86-runtime",
       "configuration": "Release"
     },
     {
-      "name": "managers-runtime-x64-release",
-      "configurePreset": "managers-runtime-msvc-x64",
+      "name": "windows-x64-runtime-release",
+      "configurePreset": "windows-x64-runtime",
       "configuration": "Release"
     },
     {
-      "name": "managers-static-win32-release",
-      "configurePreset": "managers-static-msvc-win32",
+      "name": "windows-arm64-runtime-release",
+      "configurePreset": "windows-arm64-runtime",
       "configuration": "Release"
     },
     {
-      "name": "managers-static-x64-release",
-      "configurePreset": "managers-static-msvc-x64",
+      "name": "linux-x64-runtime-release",
+      "configurePreset": "linux-x64-runtime"
+    },
+    {
+      "name": "linux-arm64-runtime-release",
+      "configurePreset": "linux-arm64-runtime"
+    },
+    {
+      "name": "macos-x64-runtime-release",
+      "configurePreset": "macos-x64-runtime"
+    },
+    {
+      "name": "macos-arm64-runtime-release",
+      "configurePreset": "macos-arm64-runtime"
+    },
+    {
+      "name": "windows-x86-static-release",
+      "configurePreset": "windows-x86-static",
       "configuration": "Release"
+    },
+    {
+      "name": "windows-x64-static-release",
+      "configurePreset": "windows-x64-static",
+      "configuration": "Release"
+    },
+    {
+      "name": "windows-arm64-static-release",
+      "configurePreset": "windows-arm64-static",
+      "configuration": "Release"
+    },
+    {
+      "name": "linux-x64-static-release",
+      "configurePreset": "linux-x64-static"
+    },
+    {
+      "name": "linux-arm64-static-release",
+      "configurePreset": "linux-arm64-static"
+    },
+    {
+      "name": "macos-x64-static-release",
+      "configurePreset": "macos-x64-static"
+    },
+    {
+      "name": "macos-arm64-static-release",
+      "configurePreset": "macos-arm64-static"
     }
   ]
 }
