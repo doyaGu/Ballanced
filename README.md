@@ -1,79 +1,92 @@
 # Ballanced
 
-This repository is a reverse-engineering project for the game **Ballance**.
+Source-level reimplementation of the **Ballance** game runtime. Rebuilds the player, engine libraries, building blocks, and plugins from source into a Ballance-compatible directory layout.
 
-It contains a source-level reimplementation of the game runtime components (player, engine libraries, building blocks, plugins, etc.) and builds them into a Ballance-compatible runtime directory layout.
+Original game assets are not included - you need a copy of the original game to run it.
 
-## Status
+## For players
 
-The project builds a complete runtime layout from source. You still need the original Ballance game assets to run the game.
+Download the latest pre-built release:
 
-## Requirements
+**https://github.com/doyaGu/Ballanced/releases**
 
-- Windows
-- Visual Studio 2022 (MSVC)
-- CMake 3.25+ for presets
+### Installation
 
-Supported preset architectures are `Win32` and `x64`.
+1. Get a legal copy of the original Ballance game.
+2. Extract the release package into the `Bin` directory of your Ballance installation.
+3. Run `Bin\Player.exe`.
 
-## Quick Start
+No compatibility mode or registry edits needed.
+
+### Flat layout (alternative)
+
+Put `Player.exe`, `base.cmo`, `Database.tdb`, the asset folders, and all runtime DLLs in the same directory. When `base.cmo` is next to `Player.exe`, the player treats that directory as its root.
+
+## For developers
+
+### Requirements
+
+| Platform | Toolchain | CMake |
+|----------|-----------|-------|
+| Windows (x86 / x64 / ARM64) | Visual Studio 2022 (MSVC) | 3.25+ |
+| Linux (x64 / ARM64) | GCC or Clang + Ninja | 3.25+ |
+| macOS (x64 / ARM64) | Apple Clang + Ninja | 3.25+ |
+
+SDL3 must be on the CMake package path on all platforms (`find_package(SDL3 CONFIG REQUIRED)`).
+
+### Quick start (Windows x86)
+
+The repository has nested Git submodules. Clone with `--recurse-submodules`; after pulling, run `git submodule update --init --recursive`. See [BUILD.md](BUILD.md) for details.
 
 ```powershell
-cmake --preset ballance-runtime-msvc-win32
-cmake --build --preset ballance-runtime-win32-stage-release
-ctest --preset ballance-runtime-win32-stage-release
+git clone --recurse-submodules https://github.com/doyaGu/Ballanced.git
+cd Ballanced
+cmake --preset windows-x86-runtime
+cmake --build --preset windows-x86-runtime-stage-release
+ctest --preset windows-x86-runtime-stage-release
 ```
 
-The staged runtime is written to:
+Output goes to:
 
-```text
-build/ballance-runtime-msvc-win32/stage/
+```
+build/windows-x86-runtime/stage/Bin/Player.exe
 ```
 
-Run:
-
-```text
-build/ballance-runtime-msvc-win32/stage/Bin/Player.exe
-```
-
-See [BUILD.md](BUILD.md) for the full preset matrix, static Player builds, RenderEngine standalone builds, and manual fallback commands.
-
-## Game Assets (Original Ballance)
-
-**Ballanced** requires game assets from the original Ballance installation to function.
-
-Important notes:
-
-- This repository does **NOT** ship Ballance assets.
-- Obtain the original game legally and use files from your own copy.
+See [BUILD.md](BUILD.md) for the full preset matrix, static player builds, RenderEngine standalone builds, and troubleshooting.
 
 ### Asset staging (optional)
 
-If you point CMake at an existing Ballance install directory, the `stage` target can copy assets into the staged layout:
+Point CMake at an existing Ballance installation to copy assets into the stage:
 
 ```powershell
-cmake --preset ballance-runtime-msvc-win32 `
-  -DBALLANCE_ASSETS_ROOT=C:/path/to/your/Ballance
-cmake --build --preset ballance-runtime-win32-stage-release
+cmake --preset windows-x86-runtime -DBALLANCE_ASSETS_ROOT=C:/path/to/your/Ballance
+cmake --build --preset windows-x86-runtime-stage-release
 ```
 
-## Releases
+A local `assets/` directory in the repo root is picked up automatically.
 
-Pre-built binaries are published on GitHub releases:
+## Repository structure
 
-- https://github.com/doyaGu/Ballanced/releases
+Components under `Source/` are Git submodules:
+
+| Submodule | Repository | Description |
+|-----------|-----------|-------------|
+| `Source/Player` | [BallancePlayer](https://github.com/doyaGu/BallancePlayer) | Game player executable |
+| `Source/CK2` | [CK2](https://github.com/doyaGu/CK2) | Virtools behavioral engine |
+| `Source/VxMath` | [VxMath](https://github.com/doyaGu/VxMath) | Math and platform utilities |
+| `Source/RenderEngine` | [CKRenderEngine](https://github.com/doyaGu/CKRenderEngine) | Render engine (bgfx) |
+| `Source/BuildingBlocks` | [CKBuildingBlocks](https://github.com/doyaGu/CKBuildingBlocks) | Virtools building block modules |
+| `Source/Plugins` | [CKPlugins](https://github.com/doyaGu/CKPlugins) | File format plugins (image, audio, CMO) |
+| `Source/Managers/ParameterOperations` | [CKParameterOperations](https://github.com/doyaGu/CKParameterOperations) | Parameter operations manager |
+| `Source/Managers/SdlInputManager` | [SdlInputManager](https://github.com/doyaGu/SdlInputManager) | SDL3 input manager |
+| `Source/Managers/SdlSoundManager` | [SdlSoundManager](https://github.com/doyaGu/SdlSoundManager) | SDL3 sound manager |
 
 ## Contributing
 
-Contributions are welcome. If you're interested in helping with decompilation, bug fixing, or improving compatibility, please open an issue or submit a pull request.
+Open an issue or pull request. Decompilation, bug fixes, and compatibility work are all useful.
 
 ## Acknowledgments
 
-This project would not be possible without the following:
-- The original **Ballance** developers for their incredible game.
-- The open-source community for tools and resources used in this project.
-- Contributors who have helped with code, testing, and debugging.
-
-## Contact
-
-If you have any questions, feel free to open an issue on GitHub.
+- The original **Ballance** developers for the game.
+- The open-source projects this builds on.
+- Everyone who has contributed code, tests, or bug reports.
