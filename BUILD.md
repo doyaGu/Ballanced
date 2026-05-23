@@ -156,7 +156,7 @@ stage/
   BuildingBlocks/
     3DTransfo.dll
     Cameras.dll
-    Collision.dll
+    Collisions.dll
     ...
 ```
 
