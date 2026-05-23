@@ -39,28 +39,28 @@ jobs:
       matrix:
         include:
           - name: runtime-win32
-            configure_preset: ballance-runtime-msvc-win32
-            build_preset: ballance-runtime-win32-stage-release
-            test_dir: build/ballance-runtime-msvc-win32
-            artifact_path: build/ballance-runtime-msvc-win32/stage
+            configure_preset: windows-x86-runtime
+            build_preset: windows-x86-runtime-stage-release
+            test_dir: build/windows-x86-runtime
+            artifact_path: build/windows-x86-runtime/stage
 
           - name: runtime-x64
-            configure_preset: ballance-runtime-msvc-x64
-            build_preset: ballance-runtime-x64-stage-release
-            test_dir: build/ballance-runtime-msvc-x64
-            artifact_path: build/ballance-runtime-msvc-x64/stage
+            configure_preset: windows-x64-runtime
+            build_preset: windows-x64-runtime-stage-release
+            test_dir: build/windows-x64-runtime
+            artifact_path: build/windows-x64-runtime/stage
 
           - name: static-player-win32
-            configure_preset: ballance-static-player-msvc-win32
-            build_preset: ballance-static-player-win32-stage-release
-            test_dir: build/ballance-static-player-msvc-win32
-            artifact_path: build/ballance-static-player-msvc-win32/stage
+            configure_preset: windows-x86-static-player
+            build_preset: windows-x86-static-player-stage-release
+            test_dir: build/windows-x86-static-player
+            artifact_path: build/windows-x86-static-player/stage
 
           - name: static-player-x64
-            configure_preset: ballance-static-player-msvc-x64
-            build_preset: ballance-static-player-x64-stage-release
-            test_dir: build/ballance-static-player-msvc-x64
-            artifact_path: build/ballance-static-player-msvc-x64/stage
+            configure_preset: windows-x64-static-player
+            build_preset: windows-x64-static-player-stage-release
+            test_dir: build/windows-x64-static-player
+            artifact_path: build/windows-x64-static-player/stage
 
     env:
       CMAKE_BUILD_PARALLEL_LEVEL: 4
