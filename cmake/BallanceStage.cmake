@@ -55,10 +55,25 @@ if (TARGET PlayerSdlShortcutsTest)
     add_dependencies(stage PlayerSdlShortcutsTest)
 endif ()
 
-set(_ballance_check_sdl3_runtime OFF)
+set(_ballance_sdl3_runtime_target "")
 if (TARGET SDL3::SDL3-shared)
+    set(_ballance_sdl3_runtime_target SDL3::SDL3-shared)
+elseif (TARGET SDL3::SDL3)
+    get_target_property(_ballance_sdl3_runtime_target SDL3::SDL3 ALIASED_TARGET)
+    if (NOT _ballance_sdl3_runtime_target)
+        set(_ballance_sdl3_runtime_target SDL3::SDL3)
+    endif ()
+    get_target_property(_ballance_sdl3_type ${_ballance_sdl3_runtime_target} TYPE)
+    get_target_property(_ballance_sdl3_imported ${_ballance_sdl3_runtime_target} IMPORTED)
+    if (NOT _ballance_sdl3_imported OR NOT _ballance_sdl3_type STREQUAL "SHARED_LIBRARY")
+        set(_ballance_sdl3_runtime_target "")
+    endif ()
+endif ()
+
+set(_ballance_check_sdl3_runtime OFF)
+if (_ballance_sdl3_runtime_target)
     set(_ballance_check_sdl3_runtime ON)
-    install(IMPORTED_RUNTIME_ARTIFACTS SDL3::SDL3-shared
+    install(IMPORTED_RUNTIME_ARTIFACTS ${_ballance_sdl3_runtime_target}
             RUNTIME DESTINATION Bin COMPONENT Runtime
             LIBRARY DESTINATION Bin COMPONENT Runtime
             FRAMEWORK DESTINATION Bin COMPONENT Runtime
