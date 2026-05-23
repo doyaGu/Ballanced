@@ -55,16 +55,14 @@ if (TARGET PlayerSdlShortcutsTest)
     add_dependencies(stage PlayerSdlShortcutsTest)
 endif ()
 
-if (TARGET SDL3::SDL3)
-    get_target_property(_ballance_sdl3_runtime SDL3::SDL3 IMPORTED_LOCATION_RELEASE)
-    if (NOT _ballance_sdl3_runtime)
-        get_target_property(_ballance_sdl3_runtime SDL3::SDL3 IMPORTED_LOCATION)
-    endif ()
-    if (_ballance_sdl3_runtime)
-        install(FILES "${_ballance_sdl3_runtime}" DESTINATION Bin COMPONENT Runtime)
-    else ()
-        message(WARNING "[Ballance] Could not determine SDL3 runtime artifact for staging")
-    endif ()
+set(_ballance_check_sdl3_runtime OFF)
+if (TARGET SDL3::SDL3-shared)
+    set(_ballance_check_sdl3_runtime ON)
+    install(IMPORTED_RUNTIME_ARTIFACTS SDL3::SDL3-shared
+            RUNTIME DESTINATION Bin COMPONENT Runtime
+            LIBRARY DESTINATION Bin COMPONENT Runtime
+            FRAMEWORK DESTINATION Bin COMPONENT Runtime
+    )
 endif ()
 
 if (BALLANCE_BUILD_STATIC_PLAYER)
@@ -130,6 +128,7 @@ add_test(NAME StageLayout
         -DSTATIC_PLAYER:BOOL=${BALLANCE_BUILD_STATIC_PLAYER}
         -DCHECK_ASSETS:BOOL=$<BOOL:${BALLANCE_ASSETS_ROOT}>
         -DCHECK_RENDER_CONFIGS:BOOL=${_ballance_check_render_configs}
+        -DCHECK_SDL3_RUNTIME:BOOL=${_ballance_check_sdl3_runtime}
         -P "${CMAKE_CURRENT_LIST_DIR}/VerifyStage.cmake"
 )
 

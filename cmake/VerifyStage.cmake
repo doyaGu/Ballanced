@@ -17,6 +17,10 @@ if(NOT DEFINED STATIC_PLAYER)
     set(STATIC_PLAYER OFF)
 endif()
 
+if(NOT DEFINED CHECK_SDL3_RUNTIME)
+    set(CHECK_SDL3_RUNTIME ON)
+endif()
+
 function(_require_dir rel)
     if(NOT IS_DIRECTORY "${STAGE_ROOT}/${rel}")
         message(FATAL_ERROR "Missing directory: ${STAGE_ROOT}/${rel}")
@@ -49,6 +53,14 @@ function(_require_dll rel_without_ext)
         endif()
         if(EXISTS "${STAGE_ROOT}/${_alt_rel}")
             return()
+        endif()
+        if(_ext STREQUAL ".so")
+            file(GLOB _versioned_matches LIST_DIRECTORIES FALSE
+                    "${STAGE_ROOT}/${rel_without_ext}${_ext}*"
+                    "${STAGE_ROOT}/${_alt_rel}*")
+            if(_versioned_matches)
+                return()
+            endif()
         endif()
     endforeach()
 
@@ -86,6 +98,7 @@ message(STATUS "[StageLayout] Verifying: ${STAGE_ROOT}")
 message(STATUS "[StageLayout] Check assets: ${CHECK_ASSETS}")
 message(STATUS "[StageLayout] Check render configs: ${CHECK_RENDER_CONFIGS}")
 message(STATUS "[StageLayout] Static player: ${STATIC_PLAYER}")
+message(STATUS "[StageLayout] Check SDL3 runtime: ${CHECK_SDL3_RUNTIME}")
 
 # Required directories
 _require_dir(Bin)
@@ -93,6 +106,9 @@ _forbid_path(include)
 _forbid_path(lib)
 
 _require_exe(Bin/Player)
+if(CHECK_SDL3_RUNTIME)
+    _require_dll(Bin/SDL3)
+endif()
 
 if(STATIC_PLAYER)
     if(CHECK_RENDER_CONFIGS AND EXISTS "${STAGE_ROOT}/Bin/CK2_3D.ini")
