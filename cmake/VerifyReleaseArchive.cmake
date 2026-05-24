@@ -1,6 +1,6 @@
 # Verifies a release ZIP by extracting it and checking the staged runtime layout.
 # Usage:
-#   cmake -DARCHIVE_PATH=<zip> -DEXTRACT_ROOT=<dir> [-DSTATIC_PLAYER=ON] -P VerifyReleaseArchive.cmake
+#   cmake -DARCHIVE_PATH=<zip> -DEXTRACT_ROOT=<dir> [-DBALLANCE_BUILD_STATIC=ON] -P VerifyReleaseArchive.cmake
 
 if (NOT DEFINED ARCHIVE_PATH OR ARCHIVE_PATH STREQUAL "")
     message(FATAL_ERROR "ARCHIVE_PATH is required")
@@ -14,8 +14,8 @@ if (NOT DEFINED EXTRACT_ROOT OR EXTRACT_ROOT STREQUAL "")
     set(EXTRACT_ROOT "${CMAKE_CURRENT_BINARY_DIR}/release-archive-check")
 endif ()
 
-if (NOT DEFINED STATIC_PLAYER)
-    set(STATIC_PLAYER OFF)
+if (NOT DEFINED BALLANCE_BUILD_STATIC)
+    set(BALLANCE_BUILD_STATIC OFF)
 endif ()
 
 if (NOT DEFINED CHECK_RENDER_CONFIGS)

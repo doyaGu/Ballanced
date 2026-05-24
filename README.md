@@ -52,7 +52,7 @@ Output goes to:
 build/windows-x86-runtime/stage/Bin/Player.exe
 ```
 
-See [BUILD.md](BUILD.md) for the full preset matrix, static player builds, RenderEngine standalone builds, and troubleshooting.
+See [BUILD.md](BUILD.md) for the full preset matrix, static build builds, RenderEngine standalone builds, and troubleshooting.
 
 ### Asset staging (optional)
 

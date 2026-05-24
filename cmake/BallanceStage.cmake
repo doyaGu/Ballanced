@@ -2,7 +2,17 @@
 
 include(CTest)
 
-if (BUILD_TESTING AND TARGET SDL3::SDL3)
+set(_ballance_can_run_target_executables ON)
+if (WIN32 AND CMAKE_GENERATOR_PLATFORM)
+    string(TOLOWER "${CMAKE_GENERATOR_PLATFORM}" _ballance_target_platform_lc)
+    string(TOLOWER "${CMAKE_HOST_SYSTEM_PROCESSOR}" _ballance_host_processor_lc)
+    if (_ballance_target_platform_lc STREQUAL "arm64" AND
+            NOT _ballance_host_processor_lc MATCHES "^(arm64|aarch64)$")
+        set(_ballance_can_run_target_executables OFF)
+    endif ()
+endif ()
+
+if (BUILD_TESTING AND TARGET SDL3::SDL3 AND _ballance_can_run_target_executables)
     add_executable(PlayerSdlShortcutsTest
             "${CMAKE_SOURCE_DIR}/Source/Player/tests/PlayerSdlShortcutsTest.cpp"
             "${CMAKE_SOURCE_DIR}/Source/Player/src/PlayerSdlShortcuts.cpp"
@@ -14,6 +24,8 @@ if (BUILD_TESTING AND TARGET SDL3::SDL3)
     target_link_libraries(PlayerSdlShortcutsTest PRIVATE SDL3::SDL3)
     set_target_properties(PlayerSdlShortcutsTest PROPERTIES FOLDER "Tests")
     add_test(NAME PlayerSdlShortcutsTest COMMAND PlayerSdlShortcutsTest)
+elseif (BUILD_TESTING AND NOT _ballance_can_run_target_executables)
+    message(STATUS "PlayerSdlShortcutsTest disabled: host cannot run target executables")
 endif ()
 
 get_property(_ballance_stage_is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
@@ -80,12 +92,12 @@ if (_ballance_sdl3_runtime_target)
     )
 endif ()
 
-if (BALLANCE_BUILD_STATIC_PLAYER)
-    set(_ballance_static_player_configs
+if (BALLANCE_BUILD_STATIC)
+    set(_ballance_static_configs
             Source/RenderEngine/src/CK2_3D.ini
             Source/RenderEngine/src/CKRasterizer/CKBgfxRasterizer/CKBgfxRasterizer.ini
     )
-    foreach (_config IN LISTS _ballance_static_player_configs)
+    foreach (_config IN LISTS _ballance_static_configs)
         if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${_config}")
             install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/${_config}" DESTINATION Bin COMPONENT Runtime)
         endif ()
@@ -140,7 +152,7 @@ add_test(NAME StageInstall
 add_test(NAME StageLayout
         COMMAND "${CMAKE_COMMAND}"
         -DSTAGE_ROOT:PATH=${CMAKE_INSTALL_PREFIX}
-        -DSTATIC_PLAYER:BOOL=${BALLANCE_BUILD_STATIC_PLAYER}
+        -DBALLANCE_BUILD_STATIC:BOOL=${BALLANCE_BUILD_STATIC}
         -DCHECK_ASSETS:BOOL=$<BOOL:${BALLANCE_ASSETS_ROOT}>
         -DCHECK_RENDER_CONFIGS:BOOL=${_ballance_check_render_configs}
         -DCHECK_SDL3_RUNTIME:BOOL=${_ballance_check_sdl3_runtime}
