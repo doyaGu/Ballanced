@@ -10,7 +10,7 @@ Use manual `cmake -S ... -B ...` commands only when a preset does not cover your
 - Visual Studio 2022 (MSVC)
 - CMake 3.25+
 
-Supported architectures: Win32 and x64.
+Supported architectures: x86, x64, and ARM64.
 
 ## Getting the source
 
@@ -49,25 +49,25 @@ A line prefixed with `-` means that submodule is not initialized. Run `git submo
 Configure:
 
 ```powershell
-cmake --preset ballance-runtime-msvc-win32
+cmake --preset windows-x86-runtime
 ```
 
 Build and stage:
 
 ```powershell
-cmake --build --preset ballance-runtime-win32-stage-release
+cmake --build --preset windows-x86-runtime-stage-release
 ```
 
 Run layout checks:
 
 ```powershell
-ctest --preset ballance-runtime-win32-stage-release
+ctest --preset windows-x86-runtime-stage-release
 ```
 
-Output path: `build/<configure-preset>/stage/`. For `ballance-runtime-msvc-win32`:
+Output path: `build/<configure-preset>/stage/`. For `windows-x86-runtime`:
 
 ```
-build/ballance-runtime-msvc-win32/stage/Bin/Player.exe
+build/windows-x86-runtime/stage/Bin/Player.exe
 ```
 
 ## Preset matrix
@@ -84,27 +84,38 @@ ctest --list-presets
 
 | Preset | Arch | Mode |
 |--------|------|------|
-| `ballance-runtime-msvc-win32` | Win32 | Shared DLL runtime |
-| `ballance-runtime-msvc-x64` | x64 | Shared DLL runtime |
-| `ballance-static-player-msvc-win32` | Win32 | Modules linked statically |
-| `ballance-static-player-msvc-x64` | x64 | Modules linked statically |
-| `ballance-runtime-tests-msvc-win32` | Win32 | Shared runtime + module tests |
-| `ballance-runtime-tests-msvc-x64` | x64 | Shared runtime + module tests |
+| `windows-x86-runtime` | x86 | Shared DLL runtime |
+| `windows-x64-runtime` | x64 | Shared DLL runtime |
+| `windows-arm64-runtime` | ARM64 | Shared DLL runtime |
+| `windows-x86-static` | x86 | Modules linked statically |
+| `windows-x64-static` | x64 | Modules linked statically |
+| `windows-arm64-static` | ARM64 | Modules linked statically |
+| `windows-x86-tests` | x86 | Shared runtime + module tests |
+| `windows-x64-tests` | x64 | Shared runtime + module tests |
+| `windows-arm64-tests` | ARM64 | Shared runtime + module tests |
 
 ### Build presets
 
 | Build preset | Effect |
 |---|---|
-| `ballance-runtime-win32-release` | Build Win32 runtime in Release |
-| `ballance-runtime-x64-release` | Build x64 runtime in Release |
-| `ballance-runtime-win32-stage-release` | Build and stage Win32 runtime |
-| `ballance-runtime-x64-stage-release` | Build and stage x64 runtime |
-| `ballance-static-player-win32-release` | Build Win32 static player in Release |
-| `ballance-static-player-x64-release` | Build x64 static player in Release |
-| `ballance-static-player-win32-stage-release` | Build and stage Win32 static player |
-| `ballance-static-player-x64-stage-release` | Build and stage x64 static player |
-| `ballance-runtime-tests-win32-release` | Build Win32 module tests in Release |
-| `ballance-runtime-tests-x64-release` | Build x64 module tests in Release |
+| `windows-x86-runtime-release` | Build x86 runtime in Release |
+| `windows-x64-runtime-release` | Build x64 runtime in Release |
+| `windows-arm64-runtime-release` | Build ARM64 runtime in Release |
+| `windows-x86-runtime-stage-release` | Build and stage x86 runtime |
+| `windows-x64-runtime-stage-release` | Build and stage x64 runtime |
+| `windows-arm64-runtime-stage-release` | Build and stage ARM64 runtime |
+| `windows-x86-static-release` | Build x86 static runtime in Release |
+| `windows-x64-static-release` | Build x64 static runtime in Release |
+| `windows-arm64-static-release` | Build ARM64 static runtime in Release |
+| `windows-x86-static-stage-release` | Build and stage x86 static runtime |
+| `windows-x64-static-stage-release` | Build and stage x64 static runtime |
+| `windows-arm64-static-stage-release` | Build and stage ARM64 static runtime |
+| `windows-x86-tests-release` | Build x86 module tests in Release |
+| `windows-x64-tests-release` | Build x64 module tests in Release |
+| `windows-arm64-tests-release` | Build ARM64 module tests in Release |
+| `windows-x86-tests-stage-release` | Build and stage x86 module tests |
+| `windows-x64-tests-stage-release` | Build and stage x64 module tests |
+| `windows-arm64-tests-stage-release` | Build and stage ARM64 module tests |
 
 ## Runtime layout
 
@@ -156,17 +167,18 @@ A local `assets/` directory in the repo root is picked up automatically (`BALLAN
 Shared DLL modules plus a normal `Player.exe`.
 
 ```powershell
-cmake --preset ballance-runtime-msvc-win32
-cmake --build --preset ballance-runtime-win32-stage-release
+cmake --preset windows-x86-runtime
+cmake --build --preset windows-x86-runtime-stage-release
 ```
 
-### Static player
+### Static
 
 All Virtools modules linked into `Player.exe`. No separate module DLLs.
+The static presets set `BALLANCE_BUILD_STATIC=ON`.
 
 ```powershell
-cmake --preset ballance-static-player-msvc-win32
-cmake --build --preset ballance-static-player-win32-stage-release
+cmake --preset windows-x86-static
+cmake --build --preset windows-x86-static-stage-release
 ```
 
 ### Tests
@@ -174,9 +186,9 @@ cmake --build --preset ballance-static-player-win32-stage-release
 Module unit tests for CK2, VxMath, RenderEngine, and Plugins.
 
 ```powershell
-cmake --preset ballance-runtime-tests-msvc-win32
-cmake --build --preset ballance-runtime-tests-win32-release
-ctest --preset ballance-runtime-tests-win32-release
+cmake --preset windows-x86-tests
+cmake --build --preset windows-x86-tests-release
+ctest --preset windows-x86-tests-release
 ```
 
 ## Custom configuration
@@ -184,22 +196,22 @@ ctest --preset ballance-runtime-tests-win32-release
 Stage assets from an existing Ballance installation:
 
 ```powershell
-cmake --preset ballance-runtime-msvc-win32 -DBALLANCE_ASSETS_ROOT=C:/path/to/Ballance
-cmake --build --preset ballance-runtime-win32-stage-release
+cmake --preset windows-x86-runtime -DBALLANCE_ASSETS_ROOT=C:/path/to/Ballance
+cmake --build --preset windows-x86-runtime-stage-release
 ```
 
 Use a custom stage directory:
 
 ```powershell
-cmake --preset ballance-runtime-msvc-win32 -DCMAKE_INSTALL_PREFIX=C:/BallanceStage
-cmake --build --preset ballance-runtime-win32-stage-release
+cmake --preset windows-x86-runtime -DCMAKE_INSTALL_PREFIX=C:/BallanceStage
+cmake --build --preset windows-x86-runtime-stage-release
 ```
 
 Build a single target:
 
 ```powershell
-cmake --build --preset ballance-runtime-win32-release --target Player
-cmake --build --preset ballance-runtime-win32-release --target CK2
+cmake --build --preset windows-x86-runtime-release --target Player
+cmake --build --preset windows-x86-runtime-release --target CK2
 ```
 
 ## Manual fallback
@@ -217,8 +229,8 @@ ctest --test-dir build/manual-win32 -C Release --output-on-failure
 Re-run configure first:
 
 ```powershell
-cmake --preset ballance-runtime-msvc-win32
-cmake --build --preset ballance-runtime-win32-stage-release
+cmake --preset windows-x86-runtime
+cmake --build --preset windows-x86-runtime-stage-release
 ```
 
 ### Stage layout verification fails
@@ -226,7 +238,7 @@ cmake --build --preset ballance-runtime-win32-stage-release
 CTest output shows the missing file or directory:
 
 ```powershell
-ctest --preset ballance-runtime-win32-stage-release
+ctest --preset windows-x86-runtime-stage-release
 ```
 
 ### Missing runtime DLLs
@@ -234,7 +246,7 @@ ctest --preset ballance-runtime-win32-stage-release
 The default build target does not run the install step. Use the stage preset:
 
 ```powershell
-cmake --build --preset ballance-runtime-win32-stage-release
+cmake --build --preset windows-x86-runtime-stage-release
 ```
 
 ## Notes

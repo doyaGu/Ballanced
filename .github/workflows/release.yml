@@ -53,32 +53,46 @@ jobs:
       matrix:
         include:
           - name: runtime-win32
-            configure_preset: ballance-runtime-msvc-win32
-            build_preset: ballance-runtime-win32-stage-release
-            test_dir: build/ballance-runtime-msvc-win32
-            stage_path: build/ballance-runtime-msvc-win32/stage
-            static_player: "OFF"
+            configure_preset: windows-x86-runtime
+            build_preset: windows-x86-runtime-stage-release
+            test_dir: build/windows-x86-runtime
+            stage_path: build/windows-x86-runtime/stage
+            build_static: "OFF"
 
           - name: runtime-x64
-            configure_preset: ballance-runtime-msvc-x64
-            build_preset: ballance-runtime-x64-stage-release
-            test_dir: build/ballance-runtime-msvc-x64
-            stage_path: build/ballance-runtime-msvc-x64/stage
-            static_player: "OFF"
+            configure_preset: windows-x64-runtime
+            build_preset: windows-x64-runtime-stage-release
+            test_dir: build/windows-x64-runtime
+            stage_path: build/windows-x64-runtime/stage
+            build_static: "OFF"
 
-          - name: static-player-win32
-            configure_preset: ballance-static-player-msvc-win32
-            build_preset: ballance-static-player-win32-stage-release
-            test_dir: build/ballance-static-player-msvc-win32
-            stage_path: build/ballance-static-player-msvc-win32/stage
-            static_player: "ON"
+          - name: runtime-arm64
+            configure_preset: windows-arm64-runtime
+            build_preset: windows-arm64-runtime-stage-release
+            test_dir: build/windows-arm64-runtime
+            stage_path: build/windows-arm64-runtime/stage
+            build_static: "OFF"
 
-          - name: static-player-x64
-            configure_preset: ballance-static-player-msvc-x64
-            build_preset: ballance-static-player-x64-stage-release
-            test_dir: build/ballance-static-player-msvc-x64
-            stage_path: build/ballance-static-player-msvc-x64/stage
-            static_player: "ON"
+          - name: static-win32
+            configure_preset: windows-x86-static
+            build_preset: windows-x86-static-stage-release
+            test_dir: build/windows-x86-static
+            stage_path: build/windows-x86-static/stage
+            build_static: "ON"
+
+          - name: static-x64
+            configure_preset: windows-x64-static
+            build_preset: windows-x64-static-stage-release
+            test_dir: build/windows-x64-static
+            stage_path: build/windows-x64-static/stage
+            build_static: "ON"
+
+          - name: static-arm64
+            configure_preset: windows-arm64-static
+            build_preset: windows-arm64-static-stage-release
+            test_dir: build/windows-arm64-static
+            stage_path: build/windows-arm64-static/stage
+            build_static: "ON"
 
     env:
       CMAKE_BUILD_PARALLEL_LEVEL: 4
@@ -120,7 +134,7 @@ jobs:
       run: |
         $archive = Join-Path $env:GITHUB_WORKSPACE "dist/ballance-${{ matrix.name }}.zip"
         $extractRoot = Join-Path $env:RUNNER_TEMP "release-${{ matrix.name }}"
-        cmake "-DARCHIVE_PATH:PATH=$archive" "-DEXTRACT_ROOT:PATH=$extractRoot" "-DSTATIC_PLAYER:BOOL=${{ matrix.static_player }}" -P cmake/VerifyReleaseArchive.cmake
+        cmake "-DARCHIVE_PATH:PATH=$archive" "-DEXTRACT_ROOT:PATH=$extractRoot" "-DBALLANCE_BUILD_STATIC:BOOL=${{ matrix.build_static }}" -P cmake/VerifyReleaseArchive.cmake
 
     - name: Upload GitHub release asset
       if: startsWith(github.ref, 'refs/tags/')

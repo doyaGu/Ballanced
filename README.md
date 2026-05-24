@@ -30,35 +30,35 @@ Put `Player.exe`, `base.cmo`, `Database.tdb`, the asset folders, and all runtime
 - Visual Studio 2022 (MSVC)
 - CMake 3.25+
 
-Supported architectures: Win32 and x64.
+Supported architectures: x86, x64, and ARM64.
 
-### Quick start (Win32)
+### Quick start (x86)
 
 The repository has nested Git submodules. Clone with `--recurse-submodules`; after pulling, run `git submodule update --init --recursive`. See [BUILD.md](BUILD.md) for details.
 
 ```powershell
 git clone --recurse-submodules https://github.com/doyaGu/Ballanced.git
 cd Ballanced
-cmake --preset ballance-runtime-msvc-win32
-cmake --build --preset ballance-runtime-win32-stage-release
-ctest --preset ballance-runtime-win32-stage-release
+cmake --preset windows-x86-runtime
+cmake --build --preset windows-x86-runtime-stage-release
+ctest --preset windows-x86-runtime-stage-release
 ```
 
 Output:
 
 ```
-build/ballance-runtime-msvc-win32/stage/Bin/Player.exe
+build/windows-x86-runtime/stage/Bin/Player.exe
 ```
 
-See [BUILD.md](BUILD.md) for the full preset matrix, static player builds, and troubleshooting.
+See [BUILD.md](BUILD.md) for the full preset matrix, static builds, and troubleshooting.
 
 ### Asset staging (optional)
 
 Point CMake at an existing Ballance installation to copy assets into the stage:
 
 ```powershell
-cmake --preset ballance-runtime-msvc-win32 -DBALLANCE_ASSETS_ROOT=C:/path/to/your/Ballance
-cmake --build --preset ballance-runtime-win32-stage-release
+cmake --preset windows-x86-runtime -DBALLANCE_ASSETS_ROOT=C:/path/to/your/Ballance
+cmake --build --preset windows-x86-runtime-stage-release
 ```
 
 A local `assets/` directory in the repo root is picked up automatically.
