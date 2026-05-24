@@ -7,60 +7,100 @@
   },
   "configurePresets": [
     {
-      "name": "msvc-win32-base",
+      "name": "windows-x86-base",
       "hidden": true,
       "generator": "Visual Studio 17 2022",
       "architecture": "Win32",
-      "binaryDir": "${sourceDir}/build/${presetName}"
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
     },
     {
-      "name": "msvc-x64-base",
+      "name": "windows-x64-base",
       "hidden": true,
       "generator": "Visual Studio 17 2022",
       "architecture": "x64",
-      "binaryDir": "${sourceDir}/build/${presetName}"
-    },
-    {
-      "name": "ballance-runtime-msvc-win32",
-      "displayName": "Ballance Runtime (MSVC Win32)",
-      "description": "Build the standard Ballance runtime layout with shared DLL modules.",
-      "inherits": "msvc-win32-base",
-      "cacheVariables": {
-        "BALLANCE_BUILD_STATIC_PLAYER": "OFF"
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
       }
     },
     {
-      "name": "ballance-runtime-msvc-x64",
-      "displayName": "Ballance Runtime (MSVC x64)",
-      "description": "Build the x64 Ballance runtime layout with shared DLL modules.",
-      "inherits": "msvc-x64-base",
-      "cacheVariables": {
-        "BALLANCE_BUILD_STATIC_PLAYER": "OFF"
+      "name": "windows-arm64-base",
+      "hidden": true,
+      "generator": "Visual Studio 17 2022",
+      "architecture": "ARM64",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
       }
     },
     {
-      "name": "ballance-static-player-msvc-win32",
-      "displayName": "Ballance Static Player (MSVC Win32)",
-      "description": "Build Player with Virtools modules linked statically.",
-      "inherits": "msvc-win32-base",
+      "name": "windows-x86-runtime",
+      "displayName": "Windows x86 Runtime",
+      "description": "Build the Windows x86 runtime layout with shared DLL modules.",
+      "inherits": "windows-x86-base",
       "cacheVariables": {
-        "BALLANCE_BUILD_STATIC_PLAYER": "ON"
+        "BALLANCE_BUILD_STATIC": "OFF"
       }
     },
     {
-      "name": "ballance-static-player-msvc-x64",
-      "displayName": "Ballance Static Player (MSVC x64)",
-      "description": "Build x64 Player with Virtools modules linked statically.",
-      "inherits": "msvc-x64-base",
+      "name": "windows-x64-runtime",
+      "displayName": "Windows x64 Runtime",
+      "description": "Build the Windows x64 runtime layout with shared DLL modules.",
+      "inherits": "windows-x64-base",
       "cacheVariables": {
-        "BALLANCE_BUILD_STATIC_PLAYER": "ON"
+        "BALLANCE_BUILD_STATIC": "OFF"
       }
     },
     {
-      "name": "ballance-runtime-tests-msvc-win32",
-      "displayName": "Ballance Runtime Tests (MSVC Win32)",
-      "description": "Build the shared runtime plus module test targets.",
-      "inherits": "ballance-runtime-msvc-win32",
+      "name": "windows-arm64-runtime",
+      "displayName": "Windows ARM64 Runtime",
+      "description": "Build the Windows ARM64 runtime layout with shared DLL modules.",
+      "inherits": "windows-arm64-base",
+      "cacheVariables": {
+        "BALLANCE_BUILD_STATIC": "OFF"
+      }
+    },
+    {
+      "name": "windows-x86-static",
+      "displayName": "Windows x86 Static",
+      "description": "Build the Windows x86 runtime with Virtools modules linked statically.",
+      "inherits": "windows-x86-base",
+      "cacheVariables": {
+        "BALLANCE_BUILD_STATIC": "ON"
+      }
+    },
+    {
+      "name": "windows-x64-static",
+      "displayName": "Windows x64 Static",
+      "description": "Build the Windows x64 runtime with Virtools modules linked statically.",
+      "inherits": "windows-x64-base",
+      "cacheVariables": {
+        "BALLANCE_BUILD_STATIC": "ON"
+      }
+    },
+    {
+      "name": "windows-arm64-static",
+      "displayName": "Windows ARM64 Static",
+      "description": "Build the Windows ARM64 runtime with Virtools modules linked statically.",
+      "inherits": "windows-arm64-base",
+      "cacheVariables": {
+        "BALLANCE_BUILD_STATIC": "ON"
+      }
+    },
+    {
+      "name": "windows-x86-tests",
+      "displayName": "Windows x86 Tests",
+      "description": "Build the Windows x86 runtime plus module tests.",
+      "inherits": "windows-x86-runtime",
       "cacheVariables": {
         "CK2_BUILD_TESTS": "ON",
         "VXMATH_BUILD_TESTS": "ON",
@@ -69,10 +109,22 @@
       }
     },
     {
-      "name": "ballance-runtime-tests-msvc-x64",
-      "displayName": "Ballance Runtime Tests (MSVC x64)",
-      "description": "Build the x64 shared runtime plus module test targets.",
-      "inherits": "ballance-runtime-msvc-x64",
+      "name": "windows-x64-tests",
+      "displayName": "Windows x64 Tests",
+      "description": "Build the Windows x64 runtime plus module tests.",
+      "inherits": "windows-x64-runtime",
+      "cacheVariables": {
+        "CK2_BUILD_TESTS": "ON",
+        "VXMATH_BUILD_TESTS": "ON",
+        "CKRE_BUILD_TESTS": "ON",
+        "CKPLUGINS_BUILD_TESTS": "ON"
+      }
+    },
+    {
+      "name": "windows-arm64-tests",
+      "displayName": "Windows ARM64 Tests",
+      "description": "Build the Windows ARM64 runtime plus module tests.",
+      "inherits": "windows-arm64-runtime",
       "cacheVariables": {
         "CK2_BUILD_TESTS": "ON",
         "VXMATH_BUILD_TESTS": "ON",
@@ -83,110 +135,218 @@
   ],
   "buildPresets": [
     {
-      "name": "ballance-runtime-win32-release",
-      "displayName": "Ballance Runtime Win32 Release",
-      "configurePreset": "ballance-runtime-msvc-win32",
+      "name": "windows-x86-runtime-release",
+      "displayName": "Windows x86 Runtime Release",
+      "configurePreset": "windows-x86-runtime",
       "configuration": "Release"
     },
     {
-      "name": "ballance-runtime-x64-release",
-      "displayName": "Ballance Runtime x64 Release",
-      "configurePreset": "ballance-runtime-msvc-x64",
+      "name": "windows-x64-runtime-release",
+      "displayName": "Windows x64 Runtime Release",
+      "configurePreset": "windows-x64-runtime",
       "configuration": "Release"
     },
     {
-      "name": "ballance-runtime-win32-stage-release",
-      "displayName": "Ballance Runtime Win32 Stage Release",
-      "configurePreset": "ballance-runtime-msvc-win32",
+      "name": "windows-arm64-runtime-release",
+      "displayName": "Windows ARM64 Runtime Release",
+      "configurePreset": "windows-arm64-runtime",
+      "configuration": "Release"
+    },
+    {
+      "name": "windows-x86-runtime-stage-release",
+      "displayName": "Windows x86 Runtime Stage Release",
+      "configurePreset": "windows-x86-runtime",
       "configuration": "Release",
       "targets": [
         "stage"
       ]
     },
     {
-      "name": "ballance-runtime-x64-stage-release",
-      "displayName": "Ballance Runtime x64 Stage Release",
-      "configurePreset": "ballance-runtime-msvc-x64",
+      "name": "windows-x64-runtime-stage-release",
+      "displayName": "Windows x64 Runtime Stage Release",
+      "configurePreset": "windows-x64-runtime",
       "configuration": "Release",
       "targets": [
         "stage"
       ]
     },
     {
-      "name": "ballance-static-player-win32-release",
-      "displayName": "Ballance Static Player Win32 Release",
-      "configurePreset": "ballance-static-player-msvc-win32",
-      "configuration": "Release"
-    },
-    {
-      "name": "ballance-static-player-x64-release",
-      "displayName": "Ballance Static Player x64 Release",
-      "configurePreset": "ballance-static-player-msvc-x64",
-      "configuration": "Release"
-    },
-    {
-      "name": "ballance-static-player-win32-stage-release",
-      "displayName": "Ballance Static Player Win32 Stage Release",
-      "configurePreset": "ballance-static-player-msvc-win32",
+      "name": "windows-arm64-runtime-stage-release",
+      "displayName": "Windows ARM64 Runtime Stage Release",
+      "configurePreset": "windows-arm64-runtime",
       "configuration": "Release",
       "targets": [
         "stage"
       ]
     },
     {
-      "name": "ballance-static-player-x64-stage-release",
-      "displayName": "Ballance Static Player x64 Stage Release",
-      "configurePreset": "ballance-static-player-msvc-x64",
+      "name": "windows-x86-static-release",
+      "displayName": "Windows x86 Static Release",
+      "configurePreset": "windows-x86-static",
+      "configuration": "Release"
+    },
+    {
+      "name": "windows-x64-static-release",
+      "displayName": "Windows x64 Static Release",
+      "configurePreset": "windows-x64-static",
+      "configuration": "Release"
+    },
+    {
+      "name": "windows-arm64-static-release",
+      "displayName": "Windows ARM64 Static Release",
+      "configurePreset": "windows-arm64-static",
+      "configuration": "Release"
+    },
+    {
+      "name": "windows-x86-static-stage-release",
+      "displayName": "Windows x86 Static Stage Release",
+      "configurePreset": "windows-x86-static",
       "configuration": "Release",
       "targets": [
         "stage"
       ]
     },
     {
-      "name": "ballance-runtime-tests-win32-release",
-      "displayName": "Ballance Runtime Tests Win32 Release",
-      "configurePreset": "ballance-runtime-tests-msvc-win32",
+      "name": "windows-x64-static-stage-release",
+      "displayName": "Windows x64 Static Stage Release",
+      "configurePreset": "windows-x64-static",
+      "configuration": "Release",
+      "targets": [
+        "stage"
+      ]
+    },
+    {
+      "name": "windows-arm64-static-stage-release",
+      "displayName": "Windows ARM64 Static Stage Release",
+      "configurePreset": "windows-arm64-static",
+      "configuration": "Release",
+      "targets": [
+        "stage"
+      ]
+    },
+    {
+      "name": "windows-x86-tests-release",
+      "displayName": "Windows x86 Tests Release",
+      "configurePreset": "windows-x86-tests",
       "configuration": "Release"
     },
     {
-      "name": "ballance-runtime-tests-x64-release",
-      "displayName": "Ballance Runtime Tests x64 Release",
-      "configurePreset": "ballance-runtime-tests-msvc-x64",
+      "name": "windows-x64-tests-release",
+      "displayName": "Windows x64 Tests Release",
+      "configurePreset": "windows-x64-tests",
       "configuration": "Release"
+    },
+    {
+      "name": "windows-arm64-tests-release",
+      "displayName": "Windows ARM64 Tests Release",
+      "configurePreset": "windows-arm64-tests",
+      "configuration": "Release"
+    },
+    {
+      "name": "windows-x86-tests-stage-release",
+      "displayName": "Windows x86 Tests Stage Release",
+      "configurePreset": "windows-x86-tests",
+      "configuration": "Release",
+      "targets": [
+        "stage"
+      ]
+    },
+    {
+      "name": "windows-x64-tests-stage-release",
+      "displayName": "Windows x64 Tests Stage Release",
+      "configurePreset": "windows-x64-tests",
+      "configuration": "Release",
+      "targets": [
+        "stage"
+      ]
+    },
+    {
+      "name": "windows-arm64-tests-stage-release",
+      "displayName": "Windows ARM64 Tests Stage Release",
+      "configurePreset": "windows-arm64-tests",
+      "configuration": "Release",
+      "targets": [
+        "stage"
+      ]
     }
   ],
   "testPresets": [
     {
-      "name": "ballance-runtime-win32-stage-release",
-      "displayName": "Ballance Runtime Win32 Stage Tests Release",
-      "configurePreset": "ballance-runtime-msvc-win32",
+      "name": "windows-x86-runtime-stage-release",
+      "displayName": "Windows x86 Runtime Stage Tests Release",
+      "configurePreset": "windows-x86-runtime",
       "configuration": "Release",
       "output": {
         "outputOnFailure": true
       }
     },
     {
-      "name": "ballance-runtime-x64-stage-release",
-      "displayName": "Ballance Runtime x64 Stage Tests Release",
-      "configurePreset": "ballance-runtime-msvc-x64",
+      "name": "windows-x64-runtime-stage-release",
+      "displayName": "Windows x64 Runtime Stage Tests Release",
+      "configurePreset": "windows-x64-runtime",
       "configuration": "Release",
       "output": {
         "outputOnFailure": true
       }
     },
     {
-      "name": "ballance-runtime-tests-win32-release",
-      "displayName": "Ballance Runtime Module Tests Win32 Release",
-      "configurePreset": "ballance-runtime-tests-msvc-win32",
+      "name": "windows-arm64-runtime-stage-release",
+      "displayName": "Windows ARM64 Runtime Stage Tests Release",
+      "configurePreset": "windows-arm64-runtime",
       "configuration": "Release",
       "output": {
         "outputOnFailure": true
       }
     },
     {
-      "name": "ballance-runtime-tests-x64-release",
-      "displayName": "Ballance Runtime Module Tests x64 Release",
-      "configurePreset": "ballance-runtime-tests-msvc-x64",
+      "name": "windows-x86-static-stage-release",
+      "displayName": "Windows x86 Static Stage Tests Release",
+      "configurePreset": "windows-x86-static",
+      "configuration": "Release",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "windows-x64-static-stage-release",
+      "displayName": "Windows x64 Static Stage Tests Release",
+      "configurePreset": "windows-x64-static",
+      "configuration": "Release",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "windows-arm64-static-stage-release",
+      "displayName": "Windows ARM64 Static Stage Tests Release",
+      "configurePreset": "windows-arm64-static",
+      "configuration": "Release",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "windows-x86-tests-release",
+      "displayName": "Windows x86 Module Tests Release",
+      "configurePreset": "windows-x86-tests",
+      "configuration": "Release",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "windows-x64-tests-release",
+      "displayName": "Windows x64 Module Tests Release",
+      "configurePreset": "windows-x64-tests",
+      "configuration": "Release",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "windows-arm64-tests-release",
+      "displayName": "Windows ARM64 Module Tests Release",
+      "configurePreset": "windows-arm64-tests",
       "configuration": "Release",
       "output": {
         "outputOnFailure": true
