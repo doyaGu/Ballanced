@@ -118,6 +118,10 @@ ctest --list-presets
 | `macos-x64-tests` | macOS | x64 | Shared runtime + module tests |
 | `macos-arm64-tests` | macOS | ARM64 | Shared runtime + module tests |
 
+When cross-building Windows ARM64 from an x64 Windows host with shader generation enabled,
+RenderEngine builds a host-compatible bgfx `shaderc.exe` automatically. You can still
+override it with `-DCKRE_SHADERC_EXECUTABLE:FILEPATH=<path-to-host-shaderc.exe>`.
+
 ### Build presets
 
 Build presets follow `<configure-preset>-release` (plain build) or `<configure-preset>-stage-release` (build + stage install).
