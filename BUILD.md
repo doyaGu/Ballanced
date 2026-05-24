@@ -103,13 +103,13 @@ ctest --list-presets
 | `linux-arm64-runtime` | Linux | ARM64 | Shared runtime |
 | `macos-x64-runtime` | macOS | x64 | Shared runtime |
 | `macos-arm64-runtime` | macOS | ARM64 | Shared runtime |
-| `windows-x86-static-player` | Windows | x86 | Modules linked statically |
-| `windows-x64-static-player` | Windows | x64 | Modules linked statically |
-| `windows-arm64-static-player` | Windows | ARM64 | Modules linked statically |
-| `linux-x64-static-player` | Linux | x64 | Modules linked statically |
-| `linux-arm64-static-player` | Linux | ARM64 | Modules linked statically |
-| `macos-x64-static-player` | macOS | x64 | Modules linked statically |
-| `macos-arm64-static-player` | macOS | ARM64 | Modules linked statically |
+| `windows-x86-static` | Windows | x86 | Modules linked statically |
+| `windows-x64-static` | Windows | x64 | Modules linked statically |
+| `windows-arm64-static` | Windows | ARM64 | Modules linked statically |
+| `linux-x64-static` | Linux | x64 | Modules linked statically |
+| `linux-arm64-static` | Linux | ARM64 | Modules linked statically |
+| `macos-x64-static` | macOS | x64 | Modules linked statically |
+| `macos-arm64-static` | macOS | ARM64 | Modules linked statically |
 | `windows-x86-tests` | Windows | x86 | Shared runtime + module tests |
 | `windows-x64-tests` | Windows | x64 | Shared runtime + module tests |
 | `windows-arm64-tests` | Windows | ARM64 | Shared runtime + module tests |
@@ -126,7 +126,7 @@ Build presets follow `<configure-preset>-release` (plain build) or `<configure-p
 |---|---|
 | `windows-x86-runtime-release` | Build Win32 runtime in Release |
 | `windows-x86-runtime-stage-release` | Build and stage Win32 runtime |
-| `windows-x86-static-player-stage-release` | Build and stage Win32 static player |
+| `windows-x86-static-stage-release` | Build and stage Win32 static build |
 | `linux-x64-runtime-stage-release` | Build and stage Linux x64 runtime |
 | `macos-arm64-runtime-stage-release` | Build and stage macOS ARM64 runtime |
 
@@ -184,13 +184,13 @@ cmake --preset windows-x86-runtime
 cmake --build --preset windows-x86-runtime-stage-release
 ```
 
-### Static player
+### Static build
 
 All Virtools modules linked into `Player.exe`. No separate module DLLs.
 
 ```bash
-cmake --preset windows-x86-static-player
-cmake --build --preset windows-x86-static-player-stage-release
+cmake --preset windows-x86-static
+cmake --build --preset windows-x86-static-stage-release
 ```
 
 ### Tests

@@ -13,8 +13,8 @@ if(NOT DEFINED CHECK_RENDER_CONFIGS)
     set(CHECK_RENDER_CONFIGS OFF)
 endif()
 
-if(NOT DEFINED STATIC_PLAYER)
-    set(STATIC_PLAYER OFF)
+if(NOT DEFINED BALLANCE_BUILD_STATIC)
+    set(BALLANCE_BUILD_STATIC OFF)
 endif()
 
 if(NOT DEFINED CHECK_SDL3_RUNTIME)
@@ -97,7 +97,7 @@ endfunction()
 message(STATUS "[StageLayout] Verifying: ${STAGE_ROOT}")
 message(STATUS "[StageLayout] Check assets: ${CHECK_ASSETS}")
 message(STATUS "[StageLayout] Check render configs: ${CHECK_RENDER_CONFIGS}")
-message(STATUS "[StageLayout] Static player: ${STATIC_PLAYER}")
+message(STATUS "[StageLayout] Static build: ${BALLANCE_BUILD_STATIC}")
 message(STATUS "[StageLayout] Check SDL3 runtime: ${CHECK_SDL3_RUNTIME}")
 
 # Required directories
@@ -110,7 +110,7 @@ if(CHECK_SDL3_RUNTIME)
     _require_dll(Bin/SDL3)
 endif()
 
-if(STATIC_PLAYER)
+if(BALLANCE_BUILD_STATIC)
     if(CHECK_RENDER_CONFIGS AND EXISTS "${STAGE_ROOT}/Bin/CK2_3D.ini")
         _require_file(Bin/CK2_3D.ini)
     endif()

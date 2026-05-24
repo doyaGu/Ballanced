@@ -18,8 +18,10 @@ on:
           - all
           - runtime-win32
           - runtime-x64
-          - static-player-win32
-          - static-player-x64
+          - runtime-arm64
+          - static-win32
+          - static-x64
+          - static-arm64
 
 permissions:
   contents: read
@@ -50,17 +52,29 @@ jobs:
             test_dir: build/windows-x64-runtime
             artifact_path: build/windows-x64-runtime/stage
 
-          - name: static-player-win32
-            configure_preset: windows-x86-static-player
-            build_preset: windows-x86-static-player-stage-release
-            test_dir: build/windows-x86-static-player
-            artifact_path: build/windows-x86-static-player/stage
+          - name: runtime-arm64
+            configure_preset: windows-arm64-runtime
+            build_preset: windows-arm64-runtime-stage-release
+            test_dir: build/windows-arm64-runtime
+            artifact_path: build/windows-arm64-runtime/stage
 
-          - name: static-player-x64
-            configure_preset: windows-x64-static-player
-            build_preset: windows-x64-static-player-stage-release
-            test_dir: build/windows-x64-static-player
-            artifact_path: build/windows-x64-static-player/stage
+          - name: static-win32
+            configure_preset: windows-x86-static
+            build_preset: windows-x86-static-stage-release
+            test_dir: build/windows-x86-static
+            artifact_path: build/windows-x86-static/stage
+
+          - name: static-x64
+            configure_preset: windows-x64-static
+            build_preset: windows-x64-static-stage-release
+            test_dir: build/windows-x64-static
+            artifact_path: build/windows-x64-static/stage
+
+          - name: static-arm64
+            configure_preset: windows-arm64-static
+            build_preset: windows-arm64-static-stage-release
+            test_dir: build/windows-arm64-static
+            artifact_path: build/windows-arm64-static/stage
 
     env:
       CMAKE_BUILD_PARALLEL_LEVEL: 4

@@ -23,7 +23,7 @@ ballance_set_cache_default(BALLANCE_DIR "" PATH
 ballance_set_cache_default(BALLANCE_TEST_CONFIG "Release" STRING
         "CTest configuration for multi-config generators")
 
-ballance_set_cache_default(BALLANCE_BUILD_STATIC_PLAYER OFF BOOL
+ballance_set_cache_default(BALLANCE_BUILD_STATIC OFF BOOL
         "Build Player with Virtools modules linked statically")
 
 ballance_set_cache_default(BALLANCE_TARGET_ARCH "" STRING
@@ -32,7 +32,7 @@ ballance_set_cache_default(BALLANCE_TARGET_ARCH "" STRING
 find_package(SDL3 CONFIG REQUIRED)
 
 foreach (_component IN ITEMS VXMATH CK2 CKRE)
-    if (BALLANCE_BUILD_STATIC_PLAYER)
+    if (BALLANCE_BUILD_STATIC)
         ballance_set_cache_default(${_component}_BUILD_SHARED OFF BOOL "")
         ballance_set_cache_default(${_component}_BUILD_STATIC ON BOOL "")
     else ()
@@ -43,7 +43,7 @@ foreach (_component IN ITEMS VXMATH CK2 CKRE)
     ballance_set_cache_default(${_component}_BUILD_TESTS OFF BOOL "")
 endforeach ()
 
-if (BALLANCE_BUILD_STATIC_PLAYER)
+if (BALLANCE_BUILD_STATIC)
     ballance_set_cache_default(CKBB_BUILD_SHARED OFF BOOL "")
     ballance_set_cache_default(CKBB_BUILD_STATIC ON BOOL "")
     ballance_set_cache_default(CKPLUGINS_BUILD_SHARED OFF BOOL "")

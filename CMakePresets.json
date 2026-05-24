@@ -40,6 +40,9 @@
         "type": "equals",
         "lhs": "${hostSystemName}",
         "rhs": "Windows"
+      },
+      "cacheVariables": {
+        "CKRE_GENERATE_SHADERS": "OFF"
       }
     },
     {
@@ -110,7 +113,7 @@
       "description": "Build the SDL3 Windows x86 runtime layout with shared modules.",
       "inherits": "windows-x86-base",
       "cacheVariables": {
-        "BALLANCE_BUILD_STATIC_PLAYER": "OFF"
+        "BALLANCE_BUILD_STATIC": "OFF"
       }
     },
     {
@@ -119,7 +122,7 @@
       "description": "Build the SDL3 Windows x64 runtime layout with shared modules.",
       "inherits": "windows-x64-base",
       "cacheVariables": {
-        "BALLANCE_BUILD_STATIC_PLAYER": "OFF"
+        "BALLANCE_BUILD_STATIC": "OFF"
       }
     },
     {
@@ -128,7 +131,7 @@
       "description": "Build the SDL3 Windows ARM64 runtime layout with shared modules.",
       "inherits": "windows-arm64-base",
       "cacheVariables": {
-        "BALLANCE_BUILD_STATIC_PLAYER": "OFF"
+        "BALLANCE_BUILD_STATIC": "OFF"
       }
     },
     {
@@ -137,7 +140,7 @@
       "description": "Build the SDL3 Linux x64 runtime layout with shared modules.",
       "inherits": "linux-x64-base",
       "cacheVariables": {
-        "BALLANCE_BUILD_STATIC_PLAYER": "OFF"
+        "BALLANCE_BUILD_STATIC": "OFF"
       }
     },
     {
@@ -146,7 +149,7 @@
       "description": "Build the SDL3 Linux ARM64 runtime layout with shared modules.",
       "inherits": "linux-arm64-base",
       "cacheVariables": {
-        "BALLANCE_BUILD_STATIC_PLAYER": "OFF"
+        "BALLANCE_BUILD_STATIC": "OFF"
       }
     },
     {
@@ -155,7 +158,7 @@
       "description": "Build the SDL3 macOS x64 runtime layout with shared modules.",
       "inherits": "macos-x64-base",
       "cacheVariables": {
-        "BALLANCE_BUILD_STATIC_PLAYER": "OFF"
+        "BALLANCE_BUILD_STATIC": "OFF"
       }
     },
     {
@@ -164,70 +167,70 @@
       "description": "Build the SDL3 macOS ARM64 runtime layout with shared modules.",
       "inherits": "macos-arm64-base",
       "cacheVariables": {
-        "BALLANCE_BUILD_STATIC_PLAYER": "OFF"
+        "BALLANCE_BUILD_STATIC": "OFF"
       }
     },
     {
-      "name": "windows-x86-static-player",
-      "displayName": "Windows x86 Static Player",
+      "name": "windows-x86-static",
+      "displayName": "Windows x86 Static",
       "description": "Build the SDL3 Windows x86 Player with modules linked statically.",
       "inherits": "windows-x86-base",
       "cacheVariables": {
-        "BALLANCE_BUILD_STATIC_PLAYER": "ON"
+        "BALLANCE_BUILD_STATIC": "ON"
       }
     },
     {
-      "name": "windows-x64-static-player",
-      "displayName": "Windows x64 Static Player",
+      "name": "windows-x64-static",
+      "displayName": "Windows x64 Static",
       "description": "Build the SDL3 Windows x64 Player with modules linked statically.",
       "inherits": "windows-x64-base",
       "cacheVariables": {
-        "BALLANCE_BUILD_STATIC_PLAYER": "ON"
+        "BALLANCE_BUILD_STATIC": "ON"
       }
     },
     {
-      "name": "windows-arm64-static-player",
-      "displayName": "Windows ARM64 Static Player",
+      "name": "windows-arm64-static",
+      "displayName": "Windows ARM64 Static",
       "description": "Build the SDL3 Windows ARM64 Player with modules linked statically.",
       "inherits": "windows-arm64-base",
       "cacheVariables": {
-        "BALLANCE_BUILD_STATIC_PLAYER": "ON"
+        "BALLANCE_BUILD_STATIC": "ON"
       }
     },
     {
-      "name": "linux-x64-static-player",
-      "displayName": "Linux x64 Static Player",
+      "name": "linux-x64-static",
+      "displayName": "Linux x64 Static",
       "description": "Build the SDL3 Linux x64 Player with modules linked statically.",
       "inherits": "linux-x64-base",
       "cacheVariables": {
-        "BALLANCE_BUILD_STATIC_PLAYER": "ON"
+        "BALLANCE_BUILD_STATIC": "ON"
       }
     },
     {
-      "name": "linux-arm64-static-player",
-      "displayName": "Linux ARM64 Static Player",
+      "name": "linux-arm64-static",
+      "displayName": "Linux ARM64 Static",
       "description": "Build the SDL3 Linux ARM64 Player with modules linked statically.",
       "inherits": "linux-arm64-base",
       "cacheVariables": {
-        "BALLANCE_BUILD_STATIC_PLAYER": "ON"
+        "BALLANCE_BUILD_STATIC": "ON"
       }
     },
     {
-      "name": "macos-x64-static-player",
-      "displayName": "macOS x64 Static Player",
+      "name": "macos-x64-static",
+      "displayName": "macOS x64 Static",
       "description": "Build the SDL3 macOS x64 Player with modules linked statically.",
       "inherits": "macos-x64-base",
       "cacheVariables": {
-        "BALLANCE_BUILD_STATIC_PLAYER": "ON"
+        "BALLANCE_BUILD_STATIC": "ON"
       }
     },
     {
-      "name": "macos-arm64-static-player",
-      "displayName": "macOS ARM64 Static Player",
+      "name": "macos-arm64-static",
+      "displayName": "macOS ARM64 Static",
       "description": "Build the SDL3 macOS ARM64 Player with modules linked statically.",
       "inherits": "macos-arm64-base",
       "cacheVariables": {
-        "BALLANCE_BUILD_STATIC_PLAYER": "ON"
+        "BALLANCE_BUILD_STATIC": "ON"
       }
     },
     {
@@ -414,98 +417,98 @@
       ]
     },
     {
-      "name": "windows-x86-static-player-release",
-      "displayName": "Windows x86 Static Player Release",
-      "configurePreset": "windows-x86-static-player",
+      "name": "windows-x86-static-release",
+      "displayName": "Windows x86 Static Release",
+      "configurePreset": "windows-x86-static",
       "configuration": "Release"
     },
     {
-      "name": "windows-x64-static-player-release",
-      "displayName": "Windows x64 Static Player Release",
-      "configurePreset": "windows-x64-static-player",
+      "name": "windows-x64-static-release",
+      "displayName": "Windows x64 Static Release",
+      "configurePreset": "windows-x64-static",
       "configuration": "Release"
     },
     {
-      "name": "windows-arm64-static-player-release",
-      "displayName": "Windows ARM64 Static Player Release",
-      "configurePreset": "windows-arm64-static-player",
+      "name": "windows-arm64-static-release",
+      "displayName": "Windows ARM64 Static Release",
+      "configurePreset": "windows-arm64-static",
       "configuration": "Release"
     },
     {
-      "name": "linux-x64-static-player-release",
-      "displayName": "Linux x64 Static Player Release",
-      "configurePreset": "linux-x64-static-player"
+      "name": "linux-x64-static-release",
+      "displayName": "Linux x64 Static Release",
+      "configurePreset": "linux-x64-static"
     },
     {
-      "name": "linux-arm64-static-player-release",
-      "displayName": "Linux ARM64 Static Player Release",
-      "configurePreset": "linux-arm64-static-player"
+      "name": "linux-arm64-static-release",
+      "displayName": "Linux ARM64 Static Release",
+      "configurePreset": "linux-arm64-static"
     },
     {
-      "name": "macos-x64-static-player-release",
-      "displayName": "macOS x64 Static Player Release",
-      "configurePreset": "macos-x64-static-player"
+      "name": "macos-x64-static-release",
+      "displayName": "macOS x64 Static Release",
+      "configurePreset": "macos-x64-static"
     },
     {
-      "name": "macos-arm64-static-player-release",
-      "displayName": "macOS ARM64 Static Player Release",
-      "configurePreset": "macos-arm64-static-player"
+      "name": "macos-arm64-static-release",
+      "displayName": "macOS ARM64 Static Release",
+      "configurePreset": "macos-arm64-static"
     },
     {
-      "name": "windows-x86-static-player-stage-release",
-      "displayName": "Windows x86 Static Player Stage Release",
-      "configurePreset": "windows-x86-static-player",
+      "name": "windows-x86-static-stage-release",
+      "displayName": "Windows x86 Static Stage Release",
+      "configurePreset": "windows-x86-static",
       "configuration": "Release",
       "targets": [
         "stage"
       ]
     },
     {
-      "name": "windows-x64-static-player-stage-release",
-      "displayName": "Windows x64 Static Player Stage Release",
-      "configurePreset": "windows-x64-static-player",
+      "name": "windows-x64-static-stage-release",
+      "displayName": "Windows x64 Static Stage Release",
+      "configurePreset": "windows-x64-static",
       "configuration": "Release",
       "targets": [
         "stage"
       ]
     },
     {
-      "name": "windows-arm64-static-player-stage-release",
-      "displayName": "Windows ARM64 Static Player Stage Release",
-      "configurePreset": "windows-arm64-static-player",
+      "name": "windows-arm64-static-stage-release",
+      "displayName": "Windows ARM64 Static Stage Release",
+      "configurePreset": "windows-arm64-static",
       "configuration": "Release",
       "targets": [
         "stage"
       ]
     },
     {
-      "name": "linux-x64-static-player-stage-release",
-      "displayName": "Linux x64 Static Player Stage Release",
-      "configurePreset": "linux-x64-static-player",
+      "name": "linux-x64-static-stage-release",
+      "displayName": "Linux x64 Static Stage Release",
+      "configurePreset": "linux-x64-static",
       "targets": [
         "stage"
       ]
     },
     {
-      "name": "linux-arm64-static-player-stage-release",
-      "displayName": "Linux ARM64 Static Player Stage Release",
-      "configurePreset": "linux-arm64-static-player",
+      "name": "linux-arm64-static-stage-release",
+      "displayName": "Linux ARM64 Static Stage Release",
+      "configurePreset": "linux-arm64-static",
       "targets": [
         "stage"
       ]
     },
     {
-      "name": "macos-x64-static-player-stage-release",
-      "displayName": "macOS x64 Static Player Stage Release",
-      "configurePreset": "macos-x64-static-player",
+      "name": "macos-x64-static-stage-release",
+      "displayName": "macOS x64 Static Stage Release",
+      "configurePreset": "macos-x64-static",
       "targets": [
         "stage"
       ]
     },
     {
-      "name": "macos-arm64-static-player-stage-release",
-      "displayName": "macOS ARM64 Static Player Stage Release",
-      "configurePreset": "macos-arm64-static-player",
+      "name": "macos-arm64-static-stage-release",
+      "displayName": "macOS ARM64 Static Stage Release",
+      "configurePreset": "macos-arm64-static",
       "targets": [
         "stage"
       ]
@@ -669,60 +672,60 @@
       }
     },
     {
-      "name": "windows-x86-static-player-stage-release",
-      "displayName": "Windows x86 Static Player Stage Tests Release",
-      "configurePreset": "windows-x86-static-player",
+      "name": "windows-x86-static-stage-release",
+      "displayName": "Windows x86 Static Stage Tests Release",
+      "configurePreset": "windows-x86-static",
       "configuration": "Release",
       "output": {
         "outputOnFailure": true
       }
     },
     {
-      "name": "windows-x64-static-player-stage-release",
-      "displayName": "Windows x64 Static Player Stage Tests Release",
-      "configurePreset": "windows-x64-static-player",
+      "name": "windows-x64-static-stage-release",
+      "displayName": "Windows x64 Static Stage Tests Release",
+      "configurePreset": "windows-x64-static",
       "configuration": "Release",
       "output": {
         "outputOnFailure": true
       }
     },
     {
-      "name": "windows-arm64-static-player-stage-release",
-      "displayName": "Windows ARM64 Static Player Stage Tests Release",
-      "configurePreset": "windows-arm64-static-player",
+      "name": "windows-arm64-static-stage-release",
+      "displayName": "Windows ARM64 Static Stage Tests Release",
+      "configurePreset": "windows-arm64-static",
       "configuration": "Release",
       "output": {
         "outputOnFailure": true
       }
     },
     {
-      "name": "linux-x64-static-player-stage-release",
-      "displayName": "Linux x64 Static Player Stage Tests Release",
-      "configurePreset": "linux-x64-static-player",
+      "name": "linux-x64-static-stage-release",
+      "displayName": "Linux x64 Static Stage Tests Release",
+      "configurePreset": "linux-x64-static",
       "output": {
         "outputOnFailure": true
       }
     },
     {
-      "name": "linux-arm64-static-player-stage-release",
-      "displayName": "Linux ARM64 Static Player Stage Tests Release",
-      "configurePreset": "linux-arm64-static-player",
+      "name": "linux-arm64-static-stage-release",
+      "displayName": "Linux ARM64 Static Stage Tests Release",
+      "configurePreset": "linux-arm64-static",
       "output": {
         "outputOnFailure": true
       }
     },
     {
-      "name": "macos-x64-static-player-stage-release",
-      "displayName": "macOS x64 Static Player Stage Tests Release",
-      "configurePreset": "macos-x64-static-player",
+      "name": "macos-x64-static-stage-release",
+      "displayName": "macOS x64 Static Stage Tests Release",
+      "configurePreset": "macos-x64-static",
       "output": {
         "outputOnFailure": true
       }
     },
     {
-      "name": "macos-arm64-static-player-stage-release",
-      "displayName": "macOS ARM64 Static Player Stage Tests Release",
-      "configurePreset": "macos-arm64-static-player",
+      "name": "macos-arm64-static-stage-release",
+      "displayName": "macOS ARM64 Static Stage Tests Release",
+      "configurePreset": "macos-arm64-static",
       "output": {
         "outputOnFailure": true
       }
