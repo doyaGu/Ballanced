@@ -13,8 +13,8 @@ if(NOT DEFINED CHECK_RENDER_CONFIGS)
     set(CHECK_RENDER_CONFIGS OFF)
 endif()
 
-if(NOT DEFINED STATIC_PLAYER)
-    set(STATIC_PLAYER OFF)
+if(NOT DEFINED BALLANCE_BUILD_STATIC)
+    set(BALLANCE_BUILD_STATIC OFF)
 endif()
 
 function(_require_dir rel)
@@ -59,7 +59,7 @@ endfunction()
 message(STATUS "[StageLayout] Verifying: ${STAGE_ROOT}")
 message(STATUS "[StageLayout] Check assets: ${CHECK_ASSETS}")
 message(STATUS "[StageLayout] Check render configs: ${CHECK_RENDER_CONFIGS}")
-message(STATUS "[StageLayout] Static player: ${STATIC_PLAYER}")
+message(STATUS "[StageLayout] Static build: ${BALLANCE_BUILD_STATIC}")
 
 # Required directories
 _require_dir(Bin)
@@ -68,7 +68,7 @@ _forbid_path(lib)
 
 _require_file(Bin/Player.exe)
 
-if(STATIC_PLAYER)
+if(BALLANCE_BUILD_STATIC)
     if(CHECK_RENDER_CONFIGS AND EXISTS "${STAGE_ROOT}/Bin/CK2_3D.ini")
         _require_file(Bin/CK2_3D.ini)
     endif()

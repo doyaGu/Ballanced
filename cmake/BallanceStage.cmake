@@ -37,12 +37,12 @@ foreach (_target IN LISTS _ballance_runtime_targets)
     endif ()
 endforeach ()
 
-if (BALLANCE_BUILD_STATIC_PLAYER)
-    set(_ballance_static_player_configs
+if (BALLANCE_BUILD_STATIC)
+    set(_ballance_static_configs
             Source/RenderEngine/src/CK2_3D.ini
             Source/RenderEngine/src/CKRasterizer/CKBgfxRasterizer/CKBgfxRasterizer.ini
     )
-    foreach (_config IN LISTS _ballance_static_player_configs)
+    foreach (_config IN LISTS _ballance_static_configs)
         if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${_config}")
             install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/${_config}" DESTINATION Bin COMPONENT Runtime)
         endif ()
@@ -97,7 +97,7 @@ add_test(NAME StageInstall
 add_test(NAME StageLayout
         COMMAND "${CMAKE_COMMAND}"
         -DSTAGE_ROOT:PATH=${CMAKE_INSTALL_PREFIX}
-        -DSTATIC_PLAYER:BOOL=${BALLANCE_BUILD_STATIC_PLAYER}
+        -DBALLANCE_BUILD_STATIC:BOOL=${BALLANCE_BUILD_STATIC}
         -DCHECK_ASSETS:BOOL=$<BOOL:${BALLANCE_ASSETS_ROOT}>
         -DCHECK_RENDER_CONFIGS:BOOL=${_ballance_check_render_configs}
         -P "${CMAKE_CURRENT_LIST_DIR}/VerifyStage.cmake"
