@@ -24,9 +24,9 @@ if (MSVC)
 
     add_compile_options(/MP)
 
-    if (BALLANCE_BUILD_STATIC_PLAYER)
+    if (BALLANCE_BUILD_STATIC)
         ballance_set_cache_default(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>" STRING
-                "MSVC runtime library for static Player builds (default: /MT, /MTd)")
+                "MSVC runtime library for static builds (default: /MT, /MTd)")
     else ()
         ballance_set_cache_default(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL" STRING
                 "MSVC runtime library (default: /MD, /MDd)")
