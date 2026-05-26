@@ -67,6 +67,7 @@ _forbid_path(include)
 _forbid_path(lib)
 
 _require_file(Bin/Player.exe)
+_require_file(Bin/ConfigTool.exe)
 
 if(BALLANCE_BUILD_STATIC)
     if(CHECK_RENDER_CONFIGS AND EXISTS "${STAGE_ROOT}/Bin/CK2_3D.ini")
