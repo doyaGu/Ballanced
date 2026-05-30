@@ -12,6 +12,21 @@ if (WIN32 AND CMAKE_GENERATOR_PLATFORM)
     endif ()
 endif ()
 
+set(_ballance_sdl3_runtime_target "")
+if (TARGET SDL3::SDL3-shared)
+    set(_ballance_sdl3_runtime_target SDL3::SDL3-shared)
+elseif (TARGET SDL3::SDL3)
+    get_target_property(_ballance_sdl3_runtime_target SDL3::SDL3 ALIASED_TARGET)
+    if (NOT _ballance_sdl3_runtime_target)
+        set(_ballance_sdl3_runtime_target SDL3::SDL3)
+    endif ()
+    get_target_property(_ballance_sdl3_type ${_ballance_sdl3_runtime_target} TYPE)
+    get_target_property(_ballance_sdl3_imported ${_ballance_sdl3_runtime_target} IMPORTED)
+    if (NOT _ballance_sdl3_imported OR NOT _ballance_sdl3_type STREQUAL "SHARED_LIBRARY")
+        set(_ballance_sdl3_runtime_target "")
+    endif ()
+endif ()
+
 if (BUILD_TESTING AND TARGET SDL3::SDL3 AND _ballance_can_run_target_executables)
     add_executable(PlayerSdlShortcutsTest
             "${CMAKE_SOURCE_DIR}/Source/Player/tests/PlayerSdlShortcutsTest.cpp"
@@ -23,6 +38,12 @@ if (BUILD_TESTING AND TARGET SDL3::SDL3 AND _ballance_can_run_target_executables
     )
     target_link_libraries(PlayerSdlShortcutsTest PRIVATE SDL3::SDL3)
     set_target_properties(PlayerSdlShortcutsTest PROPERTIES FOLDER "Tests")
+    if (_ballance_sdl3_runtime_target)
+        set_target_properties(PlayerSdlShortcutsTest PROPERTIES
+                BUILD_WITH_INSTALL_RPATH FALSE
+                BUILD_RPATH "$<TARGET_FILE_DIR:${_ballance_sdl3_runtime_target}>"
+        )
+    endif ()
     add_test(NAME PlayerSdlShortcutsTest COMMAND PlayerSdlShortcutsTest)
 elseif (BUILD_TESTING AND NOT _ballance_can_run_target_executables)
     message(STATUS "PlayerSdlShortcutsTest disabled: host cannot run target executables")
@@ -65,21 +86,6 @@ endforeach ()
 
 if (TARGET PlayerSdlShortcutsTest)
     add_dependencies(stage PlayerSdlShortcutsTest)
-endif ()
-
-set(_ballance_sdl3_runtime_target "")
-if (TARGET SDL3::SDL3-shared)
-    set(_ballance_sdl3_runtime_target SDL3::SDL3-shared)
-elseif (TARGET SDL3::SDL3)
-    get_target_property(_ballance_sdl3_runtime_target SDL3::SDL3 ALIASED_TARGET)
-    if (NOT _ballance_sdl3_runtime_target)
-        set(_ballance_sdl3_runtime_target SDL3::SDL3)
-    endif ()
-    get_target_property(_ballance_sdl3_type ${_ballance_sdl3_runtime_target} TYPE)
-    get_target_property(_ballance_sdl3_imported ${_ballance_sdl3_runtime_target} IMPORTED)
-    if (NOT _ballance_sdl3_imported OR NOT _ballance_sdl3_type STREQUAL "SHARED_LIBRARY")
-        set(_ballance_sdl3_runtime_target "")
-    endif ()
 endif ()
 
 set(_ballance_check_sdl3_runtime OFF)
