@@ -17,6 +17,7 @@ on:
           - all
           - sdl-windows-x64
           - sdl-linux-x64
+          - sdl-macos-arm64
 
 permissions:
   contents: read
@@ -48,6 +49,13 @@ jobs:
             build_preset: linux-x64-runtime-stage-release
             test_dir: build/linux-x64-runtime
             artifact_path: build/linux-x64-runtime/stage
+
+          - name: sdl-macos-arm64
+            os: macos-15
+            configure_preset: macos-arm64-runtime
+            build_preset: macos-arm64-runtime-stage-release
+            test_dir: build/macos-arm64-runtime
+            artifact_path: build/macos-arm64-runtime/stage
 
     env:
       CMAKE_BUILD_PARALLEL_LEVEL: 4
