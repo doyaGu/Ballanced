@@ -28,7 +28,7 @@ elseif (ARCHIVE_PATH MATCHES "\\.tar\\.bz2$" OR ARCHIVE_PATH MATCHES "\\.tbz2$")
 elseif (ARCHIVE_PATH MATCHES "\\.tar\\.xz$" OR ARCHIVE_PATH MATCHES "\\.txz$")
     set(_tar_mode "cfJ")
 elseif (ARCHIVE_PATH MATCHES "\\.zip$")
-    set(_tar_mode "cf")
+    set(_zip_archive TRUE)
 else ()
     message(FATAL_ERROR "Unsupported archive extension: ${ARCHIVE_PATH}")
 endif ()
@@ -36,11 +36,19 @@ endif ()
 message(STATUS "[PackageStage] Stage root: ${STAGE_ROOT}")
 message(STATUS "[PackageStage] Archive: ${ARCHIVE_PATH}")
 
-execute_process(
-        COMMAND "${CMAKE_COMMAND}" -E tar "${_tar_mode}" "${ARCHIVE_PATH}" .
-        WORKING_DIRECTORY "${STAGE_ROOT}"
-        RESULT_VARIABLE _package_result
-)
+if (_zip_archive)
+    execute_process(
+            COMMAND "${CMAKE_COMMAND}" -E chdir "${STAGE_ROOT}"
+                    "${CMAKE_COMMAND}" "-DARCHIVE_PATH:PATH=${ARCHIVE_PATH}" -P "${CMAKE_CURRENT_LIST_DIR}/CreateZipArchive.cmake"
+            RESULT_VARIABLE _package_result
+    )
+else ()
+    execute_process(
+            COMMAND "${CMAKE_COMMAND}" -E tar "${_tar_mode}" "${ARCHIVE_PATH}" .
+            WORKING_DIRECTORY "${STAGE_ROOT}"
+            RESULT_VARIABLE _package_result
+    )
+endif ()
 if (NOT _package_result EQUAL 0)
     message(FATAL_ERROR "Failed to create archive: ${ARCHIVE_PATH}")
 endif ()
