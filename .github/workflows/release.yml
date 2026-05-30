@@ -2,7 +2,7 @@ name: Release
 
 on:
   push:
-    tags: [ "v*" ]
+    tags: [ "sdl-v*" ]
   workflow_dispatch:
 
 permissions:
@@ -15,7 +15,7 @@ concurrency:
 jobs:
   prepare-release:
     name: Prepare GitHub release
-    runs-on: windows-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
 
     permissions:
@@ -26,6 +26,22 @@ jobs:
         shell: pwsh
 
     steps:
+    - name: Checkout
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: actions/checkout@v6.0.2
+      with:
+        fetch-depth: 0
+
+    - name: Check SDL release tag ancestry
+      if: startsWith(github.ref, 'refs/tags/')
+      run: |
+        git fetch origin sdl
+        $tagCommit = git rev-list -n 1 "${{ github.ref_name }}"
+        git merge-base --is-ancestor $tagCommit origin/sdl
+        if ($LASTEXITCODE -ne 0) {
+          Write-Error "SDL release tags must point to commits reachable from origin/sdl."
+        }
+
     - name: Create or update draft release
       if: startsWith(github.ref, 'refs/tags/')
       env:
@@ -42,8 +58,8 @@ jobs:
   package:
     name: ${{ matrix.name }}
     needs: prepare-release
-    runs-on: windows-latest
-    timeout-minutes: 120
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 150
 
     permissions:
       contents: write
@@ -52,47 +68,29 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: runtime-win32
-            configure_preset: windows-x86-runtime
-            build_preset: windows-x86-runtime-stage-release
-            test_dir: build/windows-x86-runtime
-            stage_path: build/windows-x86-runtime/stage
-            ballance_build_static: "OFF"
-
-          - name: runtime-x64
+          - name: sdl-windows-x64
+            os: windows-2022
             configure_preset: windows-x64-runtime
             build_preset: windows-x64-runtime-stage-release
             test_dir: build/windows-x64-runtime
             stage_path: build/windows-x64-runtime/stage
             ballance_build_static: "OFF"
 
-          - name: runtime-arm64
-            configure_preset: windows-arm64-runtime
-            build_preset: windows-arm64-runtime-stage-release
-            test_dir: build/windows-arm64-runtime
-            stage_path: build/windows-arm64-runtime/stage
+          - name: sdl-linux-x64
+            os: ubuntu-24.04
+            configure_preset: linux-x64-runtime
+            build_preset: linux-x64-runtime-stage-release
+            test_dir: build/linux-x64-runtime
+            stage_path: build/linux-x64-runtime/stage
             ballance_build_static: "OFF"
 
-          - name: static-win32
-            configure_preset: windows-x86-static
-            build_preset: windows-x86-static-stage-release
-            test_dir: build/windows-x86-static
-            stage_path: build/windows-x86-static/stage
-            ballance_build_static: "ON"
-
-          - name: static-x64
-            configure_preset: windows-x64-static
-            build_preset: windows-x64-static-stage-release
-            test_dir: build/windows-x64-static
-            stage_path: build/windows-x64-static/stage
-            ballance_build_static: "ON"
-
-          - name: static-arm64
-            configure_preset: windows-arm64-static
-            build_preset: windows-arm64-static-stage-release
-            test_dir: build/windows-arm64-static
-            stage_path: build/windows-arm64-static/stage
-            ballance_build_static: "ON"
+          - name: sdl-macos-arm64
+            os: macos-15
+            configure_preset: macos-arm64-runtime
+            build_preset: macos-arm64-runtime-stage-release
+            test_dir: build/macos-arm64-runtime
+            stage_path: build/macos-arm64-runtime/stage
+            ballance_build_static: "OFF"
 
     env:
       CMAKE_BUILD_PARALLEL_LEVEL: 4
@@ -108,8 +106,15 @@ jobs:
       with:
         submodules: recursive
 
+    - name: Setup SDL3
+      id: sdl
+      uses: libsdl-org/setup-sdl@main
+      with:
+        version: 3-latest
+        install-linux-dependencies: true
+
     - name: Configure
-      run: cmake --preset ${{ matrix.configure_preset }} -DBALLANCE_AUTO_DETECT_ASSETS=OFF -DBALLANCE_ASSETS_ROOT=
+      run: cmake --preset ${{ matrix.configure_preset }} "-DCMAKE_PREFIX_PATH=${{ steps.sdl.outputs.prefix }}" -DBALLANCE_AUTO_DETECT_ASSETS=OFF -DBALLANCE_ASSETS_ROOT=
 
     - name: Build
       run: cmake --build --preset ${{ matrix.build_preset }}

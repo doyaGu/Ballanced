@@ -1,11 +1,10 @@
-# .github/workflows/build.yml
 name: Build
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "sdl" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "sdl" ]
   workflow_call:
   workflow_dispatch:
     inputs:
@@ -16,12 +15,9 @@ on:
         default: all
         options:
           - all
-          - runtime-win32
-          - runtime-x64
-          - runtime-arm64
-          - static-win32
-          - static-x64
-          - static-arm64
+          - sdl-windows-x64
+          - sdl-linux-x64
+          - sdl-macos-arm64
 
 permissions:
   contents: read
@@ -33,48 +29,33 @@ concurrency:
 jobs:
   build:
     name: ${{ matrix.name }}
-    runs-on: windows-latest
-    timeout-minutes: 90
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 120
 
     strategy:
       fail-fast: false
       matrix:
         include:
-          - name: runtime-win32
-            configure_preset: windows-x86-runtime
-            build_preset: windows-x86-runtime-stage-release
-            test_dir: build/windows-x86-runtime
-            artifact_path: build/windows-x86-runtime/stage
-
-          - name: runtime-x64
+          - name: sdl-windows-x64
+            os: windows-2022
             configure_preset: windows-x64-runtime
             build_preset: windows-x64-runtime-stage-release
             test_dir: build/windows-x64-runtime
             artifact_path: build/windows-x64-runtime/stage
 
-          - name: runtime-arm64
-            configure_preset: windows-arm64-runtime
-            build_preset: windows-arm64-runtime-stage-release
-            test_dir: build/windows-arm64-runtime
-            artifact_path: build/windows-arm64-runtime/stage
+          - name: sdl-linux-x64
+            os: ubuntu-24.04
+            configure_preset: linux-x64-runtime
+            build_preset: linux-x64-runtime-stage-release
+            test_dir: build/linux-x64-runtime
+            artifact_path: build/linux-x64-runtime/stage
 
-          - name: static-win32
-            configure_preset: windows-x86-static
-            build_preset: windows-x86-static-stage-release
-            test_dir: build/windows-x86-static
-            artifact_path: build/windows-x86-static/stage
-
-          - name: static-x64
-            configure_preset: windows-x64-static
-            build_preset: windows-x64-static-stage-release
-            test_dir: build/windows-x64-static
-            artifact_path: build/windows-x64-static/stage
-
-          - name: static-arm64
-            configure_preset: windows-arm64-static
-            build_preset: windows-arm64-static-stage-release
-            test_dir: build/windows-arm64-static
-            artifact_path: build/windows-arm64-static/stage
+          - name: sdl-macos-arm64
+            os: macos-15
+            configure_preset: macos-arm64-runtime
+            build_preset: macos-arm64-runtime-stage-release
+            test_dir: build/macos-arm64-runtime
+            artifact_path: build/macos-arm64-runtime/stage
 
     env:
       CMAKE_BUILD_PARALLEL_LEVEL: 4
@@ -91,9 +72,17 @@ jobs:
       with:
         submodules: recursive
 
+    - name: Setup SDL3
+      if: ${{ github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == matrix.name }}
+      id: sdl
+      uses: libsdl-org/setup-sdl@main
+      with:
+        version: 3-latest
+        install-linux-dependencies: true
+
     - name: Configure
       if: ${{ github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == matrix.name }}
-      run: cmake --preset ${{ matrix.configure_preset }}
+      run: cmake --preset ${{ matrix.configure_preset }} "-DCMAKE_PREFIX_PATH=${{ steps.sdl.outputs.prefix }}"
 
     - name: Build
       if: ${{ github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == matrix.name }}
