@@ -2,9 +2,9 @@ name: Validate
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "sdl" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "sdl" ]
   workflow_call:
   workflow_dispatch:
 
@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   validate:
-    runs-on: windows-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
 
     defaults:
@@ -52,6 +52,36 @@ jobs:
             exit $LASTEXITCODE
           }
         }
+
+    - name: Check SDL branch manager layout
+      run: |
+        $tracked = @(git ls-files)
+        $required = @(
+          "Source/Managers/SdlInputManager",
+          "Source/Managers/SdlSoundManager"
+        )
+        $forbidden = @(
+          "Source/Managers/Dx8InputManager",
+          "Source/Managers/Dx8SoundManager"
+        )
+
+        $errors = @()
+        foreach ($path in $required) {
+          if ($tracked -notcontains $path) {
+            $errors += "missing SDL manager submodule: $path"
+          }
+        }
+        foreach ($path in $forbidden) {
+          if ($tracked -contains $path) {
+            $errors += "SDL branch must not track DX8 manager submodule: $path"
+          }
+        }
+
+        if ($errors.Count -gt 0) {
+          Write-Error ($errors -join "`n")
+        }
+
+        Write-Host "SDL manager layout OK"
 
     - name: Check workflow preset references
       run: |
