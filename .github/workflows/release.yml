@@ -68,29 +68,131 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: sdl-windows-x64
+          - name: sdl-windows-x86-runtime
+            os: windows-2022
+            configure_preset: windows-x86-runtime
+            build_preset: windows-x86-runtime-stage-release
+            test_dir: build/windows-x86-runtime
+            stage_path: build/windows-x86-runtime/stage
+            archive_ext: .zip
+            ballance_build_static: "OFF"
+
+          - name: sdl-windows-x64-runtime
             os: windows-2022
             configure_preset: windows-x64-runtime
             build_preset: windows-x64-runtime-stage-release
             test_dir: build/windows-x64-runtime
             stage_path: build/windows-x64-runtime/stage
+            archive_ext: .zip
             ballance_build_static: "OFF"
 
-          - name: sdl-linux-x64
+          - name: sdl-windows-arm64-runtime
+            os: windows-11-arm
+            configure_preset: windows-arm64-runtime
+            build_preset: windows-arm64-runtime-stage-release
+            test_dir: build/windows-arm64-runtime
+            stage_path: build/windows-arm64-runtime/stage
+            archive_ext: .zip
+            ballance_build_static: "OFF"
+
+          - name: sdl-linux-x64-runtime
             os: ubuntu-24.04
             configure_preset: linux-x64-runtime
             build_preset: linux-x64-runtime-stage-release
             test_dir: build/linux-x64-runtime
             stage_path: build/linux-x64-runtime/stage
+            archive_ext: .tar.gz
             ballance_build_static: "OFF"
 
-          - name: sdl-macos-arm64
+          - name: sdl-linux-arm64-runtime
+            os: ubuntu-24.04-arm
+            configure_preset: linux-arm64-runtime
+            build_preset: linux-arm64-runtime-stage-release
+            test_dir: build/linux-arm64-runtime
+            stage_path: build/linux-arm64-runtime/stage
+            archive_ext: .tar.gz
+            ballance_build_static: "OFF"
+
+          - name: sdl-macos-x64-runtime
+            os: macos-15-intel
+            configure_preset: macos-x64-runtime
+            build_preset: macos-x64-runtime-stage-release
+            test_dir: build/macos-x64-runtime
+            stage_path: build/macos-x64-runtime/stage
+            archive_ext: .tar.gz
+            ballance_build_static: "OFF"
+
+          - name: sdl-macos-arm64-runtime
             os: macos-15
             configure_preset: macos-arm64-runtime
             build_preset: macos-arm64-runtime-stage-release
             test_dir: build/macos-arm64-runtime
             stage_path: build/macos-arm64-runtime/stage
+            archive_ext: .tar.gz
             ballance_build_static: "OFF"
+
+          - name: sdl-windows-x86-static
+            os: windows-2022
+            configure_preset: windows-x86-static
+            build_preset: windows-x86-static-stage-release
+            test_dir: build/windows-x86-static
+            stage_path: build/windows-x86-static/stage
+            archive_ext: .zip
+            ballance_build_static: "ON"
+
+          - name: sdl-windows-x64-static
+            os: windows-2022
+            configure_preset: windows-x64-static
+            build_preset: windows-x64-static-stage-release
+            test_dir: build/windows-x64-static
+            stage_path: build/windows-x64-static/stage
+            archive_ext: .zip
+            ballance_build_static: "ON"
+
+          - name: sdl-windows-arm64-static
+            os: windows-11-arm
+            configure_preset: windows-arm64-static
+            build_preset: windows-arm64-static-stage-release
+            test_dir: build/windows-arm64-static
+            stage_path: build/windows-arm64-static/stage
+            archive_ext: .zip
+            ballance_build_static: "ON"
+
+          - name: sdl-linux-x64-static
+            os: ubuntu-24.04
+            configure_preset: linux-x64-static
+            build_preset: linux-x64-static-stage-release
+            test_dir: build/linux-x64-static
+            stage_path: build/linux-x64-static/stage
+            archive_ext: .tar.gz
+            ballance_build_static: "ON"
+
+          - name: sdl-linux-arm64-static
+            os: ubuntu-24.04-arm
+            configure_preset: linux-arm64-static
+            build_preset: linux-arm64-static-stage-release
+            test_dir: build/linux-arm64-static
+            stage_path: build/linux-arm64-static/stage
+            archive_ext: .tar.gz
+            ballance_build_static: "ON"
+
+          - name: sdl-macos-x64-static
+            os: macos-15-intel
+            configure_preset: macos-x64-static
+            build_preset: macos-x64-static-stage-release
+            test_dir: build/macos-x64-static
+            stage_path: build/macos-x64-static/stage
+            archive_ext: .tar.gz
+            ballance_build_static: "ON"
+
+          - name: sdl-macos-arm64-static
+            os: macos-15
+            configure_preset: macos-arm64-static
+            build_preset: macos-arm64-static-stage-release
+            test_dir: build/macos-arm64-static
+            stage_path: build/macos-arm64-static/stage
+            archive_ext: .tar.gz
+            ballance_build_static: "ON"
 
     env:
       CMAKE_BUILD_PARALLEL_LEVEL: 4
@@ -124,20 +226,12 @@ jobs:
 
     - name: Create release archive
       run: |
-        $stage = (Resolve-Path "${{ matrix.stage_path }}").Path
-        $dist = Join-Path $env:GITHUB_WORKSPACE "dist"
-        New-Item -ItemType Directory -Force $dist | Out-Null
-
-        $archive = Join-Path $dist "ballance-${{ matrix.name }}.zip"
-        if (Test-Path $archive) {
-          Remove-Item $archive -Force
-        }
-
-        Compress-Archive -Path (Join-Path $stage "*") -DestinationPath $archive -CompressionLevel Optimal
+        $archive = Join-Path $env:GITHUB_WORKSPACE "dist/ballance-${{ matrix.name }}${{ matrix.archive_ext }}"
+        cmake "-DSTAGE_ROOT:PATH=${{ matrix.stage_path }}" "-DARCHIVE_PATH:PATH=$archive" -P cmake/PackageStage.cmake
 
     - name: Verify release archive
       run: |
-        $archive = Join-Path $env:GITHUB_WORKSPACE "dist/ballance-${{ matrix.name }}.zip"
+        $archive = Join-Path $env:GITHUB_WORKSPACE "dist/ballance-${{ matrix.name }}${{ matrix.archive_ext }}"
         $extractRoot = Join-Path $env:RUNNER_TEMP "release-${{ matrix.name }}"
         cmake "-DARCHIVE_PATH:PATH=$archive" "-DEXTRACT_ROOT:PATH=$extractRoot" "-DBALLANCE_BUILD_STATIC:BOOL=${{ matrix.ballance_build_static }}" -P cmake/VerifyReleaseArchive.cmake
 
@@ -148,14 +242,14 @@ jobs:
         GH_REPO: ${{ github.repository }}
       run: |
         $tag = "${{ github.ref_name }}"
-        $archive = Join-Path $env:GITHUB_WORKSPACE "dist/ballance-${{ matrix.name }}.zip"
+        $archive = Join-Path $env:GITHUB_WORKSPACE "dist/ballance-${{ matrix.name }}${{ matrix.archive_ext }}"
         gh release upload $tag $archive --clobber
 
-    - name: Upload staged artifact
+    - name: Upload package artifact
       if: ${{ !startsWith(github.ref, 'refs/tags/') }}
-      uses: actions/upload-artifact@v6.0.0
+      uses: actions/upload-artifact@v7.0.1
       with:
-        name: ballance-${{ matrix.name }}-stage
-        path: ${{ matrix.stage_path }}
+        path: dist/ballance-${{ matrix.name }}${{ matrix.archive_ext }}
+        archive: false
         if-no-files-found: error
         retention-days: 30
