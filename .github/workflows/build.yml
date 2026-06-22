@@ -137,11 +137,18 @@ jobs:
 
     - name: Configure
       if: ${{ github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name) }}
-      run: cmake --preset ${{ matrix.platform.preset }}-${{ matrix.linkage.name }} "-DCMAKE_PREFIX_PATH=${{ steps.sdl.outputs.prefix }}"
+      run: >
+        cmake --preset ${{ matrix.platform.preset }}-${{ matrix.linkage.name }}
+        "-DCMAKE_PREFIX_PATH=${{ steps.sdl.outputs.prefix }}"
+        -DCKRE_BUILD_TESTS=ON
 
     - name: Build
       if: ${{ github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name) }}
       run: cmake --build --preset ${{ matrix.platform.preset }}-${{ matrix.linkage.name }}-stage-release
+
+    - name: Build tests
+      if: ${{ github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name) }}
+      run: cmake --build --preset ${{ matrix.platform.preset }}-${{ matrix.linkage.name }}-release
 
     - name: Test
       if: ${{ github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name) }}
