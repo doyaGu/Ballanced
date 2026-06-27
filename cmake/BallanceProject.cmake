@@ -28,7 +28,7 @@ endif ()
 
 if (APPLE)
     set(CMAKE_MACOSX_RPATH ON)
-    set(CMAKE_BUILD_WITH_INSTALL_RPATH ON)
+    set(CMAKE_BUILD_WITH_INSTALL_RPATH OFF)
     set(CMAKE_INSTALL_RPATH "@loader_path/../Bin")
 elseif (UNIX)
     set(CMAKE_INSTALL_RPATH "$ORIGIN;$ORIGIN/../Bin")
