@@ -150,6 +150,7 @@ endif ()
 
 add_test(NAME StageInstall
         COMMAND "${CMAKE_COMMAND}"
+        -DSOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
         -DBUILD_DIR:PATH=${CMAKE_BINARY_DIR}
         -DCONFIG:STRING=${BALLANCE_TEST_CONFIG}
         -P "${CMAKE_CURRENT_LIST_DIR}/RunStageInstall.cmake"
