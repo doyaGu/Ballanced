@@ -154,16 +154,40 @@ jobs:
       if: ${{ github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name) }}
       run: ctest --test-dir build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }} -C Release --output-on-failure
 
+    - name: Test Windows D3D FFP runtime
+      if: ${{ (github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name)) && matrix.platform.name == 'windows-x64' && matrix.linkage.name == 'runtime' }}
+      run: |
+        $env:CKRE_RUN_BGFX_BACKEND_RUNTIME_TESTS = "1"
+        foreach ($backend in @("d3d11", "d3d12")) {
+          $env:CKBGFX_RENDERER_BACKEND = $backend
+          ctest --test-dir build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }} -C Release -R ffp_opengl_runtime_tests --output-on-failure
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        }
+
     - name: Install Linux OpenGL test dependencies
       if: ${{ (github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name)) && matrix.platform.name == 'linux-x64' && matrix.linkage.name == 'runtime' }}
-      run: sudo apt-get update && sudo apt-get install -y xvfb libgl1-mesa-dri libglx-mesa0 mesa-utils
+      run: sudo apt-get update && sudo apt-get install -y xvfb libgl1-mesa-dri libglx-mesa0 mesa-utils mesa-vulkan-drivers
 
     - name: Test Linux OpenGL FFP runtime
       if: ${{ (github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name)) && matrix.platform.name == 'linux-x64' && matrix.linkage.name == 'runtime' }}
       env:
-        CKRE_RUN_OPENGL_RUNTIME_TESTS: "1"
+        CKRE_RUN_BGFX_BACKEND_RUNTIME_TESTS: "1"
         CKBGFX_RENDERER_BACKEND: opengl
       run: xvfb-run -a ctest --test-dir build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }} -C Release -R ffp_opengl_runtime_tests --output-on-failure
+
+    - name: Test Linux Vulkan FFP runtime
+      if: ${{ (github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name)) && matrix.platform.name == 'linux-x64' && matrix.linkage.name == 'runtime' }}
+      env:
+        CKRE_RUN_BGFX_BACKEND_RUNTIME_TESTS: "1"
+        CKBGFX_RENDERER_BACKEND: vulkan
+      run: xvfb-run -a ctest --test-dir build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }} -C Release -R ffp_opengl_runtime_tests --output-on-failure
+
+    - name: Test macOS Metal FFP runtime
+      if: ${{ (github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name)) && matrix.platform.name == 'macos-arm64' && matrix.linkage.name == 'runtime' }}
+      env:
+        CKRE_RUN_BGFX_BACKEND_RUNTIME_TESTS: "1"
+        CKBGFX_RENDERER_BACKEND: metal
+      run: ctest --test-dir build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }} -C Release -R ffp_opengl_runtime_tests --output-on-failure
 
     - name: Create package
       if: ${{ github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name) }}
