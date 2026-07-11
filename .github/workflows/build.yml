@@ -166,13 +166,20 @@ jobs:
 
     - name: Install Linux OpenGL test dependencies
       if: ${{ (github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name)) && matrix.platform.name == 'linux-x64' && matrix.linkage.name == 'runtime' }}
-      run: sudo apt-get update && sudo apt-get install -y xvfb libgl1-mesa-dri libglx-mesa0 mesa-utils mesa-vulkan-drivers
+      run: sudo apt-get update && sudo apt-get install -y xvfb libegl1 libgles2 libgl1-mesa-dri libglx-mesa0 mesa-utils mesa-vulkan-drivers
 
     - name: Test Linux OpenGL FFP runtime
       if: ${{ (github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name)) && matrix.platform.name == 'linux-x64' && matrix.linkage.name == 'runtime' }}
       env:
         CKRE_RUN_BGFX_BACKEND_RUNTIME_TESTS: "1"
         CKBGFX_RENDERER_BACKEND: opengl
+      run: xvfb-run -a ctest --test-dir build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }} -C Release -R ffp_opengl_runtime_tests --output-on-failure
+
+    - name: Test Linux OpenGLES FFP runtime
+      if: ${{ (github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name)) && matrix.platform.name == 'linux-x64' && matrix.linkage.name == 'runtime' }}
+      env:
+        CKRE_RUN_BGFX_BACKEND_RUNTIME_TESTS: "1"
+        CKBGFX_RENDERER_BACKEND: opengles
       run: xvfb-run -a ctest --test-dir build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }} -C Release -R ffp_opengl_runtime_tests --output-on-failure
 
     - name: Test Linux Vulkan FFP runtime
