@@ -122,6 +122,70 @@ function(_shared_library_exists out_var rel_without_ext)
     set(${out_var} ${_found} PARENT_SCOPE)
 endfunction()
 
+function(_verify_macos_sdl_runtime)
+    find_program(_otool otool REQUIRED)
+    file(GLOB _sdl_candidates LIST_DIRECTORIES FALSE
+            "${STAGE_ROOT}/Bin/libSDL3*.dylib"
+            "${STAGE_ROOT}/Bin/SDL3*.dylib")
+    set(_sdl_files "")
+    foreach (_candidate IN LISTS _sdl_candidates)
+        if (NOT IS_SYMLINK "${_candidate}")
+            list(APPEND _sdl_files "${_candidate}")
+        endif ()
+    endforeach ()
+    list(LENGTH _sdl_files _sdl_file_count)
+    if (NOT _sdl_file_count EQUAL 1)
+        message(FATAL_ERROR
+                "Expected one regular staged SDL3 dylib, found ${_sdl_file_count}")
+    endif ()
+
+    list(GET _sdl_files 0 _sdl_path)
+    get_filename_component(_sdl_name "${_sdl_path}" NAME)
+    set(_sdl_install_name "@rpath/${_sdl_name}")
+    execute_process(
+            COMMAND "${_otool}" -D "${_sdl_path}"
+            OUTPUT_VARIABLE _sdl_id_output
+            COMMAND_ERROR_IS_FATAL ANY)
+    string(REPLACE "\n" ";" _sdl_id_lines "${_sdl_id_output}")
+    list(FILTER _sdl_id_lines EXCLUDE REGEX "^$")
+    list(GET _sdl_id_lines -1 _sdl_id)
+    string(STRIP "${_sdl_id}" _sdl_id)
+    if (NOT _sdl_id STREQUAL _sdl_install_name)
+        message(FATAL_ERROR
+                "SDL3 is not relocatable: expected install name "
+                "${_sdl_install_name}, found ${_sdl_id}. "
+                "Use an SDL3 package built with a relocatable install name.")
+    endif ()
+
+    set(_mach_o_files "${STAGE_ROOT}/Bin/Player")
+    foreach (_directory IN ITEMS Bin RenderEngines Managers Plugins BuildingBlocks)
+        file(GLOB _libraries LIST_DIRECTORIES FALSE
+                "${STAGE_ROOT}/${_directory}/*.dylib")
+        list(APPEND _mach_o_files ${_libraries})
+    endforeach ()
+    foreach (_mach_o IN LISTS _mach_o_files)
+        if (IS_SYMLINK "${_mach_o}")
+            continue()
+        endif ()
+        execute_process(
+                COMMAND "${_otool}" -L "${_mach_o}"
+                OUTPUT_VARIABLE _dependencies
+                COMMAND_ERROR_IS_FATAL ANY)
+        string(REGEX MATCHALL "[\t ]+[^\t \n]+" _dependency_fields
+                "${_dependencies}")
+        foreach (_field IN LISTS _dependency_fields)
+            string(STRIP "${_field}" _dependency)
+            get_filename_component(_dependency_name "${_dependency}" NAME)
+            if (_dependency_name STREQUAL _sdl_name AND
+                    NOT _dependency STREQUAL _sdl_install_name)
+                message(FATAL_ERROR
+                        "Non-relocatable SDL3 dependency in ${_mach_o}: "
+                        "${_dependency}")
+            endif ()
+        endforeach ()
+    endforeach ()
+endfunction()
+
 message(STATUS "[StageLayout] Verifying: ${STAGE_ROOT}")
 message(STATUS "[StageLayout] Check assets: ${CHECK_ASSETS}")
 message(STATUS "[StageLayout] Check render configs: ${CHECK_RENDER_CONFIGS}")
@@ -136,6 +200,9 @@ _forbid_path(lib)
 _require_exe(Bin/Player)
 if(CHECK_SDL3_RUNTIME)
     _require_dll(Bin/SDL3)
+    if(APPLE)
+        _verify_macos_sdl_runtime()
+    endif()
 endif()
 
 if(BALLANCE_BUILD_STATIC)
