@@ -175,12 +175,25 @@ jobs:
         CKBGFX_RENDERER_BACKEND: opengl
       run: xvfb-run -a ctest --test-dir build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }} -C Release -R ffp_opengl_runtime_tests --output-on-failure
 
+    - name: Configure Linux OpenGLES FFP runtime
+      if: ${{ (github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name)) && matrix.platform.name == 'linux-x64' && matrix.linkage.name == 'runtime' }}
+      run: >
+        cmake --preset ${{ matrix.platform.preset }}-${{ matrix.linkage.name }}
+        -B build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }}-gles
+        "-DCMAKE_PREFIX_PATH=${{ steps.sdl.outputs.prefix }}"
+        -DCKRE_BUILD_TESTS=ON
+        -DCKRE_BGFX_OPENGLES_VERSION=30
+
+    - name: Build Linux OpenGLES FFP runtime
+      if: ${{ (github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name)) && matrix.platform.name == 'linux-x64' && matrix.linkage.name == 'runtime' }}
+      run: cmake --build build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }}-gles --config Release --target ffp_opengl_runtime_tests
+
     - name: Test Linux OpenGLES FFP runtime
       if: ${{ (github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name)) && matrix.platform.name == 'linux-x64' && matrix.linkage.name == 'runtime' }}
       env:
         CKRE_RUN_BGFX_BACKEND_RUNTIME_TESTS: "1"
         CKBGFX_RENDERER_BACKEND: opengles
-      run: xvfb-run -a ctest --test-dir build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }} -C Release -R ffp_opengl_runtime_tests --output-on-failure
+      run: xvfb-run -a ctest --test-dir build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }}-gles -C Release -R ffp_opengl_runtime_tests --output-on-failure
 
     - name: Test Linux Vulkan FFP runtime
       if: ${{ (github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name)) && matrix.platform.name == 'linux-x64' && matrix.linkage.name == 'runtime' }}
