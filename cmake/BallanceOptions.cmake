@@ -61,6 +61,7 @@ else ()
     endforeach ()
 endif ()
 ballance_set_cache_default(CKBB_INSTALL ON BOOL "")
+ballance_set_cache_default(CKBB_BUILD_TESTS OFF BOOL "")
 
 ballance_set_cache_default(CKPLUGINS_INSTALL ON BOOL "")
 ballance_set_cache_default(CKPLUGINS_BUILD_TESTS OFF BOOL "")
