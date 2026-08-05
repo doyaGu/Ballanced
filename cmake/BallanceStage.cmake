@@ -58,11 +58,15 @@ else ()
 endif ()
 
 if (APPLE)
+    set(_ballance_stage_snapshot "${CMAKE_BINARY_DIR}/stage-install-snapshot")
     add_custom_target(stage
+            COMMAND "${CMAKE_COMMAND}" -E rm -rf "${_ballance_stage_snapshot}"
+            COMMAND ${_ballance_install_cmd} --prefix "${_ballance_stage_snapshot}"
             COMMAND "${CMAKE_COMMAND}"
+            -DBUILD_ROOT:PATH=${CMAKE_BINARY_DIR}
+            -DSNAPSHOT_ROOT:PATH=${_ballance_stage_snapshot}
             -DSTAGE_ROOT:PATH=${CMAKE_INSTALL_PREFIX}
-            -P "${CMAKE_CURRENT_LIST_DIR}/PrepareMacStage.cmake"
-            COMMAND ${_ballance_install_cmd}
+            -P "${CMAKE_CURRENT_LIST_DIR}/PromoteStageSnapshot.cmake"
             COMMENT "Installing to ${CMAKE_INSTALL_PREFIX}"
             USES_TERMINAL
             VERBATIM
@@ -103,11 +107,41 @@ endif ()
 set(_ballance_check_sdl3_runtime OFF)
 if (_ballance_sdl3_runtime_target)
     set(_ballance_check_sdl3_runtime ON)
-    install(IMPORTED_RUNTIME_ARTIFACTS ${_ballance_sdl3_runtime_target}
-            RUNTIME DESTINATION Bin COMPONENT Runtime
-            LIBRARY DESTINATION Bin COMPONENT Runtime
-            FRAMEWORK DESTINATION Bin COMPONENT Runtime
-    )
+    if (APPLE)
+        get_target_property(_ballance_sdl3_runtime_location
+                ${_ballance_sdl3_runtime_target} IMPORTED_LOCATION_RELEASE)
+        if (NOT _ballance_sdl3_runtime_location)
+            get_target_property(_ballance_sdl3_runtime_location
+                    ${_ballance_sdl3_runtime_target} IMPORTED_LOCATION)
+        endif ()
+        if (NOT _ballance_sdl3_runtime_location)
+            message(FATAL_ERROR "Unable to locate the imported SDL3 runtime")
+        endif ()
+
+        file(REAL_PATH "${_ballance_sdl3_runtime_location}"
+                _ballance_sdl3_runtime_real_path)
+        get_filename_component(_ballance_sdl3_runtime_name
+                "${_ballance_sdl3_runtime_location}" NAME)
+        install(FILES "${_ballance_sdl3_runtime_real_path}"
+                DESTINATION Bin
+                RENAME "${_ballance_sdl3_runtime_name}"
+                COMPONENT Runtime)
+
+        find_program(_ballance_otool otool REQUIRED)
+        find_program(_ballance_codesign codesign REQUIRED)
+        configure_file(
+                "${CMAKE_CURRENT_LIST_DIR}/FixupMacStage.cmake.in"
+                "${CMAKE_CURRENT_BINARY_DIR}/FixupMacStage.cmake"
+                @ONLY)
+        install(SCRIPT "${CMAKE_CURRENT_BINARY_DIR}/FixupMacStage.cmake"
+                COMPONENT Runtime)
+    else ()
+        install(IMPORTED_RUNTIME_ARTIFACTS ${_ballance_sdl3_runtime_target}
+                RUNTIME DESTINATION Bin COMPONENT Runtime
+                LIBRARY DESTINATION Bin COMPONENT Runtime
+                FRAMEWORK DESTINATION Bin COMPONENT Runtime
+        )
+    endif ()
 endif ()
 
 if (BALLANCE_BUILD_STATIC)

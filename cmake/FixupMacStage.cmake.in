@@ -1,0 +1,56 @@
+set(_stage_root "${CMAKE_INSTALL_PREFIX}")
+set(_sdl_name "@_ballance_sdl3_runtime_name@")
+set(_sdl_path "${_stage_root}/Bin/${_sdl_name}")
+set(_sdl_install_name "@rpath/${_sdl_name}")
+
+if (NOT EXISTS "${_sdl_path}" OR IS_SYMLINK "${_sdl_path}")
+    message(FATAL_ERROR "SDL3 runtime must be a regular staged file: ${_sdl_path}")
+endif ()
+
+execute_process(
+        COMMAND "@_ballance_codesign@" --display "${_sdl_path}"
+        RESULT_VARIABLE _sdl_signature_status
+        OUTPUT_QUIET
+        ERROR_QUIET)
+if (_sdl_signature_status EQUAL 0)
+    execute_process(
+            COMMAND "@_ballance_codesign@" --remove-signature "${_sdl_path}"
+            COMMAND_ERROR_IS_FATAL ANY)
+endif ()
+execute_process(
+        COMMAND "@CMAKE_INSTALL_NAME_TOOL@" -id "${_sdl_install_name}" "${_sdl_path}"
+        COMMAND_ERROR_IS_FATAL ANY)
+
+set(_mach_o_files "${_stage_root}/Bin/Player")
+foreach (_directory IN ITEMS Bin RenderEngines Managers Plugins BuildingBlocks)
+    file(GLOB _directory_libraries LIST_DIRECTORIES FALSE
+            "${_stage_root}/${_directory}/*.dylib")
+    foreach (_library IN LISTS _directory_libraries)
+        if (NOT IS_SYMLINK "${_library}")
+            list(APPEND _mach_o_files "${_library}")
+        endif ()
+    endforeach ()
+endforeach ()
+
+execute_process(
+        COMMAND "@_ballance_codesign@" --force --sign - "${_sdl_path}"
+        COMMAND_ERROR_IS_FATAL ANY)
+
+foreach (_mach_o IN LISTS _mach_o_files)
+    execute_process(
+            COMMAND "@_ballance_otool@" -L "${_mach_o}"
+            OUTPUT_VARIABLE _dependencies
+            COMMAND_ERROR_IS_FATAL ANY)
+    string(REGEX MATCHALL "[\t ]+[^\t \n]+" _dependency_fields "${_dependencies}")
+    foreach (_field IN LISTS _dependency_fields)
+        string(STRIP "${_field}" _dependency)
+        get_filename_component(_dependency_name "${_dependency}" NAME)
+        if (_dependency_name STREQUAL _sdl_name AND
+                NOT _dependency STREQUAL _sdl_install_name)
+            execute_process(
+                    COMMAND "@CMAKE_INSTALL_NAME_TOOL@"
+                    -change "${_dependency}" "${_sdl_install_name}" "${_mach_o}"
+                    COMMAND_ERROR_IS_FATAL ANY)
+        endif ()
+    endforeach ()
+endforeach ()

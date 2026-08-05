@@ -59,16 +59,20 @@ function(_require_dll rel_without_ext)
             file(GLOB _versioned_matches LIST_DIRECTORIES FALSE
                     "${STAGE_ROOT}/${rel_without_ext}${_ext}*"
                     "${STAGE_ROOT}/${_alt_rel}*")
-            if(_versioned_matches)
-                return()
-            endif()
+            foreach (_match IN LISTS _versioned_matches)
+                if (EXISTS "${_match}")
+                    return()
+                endif ()
+            endforeach ()
         elseif(_ext STREQUAL ".dylib")
             file(GLOB _versioned_matches LIST_DIRECTORIES FALSE
                     "${STAGE_ROOT}/${rel_without_ext}.*${_ext}"
                     "${STAGE_ROOT}/${_alt_rel_without_ext}.*${_ext}")
-            if(_versioned_matches)
-                return()
-            endif()
+            foreach (_match IN LISTS _versioned_matches)
+                if (EXISTS "${_match}")
+                    return()
+                endif ()
+            endforeach ()
         endif()
     endforeach()
 
