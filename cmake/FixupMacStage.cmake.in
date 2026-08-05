@@ -8,18 +8,22 @@ if (NOT EXISTS "${_sdl_path}" OR IS_SYMLINK "${_sdl_path}")
 endif ()
 
 execute_process(
-        COMMAND "@_ballance_codesign@" --display "${_sdl_path}"
-        RESULT_VARIABLE _sdl_signature_status
-        OUTPUT_QUIET
-        ERROR_QUIET)
-if (_sdl_signature_status EQUAL 0)
+        COMMAND "@_ballance_otool@" -D "${_sdl_path}"
+        OUTPUT_VARIABLE _sdl_id_output
+        COMMAND_ERROR_IS_FATAL ANY)
+string(REPLACE "\n" ";" _sdl_id_lines "${_sdl_id_output}")
+list(FILTER _sdl_id_lines EXCLUDE REGEX "^$")
+list(GET _sdl_id_lines -1 _sdl_current_install_name)
+string(STRIP "${_sdl_current_install_name}" _sdl_current_install_name)
+
+if (NOT _sdl_current_install_name STREQUAL _sdl_install_name)
     execute_process(
-            COMMAND "@_ballance_codesign@" --remove-signature "${_sdl_path}"
+            COMMAND "@CMAKE_INSTALL_NAME_TOOL@" -id "${_sdl_install_name}" "${_sdl_path}"
+            COMMAND_ERROR_IS_FATAL ANY)
+    execute_process(
+            COMMAND "@_ballance_codesign@" --force --sign - "${_sdl_path}"
             COMMAND_ERROR_IS_FATAL ANY)
 endif ()
-execute_process(
-        COMMAND "@CMAKE_INSTALL_NAME_TOOL@" -id "${_sdl_install_name}" "${_sdl_path}"
-        COMMAND_ERROR_IS_FATAL ANY)
 
 set(_mach_o_files "${_stage_root}/Bin/Player")
 foreach (_directory IN ITEMS Bin RenderEngines Managers Plugins BuildingBlocks)
@@ -32,15 +36,12 @@ foreach (_directory IN ITEMS Bin RenderEngines Managers Plugins BuildingBlocks)
     endforeach ()
 endforeach ()
 
-execute_process(
-        COMMAND "@_ballance_codesign@" --force --sign - "${_sdl_path}"
-        COMMAND_ERROR_IS_FATAL ANY)
-
 foreach (_mach_o IN LISTS _mach_o_files)
     execute_process(
             COMMAND "@_ballance_otool@" -L "${_mach_o}"
             OUTPUT_VARIABLE _dependencies
             COMMAND_ERROR_IS_FATAL ANY)
+    set(_mach_o_changed OFF)
     string(REGEX MATCHALL "[\t ]+[^\t \n]+" _dependency_fields "${_dependencies}")
     foreach (_field IN LISTS _dependency_fields)
         string(STRIP "${_field}" _dependency)
@@ -51,6 +52,12 @@ foreach (_mach_o IN LISTS _mach_o_files)
                     COMMAND "@CMAKE_INSTALL_NAME_TOOL@"
                     -change "${_dependency}" "${_sdl_install_name}" "${_mach_o}"
                     COMMAND_ERROR_IS_FATAL ANY)
+            set(_mach_o_changed ON)
         endif ()
     endforeach ()
+    if (_mach_o_changed)
+        execute_process(
+                COMMAND "@_ballance_codesign@" --force --sign - "${_mach_o}"
+                COMMAND_ERROR_IS_FATAL ANY)
+    endif ()
 endforeach ()
