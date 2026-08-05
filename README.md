@@ -33,6 +33,8 @@ Put `Player.exe`, `base.cmo`, `Database.tdb`, the asset folders, and all runtime
 | macOS (x64 / ARM64) | Apple Clang + Ninja | 3.25+ |
 
 SDL3 must be on the CMake package path on all platforms (`find_package(SDL3 CONFIG REQUIRED)`).
+The macOS stage layout supports SDL3 shared-library packages with a relocatable
+`@rpath` install name; SDL3 framework packages are not part of the supported layout.
 
 ### Quick start (Windows x86)
 

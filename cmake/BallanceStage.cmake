@@ -108,69 +108,18 @@ set(_ballance_check_sdl3_runtime OFF)
 if (_ballance_sdl3_runtime_target)
     set(_ballance_check_sdl3_runtime ON)
     if (APPLE)
-        set(_ballance_sdl3_imported_configs "")
-        if (CMAKE_BUILD_TYPE)
-            string(TOUPPER "${CMAKE_BUILD_TYPE}" _ballance_sdl3_build_config)
-            get_target_property(_ballance_sdl3_mapped_configs
-                    ${_ballance_sdl3_runtime_target}
-                    MAP_IMPORTED_CONFIG_${_ballance_sdl3_build_config})
-            if (_ballance_sdl3_mapped_configs)
-                list(APPEND _ballance_sdl3_imported_configs
-                        ${_ballance_sdl3_mapped_configs})
-            endif ()
-            list(APPEND _ballance_sdl3_imported_configs
-                    "${_ballance_sdl3_build_config}")
+        get_target_property(_ballance_sdl3_is_framework
+                ${_ballance_sdl3_runtime_target} FRAMEWORK)
+        if (_ballance_sdl3_is_framework)
+            message(FATAL_ERROR
+                    "SDL3 framework packages are not supported by the macOS stage layout; use a shared-library package")
         endif ()
-
-        # Follow CMake's imported-target configuration selection order so the
-        # staged runtime is the same library that target linking selected.
-        list(APPEND _ballance_sdl3_imported_configs NOCONFIG)
-        get_target_property(_ballance_sdl3_available_configs
-                ${_ballance_sdl3_runtime_target} IMPORTED_CONFIGURATIONS)
-        if (_ballance_sdl3_available_configs)
-            list(APPEND _ballance_sdl3_imported_configs
-                    ${_ballance_sdl3_available_configs})
-        endif ()
-        list(REMOVE_DUPLICATES _ballance_sdl3_imported_configs)
-
-        set(_ballance_sdl3_runtime_location "")
-        foreach (_ballance_sdl3_imported_config
-                IN LISTS _ballance_sdl3_imported_configs)
-            string(TOUPPER "${_ballance_sdl3_imported_config}"
-                    _ballance_sdl3_imported_config)
-            get_target_property(_ballance_sdl3_config_location
-                    ${_ballance_sdl3_runtime_target}
-                    IMPORTED_LOCATION_${_ballance_sdl3_imported_config})
-            if (_ballance_sdl3_config_location)
-                set(_ballance_sdl3_runtime_location
-                        "${_ballance_sdl3_config_location}")
-                break()
-            endif ()
-        endforeach ()
-
-        if (NOT _ballance_sdl3_runtime_location)
-            get_target_property(_ballance_sdl3_runtime_location
-                    ${_ballance_sdl3_runtime_target} IMPORTED_LOCATION)
-        endif ()
-        if (NOT _ballance_sdl3_runtime_location)
-            message(FATAL_ERROR "Unable to locate the imported SDL3 runtime")
-        endif ()
-
-        file(REAL_PATH "${_ballance_sdl3_runtime_location}"
-                _ballance_sdl3_runtime_real_path)
-        get_filename_component(_ballance_sdl3_runtime_name
-                "${_ballance_sdl3_runtime_location}" NAME)
-        install(FILES "${_ballance_sdl3_runtime_real_path}"
-                DESTINATION Bin
-                RENAME "${_ballance_sdl3_runtime_name}"
-                COMPONENT Runtime)
-    else ()
-        install(IMPORTED_RUNTIME_ARTIFACTS ${_ballance_sdl3_runtime_target}
-                RUNTIME DESTINATION Bin COMPONENT Runtime
-                LIBRARY DESTINATION Bin COMPONENT Runtime
-                FRAMEWORK DESTINATION Bin COMPONENT Runtime
-        )
     endif ()
+    install(IMPORTED_RUNTIME_ARTIFACTS ${_ballance_sdl3_runtime_target}
+            RUNTIME DESTINATION Bin COMPONENT Runtime
+            LIBRARY DESTINATION Bin COMPONENT Runtime
+            FRAMEWORK DESTINATION Bin COMPONENT Runtime
+    )
 endif ()
 
 if (BALLANCE_BUILD_STATIC)
