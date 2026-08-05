@@ -108,8 +108,46 @@ set(_ballance_check_sdl3_runtime OFF)
 if (_ballance_sdl3_runtime_target)
     set(_ballance_check_sdl3_runtime ON)
     if (APPLE)
-        get_target_property(_ballance_sdl3_runtime_location
-                ${_ballance_sdl3_runtime_target} IMPORTED_LOCATION_RELEASE)
+        set(_ballance_sdl3_imported_configs "")
+        if (CMAKE_BUILD_TYPE)
+            string(TOUPPER "${CMAKE_BUILD_TYPE}" _ballance_sdl3_build_config)
+            get_target_property(_ballance_sdl3_mapped_configs
+                    ${_ballance_sdl3_runtime_target}
+                    MAP_IMPORTED_CONFIG_${_ballance_sdl3_build_config})
+            if (_ballance_sdl3_mapped_configs)
+                list(APPEND _ballance_sdl3_imported_configs
+                        ${_ballance_sdl3_mapped_configs})
+            endif ()
+            list(APPEND _ballance_sdl3_imported_configs
+                    "${_ballance_sdl3_build_config}")
+        endif ()
+
+        # Follow CMake's imported-target configuration selection order so the
+        # staged runtime is the same library that target linking selected.
+        list(APPEND _ballance_sdl3_imported_configs NOCONFIG)
+        get_target_property(_ballance_sdl3_available_configs
+                ${_ballance_sdl3_runtime_target} IMPORTED_CONFIGURATIONS)
+        if (_ballance_sdl3_available_configs)
+            list(APPEND _ballance_sdl3_imported_configs
+                    ${_ballance_sdl3_available_configs})
+        endif ()
+        list(REMOVE_DUPLICATES _ballance_sdl3_imported_configs)
+
+        set(_ballance_sdl3_runtime_location "")
+        foreach (_ballance_sdl3_imported_config
+                IN LISTS _ballance_sdl3_imported_configs)
+            string(TOUPPER "${_ballance_sdl3_imported_config}"
+                    _ballance_sdl3_imported_config)
+            get_target_property(_ballance_sdl3_config_location
+                    ${_ballance_sdl3_runtime_target}
+                    IMPORTED_LOCATION_${_ballance_sdl3_imported_config})
+            if (_ballance_sdl3_config_location)
+                set(_ballance_sdl3_runtime_location
+                        "${_ballance_sdl3_config_location}")
+                break()
+            endif ()
+        endforeach ()
+
         if (NOT _ballance_sdl3_runtime_location)
             get_target_property(_ballance_sdl3_runtime_location
                     ${_ballance_sdl3_runtime_target} IMPORTED_LOCATION)
