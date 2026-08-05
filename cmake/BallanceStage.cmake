@@ -164,15 +164,6 @@ if (_ballance_sdl3_runtime_target)
                 DESTINATION Bin
                 RENAME "${_ballance_sdl3_runtime_name}"
                 COMPONENT Runtime)
-
-        find_program(_ballance_otool otool REQUIRED)
-        find_program(_ballance_codesign codesign REQUIRED)
-        configure_file(
-                "${CMAKE_CURRENT_LIST_DIR}/FixupMacStage.cmake.in"
-                "${CMAKE_CURRENT_BINARY_DIR}/FixupMacStage.cmake"
-                @ONLY)
-        install(SCRIPT "${CMAKE_CURRENT_BINARY_DIR}/FixupMacStage.cmake"
-                COMPONENT Runtime)
     else ()
         install(IMPORTED_RUNTIME_ARTIFACTS ${_ballance_sdl3_runtime_target}
                 RUNTIME DESTINATION Bin COMPONENT Runtime
