@@ -133,6 +133,7 @@ jobs:
         cmake-generator: ${{ matrix.platform.sdl_cmake_generator }}
         cmake-arguments: ${{ matrix.platform.sdl_cmake_arguments }}
         discriminator: ${{ matrix.platform.sdl_discriminator }}
+        build-type: Release
         install-linux-dependencies: true
 
     - name: Configure
