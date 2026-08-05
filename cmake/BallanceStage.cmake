@@ -57,12 +57,24 @@ else ()
     set(_ballance_install_cmd "${CMAKE_COMMAND}" --install "${CMAKE_BINARY_DIR}" --component Runtime)
 endif ()
 
-add_custom_target(stage
-        COMMAND ${_ballance_install_cmd}
-        COMMENT "Installing to ${CMAKE_INSTALL_PREFIX}"
-        USES_TERMINAL
-        VERBATIM
-)
+if (APPLE)
+    add_custom_target(stage
+            COMMAND "${CMAKE_COMMAND}"
+            -DSTAGE_ROOT:PATH=${CMAKE_INSTALL_PREFIX}
+            -P "${CMAKE_CURRENT_LIST_DIR}/PrepareMacStage.cmake"
+            COMMAND ${_ballance_install_cmd}
+            COMMENT "Installing to ${CMAKE_INSTALL_PREFIX}"
+            USES_TERMINAL
+            VERBATIM
+    )
+else ()
+    add_custom_target(stage
+            COMMAND ${_ballance_install_cmd}
+            COMMENT "Installing to ${CMAKE_INSTALL_PREFIX}"
+            USES_TERMINAL
+            VERBATIM
+    )
+endif ()
 
 set(_ballance_runtime_targets
         VxMath CK2 CK2_3D CKBgfxRasterizer
