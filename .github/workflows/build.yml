@@ -233,3 +233,40 @@ jobs:
         archive: false
         if-no-files-found: error
         retention-days: 14
+
+  full-tests:
+    name: sdl-linux-x64-full-tests
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.target == 'all' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+
+    permissions:
+      contents: read
+
+    env:
+      CMAKE_BUILD_PARALLEL_LEVEL: 4
+      CTEST_OUTPUT_ON_FAILURE: 1
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v6.0.2
+      with:
+        submodules: recursive
+
+    - name: Setup SDL3
+      id: sdl
+      uses: libsdl-org/setup-sdl@a966470e7d9b6a5c93eec3f08d5dac370325c860
+      with:
+        version: 3.4.14
+        build-type: Release
+        install-linux-dependencies: true
+
+    - name: Configure full test suite
+      shell: pwsh
+      run: cmake --preset linux-x64-tests "-DCMAKE_PREFIX_PATH=${{ steps.sdl.outputs.prefix }}" -DBALLANCE_AUTO_DETECT_ASSETS=OFF -DBALLANCE_ASSETS_ROOT=
+
+    - name: Build full test suite
+      run: cmake --build --preset linux-x64-tests-release
+
+    - name: Run full test suite
+      run: ctest --preset linux-x64-tests-release
