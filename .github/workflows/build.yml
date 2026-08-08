@@ -127,9 +127,9 @@ jobs:
     - name: Setup SDL3
       if: ${{ github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name) }}
       id: sdl
-      uses: libsdl-org/setup-sdl@main
+      uses: libsdl-org/setup-sdl@a966470e7d9b6a5c93eec3f08d5dac370325c860
       with:
-        version: 3-latest
+        version: 3.4.14
         cmake-generator: ${{ matrix.platform.sdl_cmake_generator }}
         cmake-arguments: ${{ matrix.platform.sdl_cmake_arguments }}
         discriminator: ${{ matrix.platform.sdl_discriminator }}
