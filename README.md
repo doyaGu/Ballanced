@@ -4,6 +4,8 @@ Source-level reimplementation of the **Ballance** game runtime. Rebuilds the pla
 
 Original game assets are not included - you need a copy of the original game to run it.
 
+This document describes the cross-platform SDL3 runtime on the default `sdl` branch.
+
 ## For players
 
 Download the latest pre-built release:
@@ -13,14 +15,14 @@ Download the latest pre-built release:
 ### Installation
 
 1. Get a legal copy of the original Ballance game.
-2. Extract the release package into the `Bin` directory of your Ballance installation.
-3. Run `Bin\Player.exe`.
+2. Extract the release package into the **game root**, alongside the original asset directories. The archive already contains `Bin/`, `RenderEngines/`, `Managers/`, `Plugins/`, and `BuildingBlocks/`.
+3. Run `Bin\Player.exe` on Windows or `Bin/Player` on Linux and macOS.
 
-No compatibility mode or registry edits needed.
+Windows does not require compatibility mode or registry edits.
 
 ### Flat layout (alternative)
 
-Put `Player.exe`, `base.cmo`, `Database.tdb`, the asset folders, and all runtime DLLs in the same directory. When `base.cmo` is next to `Player.exe`, the player treats that directory as its root.
+Put `Player` (`Player.exe` on Windows), `base.cmo`, `Database.tdb`, the asset folders, and all runtime modules in the same directory. When `base.cmo` is next to the executable, the player treats that directory as its root.
 
 ## For developers
 
@@ -54,7 +56,7 @@ Output goes to:
 build/windows-x86-runtime/stage/Bin/Player.exe
 ```
 
-See [BUILD.md](BUILD.md) for the full preset matrix, static build builds, RenderEngine standalone builds, and troubleshooting.
+See [BUILD.md](BUILD.md) for the full preset matrix, static builds, RenderEngine standalone builds, and troubleshooting.
 
 ### Asset staging (optional)
 
@@ -65,7 +67,18 @@ cmake --preset windows-x86-runtime -DBALLANCE_ASSETS_ROOT=C:/path/to/your/Ballan
 cmake --build --preset windows-x86-runtime-stage-release
 ```
 
-A local `assets/` directory in the repo root is picked up automatically.
+For an explicit local-development shortcut, place the assets under `assets/`
+and configure with `-DBALLANCE_AUTO_DETECT_ASSETS=ON`. Canonical presets do not
+read this ignored directory by default.
+
+### Source of truth and versioning
+
+- `CMakePresets.json` defines the supported full-runtime platform, architecture, and linkage matrix.
+- `.github/workflows/build.yml` defines the configurations continuously built by CI.
+- CI runs the complete component test preset on Linux x64 in addition to the platform/linkage build matrix.
+- `BUILD.md` documents the supported superproject workflow. Component READMEs describe standalone workflows only.
+- Ballanced and its Git submodules are independently versioned. The root project version identifies the assembled runtime; Player and the engine/module projects keep their own versions. A component version should not be inferred from the root version or release tag.
+- Every staged runtime contains `Bin/BallancedBuildManifest.json`, recording the exact component revisions used for that build.
 
 ## Repository structure
 
