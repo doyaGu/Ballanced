@@ -4,6 +4,10 @@ CMake presets are the primary entry point. The root project assembles a Ballance
 
 Use manual `cmake -S ... -B ...` commands only when a preset does not cover your generator or architecture.
 
+`CMakePresets.json` is the source of truth for the supported full-runtime matrix. Component-level presets and READMEs cover standalone builds and may intentionally support a narrower matrix.
+
+This guide applies to the default `sdl` branch.
+
 ## Prerequisites
 
 | Platform | Toolchain | Generator | CMake |
@@ -26,8 +30,11 @@ git clone --recurse-submodules https://github.com/doyaGu/Ballanced.git
 
 ### Updating an existing clone
 
+Clones created before `sdl` became the default branch should switch to it before updating:
+
 ```bash
-git pull
+git switch sdl
+git pull --ff-only
 git submodule update --init --recursive
 ```
 
@@ -96,9 +103,9 @@ ctest --list-presets
 
 | Preset | Platform | Arch | Mode |
 |--------|----------|------|------|
-| `windows-x86-runtime` | Windows | x86 | Shared DLL runtime |
-| `windows-x64-runtime` | Windows | x64 | Shared DLL runtime |
-| `windows-arm64-runtime` | Windows | ARM64 | Shared DLL runtime |
+| `windows-x86-runtime` | Windows | x86 | Shared-module runtime |
+| `windows-x64-runtime` | Windows | x64 | Shared-module runtime |
+| `windows-arm64-runtime` | Windows | ARM64 | Shared-module runtime |
 | `linux-x64-runtime` | Linux | x64 | Shared runtime |
 | `linux-arm64-runtime` | Linux | ARM64 | Shared runtime |
 | `macos-x64-runtime` | macOS | x64 | Shared runtime |
@@ -136,15 +143,16 @@ Build presets follow `<configure-preset>-release` (plain build) or `<configure-p
 
 ## Runtime layout
 
-The `stage` target installs under `build/<preset>/stage/`:
+The `stage` target installs under `build/<preset>/stage/`. Names below use Windows extensions; Linux and macOS use the platform-native executable and shared-library names (`Player`, `lib*.so`, or `lib*.dylib`).
 
 ```
 stage/
   Bin/
-    Player.exe          (Player on Linux/macOS)
+    Player.exe
     CK2.dll
     VxMath.dll
     SDL3.dll
+    BallancedBuildManifest.json
   RenderEngines/
     CK2_3D.dll
     CKBgfxRasterizer.dll
@@ -175,13 +183,15 @@ base.cmo
 Database.tdb
 ```
 
-A local `assets/` directory in the repo root is picked up automatically (`BALLANCE_AUTO_DETECT_ASSETS=ON` by default).
+A local `assets/` directory can be used explicitly with
+`-DBALLANCE_AUTO_DETECT_ASSETS=ON`. It is disabled by default so ignored local
+files cannot silently change a canonical stage.
 
 ## Build modes
 
 ### Runtime (default)
 
-Shared DLL modules plus a normal `Player.exe`.
+Shared modules plus the Player executable.
 
 ```bash
 cmake --preset windows-x86-runtime
@@ -190,7 +200,7 @@ cmake --build --preset windows-x86-runtime-stage-release
 
 ### Static build
 
-All Virtools modules linked into `Player.exe`. No separate module DLLs.
+All Virtools modules linked into the Player executable. No separate module shared libraries.
 
 ```bash
 cmake --preset windows-x86-static
@@ -199,13 +209,17 @@ cmake --build --preset windows-x86-static-stage-release
 
 ### Tests
 
-Module unit tests for CK2, VxMath, RenderEngine, and Plugins.
+Tests for Player utilities, CK2, VxMath, RenderEngine, Plugins, and selected Building Blocks.
 
 ```bash
 cmake --preset windows-x86-tests
 cmake --build --preset windows-x86-tests-release
 ctest --preset windows-x86-tests-release
 ```
+
+The regular CI matrix performs platform and linkage coverage. A dedicated
+Linux x64 job builds and runs this complete test preset on every push and pull
+request to `sdl`.
 
 ## RenderEngine standalone
 
@@ -235,6 +249,12 @@ Stage assets from an existing Ballance installation:
 ```powershell
 cmake --preset windows-x86-runtime -DBALLANCE_ASSETS_ROOT=C:/path/to/Ballance
 cmake --build --preset windows-x86-runtime-stage-release
+```
+
+Or opt into the ignored repository-local `assets/` directory:
+
+```powershell
+cmake --preset windows-x86-runtime -DBALLANCE_AUTO_DETECT_ASSETS=ON
 ```
 
 Use a custom stage directory:
@@ -306,4 +326,5 @@ cmake --preset windows-x86-runtime -DCMAKE_PREFIX_PATH=C:/SDL3
 
 - CMake presets require CMake 3.25+. The `cmake_minimum_required` in project files is lower to support manual builds.
 - `MidiManager` is disabled automatically on non-Windows platforms.
-- Set `BALLANCE_DIR` to a live Ballance installation for direct deployment.
+- `BALLANCE_DIR` identifies and validates a live Ballance installation as a manual deployment destination; staging does not copy files there automatically.
+- Ballanced and its submodules are independently versioned. Root releases pin exact component commits; component version numbers do not need to match the root project version.
