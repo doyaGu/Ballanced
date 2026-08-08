@@ -131,26 +131,26 @@ foreach (_config IN ITEMS
     endif ()
 endforeach ()
 
-if (BALLANCE_ASSETS_ROOT AND EXISTS "${BALLANCE_ASSETS_ROOT}")
-    message(STATUS "[Ballance] Staging assets from: ${BALLANCE_ASSETS_ROOT}")
+if (BALLANCE_EFFECTIVE_ASSETS_ROOT AND EXISTS "${BALLANCE_EFFECTIVE_ASSETS_ROOT}")
+    message(STATUS "[Ballance] Staging assets from: ${BALLANCE_EFFECTIVE_ASSETS_ROOT}")
 
     install(DIRECTORY
-            "${BALLANCE_ASSETS_ROOT}/Textures"
-            "${BALLANCE_ASSETS_ROOT}/Sounds"
-            "${BALLANCE_ASSETS_ROOT}/Text"
-            "${BALLANCE_ASSETS_ROOT}/3D Entities"
+            "${BALLANCE_EFFECTIVE_ASSETS_ROOT}/Textures"
+            "${BALLANCE_EFFECTIVE_ASSETS_ROOT}/Sounds"
+            "${BALLANCE_EFFECTIVE_ASSETS_ROOT}/Text"
+            "${BALLANCE_EFFECTIVE_ASSETS_ROOT}/3D Entities"
             DESTINATION . OPTIONAL
             COMPONENT Runtime
     )
 
     install(FILES
-            "${BALLANCE_ASSETS_ROOT}/base.cmo"
-            "${BALLANCE_ASSETS_ROOT}/Database.tdb"
+            "${BALLANCE_EFFECTIVE_ASSETS_ROOT}/base.cmo"
+            "${BALLANCE_EFFECTIVE_ASSETS_ROOT}/Database.tdb"
             DESTINATION . OPTIONAL
             COMPONENT Runtime
     )
-elseif (BALLANCE_ASSETS_ROOT)
-    message(WARNING "[Ballance] Asset path not found: ${BALLANCE_ASSETS_ROOT}")
+elseif (BALLANCE_EFFECTIVE_ASSETS_ROOT)
+    message(WARNING "[Ballance] Asset path not found: ${BALLANCE_EFFECTIVE_ASSETS_ROOT}")
 endif ()
 
 if (BALLANCE_DIR AND EXISTS "${BALLANCE_DIR}")
@@ -172,7 +172,7 @@ add_test(NAME StageLayout
         COMMAND "${CMAKE_COMMAND}"
         -DSTAGE_ROOT:PATH=${CMAKE_INSTALL_PREFIX}
         -DBALLANCE_BUILD_STATIC:BOOL=${BALLANCE_BUILD_STATIC}
-        -DCHECK_ASSETS:BOOL=$<BOOL:${BALLANCE_ASSETS_ROOT}>
+        -DCHECK_ASSETS:BOOL=$<BOOL:${BALLANCE_EFFECTIVE_ASSETS_ROOT}>
         -DCHECK_RENDER_CONFIGS:BOOL=${_ballance_check_render_configs}
         -DCHECK_SDL3_RUNTIME:BOOL=${_ballance_check_sdl3_runtime}
         -P "${CMAKE_CURRENT_LIST_DIR}/VerifyStage.cmake"

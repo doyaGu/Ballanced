@@ -4,32 +4,11 @@ ballance_set_cache_default(BALLANCE_AUTO_DETECT_ASSETS OFF BOOL
         "Use the repository-local assets directory for staging when it exists")
 ballance_set_cache_default(BALLANCE_ASSETS_ROOT "" PATH
         "Path to Ballance game root for asset staging (base.cmo, Textures/, etc.)")
-ballance_set_cache_default(BALLANCE_ASSETS_ROOT_AUTO_DETECTED OFF INTERNAL
-        "Whether BALLANCE_ASSETS_ROOT was populated by repository-local auto-detection")
 
 set(_ballance_local_assets_root "${PROJECT_SOURCE_DIR}/assets")
+set(BALLANCE_EFFECTIVE_ASSETS_ROOT "${BALLANCE_ASSETS_ROOT}")
 if (BALLANCE_AUTO_DETECT_ASSETS AND NOT BALLANCE_ASSETS_ROOT AND EXISTS "${_ballance_local_assets_root}")
-    set(BALLANCE_ASSETS_ROOT "${_ballance_local_assets_root}" CACHE PATH
-            "Path to Ballance game root for asset staging (base.cmo, Textures/, etc.)"
-            FORCE)
-    set(BALLANCE_ASSETS_ROOT_AUTO_DETECTED ON CACHE INTERNAL
-            "Whether BALLANCE_ASSETS_ROOT was populated by repository-local auto-detection"
-            FORCE)
-elseif (NOT BALLANCE_AUTO_DETECT_ASSETS AND
-        (BALLANCE_ASSETS_ROOT_AUTO_DETECTED OR
-         "${BALLANCE_ASSETS_ROOT}" STREQUAL "${_ballance_local_assets_root}"))
-    # Clear values left in an existing cache by the former default-on behavior.
-    set(BALLANCE_ASSETS_ROOT "" CACHE PATH
-            "Path to Ballance game root for asset staging (base.cmo, Textures/, etc.)"
-            FORCE)
-    set(BALLANCE_ASSETS_ROOT_AUTO_DETECTED OFF CACHE INTERNAL
-            "Whether BALLANCE_ASSETS_ROOT was populated by repository-local auto-detection"
-            FORCE)
-elseif (BALLANCE_ASSETS_ROOT_AUTO_DETECTED AND
-        NOT "${BALLANCE_ASSETS_ROOT}" STREQUAL "${_ballance_local_assets_root}")
-    set(BALLANCE_ASSETS_ROOT_AUTO_DETECTED OFF CACHE INTERNAL
-            "Whether BALLANCE_ASSETS_ROOT was populated by repository-local auto-detection"
-            FORCE)
+    set(BALLANCE_EFFECTIVE_ASSETS_ROOT "${_ballance_local_assets_root}")
 endif ()
 
 ballance_set_cache_default(BALLANCE_DIR "" PATH
