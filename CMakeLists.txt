@@ -14,6 +14,7 @@ include(BallanceProject)
 include(BallanceOptions)
 include(BallanceCompiler)
 include(BallanceVersion)
+include(BallanceBuildManifest)
 include(CTest)
 
 add_subdirectory(Source)

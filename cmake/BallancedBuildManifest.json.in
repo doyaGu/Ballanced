@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "runtimeVersion": "@BALLANCE_RUNTIME_VERSION@",
+  "components": {
+    "Ballanced": { "revision": "@BALLANCE_ROOT_REVISION@", "dirty": @BALLANCE_ROOT_DIRTY@ },
+    "Player": { "revision": "@BALLANCE_PLAYER_REVISION@", "dirty": @BALLANCE_PLAYER_DIRTY@ },
+    "VxMath": { "revision": "@BALLANCE_VXMATH_REVISION@", "dirty": @BALLANCE_VXMATH_DIRTY@ },
+    "CK2": { "revision": "@BALLANCE_CK2_REVISION@", "dirty": @BALLANCE_CK2_DIRTY@ },
+    "RenderEngine": { "revision": "@BALLANCE_RENDER_ENGINE_REVISION@", "dirty": @BALLANCE_RENDER_ENGINE_DIRTY@ },
+    "BuildingBlocks": { "revision": "@BALLANCE_BUILDING_BLOCKS_REVISION@", "dirty": @BALLANCE_BUILDING_BLOCKS_DIRTY@ },
+    "Plugins": { "revision": "@BALLANCE_PLUGINS_REVISION@", "dirty": @BALLANCE_PLUGINS_DIRTY@ },
+    "ParameterOperations": { "revision": "@BALLANCE_PARAMETER_OPERATIONS_REVISION@", "dirty": @BALLANCE_PARAMETER_OPERATIONS_DIRTY@ },
+    "SdlInputManager": { "revision": "@BALLANCE_SDL_INPUT_MANAGER_REVISION@", "dirty": @BALLANCE_SDL_INPUT_MANAGER_DIRTY@ },
+    "SdlSoundManager": { "revision": "@BALLANCE_SDL_SOUND_MANAGER_REVISION@", "dirty": @BALLANCE_SDL_SOUND_MANAGER_DIRTY@ }
+  }
+}
