@@ -1,8 +1,8 @@
 # Root-only compiler defaults for the superproject.
-
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED YES)
-set(CMAKE_CXX_EXTENSIONS YES)
+#
+# Component projects own their language-standard requirements. Keeping the
+# standard unset here prevents the superproject from silently changing the
+# contract of a component that is also built standalone.
 
 add_compile_definitions(
         $<$<C_COMPILER_ID:MSVC>:_CRT_SECURE_NO_WARNINGS>
