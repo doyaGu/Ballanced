@@ -108,11 +108,23 @@ if (_ballance_sdl3_runtime_target)
                     "SDL3 framework packages are not supported by the macOS stage layout; use a shared-library package")
         endif ()
     endif ()
-    install(IMPORTED_RUNTIME_ARTIFACTS ${_ballance_sdl3_runtime_target}
-            RUNTIME DESTINATION Bin COMPONENT Runtime
-            LIBRARY DESTINATION Bin COMPONENT Runtime
-            FRAMEWORK DESTINATION Bin COMPONENT Runtime
-    )
+    if (APPLE)
+        # Homebrew exposes SDL as a symlink into Cellar. Installing the imported
+        # artifact directly preserves that external relative link, which is
+        # broken after staging. Resolve it at install time, copy the real dylib,
+        # and normalize package-manager install names to @rpath.
+        install(CODE "
+            set(BALLANCE_SDL_SOURCE \"$<TARGET_FILE:${_ballance_sdl3_runtime_target}>\")
+            set(BALLANCE_SDL_NAME \"$<TARGET_FILE_NAME:${_ballance_sdl3_runtime_target}>\")
+            include(\"${CMAKE_CURRENT_LIST_DIR}/InstallMacSdl.cmake\")
+        " COMPONENT Runtime)
+    else ()
+        install(IMPORTED_RUNTIME_ARTIFACTS ${_ballance_sdl3_runtime_target}
+                RUNTIME DESTINATION Bin COMPONENT Runtime
+                LIBRARY DESTINATION Bin COMPONENT Runtime
+                FRAMEWORK DESTINATION Bin COMPONENT Runtime
+        )
+    endif ()
 endif ()
 
 if (BALLANCE_BUILD_STATIC)
