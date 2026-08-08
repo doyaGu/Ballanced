@@ -1,6 +1,8 @@
 # Verifies the staged Ballance runtime layout
 # Usage: cmake -DSTAGE_ROOT=<path> [-DCHECK_ASSETS=ON] -P VerifyStage.cmake
 
+include("${CMAKE_CURRENT_LIST_DIR}/BallanceComponentRegistry.cmake")
+
 if(NOT DEFINED STAGE_ROOT OR STAGE_ROOT STREQUAL "")
     message(FATAL_ERROR "STAGE_ROOT is required")
 endif()
@@ -233,8 +235,7 @@ _require_dll(Bin/CK2)
 _require_dll(Bin/VxMath)
 
 # Managers
-set(_required_managers SdlInputManager SdlSoundManager ParameterOperations)
-foreach(_mgr IN LISTS _required_managers)
+foreach(_mgr IN LISTS BALLANCE_MANAGER_RUNTIME_OUTPUTS)
     _require_dll("Managers/${_mgr}")
 endforeach()
 
@@ -250,23 +251,21 @@ if(CHECK_RENDER_CONFIGS)
 endif()
 
 # Plugins
-foreach(_plugin IN ITEMS AVIReader ImageReader WavReader VirtoolsLoader)
+foreach(_plugin IN LISTS BALLANCE_PLUGIN_RUNTIME_OUTPUTS)
     _require_dll("Plugins/${_plugin}")
 endforeach()
 
 # Portable building blocks
-foreach(_bb IN ITEMS
-        3DTransfo BuildingBlocksAddons1 Cameras Characters Collisions Controllers
-        Grids Interface Lights Logics Materials MeshModifiers Narratives Sounds
-        Visuals WorldEnvironment physics_RT TT_DatabaseManager_RT TT_Gravity_RT
-        TT_InterfaceManager_RT TT_ParticleSystems_RT TT_Toolbox_RT)
+foreach(_bb IN LISTS BALLANCE_BUILDING_BLOCK_REQUIRED_OUTPUTS)
     _require_dll("BuildingBlocks/${_bb}")
 endforeach()
 
-_shared_library_exists(_has_midi_manager "BuildingBlocks/MidiManager")
-if(_has_midi_manager)
-    message(STATUS "[StageLayout] MidiManager present")
-endif()
+foreach(_bb IN LISTS BALLANCE_BUILDING_BLOCK_OPTIONAL_OUTPUTS)
+    _shared_library_exists(_has_optional_bb "BuildingBlocks/${_bb}")
+    if(_has_optional_bb)
+        message(STATUS "[StageLayout] ${_bb} present")
+    endif()
+endforeach()
 
 # Game assets (optional)
 if(CHECK_ASSETS)

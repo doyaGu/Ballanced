@@ -1,6 +1,7 @@
 # Root-only staging, asset installation, and layout test registration.
 
 include(CTest)
+include(BallanceComponentRegistry)
 
 set(_ballance_can_run_target_executables ON)
 if (WIN32 AND CMAKE_GENERATOR_PLATFORM)
@@ -80,25 +81,17 @@ else ()
     )
 endif ()
 
-set(_ballance_runtime_targets
-        VxMath CK2 CK2_3D CKBgfxRasterizer
-        SdlInputManager SdlSoundManager ParameterOperations
-        AVIReader ImageReader WavReader VirtoolsLoader
-        Player
-
-        # Building blocks (DLL output names may differ from target names)
-        3DTrans Cameras Collision Controllers Grids Interface Lights Logics Materials
-        MeshModifiers MidiManager Narratives Sounds Visuals WorldEnvironment Characters
-        BuildingBlocksAddons1
-        physics_RT TT_DatabaseManager_RT TT_Gravity_RT TT_InterfaceManager_RT
-        TT_ParticleSystems_RT TT_Toolbox_RT
-)
-
-foreach (_target IN LISTS _ballance_runtime_targets)
+foreach (_target IN LISTS BALLANCE_RUNTIME_TARGETS)
     if (TARGET ${_target})
         add_dependencies(stage ${_target})
     endif ()
 endforeach ()
+
+add_test(NAME ComponentRegistry
+        COMMAND "${CMAKE_COMMAND}"
+        -DSOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
+        -P "${CMAKE_CURRENT_LIST_DIR}/VerifyComponentRegistry.cmake"
+)
 
 if (TARGET PlayerSdlShortcutsTest)
     add_dependencies(stage PlayerSdlShortcutsTest)
