@@ -27,8 +27,9 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v6.0.2
-      with:
-        submodules: recursive
+
+    - name: Checkout submodules
+      run: ./cmake/UpdateSubmodules.ps1
 
     - name: Check submodule pointers
       run: |
