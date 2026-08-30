@@ -121,8 +121,10 @@ jobs:
     - name: Checkout
       if: ${{ github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name) }}
       uses: actions/checkout@v6.0.2
-      with:
-        submodules: recursive
+
+    - name: Checkout submodules
+      if: ${{ github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name) }}
+      run: ./cmake/UpdateSubmodules.ps1
 
     - name: Setup SDL3
       if: ${{ github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name) }}
@@ -250,8 +252,10 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v6.0.2
-      with:
-        submodules: recursive
+
+    - name: Checkout submodules
+      shell: pwsh
+      run: ./cmake/UpdateSubmodules.ps1
 
     - name: Setup SDL3
       id: sdl
