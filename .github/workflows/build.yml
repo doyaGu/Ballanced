@@ -53,7 +53,7 @@ jobs:
             archive_ext: .zip
             sdl_discriminator: Windows-X86
             sdl_cmake_generator: Visual Studio 17 2022
-            sdl_cmake_arguments: -A Win32
+            sdl_cmake_arguments: -A Win32 --no-warn-unused-cli
 
           - name: windows-x64
             os: windows-2022
@@ -61,7 +61,7 @@ jobs:
             preset: windows-x64
             sdl_discriminator: Windows-X64
             sdl_cmake_generator: Visual Studio 17 2022
-            sdl_cmake_arguments: -A x64
+            sdl_cmake_arguments: -A x64 --no-warn-unused-cli
 
           - name: windows-arm64
             os: windows-11-arm
@@ -69,7 +69,7 @@ jobs:
             preset: windows-arm64
             sdl_discriminator: Windows-ARM64
             sdl_cmake_generator: Visual Studio 17 2022
-            sdl_cmake_arguments: -A ARM64
+            sdl_cmake_arguments: -A ARM64 --no-warn-unused-cli
 
           - name: linux-x64
             os: ubuntu-24.04
@@ -77,7 +77,7 @@ jobs:
             preset: linux-x64
             sdl_discriminator: Linux-X64
             sdl_cmake_generator: ""
-            sdl_cmake_arguments: ""
+            sdl_cmake_arguments: --no-warn-unused-cli
 
           - name: linux-arm64
             os: ubuntu-24.04-arm
@@ -85,7 +85,7 @@ jobs:
             preset: linux-arm64
             sdl_discriminator: Linux-ARM64
             sdl_cmake_generator: ""
-            sdl_cmake_arguments: ""
+            sdl_cmake_arguments: --no-warn-unused-cli
 
           - name: macos-x64
             os: macos-15-intel
@@ -93,7 +93,7 @@ jobs:
             preset: macos-x64
             sdl_discriminator: macOS-X64
             sdl_cmake_generator: ""
-            sdl_cmake_arguments: -DCMAKE_OSX_ARCHITECTURES=x86_64
+            sdl_cmake_arguments: -DCMAKE_OSX_ARCHITECTURES=x86_64 --no-warn-unused-cli
 
           - name: macos-arm64
             os: macos-15
@@ -101,7 +101,7 @@ jobs:
             preset: macos-arm64
             sdl_discriminator: macOS-ARM64
             sdl_cmake_generator: ""
-            sdl_cmake_arguments: -DCMAKE_OSX_ARCHITECTURES=arm64
+            sdl_cmake_arguments: -DCMAKE_OSX_ARCHITECTURES=arm64 --no-warn-unused-cli
         linkage:
           - name: runtime
             ballance_build_static: "OFF"
@@ -125,6 +125,11 @@ jobs:
     - name: Checkout submodules
       if: ${{ github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name) }}
       run: ./cmake/UpdateSubmodules.ps1
+
+    - name: Setup current wayland-scanner
+      if: ${{ (github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name)) && startsWith(matrix.platform.name, 'linux-') }}
+      shell: bash
+      run: ./cmake/SetupWaylandScanner.sh
 
     - name: Setup SDL3
       if: ${{ github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name) }}
@@ -257,12 +262,16 @@ jobs:
       shell: pwsh
       run: ./cmake/UpdateSubmodules.ps1
 
+    - name: Setup current wayland-scanner
+      run: ./cmake/SetupWaylandScanner.sh
+
     - name: Setup SDL3
       id: sdl
       uses: libsdl-org/setup-sdl@a966470e7d9b6a5c93eec3f08d5dac370325c860
       with:
         version: 3.4.14
         build-type: Release
+        cmake-arguments: --no-warn-unused-cli
         install-linux-dependencies: true
 
     - name: Configure full test suite
