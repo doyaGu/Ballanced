@@ -36,8 +36,6 @@ if (MSVC)
     _set_vs_folder(CK2_3DStatic "Core")
     _set_vs_folder(CKBgfxRasterizer "RenderEngines")
     _set_vs_folder(CKBgfxRasterizerStatic "RenderEngines")
-    _set_vs_folder(CKGLRasterizer "RenderEngines")
-    _set_vs_folder(CKGLRasterizerStatic "RenderEngines")
 endif ()
 
 # Managers -> Managers/
