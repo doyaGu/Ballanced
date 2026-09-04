@@ -176,7 +176,7 @@ jobs:
         $env:CKRE_RUN_BGFX_BACKEND_RUNTIME_TESTS = "1"
         foreach ($backend in @("d3d11", "d3d12")) {
           $env:CKBGFX_RENDERER_BACKEND = $backend
-          ctest --test-dir build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }} -C Release -R "rasterizer3_pixel_tests|scene_capture_golden" --output-on-failure
+          ctest --test-dir build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }} -C Release -R "rasterizer3_pixel_tests|scene_capture_golden|scene_capture_multiframe" --output-on-failure
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
         }
 
@@ -189,7 +189,7 @@ jobs:
       env:
         CKRE_RUN_BGFX_BACKEND_RUNTIME_TESTS: "1"
         CKBGFX_RENDERER_BACKEND: opengl
-      run: xvfb-run -a ctest --test-dir build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }} -C Release -R "rasterizer3_pixel_tests|scene_capture_golden" --output-on-failure
+      run: xvfb-run -a ctest --test-dir build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }} -C Release -R "rasterizer3_pixel_tests|scene_capture_golden|scene_capture_multiframe" --output-on-failure
 
     - name: Configure Linux OpenGLES FFP runtime
       if: ${{ (github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name)) && matrix.platform.name == 'linux-x64' && matrix.linkage.name == 'runtime' }}
@@ -209,21 +209,21 @@ jobs:
       env:
         CKRE_RUN_BGFX_BACKEND_RUNTIME_TESTS: "1"
         CKBGFX_RENDERER_BACKEND: opengles
-      run: xvfb-run -a ctest --test-dir build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }}-gles -C Release -R "rasterizer3_pixel_tests|scene_capture_golden" --output-on-failure
+      run: xvfb-run -a ctest --test-dir build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }}-gles -C Release -R "rasterizer3_pixel_tests|scene_capture_golden|scene_capture_multiframe" --output-on-failure
 
     - name: Test Linux Vulkan FFP runtime
       if: ${{ (github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name)) && matrix.platform.name == 'linux-x64' && matrix.linkage.name == 'runtime' }}
       env:
         CKRE_RUN_BGFX_BACKEND_RUNTIME_TESTS: "1"
         CKBGFX_RENDERER_BACKEND: vulkan
-      run: xvfb-run -a ctest --test-dir build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }} -C Release -R "rasterizer3_pixel_tests|scene_capture_golden" --output-on-failure
+      run: xvfb-run -a ctest --test-dir build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }} -C Release -R "rasterizer3_pixel_tests|scene_capture_golden|scene_capture_multiframe" --output-on-failure
 
     - name: Test macOS Metal FFP runtime
       if: ${{ (github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name)) && matrix.platform.name == 'macos-arm64' && matrix.linkage.name == 'runtime' }}
       env:
         CKRE_RUN_BGFX_BACKEND_RUNTIME_TESTS: "1"
         CKBGFX_RENDERER_BACKEND: metal
-      run: ctest --test-dir build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }} -C Release -R "rasterizer3_pixel_tests|scene_capture_golden" --output-on-failure
+      run: ctest --test-dir build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }} -C Release -R "rasterizer3_pixel_tests|scene_capture_golden|scene_capture_multiframe" --output-on-failure
 
     - name: Upload regenerated golden frames
       if: ${{ github.event_name == 'workflow_dispatch' && inputs.update-golden && matrix.linkage.name == 'runtime' && (matrix.platform.name == 'windows-x64' || matrix.platform.name == 'linux-x64' || matrix.platform.name == 'macos-arm64') }}
