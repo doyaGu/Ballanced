@@ -87,6 +87,22 @@ foreach (_target IN LISTS BALLANCE_RUNTIME_TARGETS)
     endif ()
 endforeach ()
 
+if (TARGET Player AND _ballance_can_run_target_executables AND
+        BALLANCE_EFFECTIVE_ASSETS_ROOT AND EXISTS "${BALLANCE_EFFECTIVE_ASSETS_ROOT}")
+    add_custom_target(render_acceptance
+            COMMAND "${CMAKE_COMMAND}"
+            -DSTAGE_ROOT:PATH=${CMAKE_INSTALL_PREFIX}
+            -DBUILD_ROOT:PATH=${CMAKE_BINARY_DIR}
+            -DPLAYER_FILENAME:STRING=$<TARGET_FILE_NAME:Player>
+            -P "${CMAKE_CURRENT_LIST_DIR}/RunPlayerRenderAcceptance.cmake"
+            COMMENT "Running visible manual render acceptance"
+            USES_TERMINAL
+            VERBATIM
+    )
+    add_dependencies(render_acceptance stage)
+    set_target_properties(render_acceptance PROPERTIES FOLDER "Tests")
+endif ()
+
 add_test(NAME ComponentRegistry
         COMMAND "${CMAKE_COMMAND}"
         -DSOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
@@ -194,8 +210,23 @@ if (BUILD_TESTING AND TARGET Player AND _ballance_can_run_target_executables AND
             RUN_SERIAL TRUE
             TIMEOUT 90
     )
+    add_test(NAME PlayerLevelEntrySmoke
+            COMMAND "${CMAKE_COMMAND}"
+            -DSTAGE_ROOT:PATH=${CMAKE_INSTALL_PREFIX}
+            -DBUILD_ROOT:PATH=${CMAKE_BINARY_DIR}
+            -DPLAYER_FILENAME:STRING=$<TARGET_FILE_NAME:Player>
+            -P "${CMAKE_CURRENT_LIST_DIR}/RunPlayerLevelEntrySmoke.cmake"
+    )
+    set_tests_properties(PlayerLevelEntrySmoke PROPERTIES
+            DEPENDS StageInstall
+            RUN_SERIAL TRUE
+            TIMEOUT 150
+    )
     if (_ballance_stage_is_multi_config)
         set_tests_properties(PlayerStageSmoke PROPERTIES
+                CONFIGURATIONS "${BALLANCE_TEST_CONFIG}"
+        )
+        set_tests_properties(PlayerLevelEntrySmoke PROPERTIES
                 CONFIGURATIONS "${BALLANCE_TEST_CONFIG}"
         )
     endif ()
