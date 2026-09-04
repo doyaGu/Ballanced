@@ -182,20 +182,20 @@ set_tests_properties(StageLayout PROPERTIES DEPENDS StageInstall)
 
 if (BUILD_TESTING AND TARGET Player AND _ballance_can_run_target_executables AND
         BALLANCE_EFFECTIVE_ASSETS_ROOT AND EXISTS "${BALLANCE_EFFECTIVE_ASSETS_ROOT}")
-    add_test(NAME PlayerGameplayAcceptance
+    add_test(NAME PlayerStageSmoke
             COMMAND "${CMAKE_COMMAND}"
             -DSTAGE_ROOT:PATH=${CMAKE_INSTALL_PREFIX}
             -DBUILD_ROOT:PATH=${CMAKE_BINARY_DIR}
             -DPLAYER_FILENAME:STRING=$<TARGET_FILE_NAME:Player>
-            -P "${CMAKE_CURRENT_LIST_DIR}/RunPlayerGameplayAcceptance.cmake"
+            -P "${CMAKE_CURRENT_LIST_DIR}/RunPlayerStageSmoke.cmake"
     )
-    set_tests_properties(PlayerGameplayAcceptance PROPERTIES
+    set_tests_properties(PlayerStageSmoke PROPERTIES
             DEPENDS StageInstall
             RUN_SERIAL TRUE
-            TIMEOUT 240
+            TIMEOUT 90
     )
     if (_ballance_stage_is_multi_config)
-        set_tests_properties(PlayerGameplayAcceptance PROPERTIES
+        set_tests_properties(PlayerStageSmoke PROPERTIES
                 CONFIGURATIONS "${BALLANCE_TEST_CONFIG}"
         )
     endif ()
