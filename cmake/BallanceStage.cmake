@@ -75,6 +75,13 @@ if (APPLE)
 else ()
     add_custom_target(stage
             COMMAND ${_ballance_install_cmd}
+            COMMAND "${CMAKE_COMMAND}"
+            -DBUILD_ROOT:PATH=${CMAKE_BINARY_DIR}
+            -DSTAGE_ROOT:PATH=${CMAKE_INSTALL_PREFIX}
+            -DCKRE_BUILD_BGFX_RASTERIZER:BOOL=${CKRE_BUILD_BGFX_RASTERIZER}
+            -DCKRE_BUILD_SDL_GPU_RASTERIZER:BOOL=${CKRE_BUILD_SDL_GPU_RASTERIZER}
+            -DBALLANCE_BUILD_STATIC:BOOL=${BALLANCE_BUILD_STATIC}
+            -P "${CMAKE_CURRENT_LIST_DIR}/PruneDisabledRasterizers.cmake"
             COMMENT "Installing to ${CMAKE_INSTALL_PREFIX}"
             USES_TERMINAL
             VERBATIM
@@ -110,6 +117,9 @@ add_test(NAME ComponentRegistry
             -DCKRE_BUILD_SDL_GPU_RASTERIZER:BOOL=${CKRE_BUILD_SDL_GPU_RASTERIZER}
             -P "${CMAKE_CURRENT_LIST_DIR}/VerifyComponentRegistry.cmake"
 )
+add_test(NAME StageRasterizerSelection
+        COMMAND "${CMAKE_COMMAND}" -DTEST_ROOT:PATH=${CMAKE_BINARY_DIR}/stage-rasterizer-test
+        -P "${CMAKE_CURRENT_LIST_DIR}/TestStageRasterizerSelection.cmake")
 
 if (TARGET PlayerSdlShortcutsTest)
     add_dependencies(stage PlayerSdlShortcutsTest)

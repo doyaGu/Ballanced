@@ -194,6 +194,17 @@ message(STATUS "[StageLayout] Check render configs: ${CHECK_RENDER_CONFIGS}")
 message(STATUS "[StageLayout] Static build: ${BALLANCE_BUILD_STATIC}")
 message(STATUS "[StageLayout] Check SDL3 runtime: ${CHECK_SDL3_RUNTIME}")
 
+foreach (_rasterizer IN ITEMS CKBgfxRasterizer CKSdlGpuRasterizer)
+    if (NOT _rasterizer IN_LIST BALLANCE_RENDER_ENGINE_RUNTIME_OUTPUTS OR BALLANCE_BUILD_STATIC)
+        foreach (_directory IN ITEMS Bin RenderEngines)
+            _shared_library_exists(_stale "${_directory}/${_rasterizer}")
+            if (_stale)
+                message(FATAL_ERROR "Disabled rasterizer remains staged: ${_directory}/${_rasterizer}")
+            endif ()
+        endforeach ()
+    endif ()
+endforeach ()
+
 # Required directories
 _require_dir(Bin)
 _forbid_path(include)
