@@ -246,15 +246,12 @@ foreach(_mgr IN LISTS BALLANCE_MANAGER_RUNTIME_OUTPUTS)
 endforeach()
 
 # Render engine
-_require_dll("RenderEngines/CK2_3D")
-if(CHECK_RENDER_CONFIGS)
-    _require_file(RenderEngines/CK2_3D.ini)
-endif()
-
-_require_dll("RenderEngines/CKBgfxRasterizer")
-if(CHECK_RENDER_CONFIGS)
-    _require_file(RenderEngines/CKBgfxRasterizer.ini)
-endif()
+foreach(_engine IN LISTS BALLANCE_RENDER_ENGINE_RUNTIME_OUTPUTS)
+    _require_dll("RenderEngines/${_engine}")
+    if(CHECK_RENDER_CONFIGS AND (_engine STREQUAL "CK2_3D" OR _engine STREQUAL "CKBgfxRasterizer"))
+        _require_file("RenderEngines/${_engine}.ini")
+    endif()
+endforeach()
 
 # Plugins
 foreach(_plugin IN LISTS BALLANCE_PLUGIN_RUNTIME_OUTPUTS)
