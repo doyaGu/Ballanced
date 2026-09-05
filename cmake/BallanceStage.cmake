@@ -3,6 +3,11 @@
 include(CTest)
 include(BallanceComponentRegistry)
 
+set(_ballance_rasterizer_args
+        "-DCKRE_BUILD_BGFX_RASTERIZER:BOOL=${CKRE_BUILD_BGFX_RASTERIZER}"
+        "-DCKRE_BUILD_SDL_GPU_RASTERIZER:BOOL=${CKRE_BUILD_SDL_GPU_RASTERIZER}"
+        "-DBALLANCE_BUILD_STATIC:BOOL=${BALLANCE_BUILD_STATIC}")
+
 set(_ballance_can_run_target_executables ON)
 if (WIN32 AND CMAKE_GENERATOR_PLATFORM)
     string(TOLOWER "${CMAKE_GENERATOR_PLATFORM}" _ballance_target_platform_lc)
@@ -78,9 +83,7 @@ else ()
             COMMAND "${CMAKE_COMMAND}"
             -DBUILD_ROOT:PATH=${CMAKE_BINARY_DIR}
             -DSTAGE_ROOT:PATH=${CMAKE_INSTALL_PREFIX}
-            -DCKRE_BUILD_BGFX_RASTERIZER:BOOL=${CKRE_BUILD_BGFX_RASTERIZER}
-            -DCKRE_BUILD_SDL_GPU_RASTERIZER:BOOL=${CKRE_BUILD_SDL_GPU_RASTERIZER}
-            -DBALLANCE_BUILD_STATIC:BOOL=${BALLANCE_BUILD_STATIC}
+            ${_ballance_rasterizer_args}
             -P "${CMAKE_CURRENT_LIST_DIR}/PruneDisabledRasterizers.cmake"
             COMMENT "Installing to ${CMAKE_INSTALL_PREFIX}"
             USES_TERMINAL
@@ -113,8 +116,7 @@ endif ()
 add_test(NAME ComponentRegistry
         COMMAND "${CMAKE_COMMAND}"
             -DSOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            -DCKRE_BUILD_BGFX_RASTERIZER:BOOL=${CKRE_BUILD_BGFX_RASTERIZER}
-            -DCKRE_BUILD_SDL_GPU_RASTERIZER:BOOL=${CKRE_BUILD_SDL_GPU_RASTERIZER}
+            ${_ballance_rasterizer_args}
             -P "${CMAKE_CURRENT_LIST_DIR}/VerifyComponentRegistry.cmake"
 )
 add_test(NAME StageRasterizerSelection
@@ -199,9 +201,7 @@ add_test(NAME StageInstall
 add_test(NAME StageLayout
         COMMAND "${CMAKE_COMMAND}"
         -DSTAGE_ROOT:PATH=${CMAKE_INSTALL_PREFIX}
-        -DCKRE_BUILD_BGFX_RASTERIZER:BOOL=${CKRE_BUILD_BGFX_RASTERIZER}
-        -DCKRE_BUILD_SDL_GPU_RASTERIZER:BOOL=${CKRE_BUILD_SDL_GPU_RASTERIZER}
-        -DBALLANCE_BUILD_STATIC:BOOL=${BALLANCE_BUILD_STATIC}
+        ${_ballance_rasterizer_args}
         -DCHECK_ASSETS:BOOL=$<BOOL:${BALLANCE_EFFECTIVE_ASSETS_ROOT}>
         -DCHECK_RENDER_CONFIGS:BOOL=${_ballance_check_render_configs}
         -DCHECK_SDL3_RUNTIME:BOOL=${_ballance_check_sdl3_runtime}
