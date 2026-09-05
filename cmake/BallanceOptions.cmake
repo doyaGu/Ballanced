@@ -64,7 +64,7 @@ foreach (_mgr IN ITEMS SDLINPUT SDLSOUND CKPARAMOP)
     ballance_set_cache_default(${_mgr}_INSTALL ON BOOL "")
 endforeach ()
 
-ballance_set_cache_default(CKRE_BUILD_BGFX_RASTERIZER ON BOOL "")
+ballance_set_cache_default(CKRE_BUILD_BGFX_RASTERIZER OFF BOOL "")
 if (NOT WIN32)
     ballance_set_cache_default(CKBB_BUILD_MidiManager OFF BOOL "")
 endif ()
