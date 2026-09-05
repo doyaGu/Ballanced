@@ -89,7 +89,7 @@ Components under `Source/` are Git submodules:
 | `Source/Player` | [BallancePlayer](https://github.com/doyaGu/BallancePlayer) | Game player executable |
 | `Source/CK2` | [CK2](https://github.com/doyaGu/CK2) | Virtools behavioral engine |
 | `Source/VxMath` | [VxMath](https://github.com/doyaGu/VxMath) | Math and platform utilities |
-| `Source/RenderEngine` | [CKRenderEngine](https://github.com/doyaGu/CKRenderEngine) | Render engine (bgfx) |
+| `Source/RenderEngine` | [CKRenderEngine](https://github.com/doyaGu/CKRenderEngine) | Render engine (SDL GPU, optional bgfx) |
 | `Source/BuildingBlocks` | [CKBuildingBlocks](https://github.com/doyaGu/CKBuildingBlocks) | Virtools building block modules |
 | `Source/Plugins` | [CKPlugins](https://github.com/doyaGu/CKPlugins) | File format plugins (image, audio, CMO) |
 | `Source/Managers/ParameterOperations` | [CKParameterOperations](https://github.com/doyaGu/CKParameterOperations) | Parameter operations manager |
