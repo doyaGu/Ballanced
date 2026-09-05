@@ -157,6 +157,7 @@ jobs:
         cmake --preset ${{ matrix.platform.preset }}-${{ matrix.linkage.name }}
         "-DCMAKE_PREFIX_PATH=${{ steps.sdl.outputs.prefix }}"
         -DCKRE_BUILD_TESTS=ON
+        -DCKRE_BUILD_BGFX_RASTERIZER=ON
 
     - name: Build
       if: ${{ github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name) }}
