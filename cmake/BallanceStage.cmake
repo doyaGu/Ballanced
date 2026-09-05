@@ -3,10 +3,10 @@
 include(CTest)
 include(BallanceComponentRegistry)
 
-set(_ballance_rasterizer_args
-        "-DCKRE_BUILD_BGFX_RASTERIZER:BOOL=${CKRE_BUILD_BGFX_RASTERIZER}"
-        "-DCKRE_BUILD_SDL_GPU_RASTERIZER:BOOL=${CKRE_BUILD_SDL_GPU_RASTERIZER}"
-        "-DBALLANCE_BUILD_STATIC:BOOL=${BALLANCE_BUILD_STATIC}")
+configure_file("${CMAKE_CURRENT_LIST_DIR}/RuntimeComponents.cmake.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/RuntimeComponents.cmake" @ONLY)
+set(_ballance_component_manifest "${CMAKE_CURRENT_BINARY_DIR}/RuntimeComponents.cmake")
+get_property(_ballance_has_render_output GLOBAL PROPERTY CKRE_HAS_RENDER_OUTPUT)
 
 set(_ballance_can_run_target_executables ON)
 if (WIN32 AND CMAKE_GENERATOR_PLATFORM)
@@ -80,11 +80,6 @@ if (APPLE)
 else ()
     add_custom_target(stage
             COMMAND ${_ballance_install_cmd}
-            COMMAND "${CMAKE_COMMAND}"
-            -DBUILD_ROOT:PATH=${CMAKE_BINARY_DIR}
-            -DSTAGE_ROOT:PATH=${CMAKE_INSTALL_PREFIX}
-            ${_ballance_rasterizer_args}
-            -P "${CMAKE_CURRENT_LIST_DIR}/PruneDisabledRasterizers.cmake"
             COMMENT "Installing to ${CMAKE_INSTALL_PREFIX}"
             USES_TERMINAL
             VERBATIM
@@ -116,13 +111,9 @@ endif ()
 add_test(NAME ComponentRegistry
         COMMAND "${CMAKE_COMMAND}"
             -DSOURCE_DIR:PATH=${CMAKE_SOURCE_DIR}
-            ${_ballance_rasterizer_args}
+            -DBALLANCE_COMPONENT_MANIFEST:FILEPATH=${_ballance_component_manifest}
             -P "${CMAKE_CURRENT_LIST_DIR}/VerifyComponentRegistry.cmake"
 )
-add_test(NAME StageRasterizerSelection
-        COMMAND "${CMAKE_COMMAND}" -DTEST_ROOT:PATH=${CMAKE_BINARY_DIR}/stage-rasterizer-test
-        -P "${CMAKE_CURRENT_LIST_DIR}/TestStageRasterizerSelection.cmake")
-
 if (TARGET PlayerSdlShortcutsTest)
     add_dependencies(stage PlayerSdlShortcutsTest)
 endif ()
@@ -139,27 +130,6 @@ if (_ballance_sdl3_runtime_target)
         endif ()
     endif ()
 endif ()
-
-if (BALLANCE_BUILD_STATIC)
-    set(_ballance_static_configs
-            Source/RenderEngine/src/CK2_3D.ini
-            Source/RenderEngine/src/CKRasterizer/CKBgfxRasterizer/CKBgfxRasterizer.ini
-    )
-    foreach (_config IN LISTS _ballance_static_configs)
-        if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${_config}")
-            install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/${_config}" DESTINATION Bin COMPONENT Runtime)
-        endif ()
-    endforeach ()
-endif ()
-
-set(_ballance_check_render_configs OFF)
-foreach (_config IN ITEMS
-        Source/RenderEngine/src/CK2_3D.ini
-        Source/RenderEngine/src/CKRasterizer/CKBgfxRasterizer/CKBgfxRasterizer.ini)
-    if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${_config}")
-        set(_ballance_check_render_configs ON)
-    endif ()
-endforeach ()
 
 if (BALLANCE_EFFECTIVE_ASSETS_ROOT AND EXISTS "${BALLANCE_EFFECTIVE_ASSETS_ROOT}")
     message(STATUS "[Ballance] Staging assets from: ${BALLANCE_EFFECTIVE_ASSETS_ROOT}")
@@ -201,9 +171,9 @@ add_test(NAME StageInstall
 add_test(NAME StageLayout
         COMMAND "${CMAKE_COMMAND}"
         -DSTAGE_ROOT:PATH=${CMAKE_INSTALL_PREFIX}
-        ${_ballance_rasterizer_args}
+        -DBALLANCE_COMPONENT_MANIFEST:FILEPATH=${_ballance_component_manifest}
+        -DBALLANCE_BUILD_STATIC:BOOL=${BALLANCE_BUILD_STATIC}
         -DCHECK_ASSETS:BOOL=$<BOOL:${BALLANCE_EFFECTIVE_ASSETS_ROOT}>
-        -DCHECK_RENDER_CONFIGS:BOOL=${_ballance_check_render_configs}
         -DCHECK_SDL3_RUNTIME:BOOL=${_ballance_check_sdl3_runtime}
         -P "${CMAKE_CURRENT_LIST_DIR}/VerifyStage.cmake"
 )
@@ -211,7 +181,7 @@ add_test(NAME StageLayout
 set_tests_properties(StageLayout PROPERTIES DEPENDS StageInstall)
 
 if (BUILD_TESTING AND TARGET Player AND _ballance_can_run_target_executables AND
-        (CKRE_BUILD_SDL_GPU_RASTERIZER OR CKRE_BUILD_BGFX_RASTERIZER) AND
+        _ballance_has_render_output AND
         BALLANCE_EFFECTIVE_ASSETS_ROOT AND EXISTS "${BALLANCE_EFFECTIVE_ASSETS_ROOT}")
     add_test(NAME PlayerStageSmoke
             COMMAND "${CMAKE_COMMAND}"

@@ -18,10 +18,6 @@ if (NOT DEFINED BALLANCE_BUILD_STATIC)
     set(BALLANCE_BUILD_STATIC OFF)
 endif ()
 
-if (NOT DEFINED CHECK_RENDER_CONFIGS)
-    set(CHECK_RENDER_CONFIGS ON)
-endif ()
-
 message(STATUS "[ReleaseArchive] Archive: ${ARCHIVE_PATH}")
 message(STATUS "[ReleaseArchive] Extract root: ${EXTRACT_ROOT}")
 

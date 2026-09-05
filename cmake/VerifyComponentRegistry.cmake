@@ -5,14 +5,7 @@ if (NOT SOURCE_DIR)
 endif ()
 
 include("${SOURCE_DIR}/cmake/BallanceComponentRegistry.cmake")
-include("${SOURCE_DIR}/Source/Player/cmake/PlayerStaticModules.cmake")
-
-set(_player_static_runtime_targets)
-foreach (_player_static_module IN LISTS PLAYER_STATIC_MODULES)
-    set(_module_prefix "PLAYER_STATIC_MODULE_${_player_static_module}")
-    set(_runtime_target "${${_module_prefix}_RUNTIME_TARGET}")
-    list(APPEND _player_static_runtime_targets "${_runtime_target}")
-endforeach ()
+set(_player_static_runtime_targets ${PLAYER_DECLARED_RUNTIME_TARGETS})
 
 set(_expected_static_runtime_targets ${BALLANCE_MODULE_RUNTIME_TARGETS})
 list(SORT _expected_static_runtime_targets)
