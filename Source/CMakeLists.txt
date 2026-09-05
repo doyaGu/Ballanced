@@ -34,9 +34,6 @@ add_subdirectory(RenderEngine)
 if (MSVC)
     _set_vs_folder(CK2_3D "Core")
     _set_vs_folder(CK2_3DStatic "Core")
-    _set_vs_folder(CKBgfxRasterizer "RenderEngines")
-    _set_vs_folder(CKBgfxRasterizerStatic "RenderEngines")
-    _set_vs_folder(CKSdlGpuRasterizerSupport "RenderEngines")
 endif ()
 
 # Managers -> Managers/
