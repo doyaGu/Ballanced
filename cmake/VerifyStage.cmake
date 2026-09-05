@@ -11,10 +11,6 @@ if(NOT DEFINED CHECK_ASSETS)
     set(CHECK_ASSETS OFF)
 endif()
 
-if(NOT DEFINED CHECK_RENDER_CONFIGS)
-    set(CHECK_RENDER_CONFIGS OFF)
-endif()
-
 if(NOT DEFINED BALLANCE_BUILD_STATIC)
     set(BALLANCE_BUILD_STATIC OFF)
 endif()
@@ -190,18 +186,8 @@ endfunction()
 
 message(STATUS "[StageLayout] Verifying: ${STAGE_ROOT}")
 message(STATUS "[StageLayout] Check assets: ${CHECK_ASSETS}")
-message(STATUS "[StageLayout] Check render configs: ${CHECK_RENDER_CONFIGS}")
 message(STATUS "[StageLayout] Static build: ${BALLANCE_BUILD_STATIC}")
 message(STATUS "[StageLayout] Check SDL3 runtime: ${CHECK_SDL3_RUNTIME}")
-
-foreach (_rasterizer IN LISTS BALLANCE_DISABLED_RASTERIZER_BINARIES)
-    foreach (_directory IN ITEMS Bin RenderEngines)
-        _shared_library_exists(_stale "${_directory}/${_rasterizer}")
-        if (_stale)
-            message(FATAL_ERROR "Disabled rasterizer remains staged: ${_directory}/${_rasterizer}")
-        endif ()
-    endforeach ()
-endforeach ()
 
 # Required directories
 _require_dir(Bin)
@@ -209,6 +195,7 @@ _forbid_path(include)
 _forbid_path(lib)
 
 _require_exe(Bin/Player)
+include("${CMAKE_CURRENT_LIST_DIR}/VerifyRuntimeManifests.cmake")
 _require_file(Bin/BallancedBuildManifest.json)
 file(READ "${STAGE_ROOT}/Bin/BallancedBuildManifest.json" _build_manifest)
 string(JSON _manifest_schema ERROR_VARIABLE _manifest_error GET "${_build_manifest}" schemaVersion)
@@ -223,10 +210,6 @@ if(CHECK_SDL3_RUNTIME)
 endif()
 
 if(BALLANCE_BUILD_STATIC)
-    if(CHECK_RENDER_CONFIGS AND EXISTS "${STAGE_ROOT}/Bin/CK2_3D.ini")
-        _require_file(Bin/CK2_3D.ini)
-    endif()
-
     if(CHECK_ASSETS)
         message(STATUS "[StageLayout] Verifying game assets...")
         foreach(_dir IN ITEMS Textures Sounds Text "3D Entities")
@@ -252,14 +235,6 @@ _require_dll(Bin/VxMath)
 # Managers
 foreach(_mgr IN LISTS BALLANCE_MANAGER_RUNTIME_OUTPUTS)
     _require_dll("Managers/${_mgr}")
-endforeach()
-
-# Render engine
-foreach(_engine IN LISTS BALLANCE_RENDER_ENGINE_RUNTIME_OUTPUTS)
-    _require_dll("RenderEngines/${_engine}")
-    if(CHECK_RENDER_CONFIGS AND (_engine STREQUAL "CK2_3D" OR _engine STREQUAL "CKBgfxRasterizer"))
-        _require_file("RenderEngines/${_engine}.ini")
-    endif()
 endforeach()
 
 # Plugins
