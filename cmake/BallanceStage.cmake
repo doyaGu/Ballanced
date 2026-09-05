@@ -201,6 +201,7 @@ add_test(NAME StageLayout
 set_tests_properties(StageLayout PROPERTIES DEPENDS StageInstall)
 
 if (BUILD_TESTING AND TARGET Player AND _ballance_can_run_target_executables AND
+        (CKRE_BUILD_SDL_GPU_RASTERIZER OR CKRE_BUILD_BGFX_RASTERIZER) AND
         BALLANCE_EFFECTIVE_ASSETS_ROOT AND EXISTS "${BALLANCE_EFFECTIVE_ASSETS_ROOT}")
     add_test(NAME PlayerStageSmoke
             COMMAND "${CMAKE_COMMAND}"
