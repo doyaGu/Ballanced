@@ -152,7 +152,6 @@ stage/
     CK2.dll
     VxMath.dll
     SDL3.dll
-    BallancedBuildManifest.json
   RenderEngines/
     CK2_3D.dll
     CKBgfxRasterizer.dll
