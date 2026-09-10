@@ -1,10 +1,22 @@
 # Verifies the staged Ballance runtime layout
-# Usage: cmake -DSTAGE_ROOT=<path> [-DCHECK_ASSETS=ON] -P VerifyStage.cmake
+# Usage: cmake -DSTAGE_ROOT=<path>
+#              -DBALLANCE_COMPONENT_MANIFEST=<build>/RuntimeComponents.cmake
+#              [-DCHECK_ASSETS=ON] -P VerifyStage.cmake
 
-include("${CMAKE_CURRENT_LIST_DIR}/BallanceComponentRegistry.cmake")
+if(NOT DEFINED BALLANCE_COMPONENT_MANIFEST OR
+        NOT EXISTS "${BALLANCE_COMPONENT_MANIFEST}")
+    message(FATAL_ERROR
+            "BALLANCE_COMPONENT_MANIFEST must name the configured RuntimeComponents.cmake")
+endif()
 
 if(NOT DEFINED STAGE_ROOT OR STAGE_ROOT STREQUAL "")
     message(FATAL_ERROR "STAGE_ROOT is required")
+endif()
+
+include("${CMAKE_CURRENT_LIST_DIR}/BallanceComponentRegistry.cmake")
+if(NOT BALLANCE_RENDER_ENGINE_RUNTIME_OUTPUTS OR
+        NOT BALLANCE_RENDER_ENGINE_RUNTIME_CONFIGS)
+    message(FATAL_ERROR "Incomplete render engine runtime configuration")
 endif()
 
 if(NOT DEFINED CHECK_ASSETS)
@@ -193,9 +205,9 @@ message(STATUS "[StageLayout] Check SDL3 runtime: ${CHECK_SDL3_RUNTIME}")
 _require_dir(Bin)
 _forbid_path(include)
 _forbid_path(lib)
+_forbid_path(Bin/RuntimeManifests)
 
 _require_exe(Bin/Player)
-include("${CMAKE_CURRENT_LIST_DIR}/VerifyRuntimeManifests.cmake")
 _require_file(Bin/BallancedBuildManifest.json)
 file(READ "${STAGE_ROOT}/Bin/BallancedBuildManifest.json" _build_manifest)
 string(JSON _manifest_schema ERROR_VARIABLE _manifest_error GET "${_build_manifest}" schemaVersion)
@@ -208,6 +220,29 @@ if(CHECK_SDL3_RUNTIME)
         _verify_macos_sdl_runtime()
     endif()
 endif()
+
+if(BALLANCE_BUILD_STATIC)
+    set(_render_engine_config_directory Bin)
+else()
+    set(_render_engine_config_directory RenderEngines)
+    foreach(_renderer IN LISTS BALLANCE_RENDER_ENGINE_RUNTIME_OUTPUTS)
+        _require_dll("RenderEngines/${_renderer}")
+    endforeach()
+endif()
+
+foreach(_config IN LISTS BALLANCE_RENDER_ENGINE_RUNTIME_CONFIGS)
+    _require_file("${_render_engine_config_directory}/${_config}")
+endforeach()
+
+foreach(_renderer IN LISTS BALLANCE_RENDER_ENGINE_DISABLED_OUTPUTS)
+    foreach(_directory IN ITEMS Bin RenderEngines)
+        _shared_library_exists(_has_disabled_renderer "${_directory}/${_renderer}")
+        if(_has_disabled_renderer)
+            message(FATAL_ERROR
+                    "Disabled render engine is present: ${_directory}/${_renderer}")
+        endif()
+    endforeach()
+endforeach()
 
 if(BALLANCE_BUILD_STATIC)
     if(CHECK_ASSETS)
