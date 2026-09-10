@@ -1,6 +1,8 @@
 # Verifies a release archive by extracting it and checking the staged runtime layout.
 # Usage:
-#   cmake -DARCHIVE_PATH=<archive> -DEXTRACT_ROOT=<dir> [-DBALLANCE_BUILD_STATIC=ON] -P VerifyReleaseArchive.cmake
+#   cmake -DARCHIVE_PATH=<archive> -DEXTRACT_ROOT=<dir>
+#         -DBALLANCE_COMPONENT_MANIFEST=<build>/RuntimeComponents.cmake
+#         [-DBALLANCE_BUILD_STATIC=ON] -P VerifyReleaseArchive.cmake
 
 if (NOT DEFINED ARCHIVE_PATH OR ARCHIVE_PATH STREQUAL "")
     message(FATAL_ERROR "ARCHIVE_PATH is required")
@@ -8,6 +10,12 @@ endif ()
 
 if (NOT EXISTS "${ARCHIVE_PATH}")
     message(FATAL_ERROR "Archive not found: ${ARCHIVE_PATH}")
+endif ()
+
+if (NOT DEFINED BALLANCE_COMPONENT_MANIFEST OR
+        NOT EXISTS "${BALLANCE_COMPONENT_MANIFEST}")
+    message(FATAL_ERROR
+            "BALLANCE_COMPONENT_MANIFEST must name the configured RuntimeComponents.cmake")
 endif ()
 
 if (NOT DEFINED EXTRACT_ROOT OR EXTRACT_ROOT STREQUAL "")
