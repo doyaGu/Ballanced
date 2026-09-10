@@ -78,7 +78,6 @@ read this ignored directory by default.
 - CI runs the complete component test preset on Linux x64 in addition to the platform/linkage build matrix.
 - `BUILD.md` documents the supported superproject workflow. Component READMEs describe standalone workflows only.
 - Ballanced and its Git submodules are independently versioned. The root project version identifies the assembled runtime; Player and the engine/module projects keep their own versions. A component version should not be inferred from the root version or release tag.
-- Every staged runtime contains `Bin/BallancedBuildManifest.json`, recording the exact component revisions used for that build.
 
 ## Repository structure
 
