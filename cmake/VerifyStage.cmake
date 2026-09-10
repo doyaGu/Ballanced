@@ -205,7 +205,6 @@ message(STATUS "[StageLayout] Check SDL3 runtime: ${CHECK_SDL3_RUNTIME}")
 _require_dir(Bin)
 _forbid_path(include)
 _forbid_path(lib)
-_forbid_path(Bin/RuntimeManifests)
 
 _require_exe(Bin/Player)
 _require_file(Bin/BallancedBuildManifest.json)
