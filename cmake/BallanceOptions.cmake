@@ -10,6 +10,10 @@ set(BALLANCE_EFFECTIVE_ASSETS_ROOT "${BALLANCE_ASSETS_ROOT}")
 if (BALLANCE_AUTO_DETECT_ASSETS AND NOT BALLANCE_ASSETS_ROOT AND EXISTS "${_ballance_local_assets_root}")
     set(BALLANCE_EFFECTIVE_ASSETS_ROOT "${_ballance_local_assets_root}")
 endif ()
+if (BALLANCE_EFFECTIVE_ASSETS_ROOT)
+    file(TO_CMAKE_PATH "${BALLANCE_EFFECTIVE_ASSETS_ROOT}"
+            BALLANCE_EFFECTIVE_ASSETS_ROOT)
+endif ()
 
 ballance_set_cache_default(BALLANCE_DIR "" PATH
         "Optional: Ballance game directory for manual deployment")
