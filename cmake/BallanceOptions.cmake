@@ -27,7 +27,7 @@ ballance_set_cache_default(BALLANCE_BUILD_STATIC OFF BOOL
 ballance_set_cache_default(BALLANCE_TARGET_ARCH "" STRING
         "Optional target architecture label used by platform presets")
 
-find_package(SDL3 CONFIG REQUIRED)
+find_package(SDL3 3.4.8 CONFIG REQUIRED)
 
 foreach (_component IN ITEMS VXMATH CK2 CKRE)
     if (BALLANCE_BUILD_STATIC)
