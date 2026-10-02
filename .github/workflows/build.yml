@@ -199,6 +199,7 @@ jobs:
         -B build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }}-gles
         "-DCMAKE_PREFIX_PATH=${{ steps.sdl.outputs.prefix }}"
         -DCKRE_BUILD_TESTS=ON
+        -DCKRE_BUILD_BGFX_RASTERIZER=ON
         -DCKRE_BGFX_OPENGLES_VERSION=30
 
     - name: Build Linux OpenGLES FFP runtime
