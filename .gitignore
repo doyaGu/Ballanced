@@ -37,6 +37,7 @@ compile_commands.json
 CTestTestfile.cmake
 _deps
 /build*/
+/dist/
 
 ## JetBrains IDE artifacts
 .idea

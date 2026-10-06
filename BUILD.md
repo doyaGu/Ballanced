@@ -89,6 +89,15 @@ Output path: `build/<configure-preset>/stage/`. For `windows-x86-runtime`:
 build/windows-x86-runtime/stage/Bin/Player.exe
 ```
 
+Package the stage into a release archive (`.zip`, `.tar.gz`, `.tar.bz2`, or `.tar.xz`) and verify it:
+
+```bash
+cmake -DSTAGE_ROOT=build/windows-x86-runtime/stage -DARCHIVE_PATH=dist/ballance-sdl-windows-x86-runtime.zip -P cmake/PackageStage.cmake
+cmake -DARCHIVE_PATH=dist/ballance-sdl-windows-x86-runtime.zip -DEXTRACT_ROOT=build/package-check -DBALLANCE_COMPONENT_MANIFEST=build/windows-x86-runtime/RuntimeComponents.cmake -P cmake/VerifyReleaseArchive.cmake
+```
+
+This is the only packaging path; CI and releases use the same scripts.
+
 ## Preset matrix
 
 Defined in `CMakePresets.json`. To list all available presets:
