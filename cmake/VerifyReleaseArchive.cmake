@@ -26,6 +26,10 @@ if (NOT DEFINED BALLANCE_BUILD_STATIC)
     set(BALLANCE_BUILD_STATIC OFF)
 endif ()
 
+# Extraction runs inside EXTRACT_ROOT, so resolve both against the caller's directory first.
+get_filename_component(ARCHIVE_PATH "${ARCHIVE_PATH}" ABSOLUTE)
+get_filename_component(EXTRACT_ROOT "${EXTRACT_ROOT}" ABSOLUTE)
+
 message(STATUS "[ReleaseArchive] Archive: ${ARCHIVE_PATH}")
 message(STATUS "[ReleaseArchive] Extract root: ${EXTRACT_ROOT}")
 
