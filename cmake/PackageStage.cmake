@@ -14,6 +14,10 @@ if (NOT DEFINED ARCHIVE_PATH OR ARCHIVE_PATH STREQUAL "")
     message(FATAL_ERROR "ARCHIVE_PATH is required")
 endif ()
 
+# Zip creation runs inside STAGE_ROOT, so resolve both against the caller's directory first.
+get_filename_component(STAGE_ROOT "${STAGE_ROOT}" ABSOLUTE)
+get_filename_component(ARCHIVE_PATH "${ARCHIVE_PATH}" ABSOLUTE)
+
 get_filename_component(_archive_dir "${ARCHIVE_PATH}" DIRECTORY)
 if (NOT _archive_dir STREQUAL "")
     file(MAKE_DIRECTORY "${_archive_dir}")
