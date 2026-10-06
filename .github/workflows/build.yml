@@ -199,8 +199,10 @@ jobs:
         CKBGFX_RENDERER_BACKEND: vulkan
       run: xvfb-run -a ctest --test-dir build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }} -C Release -R "sdl_gpu_ffp_pixel_tests|rasterizer3_pixel_tests|scene_capture_golden|scene_capture_multiframe" --output-on-failure
 
+    # The SDL GPU rasterizer embeds no Metal shaders, so macOS GPU tests
+    # need the bgfx rasterizer's Metal backend.
     - name: Test macOS Metal FFP runtime
-      if: ${{ (github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name)) && matrix.platform.name == 'macos-arm64' && matrix.linkage.name == 'runtime' }}
+      if: ${{ github.event_name == 'workflow_dispatch' && inputs.bgfx && (inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name)) && matrix.platform.name == 'macos-arm64' && matrix.linkage.name == 'runtime' }}
       env:
         CKRE_RUN_BGFX_BACKEND_RUNTIME_TESTS: "1"
         CKRE_SDL_GPU_DRIVER: metal
