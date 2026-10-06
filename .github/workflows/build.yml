@@ -73,8 +73,10 @@ jobs:
             archive_ext: .zip
             preset: windows-arm64
             sdl_discriminator: Windows-ARM64
-            sdl_cmake_generator: Visual Studio 17 2022
+            # The windows-11-arm image ships only Visual Studio 2026.
+            sdl_cmake_generator: Visual Studio 18 2026
             sdl_cmake_arguments: -A ARM64 --no-warn-unused-cli
+            configure_arguments: -G "Visual Studio 18 2026"
 
           - name: linux-x64
             os: ubuntu-24.04
@@ -155,6 +157,7 @@ jobs:
       if: ${{ github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name) }}
       run: >
         cmake --preset ${{ matrix.platform.preset }}-${{ matrix.linkage.name }}
+        ${{ matrix.platform.configure_arguments }}
         "-DCMAKE_PREFIX_PATH=${{ steps.sdl.outputs.prefix }}"
         -DCKRE_BUILD_TESTS=ON
         -DCKRE_BUILD_BGFX_RASTERIZER=ON

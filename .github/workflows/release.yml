@@ -89,8 +89,10 @@ jobs:
             archive_ext: .zip
             preset: windows-arm64
             sdl_discriminator: Windows-ARM64
-            sdl_cmake_generator: Visual Studio 17 2022
+            # The windows-11-arm image ships only Visual Studio 2026.
+            sdl_cmake_generator: Visual Studio 18 2026
             sdl_cmake_arguments: -A ARM64
+            configure_arguments: -G "Visual Studio 18 2026"
 
           - name: linux-x64
             os: ubuntu-24.04
@@ -157,7 +159,7 @@ jobs:
         install-linux-dependencies: true
 
     - name: Configure
-      run: cmake --preset ${{ matrix.platform.preset }}-${{ matrix.linkage.name }} "-DCMAKE_PREFIX_PATH=${{ steps.sdl.outputs.prefix }}" -DBALLANCE_AUTO_DETECT_ASSETS=OFF -DBALLANCE_ASSETS_ROOT=
+      run: cmake --preset ${{ matrix.platform.preset }}-${{ matrix.linkage.name }} ${{ matrix.platform.configure_arguments }} "-DCMAKE_PREFIX_PATH=${{ steps.sdl.outputs.prefix }}" -DBALLANCE_AUTO_DETECT_ASSETS=OFF -DBALLANCE_ASSETS_ROOT=
 
     - name: Build
       run: cmake --build --preset ${{ matrix.platform.preset }}-${{ matrix.linkage.name }}-stage-release
