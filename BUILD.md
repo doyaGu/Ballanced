@@ -20,7 +20,7 @@ SDL3 must be locatable by CMake (`find_package(SDL3 CONFIG REQUIRED)`). Install 
 
 ## Getting the source
 
-The repository has two levels of Git submodules. Top-level submodules are the components under `Source/`. Several have their own nested submodules (RenderEngine -> bgfx, VxMath -> stb/simde, CK2 -> miniz, BuildingBlocks -> ivp/qhull).
+The repository has two levels of Git submodules. Top-level submodules are the components under `Source/`. Several have their own nested submodules (VxMath -> stb/simde, CK2 -> miniz, BuildingBlocks -> ivp/qhull).
 
 ### Fresh clone
 
@@ -134,10 +134,6 @@ ctest --list-presets
 | `macos-x64-tests` | macOS | x64 | Shared runtime + module tests |
 | `macos-arm64-tests` | macOS | ARM64 | Shared runtime + module tests |
 
-When cross-building Windows ARM64 from an x64 Windows host with shader generation enabled,
-RenderEngine builds a host-compatible bgfx `shaderc.exe` automatically. You can still
-override it with `-DCKRE_SHADERC_EXECUTABLE:FILEPATH=<path-to-host-shaderc.exe>`.
-
 ### Build presets
 
 Build presets follow `<configure-preset>-release` (plain build) or `<configure-preset>-stage-release` (build + stage install).
@@ -163,7 +159,7 @@ stage/
     SDL3.dll
   RenderEngines/
     CK2_3D.dll
-    CKBgfxRasterizer.dll
+    CKSdlGpuRasterizer.dll
   Managers/
     SdlInputManager.dll
     SdlSoundManager.dll
@@ -235,20 +231,20 @@ Build independently from `Source/RenderEngine`:
 
 ```powershell
 cd Source/RenderEngine
-cmake --preset renderengine-bgfx-runtime-msvc-win32
-cmake --build --preset renderengine-bgfx-runtime-win32-release
+cmake --preset renderengine-runtime-msvc-win32
+cmake --build --preset renderengine-runtime-win32-release
 ```
 
 | Configure preset | Purpose |
 |---|---|
-| `renderengine-bgfx-runtime-msvc-win32` | Shared bgfx RenderEngine (Win32) |
-| `renderengine-bgfx-runtime-msvc-x64` | Shared bgfx RenderEngine (x64) |
-| `renderengine-bgfx-static-msvc-win32` | Static bgfx RenderEngine (Win32) |
-| `renderengine-bgfx-static-msvc-x64` | Static bgfx RenderEngine (x64) |
-| `renderengine-bgfx-tests-msvc-win32` | bgfx tests (Win32) |
-| `renderengine-bgfx-tests-msvc-x64` | bgfx tests (x64) |
+| `renderengine-runtime-msvc-win32` | Shared RenderEngine (Win32) |
+| `renderengine-runtime-msvc-x64` | Shared RenderEngine (x64) |
+| `renderengine-static-msvc-win32` | Static RenderEngine (Win32) |
+| `renderengine-static-msvc-x64` | Static RenderEngine (x64) |
+| `renderengine-tests-msvc-win32` | RenderEngine tests (Win32) |
+| `renderengine-tests-msvc-x64` | RenderEngine tests (x64) |
 
-Build presets follow `renderengine-bgfx-<mode>-<arch>-release`.
+Build presets follow `renderengine-<mode>-<arch>-release`.
 
 ## Custom configuration
 

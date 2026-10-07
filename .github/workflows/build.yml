@@ -33,11 +33,6 @@ on:
         required: false
         type: boolean
         default: false
-      bgfx:
-        description: "Also build and test the optional bgfx rasterizer"
-        required: false
-        type: boolean
-        default: false
       gpu-debug:
         description: "Run the macOS GPU tests with SDL GPU debug mode and the Metal validation layer"
         required: false
@@ -193,7 +188,6 @@ jobs:
         ${{ matrix.platform.configure_arguments }}
         "-DCMAKE_PREFIX_PATH=${{ steps.sdl.outputs.prefix }}"
         -DCKRE_BUILD_TESTS=ON
-        -DCKRE_BUILD_BGFX_RASTERIZER=${{ (github.event_name == 'workflow_dispatch' && inputs.bgfx) && 'ON' || 'OFF' }}
 
     - name: Build
       if: ${{ github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name) }}
@@ -210,10 +204,9 @@ jobs:
     - name: Test Windows D3D12 FFP runtime
       if: ${{ (github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name)) && matrix.platform.name == 'windows-x64' && matrix.linkage.name == 'runtime' }}
       env:
-        CKRE_RUN_BGFX_BACKEND_RUNTIME_TESTS: "1"
+        CKRE_RUN_GPU_RUNTIME_TESTS: "1"
         CKRE_SDL_GPU_DRIVER: direct3d12
-        CKBGFX_RENDERER_BACKEND: d3d12
-      run: ctest --test-dir build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }} -C Release -R "sdl_gpu_ffp_pixel_tests|rasterizer3_pixel_tests|scene_capture_golden|scene_capture_multiframe" --output-on-failure
+      run: ctest --test-dir build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }} -C Release -R "sdl_gpu_ffp_pixel_tests|scene_capture_golden|scene_capture_multiframe" --output-on-failure
 
     - name: Install Linux Vulkan test dependencies
       if: ${{ (github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name)) && matrix.platform.name == 'linux-x64' && matrix.linkage.name == 'runtime' }}
@@ -222,23 +215,21 @@ jobs:
     - name: Test Linux Vulkan FFP runtime
       if: ${{ (github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name)) && matrix.platform.name == 'linux-x64' && matrix.linkage.name == 'runtime' }}
       env:
-        CKRE_RUN_BGFX_BACKEND_RUNTIME_TESTS: "1"
+        CKRE_RUN_GPU_RUNTIME_TESTS: "1"
         CKRE_SDL_GPU_DRIVER: vulkan
-        CKBGFX_RENDERER_BACKEND: vulkan
-      run: xvfb-run -a ctest --test-dir build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }} -C Release -R "sdl_gpu_ffp_pixel_tests|rasterizer3_pixel_tests|scene_capture_golden|scene_capture_multiframe" --output-on-failure
+      run: xvfb-run -a ctest --test-dir build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }} -C Release -R "sdl_gpu_ffp_pixel_tests|scene_capture_golden|scene_capture_multiframe" --output-on-failure
 
     - name: Test macOS Metal FFP runtime
       if: ${{ (github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name)) && matrix.platform.name == 'macos-arm64' && matrix.linkage.name == 'runtime' }}
       env:
-        CKRE_RUN_BGFX_BACKEND_RUNTIME_TESTS: "1"
+        CKRE_RUN_GPU_RUNTIME_TESTS: "1"
         CKRE_SDL_GPU_DRIVER: metal
-        CKBGFX_RENDERER_BACKEND: metal
         # The Apple Paravirtual device of the runner loses draws into texture
         # targets; Apple GPUs render these scenes.
         CKRE_SCENE_CAPTURE_SKIP: rtt_2d,rtt_cube
         CKRE_SDL_GPU_DEBUG: ${{ (github.event_name == 'workflow_dispatch' && inputs.gpu-debug) && '1' || '0' }}
         MTL_DEBUG_LAYER: ${{ (github.event_name == 'workflow_dispatch' && inputs.gpu-debug) && '1' || '0' }}
-      run: ctest --test-dir build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }} -C Release -R "sdl_gpu_ffp_pixel_tests|rasterizer3_pixel_tests|scene_capture_golden|scene_capture_multiframe" --output-on-failure
+      run: ctest --test-dir build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }} -C Release -R "sdl_gpu_ffp_pixel_tests|scene_capture_golden|scene_capture_multiframe" --output-on-failure
 
     # Captured frames, diff images and FF JIT failure dumps of failed GPU tests.
     - name: Upload GPU test output
