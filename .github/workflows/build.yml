@@ -207,6 +207,17 @@ jobs:
         CKBGFX_RENDERER_BACKEND: metal
       run: ctest --test-dir build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }} -C Release -R "sdl_gpu_ffp_pixel_tests|rasterizer3_pixel_tests|scene_capture_golden|scene_capture_multiframe" --output-on-failure
 
+    # Captured frames, diff images and FF JIT failure dumps of failed GPU tests.
+    - name: Upload GPU test output
+      if: ${{ failure() && matrix.linkage.name == 'runtime' }}
+      uses: actions/upload-artifact@v7.0.1
+      with:
+        name: gpu-test-output-${{ matrix.platform.name }}
+        path: |
+          build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }}/scene_capture*/
+          build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }}/**/ffjit-failures/
+        if-no-files-found: ignore
+
     - name: Upload regenerated golden frames
       if: ${{ github.event_name == 'workflow_dispatch' && inputs.update-golden && matrix.linkage.name == 'runtime' && (matrix.platform.name == 'windows-x64' || matrix.platform.name == 'linux-x64' || matrix.platform.name == 'macos-arm64') }}
       uses: actions/upload-artifact@v7.0.1
