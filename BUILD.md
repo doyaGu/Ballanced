@@ -225,9 +225,9 @@ cmake --build --preset windows-x86-tests-release
 ctest --preset windows-x86-tests-release
 ```
 
-The regular CI matrix performs platform and linkage coverage. A dedicated
-Linux x64 job builds and runs this complete test preset on every push and pull
-request to `sdl`.
+The regular CI matrix performs platform and linkage coverage. It runs nightly
+when `sdl` has commits the last nightly did not build, and on manual dispatch.
+A dedicated Linux x64 job builds and runs this complete test preset.
 
 ## RenderEngine standalone
 
