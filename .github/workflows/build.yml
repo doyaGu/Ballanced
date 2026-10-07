@@ -1,10 +1,9 @@
 name: Build
 
 on:
-  push:
-    branches: [ "sdl" ]
-  pull_request:
-    branches: [ "sdl" ]
+  # Nightly, and only when sdl has commits the last nightly did not build.
+  schedule:
+    - cron: "0 19 * * *"
   workflow_call:
   workflow_dispatch:
     inputs:
@@ -48,8 +47,32 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  changes:
+    name: Check for new commits
+    if: ${{ github.event_name == 'schedule' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+
+    permissions:
+      actions: read
+
+    outputs:
+      changed: ${{ steps.check.outputs.changed }}
+
+    steps:
+    - name: Compare with the last nightly build
+      id: check
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        built=$(gh run list -R "$GITHUB_REPOSITORY" --workflow build.yml --event schedule --limit 30 \
+          --json headSha,conclusion --jq 'map(select(.conclusion == "success" or .conclusion == "failure"))[0].headSha // ""')
+        echo "changed=$([ "$built" != "$GITHUB_SHA" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+
   build:
     name: sdl-${{ matrix.platform.name }}-${{ matrix.linkage.name }}
+    needs: changes
+    if: ${{ !cancelled() && (github.event_name != 'schedule' || needs.changes.outputs.changed == 'true') }}
     runs-on: ${{ matrix.platform.os }}
     timeout-minutes: 120
 
@@ -254,7 +277,8 @@ jobs:
 
   full-tests:
     name: sdl-linux-x64-full-tests
-    if: ${{ github.event_name != 'workflow_dispatch' || inputs.target == 'all' }}
+    needs: changes
+    if: ${{ !cancelled() && (github.event_name != 'schedule' || needs.changes.outputs.changed == 'true') && (github.event_name != 'workflow_dispatch' || inputs.target == 'all') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 120
 
