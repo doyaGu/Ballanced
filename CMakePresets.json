@@ -16,9 +16,6 @@
         "type": "equals",
         "lhs": "${hostSystemName}",
         "rhs": "Windows"
-      },
-      "cacheVariables": {
-        "CKRE_GENERATE_SHADERS": "OFF"
       }
     },
     {
@@ -31,9 +28,6 @@
         "type": "equals",
         "lhs": "${hostSystemName}",
         "rhs": "Windows"
-      },
-      "cacheVariables": {
-        "CKRE_GENERATE_SHADERS": "OFF"
       }
     },
     {
@@ -46,9 +40,6 @@
         "type": "equals",
         "lhs": "${hostSystemName}",
         "rhs": "Windows"
-      },
-      "cacheVariables": {
-        "CKRE_GENERATE_SHADERS": "OFF"
       }
     },
     {
@@ -63,8 +54,7 @@
       },
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
-        "BALLANCE_TARGET_ARCH": "x64",
-        "CKRE_GENERATE_SHADERS": "OFF"
+        "BALLANCE_TARGET_ARCH": "x64"
       }
     },
     {
@@ -79,8 +69,7 @@
       },
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
-        "BALLANCE_TARGET_ARCH": "arm64",
-        "CKRE_GENERATE_SHADERS": "OFF"
+        "BALLANCE_TARGET_ARCH": "arm64"
       }
     },
     {
@@ -96,8 +85,7 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
         "CMAKE_OSX_ARCHITECTURES": "x86_64",
-        "BALLANCE_TARGET_ARCH": "x64",
-        "CKRE_GENERATE_SHADERS": "OFF"
+        "BALLANCE_TARGET_ARCH": "x64"
       }
     },
     {
@@ -113,8 +101,7 @@
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release",
         "CMAKE_OSX_ARCHITECTURES": "arm64",
-        "BALLANCE_TARGET_ARCH": "arm64",
-        "CKRE_GENERATE_SHADERS": "OFF"
+        "BALLANCE_TARGET_ARCH": "arm64"
       }
     },
     {
