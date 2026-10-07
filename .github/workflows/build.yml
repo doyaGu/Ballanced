@@ -233,6 +233,9 @@ jobs:
         CKRE_RUN_BGFX_BACKEND_RUNTIME_TESTS: "1"
         CKRE_SDL_GPU_DRIVER: metal
         CKBGFX_RENDERER_BACKEND: metal
+        # The Apple Paravirtual device of the runner loses draws into texture
+        # targets; Apple GPUs render these scenes.
+        CKRE_SCENE_CAPTURE_SKIP: rtt_2d,rtt_cube
         CKRE_SDL_GPU_DEBUG: ${{ (github.event_name == 'workflow_dispatch' && inputs.gpu-debug) && '1' || '0' }}
         MTL_DEBUG_LAYER: ${{ (github.event_name == 'workflow_dispatch' && inputs.gpu-debug) && '1' || '0' }}
       run: ctest --test-dir build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }} -C Release -R "sdl_gpu_ffp_pixel_tests|rasterizer3_pixel_tests|scene_capture_golden|scene_capture_multiframe" --output-on-failure
