@@ -14,6 +14,7 @@ on:
         default: all
         options:
           - all
+          - sdl-linux-x64-full-tests
           - sdl-windows-x86-runtime
           - sdl-windows-x64-runtime
           - sdl-windows-arm64-runtime
@@ -279,7 +280,7 @@ jobs:
   full-tests:
     name: sdl-linux-x64-full-tests
     needs: changes
-    if: ${{ !cancelled() && (github.event_name != 'schedule' || needs.changes.outputs.changed == 'true') && (github.event_name != 'workflow_dispatch' || inputs.target == 'all') }}
+    if: ${{ !cancelled() && (github.event_name != 'schedule' || needs.changes.outputs.changed == 'true') && (github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == 'sdl-linux-x64-full-tests') }}
     runs-on: ubuntu-24.04
     timeout-minutes: 120
 
@@ -317,5 +318,10 @@ jobs:
     - name: Build full test suite
       run: cmake --build --preset linux-x64-tests-release
 
+    - name: Setup virtual display
+      run: sudo apt-get update && sudo apt-get install -y xvfb
+
     - name: Run full test suite
-      run: ctest --preset linux-x64-tests-release
+      env:
+        SDL_VIDEODRIVER: x11
+      run: xvfb-run -a ctest --preset linux-x64-tests-release
