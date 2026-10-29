@@ -164,7 +164,7 @@ function(_verify_macos_sdl_runtime)
         message(FATAL_ERROR
                 "SDL3 is not relocatable: expected install name "
                 "${_sdl_install_name}, found ${_sdl_id}. "
-                "Use an SDL3 package built with a relocatable install name.")
+                "Restage the runtime to relocate SDL3 and its consumers.")
     endif ()
 
     set(_mach_o_files "${STAGE_ROOT}/Bin/Player")
@@ -181,16 +181,17 @@ function(_verify_macos_sdl_runtime)
                 COMMAND "${_otool}" -L "${_mach_o}"
                 OUTPUT_VARIABLE _dependencies
                 COMMAND_ERROR_IS_FATAL ANY)
-        string(REGEX MATCHALL "[\t ]+[^\t \n]+" _dependency_fields
-                "${_dependencies}")
-        foreach (_field IN LISTS _dependency_fields)
-            string(STRIP "${_field}" _dependency)
-            get_filename_component(_dependency_name "${_dependency}" NAME)
-            if (_dependency_name STREQUAL _sdl_name AND
-                    NOT _dependency STREQUAL _sdl_install_name)
-                message(FATAL_ERROR
-                        "Non-relocatable SDL3 dependency in ${_mach_o}: "
-                        "${_dependency}")
+        string(REPLACE "\n" ";" _dependency_lines "${_dependencies}")
+        foreach (_line IN LISTS _dependency_lines)
+            if (_line MATCHES "^[\t ]+(.+) \\(compatibility version ")
+                set(_dependency "${CMAKE_MATCH_1}")
+                get_filename_component(_dependency_name "${_dependency}" NAME)
+                if (_dependency_name STREQUAL _sdl_name AND
+                        NOT _dependency STREQUAL _sdl_install_name)
+                    message(FATAL_ERROR
+                            "Non-relocatable SDL3 dependency in ${_mach_o}: "
+                            "${_dependency}")
+                endif ()
             endif ()
         endforeach ()
     endforeach ()
