@@ -111,6 +111,8 @@ if (_ballance_sdl3_runtime_target)
             message(FATAL_ERROR
                     "SDL3 framework packages are not supported by the macOS stage layout; use a shared-library package")
         endif ()
+        install(SCRIPT "${CMAKE_CURRENT_LIST_DIR}/RelocateMacOSRuntime.cmake"
+                COMPONENT Runtime)
     endif ()
 endif ()
 
@@ -162,6 +164,18 @@ add_test(NAME StageLayout
 )
 
 set_tests_properties(StageLayout PROPERTIES DEPENDS StageInstall)
+
+if (BUILD_TESTING AND APPLE AND _ballance_check_sdl3_runtime)
+    add_test(NAME MacOSRuntimeRelocation
+            COMMAND "${CMAKE_COMMAND}"
+            -DBUILD_DIR:PATH=${CMAKE_BINARY_DIR}
+            -DSTAGE_ROOT:PATH=${CMAKE_INSTALL_PREFIX}
+            -DBALLANCE_COMPONENT_MANIFEST:FILEPATH=${_ballance_component_manifest}
+            -DBALLANCE_BUILD_STATIC:BOOL=${BALLANCE_BUILD_STATIC}
+            -DCHECK_ASSETS:BOOL=OFF
+            -P "${CMAKE_CURRENT_LIST_DIR}/TestMacOSRuntimeRelocation.cmake")
+    set_tests_properties(MacOSRuntimeRelocation PROPERTIES DEPENDS StageInstall)
+endif ()
 
 if (_ballance_stage_is_multi_config)
     set_tests_properties(StageInstall StageLayout PROPERTIES
