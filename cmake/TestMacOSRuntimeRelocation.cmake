@@ -21,6 +21,28 @@ foreach (_candidate IN LISTS _sdl_candidates)
 endforeach ()
 get_filename_component(_sdl_name "${_sdl_path}" NAME)
 
+# Intel dylibs need not carry the linker-generated ad hoc signature used on
+# Apple Silicon. Include an untouched unsigned component on either host CPU.
+find_program(_clang clang REQUIRED)
+file(WRITE "${_test_root}/UnsignedFixture.c" "int unsigned_fixture(void) { return 1; }\n")
+file(MAKE_DIRECTORY "${STAGE_ROOT}/Plugins")
+execute_process(COMMAND "${_clang}" -arch x86_64 -dynamiclib -Wl,-no_adhoc_codesign
+        -install_name @rpath/libUnsignedFixture.dylib
+        "${_test_root}/UnsignedFixture.c" -o "${STAGE_ROOT}/Plugins/libUnsignedFixture.dylib"
+        COMMAND_ERROR_IS_FATAL ANY)
+
+set(_binaries "${STAGE_ROOT}/Bin/Player")
+foreach (_directory IN ITEMS Bin RenderEngines Managers Plugins BuildingBlocks)
+    file(GLOB _libraries LIST_DIRECTORIES FALSE "${STAGE_ROOT}/${_directory}/*.dylib")
+    list(APPEND _binaries ${_libraries})
+endforeach ()
+foreach (_binary IN LISTS _binaries)
+    if (NOT IS_SYMLINK "${_binary}")
+        string(SHA256 _key "${_binary}")
+        file(SHA256 "${_binary}" _initial_hash_${_key})
+    endif ()
+endforeach ()
+
 # Simulate a package prefix containing spaces. The validator must reject that
 # dependency even when the bundled SDL3's own install name is already correct.
 set(_original_sdl "${_test_root}/original SDL/${_sdl_name}")
@@ -48,17 +70,24 @@ if (NOT _after_hash STREQUAL _original_hash)
     message(FATAL_ERROR "Relocation modified the original SDL3 library")
 endif ()
 
-set(_binaries "${STAGE_ROOT}/Bin/Player")
-foreach (_directory IN ITEMS Bin RenderEngines Managers Plugins BuildingBlocks)
-    file(GLOB _libraries LIST_DIRECTORIES FALSE "${STAGE_ROOT}/${_directory}/*.dylib")
-    list(APPEND _binaries ${_libraries})
-endforeach ()
 set(_hashes "")
 foreach (_binary IN LISTS _binaries)
     if (NOT IS_SYMLINK "${_binary}")
-        execute_process(COMMAND "${_codesign}" --verify --strict "${_binary}"
-                COMMAND_ERROR_IS_FATAL ANY)
         file(SHA256 "${_binary}" _hash)
+        execute_process(COMMAND "${_codesign}" -d "${_binary}"
+                RESULT_VARIABLE _signature_result OUTPUT_QUIET ERROR_VARIABLE _signature_details)
+        if (_signature_result EQUAL 0)
+            # A present signature must be valid, including after relocation.
+            execute_process(COMMAND "${_codesign}" --verify --strict "${_binary}"
+                    COMMAND_ERROR_IS_FATAL ANY)
+        elseif (_signature_result EQUAL 1 AND _signature_details MATCHES "code object is not signed at all")
+            string(SHA256 _key "${_binary}")
+            if (NOT _hash STREQUAL "${_initial_hash_${_key}}")
+                message(FATAL_ERROR "Relocation left a modified binary unsigned: ${_binary}")
+            endif ()
+        else ()
+            message(FATAL_ERROR "Cannot inspect signature of ${_binary}: ${_signature_details}")
+        endif ()
         list(APPEND _hashes "${_hash}")
     endif ()
 endforeach ()
