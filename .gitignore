@@ -25,6 +25,7 @@
 *.csv
 
 # CMake build files
+/.codex-cache/
 CMakeLists.txt.user
 CMakeCache.txt
 CMakeFiles
