@@ -16,6 +16,18 @@ include(BallanceCompiler)
 include(BallanceVersion)
 include(CTest)
 
+if (BUILD_TESTING)
+    add_test(NAME CMakeRegeneration
+            COMMAND "${CMAKE_COMMAND}"
+            "-DTEST_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}"
+            "-DTEST_BINARY_DIR=${CMAKE_CURRENT_BINARY_DIR}"
+            "-DTEST_GENERATOR=${CMAKE_GENERATOR}"
+            "-DTEST_PLATFORM=${CMAKE_GENERATOR_PLATFORM}"
+            "-DTEST_TOOLSET=${CMAKE_GENERATOR_TOOLSET}"
+            "-DTEST_CONFIG=$<CONFIG>"
+            -P "${CMAKE_CURRENT_SOURCE_DIR}/cmake/TestBuildRegeneration.cmake")
+endif ()
+
 add_subdirectory(Source)
 
 include(BallanceStage)
