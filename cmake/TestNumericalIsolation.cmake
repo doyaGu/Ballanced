@@ -1,6 +1,5 @@
 if (NOT EXISTS "${TEST_SOURCE_DIR}/.git")
-    message(STATUS "Numerical isolation requires a Git checkout")
-    return()
+    message(FATAL_ERROR "Numerical isolation requires a Git checkout")
 endif ()
 
 find_package(Git REQUIRED)

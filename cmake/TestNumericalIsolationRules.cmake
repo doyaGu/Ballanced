@@ -1,8 +1,4 @@
-find_package(Git QUIET)
-if (NOT GIT_FOUND)
-    message(STATUS "Numerical isolation requires Git")
-    return()
-endif ()
+find_package(Git REQUIRED)
 
 string(RANDOM LENGTH 12 ALPHABET 0123456789abcdef fixture_id)
 set(fixture "${TEST_BINARY_DIR}/numerical-isolation-${fixture_id}")
