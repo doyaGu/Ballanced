@@ -17,6 +17,12 @@ include(BallanceVersion)
 include(CTest)
 
 if (BUILD_TESTING)
+    add_test(NAME NumericalIsolation
+            COMMAND "${CMAKE_COMMAND}"
+            "-DTEST_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}"
+            -P "${CMAKE_CURRENT_SOURCE_DIR}/cmake/TestNumericalIsolation.cmake")
+    set_tests_properties(NumericalIsolation PROPERTIES
+            SKIP_REGULAR_EXPRESSION "Numerical isolation requires a Git checkout")
     add_test(NAME CMakeRegeneration
             COMMAND "${CMAKE_COMMAND}"
             "-DTEST_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}"
