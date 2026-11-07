@@ -61,6 +61,18 @@ endif ()
 ballance_set_cache_default(CKBB_INSTALL ON BOOL "")
 ballance_set_cache_default(CKBB_BUILD_TESTS OFF BOOL "")
 
+if (CKBB_BUILD_TESTS AND NOT CKRE_BUILD_STATIC)
+    message(STATUS "[Ballance] Enabling CKRE_BUILD_STATIC for physics host tests")
+    set(CKRE_BUILD_STATIC ON CACHE BOOL "Build static library" FORCE)
+endif ()
+
+# Internal engine and physics tests need CK2's unexported APIs and globals.
+# Choose that dependency before Source/ adds CK2 and the render engine.
+if ((CKRE_BUILD_TESTS OR CKBB_BUILD_TESTS) AND NOT CK2_BUILD_STATIC)
+    message(STATUS "[Ballance] Enabling CK2_BUILD_STATIC for module tests")
+    set(CK2_BUILD_STATIC ON CACHE BOOL "Build CK2 as a static library" FORCE)
+endif ()
+
 ballance_set_cache_default(CKPLUGINS_INSTALL ON BOOL "")
 ballance_set_cache_default(CKPLUGINS_BUILD_TESTS OFF BOOL "")
 
