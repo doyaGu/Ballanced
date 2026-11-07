@@ -5,7 +5,7 @@ endif ()
 
 find_package(Git REQUIRED)
 execute_process(
-        COMMAND "${GIT_EXECUTABLE}" -C "${TEST_SOURCE_DIR}" ls-files --recurse-submodules -- Source
+        COMMAND "${GIT_EXECUTABLE}" -c core.quotepath=false -C "${TEST_SOURCE_DIR}" ls-files --recurse-submodules -- Source
         RESULT_VARIABLE result
         OUTPUT_VARIABLE paths
         ERROR_VARIABLE error)
@@ -17,19 +17,27 @@ string(REPLACE "\n" ";" paths "${paths}")
 
 set(issues)
 set(checked 0)
-set(backend_pattern "VXMATH_ENABLE_X87_EMULATION|IVP_ENABLE_X87_EMULATION")
-string(APPEND backend_pattern "|VxFloat(80[A-Za-z0-9_]*|Context|Precision|Rounding|Relation|Exception)")
-string(APPEND backend_pattern "|VxFloat(InitContext|SetPrecision|SetRounding|GetExceptionFlags|ClearExceptionFlags)")
-string(APPEND backend_pattern "|VXFLOAT_[A-Za-z0-9_]+|IVP_X87_[A-Za-z0-9_]+|IVP_U_Float80|ivu_x87")
+set(math_backend "VXMATH_ENABLE_X87_EMULATION|VxFloat(80[A-Za-z0-9_]*|Context|Precision|Rounding|Relation|Exception)")
+string(APPEND math_backend "|VxFloat(InitContext|SetPrecision|SetRounding|GetExceptionFlags|ClearExceptionFlags)")
+string(APPEND math_backend "|VXFLOAT_[A-Za-z0-9_]+|vx_softfloat|VXMATH_SCALAR_STATIC|VX_SCALAR_EXPORT")
+set(ivp_backend "IVP_ENABLE_X87_EMULATION|IVP_X87_[A-Za-z0-9_]+|IVP_U_Float80|ivu_x87|ivp_x87_arithmetic|ivp_softfloat")
 foreach (path IN LISTS paths)
-    if (NOT path MATCHES "\\.(h|hpp|hxx|inl|cpp|cxx|cmake)$" AND NOT path MATCHES "(^|/)CMakeLists\\.txt$")
+    if (NOT path MATCHES "\\.(c|cc|cpp|cxx|h|hh|hpp|hxx|inl|cmake)$" AND NOT path MATCHES "(^|/)CMakeLists\\.txt$")
         continue()
     endif ()
-    if (path MATCHES "^Source/VxMath/" OR path MATCHES "^Source/BuildingBlocks/physics_RT/ivp/")
+    if (path MATCHES "(^|/)(tests|test|tools|perf|examples|demo|diagnostics|docs|deps|third_party|havana|ivp_examples)/")
         continue()
     endif ()
-    if (path MATCHES "(^|/)(tests|tools|deps|third_party)/")
+    if (path MATCHES "/3DTrans/qhull/" OR path MATCHES "/ivp_compact_builder/(geompack|qhull)(_|\\.)"
+            OR path MATCHES "(^|/)(dr_wav|stb_[^/]+)\\.h$")
         continue()
+    endif ()
+    if (path MATCHES "^Source/VxMath/")
+        set(backend_pattern "IVP_[A-Za-z0-9_]+|ivp_[A-Za-z0-9_]+|ivu_[A-Za-z0-9_]+")
+    elseif (path MATCHES "^Source/BuildingBlocks/physics_RT/ivp/")
+        set(backend_pattern "VXMATH_[A-Za-z0-9_]+|Vx[A-Z][A-Za-z0-9_]*|vx_softfloat|vx_[A-Za-z0-9_]*scalar[A-Za-z0-9_]*")
+    else ()
+        set(backend_pattern "${math_backend}|${ivp_backend}")
     endif ()
     file(READ "${TEST_SOURCE_DIR}/${path}" source)
     if (source MATCHES "(^|[^A-Za-z0-9_])(${backend_pattern})([^A-Za-z0-9_]|$)")
