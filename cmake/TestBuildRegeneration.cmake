@@ -30,8 +30,22 @@ if (NOT result EQUAL 0)
     message(FATAL_ERROR "Regeneration fixture configure failed: ${output}${error}")
 endif ()
 
+string(TIMESTAMP configured_time "%s" UTC)
 file(APPEND "${test_source}/CMakeLists.txt"
         "add_custom_target(Regenerated ALL COMMAND \"${CMAKE_COMMAND}\" -E touch \"${test_build}/regenerated\")\n")
+# A fast configure and edit can share one filesystem timestamp. Establish an
+# observable edit before testing the generator's timestamp-based dependency.
+foreach (attempt RANGE 1 300)
+    file(TIMESTAMP "${test_source}/CMakeLists.txt" edited_time "%s" UTC)
+    if (edited_time GREATER configured_time)
+        break()
+    endif ()
+    execute_process(COMMAND "${CMAKE_COMMAND}" -E sleep 0.01 COMMAND_ERROR_IS_FATAL ANY)
+    file(TOUCH "${test_source}/CMakeLists.txt")
+endforeach ()
+if (NOT edited_time GREATER configured_time)
+    message(FATAL_ERROR "The fixture filesystem did not expose a newer edit timestamp")
+endif ()
 set(build "${CMAKE_COMMAND}" --build "${test_build}")
 if (TEST_CONFIG)
     list(APPEND build --config "${TEST_CONFIG}")
