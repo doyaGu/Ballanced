@@ -132,7 +132,7 @@ jobs:
         run: |
           $binary = (Resolve-Path build/gpu-validation/symbols).Path
           $config = "$binary/D3D12/d3dconfig.exe"
-          $tool = "$binary/probe-sdl.exe"
+          $tool = Join-Path $binary 'probe-sdl.exe'
           & $config apps --add $tool
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           try {
@@ -148,7 +148,7 @@ jobs:
             & $config device force-warp=false
             & $config apps --remove $tool
           }
-          & $config apps --add "$binary/ckre_scene_capture.exe"
+          & $config apps --add (Join-Path $binary 'ckre_scene_capture.exe')
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           & $config device force-warp=true
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
