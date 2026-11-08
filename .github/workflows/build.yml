@@ -120,7 +120,9 @@ jobs:
             sdl_cmake_arguments: --no-warn-unused-cli
 
           - name: macos-x64
-            os: macos-15-intel
+            # The hosted Intel VM cannot create an SDL Metal device. Build
+            # x86_64 binaries and execute them with Rosetta on the ARM VM.
+            os: macos-15
             archive_ext: .tar.gz
             preset: macos-x64
             sdl_discriminator: macOS-X64
@@ -166,6 +168,14 @@ jobs:
       if: ${{ (github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name)) && startsWith(matrix.platform.name, 'linux-') }}
       shell: bash
       run: ./cmake/SetupWaylandScanner.sh
+
+    - name: Check x86_64 execution on macOS
+      if: ${{ matrix.platform.name == 'macos-x64' && (github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name)) }}
+      shell: bash
+      run: |
+        machine=$(/usr/bin/arch -x86_64 /usr/bin/uname -m)
+        echo "Rosetta reports: $machine"
+        test "$machine" = x86_64
 
     - name: Setup SDL3
       if: ${{ github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name) }}
