@@ -27,3 +27,17 @@ for name in ('FS_FF_STAGE', 'FS_FF_STAGE_NATIVE',
         source += f'v.in_var_TEXCOORD{index} = {value};\n'
     source += 'v.position=float4(i==1?3.0:-1.0,i==2?3.0:-1.0,0.5,1); return v; }\n'
     (out / (name.lower() + '.metal')).write_text(source)
+    if '_CUBE' in name:
+        # Compare native texture arrays without changing the production pack.
+        for kind, resource, annotation in (
+                ('texturecube<float>', 's_textureCube', 'texture'),
+                ('sampler', 's_textureCube', 'sampler')):
+            suffix = 'Smplr' if kind == 'sampler' else ''
+            for index in range(8):
+                declaration = f'{kind} {resource}{index}{suffix} [[{annotation}({4 + index})]]'
+                assert source.count(declaration) == 1
+                replacement = f'array<{kind}, 8> {resource}{suffix} [[{annotation}(4)]]' if index == 0 else ''
+                source = source.replace(declaration + (', ' if index else ''), replacement + (', ' if index == 0 else ''))
+            source = re.sub(resource + r'([0-7])' + suffix + r'\b',
+                            lambda match: resource + suffix + '[' + match[1] + ']', source)
+        (out / (name.lower() + '_arrays.metal')).write_text(source)
