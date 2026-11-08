@@ -4,6 +4,13 @@ Ballanced keeps Virtools rendering behavior while implementing it directly on mo
 
 ## Language
 
+Name code and tests after the engine operation, resource or data being handled.
+For example, use message delivery, bitmap decoding, behavior prototypes, texture
+stages, vertex streams and animation clock prediction. Test filenames, fixtures,
+build targets and assertions should use the same terms. Describe floating-point
+precision, rounding and storage explicitly. Use test names that identify the
+inputs and expected result; omit labels that describe a development phase.
+
 **Virtools-Style Rasterizer Interface**:
 The private C++ surface built around `CKRasterizer`, `CKRasterizerDriver`, and `CKRasterizerContext`. It keeps the original class model and state/resource/draw vocabulary, but may improve method shapes when correctness or performance benefits.
 _Avoid_: exact legacy clone, public SDK promise

@@ -1,8 +1,8 @@
 # Root-only compiler defaults for the superproject.
 #
 # Component projects own their language-standard requirements. Keeping the
-# standard unset here prevents the superproject from silently changing the
-# contract of a component that is also built standalone.
+# standard unset here preserves the C++ language version selected by each
+# component for both superproject and standalone builds.
 
 add_compile_definitions(
         $<$<C_COMPILER_ID:MSVC>:_CRT_SECURE_NO_WARNINGS>
