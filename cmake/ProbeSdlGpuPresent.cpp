@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 extern "C" {
 __declspec(dllexport) extern const unsigned int D3D12SDKVersion = 620;
@@ -11,6 +12,8 @@ __declspec(dllexport) const char *D3D12SDKPath = ".\\D3D12\\";
 
 #define PROBE_SDL_FUNCTIONS(M) \
     M(SDL_Init) M(SDL_Quit) M(SDL_GetError) M(SDL_ClearError) M(SDL_CreateWindow) M(SDL_DestroyWindow) \
+    M(SDL_CreateProperties) M(SDL_DestroyProperties) M(SDL_SetBooleanProperty) \
+    M(SDL_SetNumberProperty) M(SDL_SetStringProperty) M(SDL_CreateGPUDeviceWithProperties) \
     M(SDL_PumpEvents) M(SDL_CreateGPUDevice) M(SDL_DestroyGPUDevice) \
     M(SDL_SetGPUAllowedFramesInFlight) M(SDL_ClaimWindowForGPUDevice) \
     M(SDL_ReleaseWindowFromGPUDevice) M(SDL_SetGPUSwapchainParameters) \
@@ -26,10 +29,27 @@ __declspec(dllexport) const char *D3D12SDKPath = ".\\D3D12\\";
 PROBE_SDL_FUNCTIONS(DECLARE_SDL)
 #undef DECLARE_SDL
 
-static bool ProbeWindow(int mode, bool debug)
+static bool ProbeWindow(int mode, bool debug, bool independent)
 {
     SDL_Window *window = pSDL_CreateWindow("SDL GPU presentation probe", 640, 480, SDL_WINDOW_RESIZABLE);
-    SDL_GPUDevice *device = pSDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_DXIL, debug, "direct3d12");
+    SDL_GPUDevice *device = NULL;
+    if (independent) {
+        char path[MAX_PATH];
+        if (!GetModuleFileNameA(NULL, path, MAX_PATH)) return false;
+        char *directory = strrchr(path, '\\');
+        if (!directory || strcpy_s(directory + 1, sizeof(path) - size_t(directory + 1 - path), "D3D12\\")) return false;
+        const SDL_PropertiesID props = pSDL_CreateProperties();
+        const bool configured = props &&
+            pSDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXIL_BOOLEAN, true) &&
+            pSDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_DEBUGMODE_BOOLEAN, debug) &&
+            pSDL_SetStringProperty(props, SDL_PROP_GPU_DEVICE_CREATE_NAME_STRING, "direct3d12") &&
+            pSDL_SetNumberProperty(props, SDL_PROP_GPU_DEVICE_CREATE_D3D12_AGILITY_SDK_VERSION_NUMBER, 620) &&
+            pSDL_SetStringProperty(props, SDL_PROP_GPU_DEVICE_CREATE_D3D12_AGILITY_SDK_PATH_STRING, path);
+        if (configured) device = pSDL_CreateGPUDeviceWithProperties(props);
+        if (props) pSDL_DestroyProperties(props);
+    } else {
+        device = pSDL_CreateGPUDevice(SDL_GPU_SHADERFORMAT_DXIL, debug, "direct3d12");
+    }
     SDL_GPUTexture *source = NULL;
     SDL_GPUTransferBuffer *download = NULL;
     SDL_GPUCommandBuffer *commands = NULL;
@@ -146,7 +166,7 @@ static bool ProbeWindow(int mode, bool debug)
 
 int main(int argc, char **argv)
 {
-    if (argc != 4) return 1;
+    if (argc != 4 && argc != 5) return 1;
     printf("SDL process=%lu\n", GetCurrentProcessId());
     HMODULE library = LoadLibraryA(argv[1]);
     if (!library) return 2;
@@ -157,8 +177,9 @@ int main(int argc, char **argv)
     if (mode < 0 || mode > 3 || !pSDL_Init(SDL_INIT_VIDEO)) return 4;
     bool passed = true;
     unsigned windows = 0;
-    for (; windows < 32 && passed; ++windows) passed = ProbeWindow(mode, atoi(argv[3]) != 0);
-    printf("SDL presents: mode=%d windows=%u/32 success=%d\n", mode, windows, passed);
+    const bool independent = argc == 5 && atoi(argv[4]) != 0;
+    for (; windows < 32 && passed; ++windows) passed = ProbeWindow(mode, atoi(argv[3]) != 0, independent);
+    printf("SDL presents: mode=%d independent=%d windows=%u/32 success=%d\n", mode, independent, windows, passed);
     pSDL_Quit();
     FreeLibrary(library);
     return passed ? 0 : 5;

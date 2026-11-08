@@ -97,6 +97,8 @@ jobs:
           foreach ($mode in @(0, 1, 2, 3)) {
             & "$binary/probe-sdl.exe" "$binary/SDL3.dll" $mode 0 *> "build/gpu-crash/d3d12-sdl-$mode-0.log"
             if ($LASTEXITCODE -ne 0) { $failed = $true }
+            & "$binary/probe-sdl.exe" "$binary/SDL3.dll" $mode 0 1 *> "build/gpu-crash/d3d12-factory-sdl-$mode-0.log"
+            if ($LASTEXITCODE -ne 0) { $failed = $true }
           }
           ./cmake/SetupWindowsWarp.ps1 -Architecture $architecture -Version 1.0.20 -DestinationDirectory $binary
           foreach ($mode in @(0, 1, 2, 3)) {
@@ -138,6 +140,8 @@ jobs:
           $failed = $LASTEXITCODE -ne 0
           foreach ($mode in @(0, 1, 2, 3)) {
             & "$binary/probe-sdl.exe" "$binary/SDL3.dll" $mode 1 *> "build/gpu-crash/d3d12-sdl-$mode-1.log"
+            if ($LASTEXITCODE -ne 0) { $failed = $true }
+            & "$binary/probe-sdl.exe" "$binary/SDL3.dll" $mode 1 1 *> "build/gpu-crash/d3d12-factory-sdl-$mode-1.log"
             if ($LASTEXITCODE -ne 0) { $failed = $true }
           }
           if ($failed) { throw 'Debug-layer presentation probes failed; see d3d12 logs' }
