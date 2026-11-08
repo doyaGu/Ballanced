@@ -70,6 +70,23 @@ jobs:
         if: ${{ startsWith(inputs.platform, 'windows-') }}
         shell: pwsh
         run: ./cmake/DebugGpuCapture.ps1 -BinaryDirectory build/gpu-validation/symbols -OutputDirectory build/gpu-crash -Scene $env:CAPTURE_SCENE -Frames $env:CAPTURE_FRAMES -TracePresent:($env:CAPTURE_TRACE_PRESENT -eq 'true') -FirstChance:($env:CAPTURE_FIRST_CHANCE -eq 'true')
+      - name: Compare Direct3D runtime device creation
+        if: ${{ !cancelled() && startsWith(inputs.platform, 'windows-') && inputs.platform != 'windows-arm64' }}
+        shell: pwsh
+        run: |
+          $architecture = '${{ inputs.platform }}'.Substring(8)
+          $visualStudio = & "${env:ProgramFiles(x86)}/Microsoft Visual Studio/Installer/vswhere.exe" -latest -products '*' -property installationPath
+          & "$visualStudio/Common7/Tools/Launch-VsDevShell.ps1" -Arch $architecture -HostArch amd64 -SkipAutomaticLocation
+          $binary = (Resolve-Path build/gpu-validation/symbols).Path
+          ./cmake/SetupWindowsD3D12.ps1 -Architecture $architecture -DestinationDirectory "$binary/D3D12"
+          cl /nologo /EHsc /O2 cmake/ProbeD3D12Runtime.cpp "/Fo:$binary/probe-system.obj" "/Fe:$binary/probe-system.exe" d3d12.lib dxgi.lib
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cl /nologo /EHsc /O2 /DPROBE_D3D12_SDK_VERSION=620 cmake/ProbeD3D12Runtime.cpp "/Fo:$binary/probe-agility.obj" "/Fe:$binary/probe-agility.exe" d3d12.lib dxgi.lib
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          foreach ($runtime in @('system', 'agility')) { foreach ($debug in @(0, 1)) {
+            & "$binary/probe-$runtime.exe" $debug *> "build/gpu-crash/d3d12-$runtime-$debug.log"
+            Write-Host "$runtime debug=$debug exit=$LASTEXITCODE"
+          } }
       - name: Verify Metal sampler clipping and readback pixels
         if: ${{ startsWith(inputs.platform, 'macos-') }}
         shell: pwsh

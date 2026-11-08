@@ -57,7 +57,7 @@ $start.WorkingDirectory = $outputRoot
 $start.UseShellExecute = $false
 $start.CreateNoWindow = $true
 $exceptionFilter = if ($FirstChance) { 'sxe -c' } else { 'sxd -c2' }
-$commands = "sxi ibp; $exceptionFilter `"r; .exr -1; kv; lmvm d3d10warp; .dump /m /o crash.dmp; q`" av; g"
+$commands = "sxi ibp; sxi 0x4000001f; $exceptionFilter `"r; .exr -1; kv; lmvm d3d10warp; .dump /m /o crash.dmp; q`" av; g"
 if ($TracePresent) {
     $resultRegister = if ([Runtime.InteropServices.RuntimeInformation]::OSArchitecture -eq 'Arm64') { 'x0' } else { 'eax' }
     $trace = 'sxe -c "bm /d dxgi!CDXGISwapChain::PresentImpl \"gu; r ' + $resultRegister + '; g\"; g" ld:dxgi.dll; '
