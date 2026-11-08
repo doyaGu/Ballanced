@@ -18,12 +18,19 @@ def OnReleaseFence(frame, location, internal_dict):
     if error.Fail() or not command:
         print("Metal fence inspection failed: " + str(error))
         return False
-    status = frame.EvaluateExpression("(long)[(id)0x%x status]" % command)
+    options = lldb.SBExpressionOptions()
+    options.SetTimeoutInMicroSeconds(250000)
+    options.SetTryAllThreads(True)
+    options.SetIgnoreBreakpoints(True)
+    status = frame.EvaluateExpression("(long)[(id)0x%x status]" % command, options)
     if status.GetError().Fail():
         print("Metal command status inspection failed: " + str(status.GetError()))
+        location.GetBreakpoint().SetEnabled(False)
     elif status.GetValueAsSigned() == 5:  # MTLCommandBufferStatusError
-        failure = frame.EvaluateExpression("(id)[(id)0x%x error]" % command)
-        print("Metal command buffer error: " + str(failure.GetObjectDescription()))
+        failure = frame.EvaluateExpression(
+            '(const char *)[[(id)[(id)0x%x error] localizedDescription] UTF8String]' % command,
+            options)
+        print("Metal command buffer error: " + str(failure.GetSummary()))
     return False
 
 

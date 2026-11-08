@@ -89,6 +89,7 @@ jobs:
             *> build/gpu-crash/metal-system.log
       - name: Inspect failed Metal command buffers
         if: ${{ failure() && startsWith(inputs.platform, 'macos-') }}
+        timeout-minutes: 3
         shell: pwsh
         run: |
           $tool = (Resolve-Path build/gpu-validation/runtime/Bin/sdl_gpu_ffp_pixel_tests).Path
