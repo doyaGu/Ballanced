@@ -93,6 +93,9 @@ jobs:
         shell: pwsh
         run: |
           $tool = (Resolve-Path build/gpu-validation/runtime/Bin/sdl_gpu_ffp_pixel_tests).Path
+          # Reproduce the ordinary CTest workload after preserving the shader
+          # instrumentation diagnostics above.
+          $env:MTL_SHADER_VALIDATION = '0'
           xcrun lldb --batch -o "command script import $PWD/cmake/TraceMetalGpu.py" -o run `
             -- $tool --samplers *> build/gpu-crash/metal-debugger.log
       - name: Verify scene images
