@@ -20,6 +20,14 @@ on:
         description: Scene to replay under the Windows debugger
         type: string
         default: opaque_lit
+      trace-present:
+        description: Trace DXGI presentation return values
+        type: boolean
+        default: false
+      frames:
+        description: Number of frames to replay under the Windows debugger
+        type: number
+        default: 5
 
 permissions:
   contents: read
@@ -35,6 +43,8 @@ jobs:
       MTL_DEBUG_LAYER: '1'
       CAPTURE_FIRST_CHANCE: ${{ inputs.first-chance }}
       CAPTURE_SCENE: ${{ inputs.scene }}
+      CAPTURE_TRACE_PRESENT: ${{ inputs.trace-present }}
+      CAPTURE_FRAMES: ${{ inputs.frames }}
     steps:
       - uses: actions/checkout@v6.0.2
       - uses: actions/download-artifact@v8
@@ -53,7 +63,7 @@ jobs:
         id: debugger
         if: ${{ startsWith(inputs.platform, 'windows-') }}
         shell: pwsh
-        run: ./cmake/DebugGpuCapture.ps1 -BinaryDirectory build/gpu-validation/symbols -OutputDirectory build/gpu-crash -Scene $env:CAPTURE_SCENE -FirstChance:($env:CAPTURE_FIRST_CHANCE -eq 'true')
+        run: ./cmake/DebugGpuCapture.ps1 -BinaryDirectory build/gpu-validation/symbols -OutputDirectory build/gpu-crash -Scene $env:CAPTURE_SCENE -Frames $env:CAPTURE_FRAMES -TracePresent:($env:CAPTURE_TRACE_PRESENT -eq 'true') -FirstChance:($env:CAPTURE_FIRST_CHANCE -eq 'true')
       - name: Verify Metal sampler clipping and readback pixels
         if: ${{ startsWith(inputs.platform, 'macos-') }}
         shell: pwsh

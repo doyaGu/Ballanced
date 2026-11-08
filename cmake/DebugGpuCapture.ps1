@@ -3,6 +3,8 @@ param(
     [Parameter(Mandatory = $true)][string]$OutputDirectory,
     [string]$Debugger,
     [switch]$FirstChance,
+    [switch]$TracePresent,
+    [ValidateRange(1, 10000)][int]$Frames = 5,
     [ValidatePattern('^[A-Za-z0-9_]+$')][string]$Scene = 'opaque_lit'
 )
 
@@ -56,11 +58,16 @@ $start.UseShellExecute = $false
 $start.CreateNoWindow = $true
 $exceptionFilter = if ($FirstChance) { 'sxe -c' } else { 'sxd -c2' }
 $commands = "sxi ibp; $exceptionFilter `"r; .exr -1; kv; lmvm d3d10warp; .dump /m /o crash.dmp; q`" av; g"
+if ($TracePresent) {
+    $resultRegister = if ([Runtime.InteropServices.RuntimeInformation]::OSArchitecture -eq 'Arm64') { 'x0' } else { 'eax' }
+    $trace = 'sxe -c "bu dxgi!CDXGISwapChain::PresentImpl \"gu; r ' + $resultRegister + '; g\"; g" ld:dxgi.dll; '
+    $commands = $trace + $commands
+}
 $symbolCache = Join-Path ([IO.Path]::GetTempPath()) 'Ballanced-DebugSymbols'
 $arguments = @('-G', '-o', '-y', "$binaryRoot;srv*$symbolCache*https://msdl.microsoft.com/download/symbols", '-logo', 'debugger.log', '-c',
     $commands,
     $tool, '--render-engine-dir', $binaryRoot, '--rasterizer', 'sdlgpu',
-    '--scene', $Scene, '--frames', '5', '--out', $outputRoot)
+    '--scene', $Scene, '--frames', [string]$Frames, '--out', $outputRoot)
 foreach ($argument in $arguments) { $start.ArgumentList.Add($argument) }
 $process = [Diagnostics.Process]::Start($start)
 try {
