@@ -60,7 +60,7 @@ $exceptionFilter = if ($FirstChance) { 'sxe -c' } else { 'sxd -c2' }
 $commands = "sxi ibp; $exceptionFilter `"r; .exr -1; kv; lmvm d3d10warp; .dump /m /o crash.dmp; q`" av; g"
 if ($TracePresent) {
     $resultRegister = if ([Runtime.InteropServices.RuntimeInformation]::OSArchitecture -eq 'Arm64') { 'x0' } else { 'eax' }
-    $trace = 'sxe -c "bm dxgi!CDXGISwapChain::PresentImpl \"gu; r ' + $resultRegister + '; g\"; g" ld:dxgi.dll; '
+    $trace = 'sxe -c "bm /d dxgi!CDXGISwapChain::PresentImpl \"gu; r ' + $resultRegister + '; g\"; g" ld:dxgi.dll; '
     $commands = $trace + $commands
 }
 $symbolCache = Join-Path ([IO.Path]::GetTempPath()) 'Ballanced-DebugSymbols'

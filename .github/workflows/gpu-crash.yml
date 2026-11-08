@@ -87,6 +87,13 @@ jobs:
           sudo /usr/bin/log show --last 10m --style compact `
             --predicate 'process == "sdl_gpu_ffp_pixel_tests" OR eventMessage CONTAINS[c] "GPU"' `
             *> build/gpu-crash/metal-system.log
+      - name: Inspect failed Metal command buffers
+        if: ${{ failure() && startsWith(inputs.platform, 'macos-') }}
+        shell: pwsh
+        run: |
+          $tool = (Resolve-Path build/gpu-validation/runtime/Bin/sdl_gpu_ffp_pixel_tests).Path
+          xcrun lldb --batch -o "command script import $PWD/cmake/TraceMetalGpu.py" -o run `
+            -- $tool --samplers *> build/gpu-crash/metal-debugger.log
       - name: Verify scene images
         if: ${{ !cancelled() && (startsWith(inputs.platform, 'macos-') || steps.debugger.outcome == 'success') }}
         shell: pwsh
