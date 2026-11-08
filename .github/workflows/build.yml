@@ -266,6 +266,20 @@ jobs:
         }
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
+    - name: Verify executed tests
+      if: ${{ !cancelled() && (github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name)) }}
+      run: python3 -B .github/scripts/verify_ctest_results.py "build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }}/ctest-results.xml"
+
+    - name: Upload test results
+      if: ${{ !cancelled() && (github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name)) }}
+      uses: actions/upload-artifact@v7.0.1
+      with:
+        name: test-results-${{ matrix.platform.name }}-${{ matrix.linkage.name }}
+        path: |
+          build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }}/ctest-results.xml
+          build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }}/Testing/Temporary/
+        if-no-files-found: error
+
     - name: Upload failed test output
       if: ${{ failure() }}
       uses: actions/upload-artifact@v7.0.1
@@ -358,6 +372,20 @@ jobs:
         SDL_VIDEODRIVER: x11
         CKRE_SDL_GPU_DRIVER: vulkan
       run: xvfb-run -a ctest --preset linux-x64-tests-release --no-tests=error --output-junit "${{ github.workspace }}/build/linux-x64-tests/ctest-results.xml"
+
+    - name: Verify executed tests
+      if: ${{ !cancelled() }}
+      run: python3 -B .github/scripts/verify_ctest_results.py build/linux-x64-tests/ctest-results.xml
+
+    - name: Upload test results
+      if: ${{ !cancelled() }}
+      uses: actions/upload-artifact@v7.0.1
+      with:
+        name: test-results-linux-x64-full-tests
+        path: |
+          build/linux-x64-tests/ctest-results.xml
+          build/linux-x64-tests/Testing/Temporary/
+        if-no-files-found: error
 
     - name: Upload failed test output
       if: ${{ failure() }}

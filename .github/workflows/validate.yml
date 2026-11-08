@@ -31,6 +31,9 @@ jobs:
     - name: Checkout submodules
       run: ./cmake/UpdateSubmodules.ps1
 
+    - name: Check CTest execution verification
+      run: python3 -B -m unittest discover -s .github/scripts -p "test_*.py"
+
     - name: Check submodule pointers
       run: |
         $status = git submodule status --recursive
