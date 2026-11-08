@@ -34,7 +34,8 @@ Put `Player` (`Player.exe` on Windows), `base.cmo`, `Database.tdb`, the asset fo
 | Linux (x64 / ARM64) | GCC or Clang + Ninja | 3.25+ |
 | macOS (x64 / ARM64) | Apple Clang + Ninja | 3.25+ |
 
-SDL3 must be on the CMake package path on all platforms (`find_package(SDL3 CONFIG REQUIRED)`).
+SDL3 3.4.20 or newer must be on the CMake package path on all platforms. This
+includes the Metal fence completion and ownership fixes required by GPU uploads.
 The macOS stage layout supports SDL3 shared-library packages, including Homebrew.
 Staging rewrites the copied SDL3 library and its consumers to use `@rpath` and
 applies ad hoc signatures. SDL3 framework packages are not part of this layout.
