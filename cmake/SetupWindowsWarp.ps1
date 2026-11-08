@@ -5,9 +5,9 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $destination = (New-Item -ItemType Directory -Force -Path $DestinationDirectory).FullName
-$packagePath = Join-Path ([IO.Path]::GetTempPath()) 'Ballanced-WARP-1.0.21.nupkg'
-Invoke-WebRequest -Uri 'https://api.nuget.org/v3-flatcontainer/microsoft.direct3d.warp/1.0.21/microsoft.direct3d.warp.1.0.21.nupkg' -OutFile $packagePath
-$expectedHash = 'EA44B77EB30EEC14427193E20F40CDB2E4C31ED11AB39CB880538FDF4BAC2681'
+$packagePath = Join-Path ([IO.Path]::GetTempPath()) 'Ballanced-WARP-1.0.22.nupkg'
+Invoke-WebRequest -Uri 'https://api.nuget.org/v3-flatcontainer/microsoft.direct3d.warp/1.0.22/microsoft.direct3d.warp.1.0.22.nupkg' -OutFile $packagePath
+$expectedHash = 'AFC058F4D1066EDC4231A38F3AB3592B1930F7287D4AC700E6A056E0874BB0BE'
 if ((Get-FileHash -LiteralPath $packagePath -Algorithm SHA256).Hash -ne $expectedHash) {
     throw 'Microsoft WARP package checksum mismatch'
 }
@@ -18,5 +18,5 @@ try {
     $warpPath = Join-Path $destination 'd3d10warp.dll'
     [IO.Compression.ZipFileExtensions]::ExtractToFile($package.GetEntry("build/native/bin/$packageArchitecture/d3d10warp.dll"), $warpPath, $true)
     [IO.Compression.ZipFileExtensions]::ExtractToFile($package.GetEntry('LICENSE.TXT'), (Join-Path $destination 'WARP-LICENSE.txt'), $true)
-    Write-Host "Microsoft WARP 1.0.21 ($Architecture), file version $((Get-Item -LiteralPath $warpPath).VersionInfo.FileVersion)"
+    Write-Host "Microsoft WARP 1.0.22 ($Architecture), file version $((Get-Item -LiteralPath $warpPath).VersionInfo.FileVersion)"
 } finally { $package.Dispose() }
