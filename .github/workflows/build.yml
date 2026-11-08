@@ -30,7 +30,7 @@ on:
           - sdl-macos-x64-static
           - sdl-macos-arm64-static
       gpu-debug:
-        description: "Run the macOS GPU tests with SDL GPU debug mode and the Metal validation layer"
+        description: "Capture GPU validation frames and enable backend diagnostics"
         required: false
         type: boolean
         default: false
@@ -205,26 +205,41 @@ jobs:
       if: ${{ github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name) }}
       run: cmake --build --preset ${{ matrix.platform.preset }}-${{ matrix.linkage.name }}-stage-release --parallel $([Environment]::ProcessorCount)
 
-    - name: Capture Metal validation frames
-      if: ${{ github.event_name == 'workflow_dispatch' && inputs.gpu-debug && startsWith(matrix.platform.name, 'macos-') && matrix.linkage.name == 'runtime' && (inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name)) }}
+    - name: Capture GPU validation frames
+      if: ${{ github.event_name == 'workflow_dispatch' && inputs.gpu-debug && (startsWith(matrix.platform.name, 'macos-') || startsWith(matrix.platform.name, 'windows-')) && matrix.linkage.name == 'runtime' && (inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name)) }}
       run: |
         $buildRoot = "build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }}"
         cmake --build $buildRoot --config Release --target ckre_scene_capture --parallel $([Environment]::ProcessorCount)
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-        $captureRoot = "$buildRoot/metal-validation"
+        $captureRoot = "$buildRoot/gpu-validation"
         New-Item -ItemType Directory -Force -Path $captureRoot | Out-Null
-        & "$buildRoot/bin/ckre_scene_capture" --render-engine-dir "$buildRoot/lib" --rasterizer sdlgpu --scene all --frames 5 --capture-frames 1,5 --verbose --out $captureRoot *> "$captureRoot/capture.log"
-        $captureExit = $LASTEXITCODE
-        Write-Host "Metal capture exit code: $captureExit; log: $captureRoot/capture.log"
-        exit $captureExit
+        $tool = "$buildRoot/bin/ckre_scene_capture"
+        $engine = "$buildRoot/lib"
+        if ($IsWindows) {
+          $tool = "$buildRoot/bin/Release/ckre_scene_capture.exe"
+          $engine = "$buildRoot/bin/Release"
+        }
+        & $tool --render-engine-dir $engine --rasterizer sdlgpu --scene all --frames 5 --capture-frames 1,5 --verbose --out $captureRoot *> "$captureRoot/capture.log"
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        if ($IsWindows) {
+          $env:CKRE_SDL_GPU_FF_JIT_CACHE = '0'
+          foreach ($mode in @('off', 'fragment', 'on')) {
+            $env:CKRE_SDL_GPU_FF_JIT = if ($mode -eq 'off') { '0' } else { '1' }
+            $env:CKRE_SDL_GPU_FF_VERTEX_JIT = if ($mode -eq 'fragment') { '0' } else { '1' }
+            $modeRoot = "$captureRoot/jit-$mode"
+            New-Item -ItemType Directory -Force -Path $modeRoot | Out-Null
+            & $tool --render-engine-dir $engine --rasterizer sdlgpu --scene cube_mip_dynamic --frames 120 --frame-delay-ms 16 --capture-frames 1,5,30,60,90,120 --out $modeRoot *> "$modeRoot/capture.log"
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
+        }
 
-    - name: Upload Metal validation frames
-      if: ${{ !cancelled() && github.event_name == 'workflow_dispatch' && inputs.gpu-debug && startsWith(matrix.platform.name, 'macos-') && matrix.linkage.name == 'runtime' && (inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name)) }}
+    - name: Upload GPU validation frames
+      if: ${{ !cancelled() && github.event_name == 'workflow_dispatch' && inputs.gpu-debug && (startsWith(matrix.platform.name, 'macos-') || startsWith(matrix.platform.name, 'windows-')) && matrix.linkage.name == 'runtime' && (inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name)) }}
       uses: actions/upload-artifact@v7.0.1
       with:
-        name: metal-validation-${{ matrix.platform.name }}
-        path: build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }}/metal-validation/
-        if-no-files-found: ignore
+        name: gpu-validation-${{ matrix.platform.name }}
+        path: build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }}/gpu-validation/
+        if-no-files-found: error
 
     - name: Build tests
       if: ${{ github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name) }}
