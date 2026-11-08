@@ -32,6 +32,8 @@ int main(int argc, char **argv)
             const unsigned ordinal = kind == 0 ? i : kind == 1 ? i - twoD : i - twoD - cubes;
             NSString *at = kind == 0 ? @"metal::float2(0.5)" : kind == 1 ? @"metal::float3(1,0,0)" : @"metal::float3(0.5)";
             [source appendFormat:@"if(cfg.y==%u && cfg.x>%u) c+=t%u.sample(s%u,%@);", kind, ordinal, i, i, at];
+            if (getenv("PROBE_METAL_MIP_QUERY"))
+                [source appendFormat:@"if(cfg.y==%u && cfg.x>%u && t%u.get_num_mip_levels()!=1) return metal::float4(1,0,1,1);", kind, ordinal, i];
         }
         [source appendString:@"return c; }"];
         NSError *error = nil;

@@ -138,7 +138,15 @@ jobs:
               if ($LASTEXITCODE -ne 0) { $failed = $true }
             }
           }
-          foreach ($suffix in @('width', 'levels', 'dimensions', 'explicit_lod')) {
+          $env:PROBE_METAL_MIP_QUERY = '1'
+          foreach ($cubes in @(4, 8)) {
+            foreach ($sampled in @(1, 4, 5, 8) | Where-Object { $_ -le $cubes }) {
+              & build/gpu-crash/metal-samplers $cubes $sampled 1 1 *> "build/gpu-crash/metal-mip-query-$cubes-$sampled.log"
+              if ($LASTEXITCODE -ne 0) { $failed = $true }
+            }
+          }
+          Remove-Item Env:PROBE_METAL_MIP_QUERY
+          foreach ($suffix in @('width', 'levels', 'levels_two', 'dimensions', 'explicit_lod')) {
             foreach ($sampled in @(1, 8)) {
               & build/gpu-crash/metal-samplers 8 $sampled 1 1 "build/gpu-crash/fs_ff_stage_cube_native_$suffix.metal" *> "build/gpu-crash/metal-isolate-$suffix-$sampled.log"
               if ($LASTEXITCODE -ne 0) { $failed = $true }

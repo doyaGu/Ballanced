@@ -31,6 +31,7 @@ for name in ('FS_FF_STAGE', 'FS_FF_STAGE_NATIVE',
         for suffix, expression, value in (
                 ('width', r'\.get_width\([^()]*\)', '2u'),
                 ('levels', r'\.get_num_mip_levels\(\)', '1u'),
+                ('levels_two', r'\.get_num_mip_levels\(\)', '2u'),
                 ('dimensions', r'\.(get_width|get_height|get_num_mip_levels)\([^()]*\)', None)):
             pattern = r's_textureCube[0-7]' + expression
             def replace_query(match):
