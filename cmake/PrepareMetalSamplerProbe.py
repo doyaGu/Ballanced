@@ -28,6 +28,19 @@ for name in ('FS_FF_STAGE', 'FS_FF_STAGE_NATIVE',
     source += 'v.position=float4(i==1?3.0:-1.0,i==2?3.0:-1.0,0.5,1); return v; }\n'
     (out / (name.lower() + '.metal')).write_text(source)
     if '_CUBE' in name:
+        for suffix, expression, value in (
+                ('width', r'\.get_width\([^()]*\)', '2u'),
+                ('levels', r'\.get_num_mip_levels\(\)', '1u'),
+                ('dimensions', r'\.(get_width|get_height|get_num_mip_levels)\([^()]*\)', None)):
+            pattern = r's_textureCube[0-7]' + expression
+            def replace_query(match):
+                return value if value else ('1u' if 'get_num_mip_levels' in match[0] else '2u')
+            changed, count = re.subn(pattern, replace_query, source)
+            assert count
+            (out / (name.lower() + '_' + suffix + '.metal')).write_text(changed)
+        changed, count = re.subn(r'(s_textureCube[0-7]\.sample\([^;]*?), bias\(', r'\1, level(', source)
+        assert count
+        (out / (name.lower() + '_explicit_lod.metal')).write_text(changed)
         # Compare native texture arrays without changing the production pack.
         for kind, resource, annotation in (
                 ('texturecube<float>', 's_textureCube', 'texture'),

@@ -40,7 +40,9 @@ int main(int argc, char **argv)
                 encoding:NSUTF8StringEncoding error:&error] mutableCopy];
             if (!source) { fprintf(stderr, "%s\n", error.description.UTF8String); return 4; }
         }
-        id<MTLLibrary> library = [device newLibraryWithSource:source options:nil error:&error];
+        MTLCompileOptions *options = [MTLCompileOptions new];
+        if (getenv("PROBE_METAL_PRECISE")) options.fastMathEnabled = NO;
+        id<MTLLibrary> library = [device newLibraryWithSource:source options:options error:&error];
         if (!library) { fprintf(stderr, "%s\n", error.description.UTF8String); return 4; }
         MTLRenderPipelineDescriptor *pipelineDesc = [MTLRenderPipelineDescriptor new];
         pipelineDesc.vertexFunction = [library newFunctionWithName:@"vs"];

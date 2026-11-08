@@ -138,6 +138,17 @@ jobs:
               if ($LASTEXITCODE -ne 0) { $failed = $true }
             }
           }
+          foreach ($suffix in @('width', 'levels', 'dimensions', 'explicit_lod')) {
+            foreach ($sampled in @(1, 8)) {
+              & build/gpu-crash/metal-samplers 8 $sampled 1 1 "build/gpu-crash/fs_ff_stage_cube_native_$suffix.metal" *> "build/gpu-crash/metal-isolate-$suffix-$sampled.log"
+              if ($LASTEXITCODE -ne 0) { $failed = $true }
+            }
+          }
+          $env:PROBE_METAL_PRECISE = '1'
+          foreach ($sampled in @(1, 8)) {
+            & build/gpu-crash/metal-samplers 8 $sampled 1 1 build/gpu-crash/fs_ff_stage_cube_native.metal *> "build/gpu-crash/metal-isolate-precise-$sampled.log"
+            if ($LASTEXITCODE -ne 0) { $failed = $true }
+          }
           if ($failed) { exit 1 }
       - name: Upload GPU inspection logs
         if: ${{ !cancelled() && startsWith(inputs.platform, 'macos-') }}
