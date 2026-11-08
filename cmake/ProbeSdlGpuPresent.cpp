@@ -35,9 +35,16 @@ static bool ProbeWindow(int mode, bool debug, bool independent)
     SDL_GPUDevice *device = NULL;
     if (independent) {
         char path[MAX_PATH];
-        if (!GetModuleFileNameA(NULL, path, MAX_PATH)) return false;
+        const DWORD length = GetModuleFileNameA(NULL, path, MAX_PATH);
+        if (!length || length >= MAX_PATH) {
+            pSDL_DestroyWindow(window);
+            return false;
+        }
         char *directory = strrchr(path, '\\');
-        if (!directory || strcpy_s(directory + 1, sizeof(path) - size_t(directory + 1 - path), "D3D12\\")) return false;
+        if (!directory || strcpy_s(directory + 1, sizeof(path) - size_t(directory + 1 - path), "D3D12\\")) {
+            pSDL_DestroyWindow(window);
+            return false;
+        }
         const SDL_PropertiesID props = pSDL_CreateProperties();
         const bool configured = props &&
             pSDL_SetBooleanProperty(props, SDL_PROP_GPU_DEVICE_CREATE_SHADERS_DXIL_BOOLEAN, true) &&
