@@ -12,17 +12,32 @@ __declspec(dllexport) const char *D3D12SDKPath = ".\\D3D12\\";
 }
 #endif
 
-static HRESULT ProbePresents(IDXGIFactory4 *factory, ID3D12Device *device, int windows)
+static HRESULT ProbePresents(IDXGIFactory4 *factory, ID3D12Device *device, int windows, int fenceMode)
 {
     D3D12_COMMAND_QUEUE_DESC queueDesc = {};
     ID3D12CommandQueue *queue = NULL;
     HRESULT result = device->CreateCommandQueue(&queueDesc, IID_PPV_ARGS(&queue));
     if (FAILED(result)) return result;
+    ID3D12Fence *fence = NULL;
+    HANDLE event = NULL;
+    UINT64 fenceValue = 0;
+    if (fenceMode) {
+        result = device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence));
+        if (FAILED(result)) { queue->Release(); return result; }
+        event = CreateEventW(NULL, FALSE, FALSE, NULL);
+        if (!event) { fence->Release(); queue->Release(); return HRESULT_FROM_WIN32(GetLastError()); }
+    }
     WNDCLASSW windowClass = {};
     windowClass.lpfnWndProc = DefWindowProcW;
     windowClass.hInstance = GetModuleHandleW(NULL);
     windowClass.lpszClassName = L"BallancedD3D12Probe";
-    if (!RegisterClassW(&windowClass)) { queue->Release(); return HRESULT_FROM_WIN32(GetLastError()); }
+    if (!RegisterClassW(&windowClass)) {
+        const HRESULT error = HRESULT_FROM_WIN32(GetLastError());
+        if (event) CloseHandle(event);
+        if (fence) fence->Release();
+        queue->Release();
+        return error;
+    }
     unsigned presented = 0;
     for (int i = 0; i < windows && SUCCEEDED(result); ++i) {
         HWND window = CreateWindowW(windowClass.lpszClassName, L"Direct3D presentation probe",
@@ -44,15 +59,30 @@ static HRESULT ProbePresents(IDXGIFactory4 *factory, ID3D12Device *device, int w
                 TranslateMessage(&message);
                 DispatchMessageW(&message);
             }
+            if (fence) {
+                if (fenceMode == 1) {
+                    result = fence->Signal(0);
+                    fenceValue = 1;
+                } else ++fenceValue;
+                if (SUCCEEDED(result)) result = queue->Signal(fence, fenceValue);
+                if (FAILED(result)) break;
+            }
             result = swapchain->Present(1, 0);
             if (result == S_OK) ++presented;
             else printf("Present window=%d frame=%u: 0x%08lx\n", i, frame, result);
+            if (fence && fence->GetCompletedValue() < fenceValue) {
+                const HRESULT wait = fence->SetEventOnCompletion(fenceValue, event);
+                if (FAILED(wait)) result = wait;
+                else if (WaitForSingleObject(event, 5000) != WAIT_OBJECT_0) result = E_FAIL;
+            }
         }
         if (swapchain) swapchain->Release();
         DestroyWindow(window);
     }
-    printf("Native DXGI presents: %u/%d result=0x%08lx\n", presented, windows * 5, result);
+    printf("Native DXGI presents: fence=%d %u/%d result=0x%08lx\n", fenceMode, presented, windows * 5, result);
     UnregisterClassW(windowClass.lpszClassName, windowClass.hInstance);
+    if (event) CloseHandle(event);
+    if (fence) fence->Release();
     queue->Release();
     return SUCCEEDED(result) && presented != unsigned(windows * 5) ? E_FAIL : result;
 }
@@ -81,7 +111,7 @@ int main(int argc, char **argv)
     adapter->Release();
     printf("D3D12CreateDevice(debug=%d): 0x%08lx\n", debug, result);
     if (SUCCEEDED(result) && argc > 2)
-        result = ProbePresents(factory, device, atoi(argv[2]));
+        result = ProbePresents(factory, device, atoi(argv[2]), argc > 3 ? atoi(argv[3]) : 0);
     factory->Release();
     const char *modules[] = {"D3D12Core.dll", "d3d12SDKLayers.dll", "d3d10warp.dll"};
     for (unsigned i = 0; i < sizeof(modules) / sizeof(modules[0]); ++i) {

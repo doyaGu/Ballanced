@@ -89,15 +89,21 @@ jobs:
           $failed = $false
           logman start BallancedNativePresent -p Microsoft-Windows-DXGI 0xffffffffffffffff -o build/gpu-crash/d3d12-native-present.etl -ets
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          foreach ($runtime in @('system', 'agility')) {
-            & "$binary/probe-$runtime.exe" 0 32 *> "build/gpu-crash/d3d12-$runtime-0.log"
-            Write-Host "$runtime debug=0 exit=$LASTEXITCODE"
+          foreach ($runtime in @('system', 'agility')) { foreach ($fence in @(0, 1, 2)) {
+            & "$binary/probe-$runtime.exe" 0 32 $fence *> "build/gpu-crash/d3d12-$runtime-fence-$fence-0.log"
+            Write-Host "$runtime fence=$fence debug=0 exit=$LASTEXITCODE"
             if ($runtime -eq 'agility' -and $LASTEXITCODE -ne 0) { $failed = $true }
-          }
+          } }
           foreach ($mode in @(0, 1, 2, 3)) {
             & "$binary/probe-sdl.exe" "$binary/SDL3.dll" $mode 0 *> "build/gpu-crash/d3d12-sdl-$mode-0.log"
             if ($LASTEXITCODE -ne 0) { $failed = $true }
           }
+          ./cmake/SetupWindowsWarp.ps1 -Architecture $architecture -Version 1.0.20 -DestinationDirectory $binary
+          foreach ($mode in @(0, 1, 2, 3)) {
+            & "$binary/probe-sdl.exe" "$binary/SDL3.dll" $mode 0 *> "build/gpu-crash/d3d12-warp20-sdl-$mode-0.log"
+            if ($LASTEXITCODE -ne 0) { $failed = $true }
+          }
+          ./cmake/SetupWindowsWarp.ps1 -Architecture $architecture -Version 1.0.22 -DestinationDirectory $binary
           logman stop BallancedNativePresent -ets
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           tracerpt build/gpu-crash/d3d12-native-present.etl -o build/gpu-crash/d3d12-native-present.xml -of XML -y
