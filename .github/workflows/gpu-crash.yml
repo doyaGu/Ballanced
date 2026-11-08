@@ -110,6 +110,31 @@ jobs:
               $log -match 'inspection failed:') {
             throw 'LLDB did not inspect a completed Metal sampler test; see metal-debugger.log'
           }
+      - name: Probe native Metal cube sampler layouts
+        if: ${{ !cancelled() && startsWith(inputs.platform, 'macos-') }}
+        shell: pwsh
+        run: |
+          xcrun clang++ -fobjc-arc -framework Foundation -framework Metal cmake/ProbeMetalSamplers.mm -o build/gpu-crash/metal-samplers
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $env:MTL_DEBUG_LAYER = '0'
+          $env:MTL_SHADER_VALIDATION = '0'
+          $failed = $false
+          foreach ($cubes in @(4, 8)) {
+            foreach ($sampled in @(1, 4, 5, 8) | Where-Object { $_ -le $cubes }) {
+              foreach ($mixed in @(0, 1)) { foreach ($alias in @(0, 1)) {
+                & build/gpu-crash/metal-samplers $cubes $sampled $mixed $alias *> "build/gpu-crash/metal-native-$cubes-$sampled-$mixed-$alias.log"
+                if ($LASTEXITCODE -ne 0) { $failed = $true }
+              } }
+            }
+          }
+          if ($failed) { exit 1 }
+      - name: Upload GPU inspection logs
+        if: ${{ !cancelled() && startsWith(inputs.platform, 'macos-') }}
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: gpu-inspection-${{ inputs.platform }}
+          path: build/gpu-crash/*.log
+          if-no-files-found: error
       - name: Start DXGI presentation events
         id: present-events
         if: ${{ !cancelled() && startsWith(inputs.platform, 'windows-') && steps.debugger.outcome == 'success' }}
