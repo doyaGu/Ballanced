@@ -37,7 +37,7 @@ for name in ('FS_FF_STAGE', 'FS_FF_STAGE_NATIVE',
                 declaration = f'{kind} {resource}{index}{suffix} [[{annotation}({4 + index})]]'
                 assert source.count(declaration) == 1
                 replacement = f'array<{kind}, 8> {resource}{suffix} [[{annotation}(4)]]' if index == 0 else ''
-                source = source.replace(declaration + (', ' if index else ''), replacement + (', ' if index == 0 else ''))
+                source = source.replace(declaration + (', ' if index else ''), replacement)
             source = re.sub(resource + r'([0-7])' + suffix + r'\b',
                             lambda match: resource + suffix + '[' + match[1] + ']', source)
         (out / (name.lower() + '_arrays.metal')).write_text(source)
