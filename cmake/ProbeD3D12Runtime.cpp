@@ -1,6 +1,7 @@
 #include <d3d12.h>
 #include <d3d12sdklayers.h>
 #include <dxgi1_4.h>
+#include <dxgi1_6.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -22,7 +23,19 @@ __declspec(dllexport) const char *D3D12SDKPath = ".\\D3D12\\";
 }
 #endif
 
-static HRESULT ProbePresents(IDXGIFactory4 *factory, ID3D12Device *device, int windows, int fenceMode, bool clear, bool tearing)
+static HRESULT SelectAdapter(IDXGIFactory4 *factory, bool preference, IDXGIAdapter **adapter)
+{
+    if (!preference) return factory->EnumWarpAdapter(IID_PPV_ARGS(adapter));
+    IDXGIFactory6 *factory6 = NULL;
+    HRESULT result = factory->QueryInterface(IID_PPV_ARGS(&factory6));
+    if (SUCCEEDED(result)) {
+        result = factory6->EnumAdapterByGpuPreference(0, DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE, IID_PPV_ARGS(adapter));
+        factory6->Release();
+    }
+    return result;
+}
+
+static HRESULT ProbePresents(IDXGIFactory4 *factory, ID3D12Device *device, int windows, int fenceMode, bool clear, bool tearing, bool association)
 {
     D3D12_COMMAND_QUEUE_DESC queueDesc = {};
     ID3D12CommandQueue *queue = NULL;
@@ -70,6 +83,14 @@ static HRESULT ProbePresents(IDXGIFactory4 *factory, ID3D12Device *device, int w
         desc.Flags = tearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
         IDXGISwapChain1 *swapchain = NULL;
         result = factory->CreateSwapChainForHwnd(queue, window, &desc, NULL, NULL, &swapchain);
+        if (association && SUCCEEDED(result)) {
+            IDXGIFactory1 *parent = NULL;
+            result = swapchain->GetParent(IID_PPV_ARGS(&parent));
+            if (SUCCEEDED(result)) {
+                result = parent->MakeWindowAssociation(window, DXGI_MWA_NO_WINDOW_CHANGES);
+                parent->Release();
+            }
+        }
         IDXGISwapChain3 *swapchain3 = NULL;
         ID3D12CommandAllocator *allocator = NULL;
         ID3D12GraphicsCommandList *commands = NULL;
@@ -162,7 +183,7 @@ static HRESULT ProbePresents(IDXGIFactory4 *factory, ID3D12Device *device, int w
 int main(int argc, char **argv)
 {
 #if defined(PROBE_SDL_WINDOW)
-    if (argc != 8) return 1;
+    if (argc != 8 && argc != 10) return 1;
     const HMODULE library = LoadLibraryA(argv[7]);
     if (!library) return 1;
 #define LOAD_SDL(name) p##name = reinterpret_cast<decltype(p##name)>(GetProcAddress(library, #name)); if (!p##name) return 1;
@@ -185,8 +206,13 @@ int main(int argc, char **argv)
     HRESULT result = CreateDXGIFactory1(IID_PPV_ARGS(&factory));
     if (FAILED(result)) return 3;
     IDXGIAdapter *adapter = NULL;
-    result = factory->EnumWarpAdapter(IID_PPV_ARGS(&adapter));
+    const bool preference = argc > 8 && atoi(argv[8]) != 0;
+    result = SelectAdapter(factory, preference, &adapter);
     if (FAILED(result)) { factory->Release(); return 4; }
+    DXGI_ADAPTER_DESC adapterDesc = {};
+    if (SUCCEEDED(adapter->GetDesc(&adapterDesc)))
+        printf("Adapter preference=%d luid=%08lx:%08lx name=%ls\n", preference,
+            adapterDesc.AdapterLuid.HighPart, adapterDesc.AdapterLuid.LowPart, adapterDesc.Description);
     ID3D12Device *device = NULL;
     result = D3D12CreateDevice(adapter, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&device));
     adapter->Release();
@@ -198,12 +224,13 @@ int main(int argc, char **argv)
             if (recreate && i) {
                 device->Release(); device = NULL;
                 IDXGIAdapter *warp = NULL;
-                result = factory->EnumWarpAdapter(IID_PPV_ARGS(&warp));
+                result = SelectAdapter(factory, preference, &warp);
                 if (SUCCEEDED(result)) result = D3D12CreateDevice(warp, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&device));
                 if (warp) warp->Release();
             }
             if (SUCCEEDED(result)) result = ProbePresents(factory, device, recreate ? 1 : windows,
-                argc > 3 ? atoi(argv[3]) : 0, argc > 4 && atoi(argv[4]) != 0, argc > 5 && atoi(argv[5]) != 0);
+                argc > 3 ? atoi(argv[3]) : 0, argc > 4 && atoi(argv[4]) != 0,
+                argc > 5 && atoi(argv[5]) != 0, argc > 9 && atoi(argv[9]) != 0);
         }
     }
     factory->Release();

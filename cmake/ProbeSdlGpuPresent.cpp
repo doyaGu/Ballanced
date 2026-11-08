@@ -87,7 +87,7 @@ static bool ProbeWindow(int mode, bool debug, bool independent)
         Uint32 w = 0, h = 0;
         if (!pSDL_WaitAndAcquireGPUSwapchainTexture(commands, window, &swapchain, &w, &h) || !swapchain)
             return fail("acquire swapchain");
-        if (!source) {
+        if (!source && mode < 4) {
             width = w; height = h;
             SDL_GPUTextureCreateInfo info = {};
             info.type = SDL_GPU_TEXTURETYPE_2D; info.format = format;
@@ -100,15 +100,18 @@ static bool ProbeWindow(int mode, bool debug, bool independent)
             download = pSDL_CreateGPUTransferBuffer(device, &transfer);
             if (!source || !download) return fail("create source/readback");
         }
-        if (w != width || h != height) return fail("unexpected swapchain resize");
+        if (mode < 4 && (w != width || h != height)) return fail("unexpected swapchain resize");
         SDL_GPUColorTargetInfo target = {};
         target.texture = source;
         target.clear_color = {0.2f, 0.4f, 0.6f, 1.0f};
         target.load_op = SDL_GPU_LOADOP_CLEAR; target.store_op = SDL_GPU_STOREOP_STORE;
-        SDL_GPURenderPass *pass = pSDL_BeginGPURenderPass(commands, &target, 1, NULL);
-        if (!pass) return fail("begin offscreen clear");
-        pSDL_EndGPURenderPass(pass);
-        if (mode == 0 || mode == 3) {
+        SDL_GPURenderPass *pass = NULL;
+        if (mode < 4) {
+            pass = pSDL_BeginGPURenderPass(commands, &target, 1, NULL);
+            if (!pass) return fail("begin offscreen clear");
+            pSDL_EndGPURenderPass(pass);
+        }
+        if (mode == 0 || mode == 3 || mode == 4) {
             target.texture = swapchain;
             pass = pSDL_BeginGPURenderPass(commands, &target, 1, NULL);
             if (!pass) return fail("begin swapchain clear");
@@ -120,14 +123,14 @@ static bool ProbeWindow(int mode, bool debug, bool independent)
             from.texture = source; to.texture = swapchain;
             pSDL_CopyGPUTextureToTexture(copy, &from, &to, width, height, 1, false);
             pSDL_EndGPUCopyPass(copy);
-        } else {
+        } else if (mode == 2) {
             SDL_GPUBlitInfo blit = {};
             blit.source = {source, 0, 0, 0, 0, width, height};
             blit.destination = {swapchain, 0, 0, 0, 0, width, height};
             blit.load_op = SDL_GPU_LOADOP_DONT_CARE; blit.filter = SDL_GPU_FILTER_LINEAR;
             pSDL_BlitGPUTexture(commands, &blit);
         }
-        if (mode != 3) {
+        if (mode < 3) {
             SDL_GPUCopyPass *copy = pSDL_BeginGPUCopyPass(commands);
             if (!copy) return fail("begin readback");
             SDL_GPUTextureRegion region = {};
@@ -142,7 +145,7 @@ static bool ProbeWindow(int mode, bool debug, bool independent)
         fence = pSDL_SubmitGPUCommandBufferAndAcquireFence(submitted);
         if (!fence) return fail("submit");
         if (!pSDL_WaitForGPUFences(device, true, &fence, 1)) return fail("wait");
-        if (mode == 3) {
+        if (mode >= 3) {
             pSDL_ReleaseGPUFence(device, fence);
             fence = NULL;
             continue;
@@ -174,7 +177,7 @@ int main(int argc, char **argv)
     PROBE_SDL_FUNCTIONS(LOAD_SDL)
 #undef LOAD_SDL
     const int mode = atoi(argv[2]);
-    if (mode < 0 || mode > 3 || !pSDL_Init(SDL_INIT_VIDEO)) return 4;
+    if (mode < 0 || mode > 5 || !pSDL_Init(SDL_INIT_VIDEO)) return 4;
     bool passed = true;
     unsigned windows = 0;
     const bool independent = argc == 5 && atoi(argv[4]) != 0;

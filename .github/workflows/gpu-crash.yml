@@ -96,7 +96,7 @@ jobs:
             Write-Host "$runtime fence=$fence debug=0 exit=$LASTEXITCODE"
             if ($runtime -eq 'agility' -and $LASTEXITCODE -ne 0) { $failed = $true }
           } }
-          foreach ($mode in @(0, 1, 2, 3)) {
+          foreach ($mode in @(0, 1, 2, 3, 4, 5)) {
             & "$binary/probe-sdl.exe" "$binary/SDL3.dll" $mode 0 *> "build/gpu-crash/d3d12-sdl-$mode-0.log"
             if ($LASTEXITCODE -ne 0) { $failed = $true }
             & "$binary/probe-sdl.exe" "$binary/SDL3.dll" $mode 0 1 *> "build/gpu-crash/d3d12-factory-sdl-$mode-0.log"
@@ -108,6 +108,10 @@ jobs:
             & "$binary/probe-sdl-window.exe" 0 32 2 $clear $tearing $recreate "$binary/SDL3.dll" *> "build/gpu-crash/d3d12-sdl-window-$clear-$tearing-$recreate.log"
             if ($LASTEXITCODE -ne 0) { $failed = $true }
           } } }
+          foreach ($preference in @(0, 1)) { foreach ($association in @(0, 1)) {
+            & "$binary/probe-sdl-window.exe" 0 32 2 1 1 0 "$binary/SDL3.dll" $preference $association *> "build/gpu-crash/d3d12-adapter-$preference-$association.log"
+            if ($LASTEXITCODE -ne 0) { $failed = $true }
+          } }
           logman stop BallancedNativePresent -ets
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           tracerpt build/gpu-crash/d3d12-native-present.etl -o build/gpu-crash/d3d12-native-present.xml -of XML -y
@@ -130,7 +134,7 @@ jobs:
           $binary = (Resolve-Path build/gpu-validation/symbols).Path
           & "$binary/probe-agility.exe" 1 32 *> build/gpu-crash/d3d12-agility-1.log
           $failed = $LASTEXITCODE -ne 0
-          foreach ($mode in @(0, 1, 2, 3)) {
+          foreach ($mode in @(0, 1, 2, 3, 4, 5)) {
             & "$binary/probe-sdl.exe" "$binary/SDL3.dll" $mode 1 *> "build/gpu-crash/d3d12-sdl-$mode-1.log"
             if ($LASTEXITCODE -ne 0) { $failed = $true }
             & "$binary/probe-sdl.exe" "$binary/SDL3.dll" $mode 1 1 *> "build/gpu-crash/d3d12-factory-sdl-$mode-1.log"
