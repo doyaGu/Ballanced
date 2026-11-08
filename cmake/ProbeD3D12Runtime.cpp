@@ -5,6 +5,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#if defined(PROBE_SDL_WINDOW)
+#include <SDL3/SDL.h>
+#define PROBE_SDL_FUNCTIONS(M) \
+    M(SDL_Init) M(SDL_Quit) M(SDL_CreateWindow) M(SDL_DestroyWindow) \
+    M(SDL_GetWindowProperties) M(SDL_GetPointerProperty) M(SDL_PumpEvents)
+#define DECLARE_SDL(name) static decltype(&name) p##name;
+PROBE_SDL_FUNCTIONS(DECLARE_SDL)
+#undef DECLARE_SDL
+#endif
+
 #if defined(PROBE_D3D12_SDK_VERSION)
 extern "C" {
 __declspec(dllexport) extern const UINT D3D12SDKVersion = PROBE_D3D12_SDK_VERSION;
@@ -40,9 +50,15 @@ static HRESULT ProbePresents(IDXGIFactory4 *factory, ID3D12Device *device, int w
     }
     unsigned presented = 0;
     for (int i = 0; i < windows && SUCCEEDED(result); ++i) {
+#if defined(PROBE_SDL_WINDOW)
+        SDL_Window *sdlWindow = pSDL_CreateWindow("Native DXGI on SDL window", 640, 480, SDL_WINDOW_RESIZABLE);
+        HWND window = sdlWindow ? static_cast<HWND>(pSDL_GetPointerProperty(
+            pSDL_GetWindowProperties(sdlWindow), SDL_PROP_WINDOW_WIN32_HWND_POINTER, NULL)) : NULL;
+#else
         HWND window = CreateWindowW(windowClass.lpszClassName, L"Direct3D presentation probe",
             WS_OVERLAPPEDWINDOW | WS_VISIBLE, CW_USEDEFAULT, CW_USEDEFAULT, 640, 480,
             NULL, NULL, windowClass.hInstance, NULL);
+#endif
         if (!window) { result = HRESULT_FROM_WIN32(GetLastError()); break; }
         DXGI_SWAP_CHAIN_DESC1 desc = {};
         desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
@@ -69,11 +85,15 @@ static HRESULT ProbePresents(IDXGIFactory4 *factory, ID3D12Device *device, int w
             if (SUCCEEDED(result)) result = device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&heap));
         }
         for (unsigned frame = 0; frame < 5 && SUCCEEDED(result); ++frame) {
+#if defined(PROBE_SDL_WINDOW)
+            pSDL_PumpEvents();
+#else
             MSG message;
             while (PeekMessageW(&message, NULL, 0, 0, PM_REMOVE)) {
                 TranslateMessage(&message);
                 DispatchMessageW(&message);
             }
+#endif
             if (clear) {
                 ID3D12Resource *buffer = NULL;
                 result = swapchain3->GetBuffer(swapchain3->GetCurrentBackBufferIndex(), IID_PPV_ARGS(&buffer));
@@ -125,7 +145,11 @@ static HRESULT ProbePresents(IDXGIFactory4 *factory, ID3D12Device *device, int w
         if (allocator) allocator->Release();
         if (swapchain3) swapchain3->Release();
         if (swapchain) swapchain->Release();
+#if defined(PROBE_SDL_WINDOW)
+        pSDL_DestroyWindow(sdlWindow);
+#else
         DestroyWindow(window);
+#endif
     }
     printf("Native DXGI presents: fence=%d clear=%d tearing=%d %u/%d result=0x%08lx\n", fenceMode, clear, tearing, presented, windows * 5, result);
     UnregisterClassW(windowClass.lpszClassName, windowClass.hInstance);
@@ -137,6 +161,15 @@ static HRESULT ProbePresents(IDXGIFactory4 *factory, ID3D12Device *device, int w
 
 int main(int argc, char **argv)
 {
+#if defined(PROBE_SDL_WINDOW)
+    if (argc != 8) return 1;
+    const HMODULE library = LoadLibraryA(argv[7]);
+    if (!library) return 1;
+#define LOAD_SDL(name) p##name = reinterpret_cast<decltype(p##name)>(GetProcAddress(library, #name)); if (!p##name) return 1;
+    PROBE_SDL_FUNCTIONS(LOAD_SDL)
+#undef LOAD_SDL
+    if (!pSDL_Init(SDL_INIT_VIDEO)) return 1;
+#endif
     if (argc > 2 && atoi(argv[2]) <= 0) return 1;
     printf("Native process=%lu\n", GetCurrentProcessId());
     const bool debug = argc > 1 && atoi(argv[1]) != 0;
@@ -182,5 +215,9 @@ int main(int argc, char **argv)
             printf("%s: %s\n", modules[i], path);
     }
     if (device) device->Release();
+#if defined(PROBE_SDL_WINDOW)
+    pSDL_Quit();
+    FreeLibrary(library);
+#endif
     return SUCCEEDED(result) ? 0 : 5;
 }

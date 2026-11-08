@@ -86,6 +86,8 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           cl /nologo /EHsc /O2 "/I$sdlSource/include" cmake/ProbeSdlGpuPresent.cpp "/Fo$binary/probe-sdl.obj" "/Fe$binary/probe-sdl.exe"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cl /nologo /EHsc /O2 /DPROBE_SDL_WINDOW /DPROBE_D3D12_SDK_VERSION=620 "/I$sdlSource/include" cmake/ProbeD3D12Runtime.cpp "/Fo$binary/probe-sdl-window.obj" "/Fe$binary/probe-sdl-window.exe" d3d12.lib dxgi.lib user32.lib
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           $failed = $false
           logman start BallancedNativePresent -p Microsoft-Windows-DXGI 0xffffffffffffffff -o build/gpu-crash/d3d12-native-present.etl -ets
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
@@ -102,6 +104,8 @@ jobs:
           }
           foreach ($clear in @(0, 1)) { foreach ($tearing in @(0, 1)) { foreach ($recreate in @(0, 1)) {
             & "$binary/probe-agility.exe" 0 32 2 $clear $tearing $recreate *> "build/gpu-crash/d3d12-work-$clear-$tearing-$recreate.log"
+            if ($LASTEXITCODE -ne 0) { $failed = $true }
+            & "$binary/probe-sdl-window.exe" 0 32 2 $clear $tearing $recreate "$binary/SDL3.dll" *> "build/gpu-crash/d3d12-sdl-window-$clear-$tearing-$recreate.log"
             if ($LASTEXITCODE -ne 0) { $failed = $true }
           } } }
           logman stop BallancedNativePresent -ets
