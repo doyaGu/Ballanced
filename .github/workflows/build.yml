@@ -216,7 +216,7 @@ jobs:
       if: ${{ github.event_name == 'workflow_dispatch' && inputs.gpu-debug && (startsWith(matrix.platform.name, 'macos-') || startsWith(matrix.platform.name, 'windows-')) && matrix.linkage.name == 'runtime' && (inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name)) }}
       run: |
         $buildRoot = "build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }}"
-        cmake --build $buildRoot --config Release --target ckre_scene_capture --parallel $([Environment]::ProcessorCount)
+        cmake --build $buildRoot --config Release --target ckre_scene_capture sdl_gpu_ffp_pixel_tests --parallel $([Environment]::ProcessorCount)
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
         $captureRoot = "$buildRoot/gpu-validation"
         New-Item -ItemType Directory -Force -Path $captureRoot | Out-Null
@@ -249,6 +249,9 @@ jobs:
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           }
         }
+        $pixelTool = if ($IsWindows) { "$buildRoot/bin/Release/sdl_gpu_ffp_pixel_tests.exe" } else { "$buildRoot/bin/sdl_gpu_ffp_pixel_tests" }
+        & $pixelTool --visible *> "$captureRoot/fixed-function-pixels.log"
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
     - name: Upload GPU validation frames
       if: ${{ !cancelled() && github.event_name == 'workflow_dispatch' && inputs.gpu-debug && (startsWith(matrix.platform.name, 'macos-') || startsWith(matrix.platform.name, 'windows-')) && matrix.linkage.name == 'runtime' && (inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name)) }}
