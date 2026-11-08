@@ -76,17 +76,21 @@ jobs:
         run: |
           $architecture = '${{ inputs.platform }}'.Substring(8)
           $visualStudio = & "${env:ProgramFiles(x86)}/Microsoft Visual Studio/Installer/vswhere.exe" -latest -products '*' -property installationPath
-          & "$visualStudio/Common7/Tools/Launch-VsDevShell.ps1" -Arch $architecture -HostArch amd64 -SkipAutomaticLocation
+          $compilerArchitecture = $architecture -eq 'x64' ? 'amd64' : $architecture
+          & "$visualStudio/Common7/Tools/Launch-VsDevShell.ps1" -Arch $compilerArchitecture -HostArch amd64 -SkipAutomaticLocation
           $binary = (Resolve-Path build/gpu-validation/symbols).Path
           ./cmake/SetupWindowsD3D12.ps1 -Architecture $architecture -DestinationDirectory "$binary/D3D12"
-          cl /nologo /EHsc /O2 cmake/ProbeD3D12Runtime.cpp "/Fo:$binary/probe-system.obj" "/Fe:$binary/probe-system.exe" d3d12.lib dxgi.lib
+          cl /nologo /EHsc /O2 cmake/ProbeD3D12Runtime.cpp "/Fo$binary/probe-system.obj" "/Fe$binary/probe-system.exe" d3d12.lib dxgi.lib
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          cl /nologo /EHsc /O2 /DPROBE_D3D12_SDK_VERSION=620 cmake/ProbeD3D12Runtime.cpp "/Fo:$binary/probe-agility.obj" "/Fe:$binary/probe-agility.exe" d3d12.lib dxgi.lib
+          cl /nologo /EHsc /O2 /DPROBE_D3D12_SDK_VERSION=620 cmake/ProbeD3D12Runtime.cpp "/Fo$binary/probe-agility.obj" "/Fe$binary/probe-agility.exe" d3d12.lib dxgi.lib
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $failed = $false
           foreach ($runtime in @('system', 'agility')) { foreach ($debug in @(0, 1)) {
             & "$binary/probe-$runtime.exe" $debug *> "build/gpu-crash/d3d12-$runtime-$debug.log"
             Write-Host "$runtime debug=$debug exit=$LASTEXITCODE"
+            if ($runtime -eq 'agility' -and $LASTEXITCODE -ne 0) { $failed = $true }
           } }
+          if ($failed) { throw 'Agility SDK could not create the WARP device; see d3d12-agility logs' }
       - name: Verify Metal sampler clipping and readback pixels
         if: ${{ startsWith(inputs.platform, 'macos-') }}
         shell: pwsh

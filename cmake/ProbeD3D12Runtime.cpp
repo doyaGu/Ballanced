@@ -1,4 +1,5 @@
 #include <d3d12.h>
+#include <d3d12sdklayers.h>
 #include <dxgi1_4.h>
 
 #include <stdio.h>
@@ -36,7 +37,8 @@ int main(int argc, char **argv)
     const char *modules[] = {"D3D12Core.dll", "d3d12SDKLayers.dll", "d3d10warp.dll"};
     for (unsigned i = 0; i < sizeof(modules) / sizeof(modules[0]); ++i) {
         char path[MAX_PATH];
-        if (GetModuleFileNameA(GetModuleHandleA(modules[i]), path, MAX_PATH))
+        const HMODULE module = GetModuleHandleA(modules[i]);
+        if (module && GetModuleFileNameA(module, path, MAX_PATH))
             printf("%s: %s\n", modules[i], path);
     }
     if (device) device->Release();
