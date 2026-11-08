@@ -65,15 +65,11 @@ jobs:
         env:
           CAPTURE_PLATFORM: ${{ inputs.platform }}
         run: ./cmake/SetupWindowsWarp.ps1 -Architecture $env:CAPTURE_PLATFORM.Substring(8) -DestinationDirectory build/gpu-validation/symbols
-      - name: Capture the access violation with CDB
-        id: debugger
-        if: ${{ startsWith(inputs.platform, 'windows-') }}
-        shell: pwsh
-        run: ./cmake/DebugGpuCapture.ps1 -BinaryDirectory build/gpu-validation/symbols -OutputDirectory build/gpu-crash -Scene $env:CAPTURE_SCENE -Frames $env:CAPTURE_FRAMES -TracePresent:($env:CAPTURE_TRACE_PRESENT -eq 'true') -FirstChance:($env:CAPTURE_FIRST_CHANCE -eq 'true')
       - name: Compare Direct3D runtime device creation
         if: ${{ !cancelled() && startsWith(inputs.platform, 'windows-') && inputs.platform != 'windows-arm64' }}
         shell: pwsh
         run: |
+          New-Item -ItemType Directory -Force build/gpu-crash | Out-Null
           $architecture = '${{ inputs.platform }}'.Substring(8)
           $visualStudio = & "${env:ProgramFiles(x86)}/Microsoft Visual Studio/Installer/vswhere.exe" -latest -products '*' -property installationPath
           $compilerArchitecture = $architecture -eq 'x64' ? 'amd64' : $architecture
@@ -91,6 +87,18 @@ jobs:
             if ($runtime -eq 'agility' -and $LASTEXITCODE -ne 0) { $failed = $true }
           } }
           if ($failed) { throw 'Agility SDK could not create the WARP device; see d3d12-agility logs' }
+      - name: Upload Direct3D runtime comparison
+        if: ${{ !cancelled() && startsWith(inputs.platform, 'windows-') && inputs.platform != 'windows-arm64' }}
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: d3d12-runtime-${{ inputs.platform }}
+          path: build/gpu-crash/d3d12-*.log
+          if-no-files-found: error
+      - name: Capture the access violation with CDB
+        id: debugger
+        if: ${{ startsWith(inputs.platform, 'windows-') }}
+        shell: pwsh
+        run: ./cmake/DebugGpuCapture.ps1 -BinaryDirectory build/gpu-validation/symbols -OutputDirectory build/gpu-crash -Scene $env:CAPTURE_SCENE -Frames $env:CAPTURE_FRAMES -TracePresent:($env:CAPTURE_TRACE_PRESENT -eq 'true') -FirstChance:($env:CAPTURE_FIRST_CHANCE -eq 'true')
       - name: Verify Metal sampler clipping and readback pixels
         if: ${{ startsWith(inputs.platform, 'macos-') }}
         shell: pwsh
