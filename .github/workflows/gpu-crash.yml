@@ -24,7 +24,7 @@ permissions:
 jobs:
   capture:
     runs-on: ${{ inputs.platform == 'windows-arm64' && 'windows-11-arm' || 'windows-2022' }}
-    timeout-minutes: 15
+    timeout-minutes: 30
     env:
       CKRE_SDL_GPU_DRIVER: direct3d12
       CKRE_SDL_GPU_DEBUG: '1'
@@ -45,13 +45,24 @@ jobs:
       - name: Capture the access violation with CDB
         shell: pwsh
         run: ./cmake/DebugGpuCapture.ps1 -BinaryDirectory build/gpu-validation/symbols -OutputDirectory build/gpu-crash -FirstChance:($env:CAPTURE_FIRST_CHANCE -eq 'true')
+      - name: Verify scene images and JIT replay
+        shell: pwsh
+        run: |
+          git submodule update --init --depth 1 Source/RenderEngine
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $engine = (Resolve-Path build/gpu-validation/symbols).Path
+          $tool = Join-Path $engine 'ckre_scene_capture.exe'
+          cmake "-DTOOL=$tool" "-DENGINE_DIR=$engine" `
+            "-DGOLDEN_ROOT=$PWD/Source/RenderEngine/tests/reference/frames/golden" `
+            "-DOUT_DIR=$PWD/build/gpu-crash/scenes" -P Source/RenderEngine/tests/scene_capture_golden.cmake
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python Source/RenderEngine/tests/scene_capture_jit.py --tool $tool --engine-dir $engine `
+            --out build/gpu-crash/jit --drivers direct3d12 --scenes cube_filter_dynamic,cube_mip_dynamic,rtt_cube
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Upload crash diagnostics
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v7.0.1
         with:
           name: gpu-crash-${{ inputs.platform }}
-          path: |
-            build/gpu-crash/*.log
-            build/gpu-crash/*.dmp
-            build/gpu-crash/*.png
+          path: build/gpu-crash/
           if-no-files-found: error

@@ -212,6 +212,12 @@ jobs:
       if: ${{ github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name) }}
       run: cmake --build --preset ${{ matrix.platform.preset }}-${{ matrix.linkage.name }}-stage-release --parallel $([Environment]::ProcessorCount)
 
+    - name: Setup Windows software rasterizer
+      if: ${{ startsWith(matrix.platform.name, 'windows-') && (github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name)) }}
+      run: |
+        $architecture = '${{ matrix.platform.name }}'.Substring(8)
+        ./cmake/SetupWindowsWarp.ps1 -Architecture $architecture -DestinationDirectory "build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }}/bin/Release"
+
     - name: Capture GPU validation frames
       if: ${{ github.event_name == 'workflow_dispatch' && inputs.gpu-debug && (startsWith(matrix.platform.name, 'macos-') || startsWith(matrix.platform.name, 'windows-')) && matrix.linkage.name == 'runtime' && (inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name)) }}
       run: |
@@ -251,8 +257,7 @@ jobs:
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           }
         }
-        $pixelTool = if ($IsWindows) { "$buildRoot/bin/Release/sdl_gpu_ffp_pixel_tests.exe" } else { "$buildRoot/bin/sdl_gpu_ffp_pixel_tests" }
-        & $pixelTool --visible *> "$captureRoot/fixed-function-pixels.log"
+        ctest --test-dir $buildRoot -C Release -R '^sdl_gpu_(ffp|sampler|clipping|readback)_pixel_tests$' --output-on-failure --no-tests=error *> "$captureRoot/fixed-function-pixels.log"
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
     - name: Upload GPU validation frames

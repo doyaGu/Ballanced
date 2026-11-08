@@ -8,6 +8,11 @@ param(
 $ErrorActionPreference = 'Stop'
 $binaryRoot = (Resolve-Path -LiteralPath $BinaryDirectory).Path
 $outputRoot = (New-Item -ItemType Directory -Force -Path $OutputDirectory).FullName
+foreach ($name in @('debugger.log', 'crash.dmp', 'opaque_lit.png')) {
+    if (Test-Path -LiteralPath (Join-Path $outputRoot $name)) {
+        throw 'GPU crash diagnostics require a fresh output directory'
+    }
+}
 $tool = Join-Path $binaryRoot 'ckre_scene_capture.exe'
 if (-not (Test-Path -LiteralPath $tool -PathType Leaf)) {
     throw "Scene capture executable not found: $tool"
