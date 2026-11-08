@@ -39,7 +39,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: build-${{ github.workflow }}-${{ github.ref }}
+  group: build-${{ github.workflow }}-${{ github.ref }}-${{ inputs.target || 'all' }}
   cancel-in-progress: true
 
 jobs:
@@ -193,6 +193,25 @@ jobs:
     - name: Build
       if: ${{ github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name) }}
       run: cmake --build --preset ${{ matrix.platform.preset }}-${{ matrix.linkage.name }}-stage-release
+
+    - name: Capture Metal validation frames
+      if: ${{ github.event_name == 'workflow_dispatch' && inputs.gpu-debug && startsWith(matrix.platform.name, 'macos-') && matrix.linkage.name == 'runtime' && (inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name)) }}
+      run: |
+        $buildRoot = "build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }}"
+        $captureRoot = "$buildRoot/metal-validation"
+        New-Item -ItemType Directory -Force -Path $captureRoot | Out-Null
+        & "$buildRoot/bin/ckre_scene_capture" --render-engine-dir "$buildRoot/lib" --rasterizer sdlgpu --scene all --frames 5 --capture-frames 1,5 --verbose --out $captureRoot *> "$captureRoot/capture.log"
+        $captureExit = $LASTEXITCODE
+        Write-Host "Metal capture exit code: $captureExit; log: $captureRoot/capture.log"
+        exit $captureExit
+
+    - name: Upload Metal validation frames
+      if: ${{ !cancelled() && github.event_name == 'workflow_dispatch' && inputs.gpu-debug && startsWith(matrix.platform.name, 'macos-') && matrix.linkage.name == 'runtime' && (inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name)) }}
+      uses: actions/upload-artifact@v7.0.1
+      with:
+        name: metal-validation-${{ matrix.platform.name }}
+        path: build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }}/metal-validation/
+        if-no-files-found: ignore
 
     - name: Build tests
       if: ${{ github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name) }}
