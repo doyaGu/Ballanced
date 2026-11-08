@@ -110,6 +110,11 @@ jobs:
               $log -match 'inspection failed:') {
             throw 'LLDB did not inspect a completed Metal sampler test; see metal-debugger.log'
           }
+      - name: Start DXGI presentation events
+        id: present-events
+        if: ${{ !cancelled() && startsWith(inputs.platform, 'windows-') && steps.debugger.outcome == 'success' }}
+        shell: pwsh
+        run: logman start BallancedGpuPresent -p Microsoft-Windows-DXGI 0xffffffffffffffff -o build/gpu-crash/dxgi-present.etl -ets
       - name: Verify scene images
         if: ${{ !cancelled() && (startsWith(inputs.platform, 'macos-') || steps.debugger.outcome == 'success') }}
         shell: pwsh
@@ -129,6 +134,13 @@ jobs:
             "-DGOLDEN_ROOT=$PWD/Source/RenderEngine/tests/reference/frames/golden" `
             "-DOUT_DIR=$PWD/build/gpu-crash/scenes" -P Source/RenderEngine/tests/scene_capture_golden.cmake
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Collect DXGI presentation events
+        if: ${{ !cancelled() && steps.present-events.outcome == 'success' }}
+        shell: pwsh
+        run: |
+          logman stop BallancedGpuPresent -ets
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          tracerpt build/gpu-crash/dxgi-present.etl -o build/gpu-crash/dxgi-present.xml -of XML -y
       - name: Verify JIT replay
         if: ${{ !cancelled() && steps.debugger.outcome == 'success' }}
         shell: pwsh
