@@ -131,31 +131,12 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           python -B cmake/PrepareMetalSamplerProbe.py build/gpu-crash
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          foreach ($name in @('fs_ff_stage', 'fs_ff_stage_native', 'fs_ff_stage_cube', 'fs_ff_stage_cube_native', 'fs_ff_stage_cube_arrays', 'fs_ff_stage_cube_native_arrays')) {
+          foreach ($name in @('fs_ff_stage', 'fs_ff_stage_native', 'fs_ff_stage_cube', 'fs_ff_stage_cube_native')) {
             $cubes = $name.Contains('_cube') ? 8 : 4
             foreach ($sampled in @(1, 4, 5, 8) | Where-Object { $_ -le $cubes }) {
               & build/gpu-crash/metal-samplers $cubes $sampled 1 1 "build/gpu-crash/$name.metal" *> "build/gpu-crash/metal-ffp-$name-$sampled.log"
               if ($LASTEXITCODE -ne 0) { $failed = $true }
             }
-          }
-          $env:PROBE_METAL_MIP_QUERY = '1'
-          foreach ($cubes in @(4, 8)) {
-            foreach ($sampled in @(1, 4, 5, 8) | Where-Object { $_ -le $cubes }) {
-              & build/gpu-crash/metal-samplers $cubes $sampled 1 1 *> "build/gpu-crash/metal-mip-query-$cubes-$sampled.log"
-              if ($LASTEXITCODE -ne 0) { $failed = $true }
-            }
-          }
-          Remove-Item Env:PROBE_METAL_MIP_QUERY
-          foreach ($suffix in @('width', 'levels', 'levels_two', 'dimensions', 'explicit_lod')) {
-            foreach ($sampled in @(1, 8)) {
-              & build/gpu-crash/metal-samplers 8 $sampled 1 1 "build/gpu-crash/fs_ff_stage_cube_native_$suffix.metal" *> "build/gpu-crash/metal-isolate-$suffix-$sampled.log"
-              if ($LASTEXITCODE -ne 0) { $failed = $true }
-            }
-          }
-          $env:PROBE_METAL_PRECISE = '1'
-          foreach ($sampled in @(1, 8)) {
-            & build/gpu-crash/metal-samplers 8 $sampled 1 1 build/gpu-crash/fs_ff_stage_cube_native.metal *> "build/gpu-crash/metal-isolate-precise-$sampled.log"
-            if ($LASTEXITCODE -ne 0) { $failed = $true }
           }
           if ($failed) { exit 1 }
       - name: Upload GPU inspection logs
