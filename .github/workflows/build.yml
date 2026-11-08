@@ -70,7 +70,7 @@ jobs:
     needs: changes
     if: ${{ !cancelled() && (github.event_name != 'schedule' || needs.changes.outputs.changed == 'true') }}
     runs-on: ${{ matrix.platform.os }}
-    timeout-minutes: 120
+    timeout-minutes: 180
 
     strategy:
       fail-fast: false

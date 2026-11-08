@@ -41,6 +41,7 @@ jobs:
       CKRE_SDL_GPU_DRIVER: ${{ startsWith(inputs.platform, 'macos-') && 'metal' || 'direct3d12' }}
       CKRE_SDL_GPU_DEBUG: '1'
       MTL_DEBUG_LAYER: '1'
+      MTL_SHADER_VALIDATION: '1'
       CAPTURE_FIRST_CHANCE: ${{ inputs.first-chance }}
       CAPTURE_SCENE: ${{ inputs.scene }}
       CAPTURE_TRACE_PRESENT: ${{ inputs.trace-present }}
@@ -78,6 +79,13 @@ jobs:
             if ($LASTEXITCODE -ne 0) { $failed = $true }
           }
           if ($failed) { exit 1 }
+      - name: Collect Metal command errors
+        if: ${{ !cancelled() && startsWith(inputs.platform, 'macos-') }}
+        shell: pwsh
+        run: |
+          sudo /usr/bin/log show --last 10m --style compact `
+            --predicate 'process == "sdl_gpu_ffp_pixel_tests" OR eventMessage CONTAINS[c] "GPU"' `
+            *> build/gpu-crash/metal-system.log
       - name: Verify scene images
         if: ${{ !cancelled() && (startsWith(inputs.platform, 'macos-') || steps.debugger.outcome == 'success') }}
         shell: pwsh
