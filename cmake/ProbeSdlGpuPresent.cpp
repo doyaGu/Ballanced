@@ -10,7 +10,7 @@ __declspec(dllexport) const char *D3D12SDKPath = ".\\D3D12\\";
 }
 
 #define PROBE_SDL_FUNCTIONS(M) \
-    M(SDL_Init) M(SDL_Quit) M(SDL_GetError) M(SDL_CreateWindow) M(SDL_DestroyWindow) \
+    M(SDL_Init) M(SDL_Quit) M(SDL_GetError) M(SDL_ClearError) M(SDL_CreateWindow) M(SDL_DestroyWindow) \
     M(SDL_PumpEvents) M(SDL_CreateGPUDevice) M(SDL_DestroyGPUDevice) \
     M(SDL_SetGPUAllowedFramesInFlight) M(SDL_ClaimWindowForGPUDevice) \
     M(SDL_ReleaseWindowFromGPUDevice) M(SDL_SetGPUSwapchainParameters) \
@@ -88,7 +88,7 @@ static bool ProbeWindow(int mode, bool debug)
         SDL_GPURenderPass *pass = pSDL_BeginGPURenderPass(commands, &target, 1, NULL);
         if (!pass) return fail("begin offscreen clear");
         pSDL_EndGPURenderPass(pass);
-        if (mode == 0) {
+        if (mode == 0 || mode == 3) {
             target.texture = swapchain;
             pass = pSDL_BeginGPURenderPass(commands, &target, 1, NULL);
             if (!pass) return fail("begin swapchain clear");
@@ -107,17 +107,26 @@ static bool ProbeWindow(int mode, bool debug)
             blit.load_op = SDL_GPU_LOADOP_DONT_CARE; blit.filter = SDL_GPU_FILTER_LINEAR;
             pSDL_BlitGPUTexture(commands, &blit);
         }
-        SDL_GPUCopyPass *copy = pSDL_BeginGPUCopyPass(commands);
-        if (!copy) return fail("begin readback");
-        SDL_GPUTextureRegion region = {};
-        region.texture = source; region.w = width; region.h = height; region.d = 1;
-        SDL_GPUTextureTransferInfo output = {download, 0, 0};
-        pSDL_DownloadFromGPUTexture(copy, &region, &output);
-        pSDL_EndGPUCopyPass(copy);
+        if (mode != 3) {
+            SDL_GPUCopyPass *copy = pSDL_BeginGPUCopyPass(commands);
+            if (!copy) return fail("begin readback");
+            SDL_GPUTextureRegion region = {};
+            region.texture = source; region.w = width; region.h = height; region.d = 1;
+            SDL_GPUTextureTransferInfo output = {download, 0, 0};
+            pSDL_DownloadFromGPUTexture(copy, &region, &output);
+            pSDL_EndGPUCopyPass(copy);
+        }
         SDL_GPUCommandBuffer *submitted = commands;
         commands = NULL;
+        pSDL_ClearError();
         fence = pSDL_SubmitGPUCommandBufferAndAcquireFence(submitted);
-        if (!fence || !pSDL_WaitForGPUFences(device, true, &fence, 1)) return fail("submit/wait");
+        if (!fence) return fail("submit");
+        if (!pSDL_WaitForGPUFences(device, true, &fence, 1)) return fail("wait");
+        if (mode == 3) {
+            pSDL_ReleaseGPUFence(device, fence);
+            fence = NULL;
+            continue;
+        }
         const Uint8 *pixels = static_cast<const Uint8 *>(pSDL_MapGPUTransferBuffer(device, download, false));
         if (!pixels) return fail("map readback");
         const Uint8 first = format == SDL_GPU_TEXTUREFORMAT_B8G8R8A8_UNORM ? 153 : 51;
@@ -138,13 +147,14 @@ static bool ProbeWindow(int mode, bool debug)
 int main(int argc, char **argv)
 {
     if (argc != 4) return 1;
+    printf("SDL process=%lu\n", GetCurrentProcessId());
     HMODULE library = LoadLibraryA(argv[1]);
     if (!library) return 2;
 #define LOAD_SDL(name) p##name = reinterpret_cast<decltype(p##name)>(GetProcAddress(library, #name)); if (!p##name) return 3;
     PROBE_SDL_FUNCTIONS(LOAD_SDL)
 #undef LOAD_SDL
     const int mode = atoi(argv[2]);
-    if (mode < 0 || mode > 2 || !pSDL_Init(SDL_INIT_VIDEO)) return 4;
+    if (mode < 0 || mode > 3 || !pSDL_Init(SDL_INIT_VIDEO)) return 4;
     bool passed = true;
     unsigned windows = 0;
     for (; windows < 32 && passed; ++windows) passed = ProbeWindow(mode, atoi(argv[3]) != 0);

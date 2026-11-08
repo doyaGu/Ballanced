@@ -87,22 +87,30 @@ jobs:
           cl /nologo /EHsc /O2 "/I$sdlSource/include" cmake/ProbeSdlGpuPresent.cpp "/Fo$binary/probe-sdl.obj" "/Fe$binary/probe-sdl.exe"
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           $failed = $false
+          logman start BallancedNativePresent -p Microsoft-Windows-DXGI 0xffffffffffffffff -o build/gpu-crash/d3d12-native-present.etl -ets
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           foreach ($runtime in @('system', 'agility')) {
             & "$binary/probe-$runtime.exe" 0 32 *> "build/gpu-crash/d3d12-$runtime-0.log"
             Write-Host "$runtime debug=0 exit=$LASTEXITCODE"
             if ($runtime -eq 'agility' -and $LASTEXITCODE -ne 0) { $failed = $true }
           }
-          foreach ($mode in @(0, 1, 2)) {
+          foreach ($mode in @(0, 1, 2, 3)) {
             & "$binary/probe-sdl.exe" "$binary/SDL3.dll" $mode 0 *> "build/gpu-crash/d3d12-sdl-$mode-0.log"
             if ($LASTEXITCODE -ne 0) { $failed = $true }
           }
+          logman stop BallancedNativePresent -ets
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          tracerpt build/gpu-crash/d3d12-native-present.etl -o build/gpu-crash/d3d12-native-present.xml -of XML -y
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           if ($failed) { throw 'Native presentation probes failed; see d3d12 logs' }
       - name: Upload Direct3D runtime comparison
         if: ${{ !cancelled() && startsWith(inputs.platform, 'windows-') }}
         uses: actions/upload-artifact@v7.0.1
         with:
           name: d3d12-runtime-${{ inputs.platform }}
-          path: build/gpu-crash/d3d12-*.log
+          path: |
+            build/gpu-crash/d3d12-*.log
+            build/gpu-crash/d3d12-native-present.xml
           if-no-files-found: error
       - name: Verify native Direct3D debug layers
         if: ${{ !cancelled() && startsWith(inputs.platform, 'windows-') }}
@@ -122,7 +130,7 @@ jobs:
           $binary = (Resolve-Path build/gpu-validation/symbols).Path
           & "$binary/probe-agility.exe" 1 32 *> build/gpu-crash/d3d12-agility-1.log
           $failed = $LASTEXITCODE -ne 0
-          foreach ($mode in @(0, 1, 2)) {
+          foreach ($mode in @(0, 1, 2, 3)) {
             & "$binary/probe-sdl.exe" "$binary/SDL3.dll" $mode 1 *> "build/gpu-crash/d3d12-sdl-$mode-1.log"
             if ($LASTEXITCODE -ne 0) { $failed = $true }
           }
@@ -136,7 +144,7 @@ jobs:
           if-no-files-found: error
       - name: Capture the access violation with CDB
         id: debugger
-        if: ${{ startsWith(inputs.platform, 'windows-') }}
+        if: ${{ !cancelled() && startsWith(inputs.platform, 'windows-') }}
         shell: pwsh
         run: ./cmake/DebugGpuCapture.ps1 -BinaryDirectory build/gpu-validation/symbols -OutputDirectory build/gpu-crash -Scene $env:CAPTURE_SCENE -Frames $env:CAPTURE_FRAMES -TracePresent:($env:CAPTURE_TRACE_PRESENT -eq 'true') -FirstChance:($env:CAPTURE_FIRST_CHANCE -eq 'true')
       - name: Verify Metal sampler clipping and readback pixels

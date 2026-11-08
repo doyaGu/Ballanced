@@ -60,6 +60,7 @@ static HRESULT ProbePresents(IDXGIFactory4 *factory, ID3D12Device *device, int w
 int main(int argc, char **argv)
 {
     if (argc > 2 && atoi(argv[2]) <= 0) return 1;
+    printf("Native process=%lu\n", GetCurrentProcessId());
     const bool debug = argc > 1 && atoi(argv[1]) != 0;
     if (debug) {
         ID3D12Debug *layer = NULL;
