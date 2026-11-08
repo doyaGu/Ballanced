@@ -202,13 +202,13 @@ jobs:
 
     - name: Build
       if: ${{ github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name) }}
-      run: cmake --build --preset ${{ matrix.platform.preset }}-${{ matrix.linkage.name }}-stage-release
+      run: cmake --build --preset ${{ matrix.platform.preset }}-${{ matrix.linkage.name }}-stage-release --parallel $([Environment]::ProcessorCount)
 
     - name: Capture Metal validation frames
       if: ${{ github.event_name == 'workflow_dispatch' && inputs.gpu-debug && startsWith(matrix.platform.name, 'macos-') && matrix.linkage.name == 'runtime' && (inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name)) }}
       run: |
         $buildRoot = "build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }}"
-        cmake --build $buildRoot --config Release --target ckre_scene_capture
+        cmake --build $buildRoot --config Release --target ckre_scene_capture --parallel $([Environment]::ProcessorCount)
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
         $captureRoot = "$buildRoot/metal-validation"
         New-Item -ItemType Directory -Force -Path $captureRoot | Out-Null
@@ -227,7 +227,7 @@ jobs:
 
     - name: Build tests
       if: ${{ github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name) }}
-      run: cmake --build --preset ${{ matrix.platform.preset }}-${{ matrix.linkage.name }}-release
+      run: cmake --build --preset ${{ matrix.platform.preset }}-${{ matrix.linkage.name }}-release --parallel $([Environment]::ProcessorCount)
 
     - name: Install Linux Vulkan test dependencies
       if: ${{ (github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name)) && startsWith(matrix.platform.name, 'linux-') }}
