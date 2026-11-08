@@ -12,7 +12,7 @@ __declspec(dllexport) const char *D3D12SDKPath = ".\\D3D12\\";
 }
 #endif
 
-static HRESULT ProbePresents(IDXGIFactory4 *factory, ID3D12Device *device, int windows, int fenceMode)
+static HRESULT ProbePresents(IDXGIFactory4 *factory, ID3D12Device *device, int windows, int fenceMode, bool clear, bool tearing)
 {
     D3D12_COMMAND_QUEUE_DESC queueDesc = {};
     ID3D12CommandQueue *queue = NULL;
@@ -51,13 +51,57 @@ static HRESULT ProbePresents(IDXGIFactory4 *factory, ID3D12Device *device, int w
         desc.BufferCount = 2;
         desc.Scaling = DXGI_SCALING_NONE;
         desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+        desc.Flags = tearing ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
         IDXGISwapChain1 *swapchain = NULL;
         result = factory->CreateSwapChainForHwnd(queue, window, &desc, NULL, NULL, &swapchain);
+        IDXGISwapChain3 *swapchain3 = NULL;
+        ID3D12CommandAllocator *allocator = NULL;
+        ID3D12GraphicsCommandList *commands = NULL;
+        ID3D12DescriptorHeap *heap = NULL;
+        if (clear && SUCCEEDED(result)) {
+            result = swapchain->QueryInterface(IID_PPV_ARGS(&swapchain3));
+            if (SUCCEEDED(result)) result = device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&allocator));
+            if (SUCCEEDED(result)) result = device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, allocator, NULL, IID_PPV_ARGS(&commands));
+            if (SUCCEEDED(result)) result = commands->Close();
+            D3D12_DESCRIPTOR_HEAP_DESC heapDesc = {};
+            heapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+            heapDesc.NumDescriptors = 1;
+            if (SUCCEEDED(result)) result = device->CreateDescriptorHeap(&heapDesc, IID_PPV_ARGS(&heap));
+        }
         for (unsigned frame = 0; frame < 5 && SUCCEEDED(result); ++frame) {
             MSG message;
             while (PeekMessageW(&message, NULL, 0, 0, PM_REMOVE)) {
                 TranslateMessage(&message);
                 DispatchMessageW(&message);
+            }
+            if (clear) {
+                ID3D12Resource *buffer = NULL;
+                result = swapchain3->GetBuffer(swapchain3->GetCurrentBackBufferIndex(), IID_PPV_ARGS(&buffer));
+                if (SUCCEEDED(result)) result = allocator->Reset();
+                if (SUCCEEDED(result)) result = commands->Reset(allocator, NULL);
+                if (SUCCEEDED(result)) {
+                    const D3D12_CPU_DESCRIPTOR_HANDLE target = heap->GetCPUDescriptorHandleForHeapStart();
+                    device->CreateRenderTargetView(buffer, NULL, target);
+                    D3D12_RESOURCE_BARRIER barrier = {};
+                    barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+                    barrier.Transition.pResource = buffer;
+                    barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+                    barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
+                    barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+                    commands->ResourceBarrier(1, &barrier);
+                    const float color[] = {0.2f, 0.4f, 0.6f, 1.0f};
+                    commands->ClearRenderTargetView(target, color, 0, NULL);
+                    barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+                    barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
+                    commands->ResourceBarrier(1, &barrier);
+                    result = commands->Close();
+                    if (SUCCEEDED(result)) {
+                        ID3D12CommandList *submitted = commands;
+                        queue->ExecuteCommandLists(1, &submitted);
+                    }
+                }
+                if (buffer) buffer->Release();
+                if (FAILED(result)) break;
             }
             if (fence) {
                 if (fenceMode == 1) {
@@ -76,10 +120,14 @@ static HRESULT ProbePresents(IDXGIFactory4 *factory, ID3D12Device *device, int w
                 else if (WaitForSingleObject(event, 5000) != WAIT_OBJECT_0) result = E_FAIL;
             }
         }
+        if (heap) heap->Release();
+        if (commands) commands->Release();
+        if (allocator) allocator->Release();
+        if (swapchain3) swapchain3->Release();
         if (swapchain) swapchain->Release();
         DestroyWindow(window);
     }
-    printf("Native DXGI presents: fence=%d %u/%d result=0x%08lx\n", fenceMode, presented, windows * 5, result);
+    printf("Native DXGI presents: fence=%d clear=%d tearing=%d %u/%d result=0x%08lx\n", fenceMode, clear, tearing, presented, windows * 5, result);
     UnregisterClassW(windowClass.lpszClassName, windowClass.hInstance);
     if (event) CloseHandle(event);
     if (fence) fence->Release();
@@ -110,8 +158,21 @@ int main(int argc, char **argv)
     result = D3D12CreateDevice(adapter, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&device));
     adapter->Release();
     printf("D3D12CreateDevice(debug=%d): 0x%08lx\n", debug, result);
-    if (SUCCEEDED(result) && argc > 2)
-        result = ProbePresents(factory, device, atoi(argv[2]), argc > 3 ? atoi(argv[3]) : 0);
+    if (SUCCEEDED(result) && argc > 2) {
+        const int windows = atoi(argv[2]);
+        const bool recreate = argc > 6 && atoi(argv[6]) != 0;
+        for (int i = 0; i < (recreate ? windows : 1) && SUCCEEDED(result); ++i) {
+            if (recreate && i) {
+                device->Release(); device = NULL;
+                IDXGIAdapter *warp = NULL;
+                result = factory->EnumWarpAdapter(IID_PPV_ARGS(&warp));
+                if (SUCCEEDED(result)) result = D3D12CreateDevice(warp, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&device));
+                if (warp) warp->Release();
+            }
+            if (SUCCEEDED(result)) result = ProbePresents(factory, device, recreate ? 1 : windows,
+                argc > 3 ? atoi(argv[3]) : 0, argc > 4 && atoi(argv[4]) != 0, argc > 5 && atoi(argv[5]) != 0);
+        }
+    }
     factory->Release();
     const char *modules[] = {"D3D12Core.dll", "d3d12SDKLayers.dll", "d3d10warp.dll"};
     for (unsigned i = 0; i < sizeof(modules) / sizeof(modules[0]); ++i) {
