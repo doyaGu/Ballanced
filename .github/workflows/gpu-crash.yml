@@ -66,29 +66,40 @@ jobs:
           CAPTURE_PLATFORM: ${{ inputs.platform }}
         run: ./cmake/SetupWindowsWarp.ps1 -Architecture $env:CAPTURE_PLATFORM.Substring(8) -DestinationDirectory build/gpu-validation/symbols
       - name: Compare Direct3D runtime device creation
-        if: ${{ !cancelled() && startsWith(inputs.platform, 'windows-') && inputs.platform != 'windows-arm64' }}
+        if: ${{ !cancelled() && startsWith(inputs.platform, 'windows-') }}
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force build/gpu-crash | Out-Null
           $architecture = '${{ inputs.platform }}'.Substring(8)
           $visualStudio = & "${env:ProgramFiles(x86)}/Microsoft Visual Studio/Installer/vswhere.exe" -latest -products '*' -property installationPath
           $compilerArchitecture = $architecture -eq 'x64' ? 'amd64' : $architecture
-          & "$visualStudio/Common7/Tools/Launch-VsDevShell.ps1" -Arch $compilerArchitecture -HostArch amd64 -SkipAutomaticLocation
+          $compilerHost = $architecture -eq 'arm64' ? 'arm64' : 'amd64'
+          & "$visualStudio/Common7/Tools/Launch-VsDevShell.ps1" -Arch $compilerArchitecture -HostArch $compilerHost -SkipAutomaticLocation
           $binary = (Resolve-Path build/gpu-validation/symbols).Path
           ./cmake/SetupWindowsD3D12.ps1 -Architecture $architecture -DestinationDirectory "$binary/D3D12"
+          if ($architecture -eq 'arm64') {
+            $capability = Get-WindowsCapability -Online -Name 'Tools.Graphics.DirectX~~~~0.0.1.0'
+            $capability | Format-List *> build/gpu-crash/graphics-tools.log
+            if ($capability.State -ne 'Installed') {
+              Add-WindowsCapability -Online -Name $capability.Name *>> build/gpu-crash/graphics-tools.log
+              if ((Get-WindowsCapability -Online -Name $capability.Name).State -ne 'Installed') {
+                throw 'The native Direct3D debug layers were not installed'
+              }
+            }
+          }
           cl /nologo /EHsc /O2 cmake/ProbeD3D12Runtime.cpp "/Fo$binary/probe-system.obj" "/Fe$binary/probe-system.exe" d3d12.lib dxgi.lib
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           cl /nologo /EHsc /O2 /DPROBE_D3D12_SDK_VERSION=620 cmake/ProbeD3D12Runtime.cpp "/Fo$binary/probe-agility.obj" "/Fe$binary/probe-agility.exe" d3d12.lib dxgi.lib
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           $failed = $false
           foreach ($runtime in @('system', 'agility')) { foreach ($debug in @(0, 1)) {
-            & "$binary/probe-$runtime.exe" $debug *> "build/gpu-crash/d3d12-$runtime-$debug.log"
+            & "$binary/probe-$runtime.exe" $debug 32 *> "build/gpu-crash/d3d12-$runtime-$debug.log"
             Write-Host "$runtime debug=$debug exit=$LASTEXITCODE"
             if ($runtime -eq 'agility' -and $LASTEXITCODE -ne 0) { $failed = $true }
           } }
           if ($failed) { throw 'Agility SDK could not create the WARP device; see d3d12-agility logs' }
       - name: Upload Direct3D runtime comparison
-        if: ${{ !cancelled() && startsWith(inputs.platform, 'windows-') && inputs.platform != 'windows-arm64' }}
+        if: ${{ !cancelled() && startsWith(inputs.platform, 'windows-') }}
         uses: actions/upload-artifact@v7.0.1
         with:
           name: d3d12-runtime-${{ inputs.platform }}
