@@ -123,20 +123,22 @@ jobs:
           - name: macos-x64
             # The hosted Intel VM cannot create an SDL Metal device. Build
             # x86_64 binaries and execute them with Rosetta on the ARM VM.
-            os: macos-15
+            os: macos-26
             archive_ext: .tar.gz
             preset: macos-x64
             sdl_discriminator: macOS-X64
             sdl_cmake_generator: ""
-            sdl_cmake_arguments: -DCMAKE_OSX_ARCHITECTURES=x86_64 --no-warn-unused-cli
+            sdl_cmake_arguments: -DCMAKE_OSX_ARCHITECTURES=x86_64 -DCMAKE_OSX_DEPLOYMENT_TARGET=15.0 --no-warn-unused-cli
+            configure_arguments: -DCMAKE_OSX_DEPLOYMENT_TARGET=15.0
 
           - name: macos-arm64
-            os: macos-15
+            os: macos-26
             archive_ext: .tar.gz
             preset: macos-arm64
             sdl_discriminator: macOS-ARM64
             sdl_cmake_generator: ""
-            sdl_cmake_arguments: -DCMAKE_OSX_ARCHITECTURES=arm64 --no-warn-unused-cli
+            sdl_cmake_arguments: -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=15.0 --no-warn-unused-cli
+            configure_arguments: -DCMAKE_OSX_DEPLOYMENT_TARGET=15.0
         linkage:
           - name: runtime
             ballance_build_static: "OFF"
