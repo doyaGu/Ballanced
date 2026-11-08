@@ -1,7 +1,8 @@
 param(
     [Parameter(Mandatory = $true)][string]$BinaryDirectory,
     [Parameter(Mandatory = $true)][string]$OutputDirectory,
-    [string]$Debugger
+    [string]$Debugger,
+    [switch]$FirstChance
 )
 
 $ErrorActionPreference = 'Stop'
@@ -47,8 +48,11 @@ $start.FileName = (Resolve-Path -LiteralPath $Debugger).Path
 $start.WorkingDirectory = $outputRoot
 $start.UseShellExecute = $false
 $start.CreateNoWindow = $true
-$arguments = @('-G', '-y', $binaryRoot, '-logo', 'debugger.log', '-c',
-    'sxd -c2 ".ecxr; kv; .dump /m /o crash.dmp; q" av; g',
+$exceptionFilter = if ($FirstChance) { 'sxe -c' } else { 'sxd -c2' }
+$commands = "$exceptionFilter `"r; .exr -1; kv; lmvm d3d10warp; .dump /m /o crash.dmp; q`" av; g"
+$symbolCache = Join-Path ([IO.Path]::GetTempPath()) 'Ballanced-DebugSymbols'
+$arguments = @('-G', '-y', "$binaryRoot;srv*$symbolCache*https://msdl.microsoft.com/download/symbols", '-logo', 'debugger.log', '-c',
+    $commands,
     $tool, '--single', '--render-engine-dir', $binaryRoot, '--rasterizer', 'sdlgpu',
     '--scene', 'opaque_lit', '--frames', '1', '--out', $outputRoot)
 foreach ($argument in $arguments) { $start.ArgumentList.Add($argument) }

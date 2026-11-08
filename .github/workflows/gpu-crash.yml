@@ -12,6 +12,10 @@ on:
         required: true
         type: choice
         options: [windows-arm64, windows-x64, windows-x86]
+      first-chance:
+        description: Capture the first access violation before application exception handlers run
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -24,6 +28,7 @@ jobs:
     env:
       CKRE_SDL_GPU_DRIVER: direct3d12
       CKRE_SDL_GPU_DEBUG: '1'
+      CAPTURE_FIRST_CHANCE: ${{ inputs.first-chance }}
     steps:
       - uses: actions/checkout@v6.0.2
       - uses: actions/download-artifact@v8
@@ -34,7 +39,7 @@ jobs:
           github-token: ${{ github.token }}
       - name: Capture the access violation with CDB
         shell: pwsh
-        run: ./cmake/DebugGpuCapture.ps1 -BinaryDirectory build/gpu-validation/symbols -OutputDirectory build/gpu-crash
+        run: ./cmake/DebugGpuCapture.ps1 -BinaryDirectory build/gpu-validation/symbols -OutputDirectory build/gpu-crash -FirstChance:($env:CAPTURE_FIRST_CHANCE -eq 'true')
       - name: Upload crash diagnostics
         if: ${{ !cancelled() }}
         uses: actions/upload-artifact@v7.0.1
