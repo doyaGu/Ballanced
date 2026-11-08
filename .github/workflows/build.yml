@@ -223,6 +223,16 @@ jobs:
         $architecture = '${{ matrix.platform.name }}'.Substring(8)
         ./cmake/SetupWindowsWarp.ps1 -Architecture $architecture -DestinationDirectory "build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }}/bin/Release"
         ./cmake/SetupWindowsD3D12.ps1 -Architecture $architecture -DestinationDirectory "build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }}/bin/Release/D3D12"
+        $binary = (Resolve-Path "build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }}/bin/Release").Path
+        $config = Join-Path $binary 'D3D12/d3dconfig.exe'
+        # The virtual display adapter and WARP can report the same name. Select
+        # WARP explicitly instead of using the runner's GPU preference ordering.
+        foreach ($name in @('shader_jit_dxbc_validator', 'test_sdl_gpu_pixels', 'sdl_gpu_ffp_pixel_tests', 'ckre_scene_capture', 'sdl_gpu_backbuffer_benchmark')) {
+          & $config apps --add (Join-Path $binary "$name.exe")
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        }
+        & $config device force-warp=true
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
     - name: Capture GPU validation frames
       if: ${{ github.event_name == 'workflow_dispatch' && inputs.gpu-debug && (startsWith(matrix.platform.name, 'macos-') || startsWith(matrix.platform.name, 'windows-')) && matrix.linkage.name == 'runtime' && (inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name)) }}
