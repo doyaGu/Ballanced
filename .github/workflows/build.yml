@@ -33,7 +33,7 @@ concurrency:
 jobs:
   build:
     name: ${{ matrix.name }}
-    runs-on: windows-latest
+    runs-on: windows-2022
     timeout-minutes: 90
 
     strategy:
