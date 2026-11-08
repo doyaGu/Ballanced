@@ -26,6 +26,8 @@ def verify_results(root):
             problems.append(f"Zero GoogleTest cases executed in {name}")
         if re.search(r"\[\s*SKIPPED\s*\]|\bDISABLED TESTS?\b|\bDISABLED_", output):
             problems.append(f"Skipped or disabled GoogleTest cases in {name}")
+        if re.search(r"^\s*[^:\r\n]+:\s*skipped\b", output, re.MULTILINE | re.IGNORECASE):
+            problems.append(f"Skipped backend checks in {name}")
     if not google_test_counts:
         problems.append("No GoogleTest execution records were found")
     if problems:

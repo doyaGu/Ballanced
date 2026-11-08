@@ -56,6 +56,12 @@ class CTestExecutionVerificationTest(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, "Skipped or disabled GoogleTest"):
                     verify_results(root)
 
+    def test_rejects_device_specific_backend_skips(self):
+        root, _ = report("[==========] Running 3 tests from 1 test suite.\n"
+                         "  five cube stages: skipped on the Apple Paravirtual device\n")
+        with self.assertRaisesRegex(ValueError, "Skipped backend checks"):
+            verify_results(root)
+
 
 if __name__ == "__main__":
     unittest.main()
