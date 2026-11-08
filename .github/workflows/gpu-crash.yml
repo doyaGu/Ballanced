@@ -43,9 +43,10 @@ jobs:
           CAPTURE_PLATFORM: ${{ inputs.platform }}
         run: ./cmake/SetupWindowsWarp.ps1 -Architecture $env:CAPTURE_PLATFORM.Substring(8) -DestinationDirectory build/gpu-validation/symbols
       - name: Capture the access violation with CDB
+        id: debugger
         shell: pwsh
         run: ./cmake/DebugGpuCapture.ps1 -BinaryDirectory build/gpu-validation/symbols -OutputDirectory build/gpu-crash -FirstChance:($env:CAPTURE_FIRST_CHANCE -eq 'true')
-      - name: Verify scene images and JIT replay
+      - name: Verify scene images
         shell: pwsh
         run: |
           git submodule update --init --depth 1 Source/RenderEngine
@@ -56,6 +57,12 @@ jobs:
             "-DGOLDEN_ROOT=$PWD/Source/RenderEngine/tests/reference/frames/golden" `
             "-DOUT_DIR=$PWD/build/gpu-crash/scenes" -P Source/RenderEngine/tests/scene_capture_golden.cmake
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Verify JIT replay
+        if: ${{ !cancelled() && steps.debugger.outcome == 'success' }}
+        shell: pwsh
+        run: |
+          $engine = (Resolve-Path build/gpu-validation/symbols).Path
+          $tool = Join-Path $engine 'ckre_scene_capture.exe'
           python Source/RenderEngine/tests/scene_capture_jit.py --tool $tool --engine-dir $engine `
             --out build/gpu-crash/jit --drivers direct3d12 --scenes cube_filter_dynamic,cube_mip_dynamic,rtt_cube
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
