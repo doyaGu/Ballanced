@@ -129,7 +129,7 @@ jobs:
             sdl_discriminator: macOS-X64
             sdl_cmake_generator: ""
             sdl_cmake_arguments: -DCMAKE_OSX_ARCHITECTURES=x86_64 -DCMAKE_OSX_DEPLOYMENT_TARGET=15.0 --no-warn-unused-cli
-            configure_arguments: -DCMAKE_OSX_DEPLOYMENT_TARGET=15.0
+            configure_arguments: '"-DCMAKE_OSX_DEPLOYMENT_TARGET=15.0"'
 
           - name: macos-arm64
             os: macos-26
@@ -138,7 +138,7 @@ jobs:
             sdl_discriminator: macOS-ARM64
             sdl_cmake_generator: ""
             sdl_cmake_arguments: -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=15.0 --no-warn-unused-cli
-            configure_arguments: -DCMAKE_OSX_DEPLOYMENT_TARGET=15.0
+            configure_arguments: '"-DCMAKE_OSX_DEPLOYMENT_TARGET=15.0"'
         linkage:
           - name: runtime
             ballance_build_static: "OFF"
