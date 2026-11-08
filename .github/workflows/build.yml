@@ -223,6 +223,7 @@ jobs:
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
         if ($IsWindows) {
           $env:CKRE_SDL_GPU_FF_JIT_CACHE = '0'
+          $env:CKRE_SDL_GPU_FF_JIT_STATS = '1'
           foreach ($mode in @('off', 'fragment', 'on')) {
             $env:CKRE_SDL_GPU_FF_JIT = if ($mode -eq 'off') { '0' } else { '1' }
             $env:CKRE_SDL_GPU_FF_VERTEX_JIT = if ($mode -eq 'fragment') { '0' } else { '1' }
