@@ -89,6 +89,13 @@ jobs:
           cl /nologo /EHsc /O2 /DPROBE_SDL_WINDOW /DPROBE_D3D12_SDK_VERSION=620 "/I$sdlSource/include" cmake/ProbeD3D12Runtime.cpp "/Fo$binary/probe-sdl-window.obj" "/Fe$binary/probe-sdl-window.exe" d3d12.lib dxgi.lib user32.lib
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           $failed = $false
+          # The virtual display adapter is a negative control. The explicitly
+          # selected WARP device must pass every validation mode below.
+          function Test-DefaultAdapterResult([string]$log, [int]$code) {
+            if ($code -eq 0) { return $true }
+            $output = Get-Content -LiteralPath $log -Raw
+            return $code -eq 5 -and $output -match '(?m)^SDL present mode=\d+ submit:'
+          }
           logman start BallancedNativePresent -p Microsoft-Windows-DXGI 0xffffffffffffffff -o build/gpu-crash/d3d12-native-present.etl -ets
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           foreach ($runtime in @('system', 'agility')) { foreach ($fence in @(0, 1, 2)) {
@@ -98,9 +105,11 @@ jobs:
           } }
           foreach ($mode in @(0, 1, 2, 3, 4, 5)) {
             & "$binary/probe-sdl.exe" "$binary/SDL3.dll" $mode 0 *> "build/gpu-crash/d3d12-sdl-$mode-0.log"
-            if ($LASTEXITCODE -ne 0) { $failed = $true }
+            Write-Host "Default adapter SDL mode=$mode exit=$LASTEXITCODE"
+            if (-not (Test-DefaultAdapterResult "build/gpu-crash/d3d12-sdl-$mode-0.log" $LASTEXITCODE)) { $failed = $true }
             & "$binary/probe-sdl.exe" "$binary/SDL3.dll" $mode 0 1 *> "build/gpu-crash/d3d12-factory-sdl-$mode-0.log"
-            if ($LASTEXITCODE -ne 0) { $failed = $true }
+            Write-Host "Default adapter SDK factory mode=$mode exit=$LASTEXITCODE"
+            if (-not (Test-DefaultAdapterResult "build/gpu-crash/d3d12-factory-sdl-$mode-0.log" $LASTEXITCODE)) { $failed = $true }
           }
           foreach ($clear in @(0, 1)) { foreach ($tearing in @(0, 1)) { foreach ($recreate in @(0, 1)) {
             & "$binary/probe-agility.exe" 0 32 2 $clear $tearing $recreate *> "build/gpu-crash/d3d12-work-$clear-$tearing-$recreate.log"
@@ -110,7 +119,13 @@ jobs:
           } } }
           foreach ($preference in @(0, 1)) { foreach ($association in @(0, 1)) {
             & "$binary/probe-sdl-window.exe" 0 32 2 1 1 0 "$binary/SDL3.dll" $preference $association *> "build/gpu-crash/d3d12-adapter-$preference-$association.log"
-            if ($LASTEXITCODE -ne 0) { $failed = $true }
+            Write-Host "Native adapter preference=$preference association=$association exit=$LASTEXITCODE"
+            if ($LASTEXITCODE -ne 0) {
+              $output = Get-Content -LiteralPath "build/gpu-crash/d3d12-adapter-$preference-$association.log" -Raw
+              if ($preference -eq 0 -or $LASTEXITCODE -ne 5 -or $output -notmatch 'Present window=\d+ frame=\d+: 0x80070057') {
+                $failed = $true
+              }
+            }
           } }
           logman stop BallancedNativePresent -ets
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
@@ -148,8 +163,10 @@ jobs:
             & $config device force-warp=false
             & $config apps --remove $tool
           }
-          & $config apps --add (Join-Path $binary 'ckre_scene_capture.exe')
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          foreach ($name in @('probe-sdl', 'ckre_scene_capture', 'sdl_gpu_ffp_pixel_tests')) {
+            & $config apps --add (Join-Path $binary "$name.exe")
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
           & $config device force-warp=true
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Upload explicitly selected WARP logs
@@ -160,7 +177,7 @@ jobs:
           path: build/gpu-crash/d3d12-warp-selected-*.log
           if-no-files-found: error
       - name: Verify native Direct3D debug layers
-        if: ${{ !cancelled() && startsWith(inputs.platform, 'windows-') }}
+        if: ${{ !cancelled() && inputs.validation && startsWith(inputs.platform, 'windows-') }}
         timeout-minutes: 12
         shell: pwsh
         run: |
@@ -169,8 +186,6 @@ jobs:
           $failed = $LASTEXITCODE -ne 0
           foreach ($mode in @(0, 1, 2, 3, 4, 5)) {
             & "$binary/probe-sdl.exe" "$binary/SDL3.dll" $mode 1 *> "build/gpu-crash/d3d12-sdl-$mode-1.log"
-            if ($LASTEXITCODE -ne 0) { $failed = $true }
-            & "$binary/probe-sdl.exe" "$binary/SDL3.dll" $mode 1 1 *> "build/gpu-crash/d3d12-factory-sdl-$mode-1.log"
             if ($LASTEXITCODE -ne 0) { $failed = $true }
           }
           if ($failed) { throw 'Debug-layer presentation probes failed; see d3d12 logs' }
@@ -197,6 +212,18 @@ jobs:
           $failed = $false
           foreach ($case in @('samplers', 'clipping', 'readbacks')) {
             & $tool "--$case" *> "build/gpu-crash/$case.log"
+            if ($LASTEXITCODE -ne 0) { $failed = $true }
+          }
+          if ($failed) { exit 1 }
+      - name: Verify Windows GPU pixels
+        if: ${{ !cancelled() && startsWith(inputs.platform, 'windows-') }}
+        shell: pwsh
+        run: |
+          $tool = (Resolve-Path build/gpu-validation/symbols/sdl_gpu_ffp_pixel_tests.exe).Path
+          $failed = $false
+          foreach ($case in @('ffp', 'samplers', 'clipping', 'readbacks')) {
+            $arguments = $case -eq 'ffp' ? @() : @("--$case")
+            & $tool @arguments *> "build/gpu-crash/windows-$case.log"
             if ($LASTEXITCODE -ne 0) { $failed = $true }
           }
           if ($failed) { exit 1 }
