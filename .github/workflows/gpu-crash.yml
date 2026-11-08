@@ -28,6 +28,10 @@ on:
         description: Number of frames to replay under the Windows debugger
         type: number
         default: 5
+      validation:
+        description: Enable GPU API and shader validation layers
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -39,9 +43,9 @@ jobs:
     timeout-minutes: 30
     env:
       CKRE_SDL_GPU_DRIVER: ${{ startsWith(inputs.platform, 'macos-') && 'metal' || 'direct3d12' }}
-      CKRE_SDL_GPU_DEBUG: '1'
-      MTL_DEBUG_LAYER: '1'
-      MTL_SHADER_VALIDATION: '1'
+      CKRE_SDL_GPU_DEBUG: ${{ inputs.validation && '1' || '0' }}
+      MTL_DEBUG_LAYER: ${{ inputs.validation && '1' || '0' }}
+      MTL_SHADER_VALIDATION: ${{ inputs.validation && '1' || '0' }}
       MTL_SHADER_VALIDATION_REPORT_TO_STDERR: '1'
       CAPTURE_FIRST_CHANCE: ${{ inputs.first-chance }}
       CAPTURE_SCENE: ${{ inputs.scene }}
