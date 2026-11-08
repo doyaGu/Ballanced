@@ -126,6 +126,39 @@ jobs:
             build/gpu-crash/d3d12-*.log
             build/gpu-crash/d3d12-native-present.xml
           if-no-files-found: error
+      - name: Compare explicitly selected WARP presentation
+        if: ${{ !cancelled() && startsWith(inputs.platform, 'windows-') }}
+        shell: pwsh
+        run: |
+          $binary = (Resolve-Path build/gpu-validation/symbols).Path
+          $config = "$binary/D3D12/d3dconfig.exe"
+          $tool = "$binary/probe-sdl.exe"
+          & $config apps --add $tool
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          try {
+            & $config device force-warp=true
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+            $failed = $false
+            foreach ($mode in @(0, 1, 2, 3, 4, 5)) {
+              & $tool "$binary/SDL3.dll" $mode 0 *> "build/gpu-crash/d3d12-warp-selected-$mode.log"
+              if ($LASTEXITCODE -ne 0) { $failed = $true }
+            }
+            if ($failed) { throw 'Explicit WARP SDL presentation failed' }
+          } finally {
+            & $config device force-warp=false
+            & $config apps --remove $tool
+          }
+          & $config apps --add "$binary/ckre_scene_capture.exe"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & $config device force-warp=true
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Upload explicitly selected WARP logs
+        if: ${{ !cancelled() && startsWith(inputs.platform, 'windows-') }}
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: d3d12-warp-selected-${{ inputs.platform }}
+          path: build/gpu-crash/d3d12-warp-selected-*.log
+          if-no-files-found: error
       - name: Verify native Direct3D debug layers
         if: ${{ !cancelled() && startsWith(inputs.platform, 'windows-') }}
         timeout-minutes: 12

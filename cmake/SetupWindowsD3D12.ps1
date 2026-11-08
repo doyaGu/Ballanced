@@ -14,7 +14,7 @@ Add-Type -AssemblyName System.IO.Compression.FileSystem
 $package = [IO.Compression.ZipFile]::OpenRead($packagePath)
 try {
     $packageArchitecture = if ($Architecture -eq 'x86') { 'win32' } else { $Architecture }
-    foreach ($name in @('D3D12Core.dll', 'd3d12SDKLayers.dll')) {
+    foreach ($name in @('D3D12Core.dll', 'd3d12SDKLayers.dll', 'd3dconfig.exe')) {
         [IO.Compression.ZipFileExtensions]::ExtractToFile($package.GetEntry("build/native/bin/$packageArchitecture/$name"), (Join-Path $destination $name), $true)
     }
     [IO.Compression.ZipFileExtensions]::ExtractToFile($package.GetEntry('LICENSE.txt'), (Join-Path $destination 'D3D12-LICENSE.txt'), $true)
