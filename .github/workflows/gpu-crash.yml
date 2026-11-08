@@ -37,6 +37,11 @@ jobs:
           path: build/gpu-validation
           run-id: ${{ inputs.run-id }}
           github-token: ${{ github.token }}
+      - name: Setup current Windows software rasterizer
+        shell: pwsh
+        env:
+          CAPTURE_PLATFORM: ${{ inputs.platform }}
+        run: ./cmake/SetupWindowsWarp.ps1 -Architecture $env:CAPTURE_PLATFORM.Substring(8) -DestinationDirectory build/gpu-validation/symbols
       - name: Capture the access violation with CDB
         shell: pwsh
         run: ./cmake/DebugGpuCapture.ps1 -BinaryDirectory build/gpu-validation/symbols -OutputDirectory build/gpu-crash -FirstChance:($env:CAPTURE_FIRST_CHANCE -eq 'true')
