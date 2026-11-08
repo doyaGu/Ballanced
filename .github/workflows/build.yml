@@ -192,14 +192,21 @@ jobs:
 
     - name: Configure
       if: ${{ github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name) }}
-      run: >
-        cmake --preset ${{ matrix.platform.preset }}-${{ matrix.linkage.name }}
-        ${{ matrix.platform.configure_arguments }}
-        "-DCMAKE_PREFIX_PATH=${{ steps.sdl.outputs.prefix }}"
-        -DCKRE_BUILD_TESTS=ON
-        -DVXMATH_BUILD_TESTS=ON -DCK2_BUILD_TESTS=ON
-        -DCKBB_BUILD_TESTS=ON -DCKPLUGINS_BUILD_TESTS=ON
-        -DPLAYER_BUILD_TESTS=ON -DIVP_BUILD_TESTS=ON
+      run: |
+        $diagnosticArguments = @()
+        if ($IsWindows -and '${{ inputs.gpu-debug }}' -eq 'true') {
+          $diagnosticArguments += '-DCMAKE_C_FLAGS_RELEASE=/O2 /Ob2 /DNDEBUG /Zi'
+          $diagnosticArguments += '-DCMAKE_CXX_FLAGS_RELEASE=/O2 /Ob2 /DNDEBUG /Zi'
+          $diagnosticArguments += '-DCMAKE_EXE_LINKER_FLAGS_RELEASE=/DEBUG /INCREMENTAL:NO'
+          $diagnosticArguments += '-DCMAKE_SHARED_LINKER_FLAGS_RELEASE=/DEBUG /INCREMENTAL:NO'
+        }
+        cmake --preset ${{ matrix.platform.preset }}-${{ matrix.linkage.name }} `
+          ${{ matrix.platform.configure_arguments }} `
+          "-DCMAKE_PREFIX_PATH=${{ steps.sdl.outputs.prefix }}" `
+          -DCKRE_BUILD_TESTS=ON `
+          -DVXMATH_BUILD_TESTS=ON -DCK2_BUILD_TESTS=ON `
+          -DCKBB_BUILD_TESTS=ON -DCKPLUGINS_BUILD_TESTS=ON `
+          -DPLAYER_BUILD_TESTS=ON -DIVP_BUILD_TESTS=ON @diagnosticArguments
 
     - name: Build
       if: ${{ github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name) }}
@@ -218,6 +225,15 @@ jobs:
         if ($IsWindows) {
           $tool = "$buildRoot/bin/Release/ckre_scene_capture.exe"
           $engine = "$buildRoot/bin/Release"
+          $dumpRoot = New-Item -ItemType Directory -Force -Path "$captureRoot/dumps"
+          $dumpKey = 'HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps\ckre_scene_capture.exe'
+          New-Item -Path $dumpKey -Force | Out-Null
+          New-ItemProperty -Path $dumpKey -Name DumpFolder -PropertyType ExpandString -Value $dumpRoot.FullName -Force | Out-Null
+          New-ItemProperty -Path $dumpKey -Name DumpType -PropertyType DWord -Value 1 -Force | Out-Null
+          New-ItemProperty -Path $dumpKey -Name DumpCount -PropertyType DWord -Value 2 -Force | Out-Null
+          $symbolRoot = New-Item -ItemType Directory -Force -Path "$captureRoot/symbols"
+          Get-ChildItem $engine -File | Where-Object { $_.Extension -in '.pdb', '.dll', '.exe' } |
+            Copy-Item -Destination $symbolRoot.FullName
         }
         & $tool --render-engine-dir $engine --rasterizer sdlgpu --scene all --frames 5 --capture-frames 1,5 --verbose --out $captureRoot *> "$captureRoot/capture.log"
         if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
