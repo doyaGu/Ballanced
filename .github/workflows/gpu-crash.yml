@@ -100,6 +100,12 @@ jobs:
           xcrun lldb --batch -o "settings set target.env-vars DYLD_LIBRARY_PATH=$libraries MTL_SHADER_VALIDATION=0" `
             -o "command script import $PWD/cmake/TraceMetalGpu.py" -o run `
             -- $tool --samplers *> build/gpu-crash/metal-debugger.log
+          $log = Get-Content -LiteralPath build/gpu-crash/metal-debugger.log -Raw
+          if ($log -notmatch 'Process \d+ exited with status' -or
+              $log -notmatch 'Running test: wide sampler layouts' -or
+              $log -match 'inspection failed:') {
+            throw 'LLDB did not inspect a completed Metal sampler test; see metal-debugger.log'
+          }
       - name: Verify scene images
         if: ${{ !cancelled() && (startsWith(inputs.platform, 'macos-') || steps.debugger.outcome == 'success') }}
         shell: pwsh
