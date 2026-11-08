@@ -127,6 +127,17 @@ jobs:
               } }
             }
           }
+          git submodule update --init --depth 1 Source/RenderEngine
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          python -B cmake/PrepareMetalSamplerProbe.py build/gpu-crash
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          foreach ($name in @('fs_ff_stage', 'fs_ff_stage_native', 'fs_ff_stage_cube', 'fs_ff_stage_cube_native')) {
+            $cubes = $name.Contains('_cube') ? 8 : 4
+            foreach ($sampled in @(1, 4, 5, 8) | Where-Object { $_ -le $cubes }) {
+              & build/gpu-crash/metal-samplers $cubes $sampled 1 1 "build/gpu-crash/$name.metal" *> "build/gpu-crash/metal-ffp-$name-$sampled.log"
+              if ($LASTEXITCODE -ne 0) { $failed = $true }
+            }
+          }
           if ($failed) { exit 1 }
       - name: Upload GPU inspection logs
         if: ${{ !cancelled() && startsWith(inputs.platform, 'macos-') }}

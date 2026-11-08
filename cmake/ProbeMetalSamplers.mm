@@ -6,7 +6,7 @@
 
 int main(int argc, char **argv)
 {
-    if (argc != 5) return 2;
+    if (argc != 5 && argc != 6) return 2;
     const unsigned cubes = atoi(argv[1]), sampled = atoi(argv[2]);
     const bool mixed = atoi(argv[3]) != 0, alias = atoi(argv[4]) != 0;
     if ((cubes != 4 && cubes != 8) || !sampled || sampled > cubes) return 2;
@@ -35,11 +35,16 @@ int main(int argc, char **argv)
         }
         [source appendString:@"return c; }"];
         NSError *error = nil;
+        if (argc == 6) {
+            source = [[NSString stringWithContentsOfFile:[NSString stringWithUTF8String:argv[5]]
+                encoding:NSUTF8StringEncoding error:&error] mutableCopy];
+            if (!source) { fprintf(stderr, "%s\n", error.description.UTF8String); return 4; }
+        }
         id<MTLLibrary> library = [device newLibraryWithSource:source options:nil error:&error];
         if (!library) { fprintf(stderr, "%s\n", error.description.UTF8String); return 4; }
         MTLRenderPipelineDescriptor *pipelineDesc = [MTLRenderPipelineDescriptor new];
         pipelineDesc.vertexFunction = [library newFunctionWithName:@"vs"];
-        pipelineDesc.fragmentFunction = [library newFunctionWithName:@"fs"];
+        pipelineDesc.fragmentFunction = [library newFunctionWithName:argc == 6 ? @"main0" : @"fs"];
         pipelineDesc.colorAttachments[0].pixelFormat = MTLPixelFormatRGBA8Unorm;
         id<MTLRenderPipelineState> pipeline = [device newRenderPipelineStateWithDescriptor:pipelineDesc error:&error];
         if (!pipeline) { fprintf(stderr, "%s\n", error.description.UTF8String); return 5; }
@@ -86,7 +91,28 @@ int main(int argc, char **argv)
         [encoder setRenderPipelineState:pipeline];
         [encoder setViewport:(MTLViewport){0,0,4,4,0,1}];
         const unsigned config[2] = {sampled, 1};
-        [encoder setFragmentBytes:config length:sizeof(config) atIndex:0];
+        if (argc == 6) {
+            float draw[20][4] = {};
+            float stage[69][4] = {};
+            unsigned ordinals = 0;
+            for (unsigned i = 0; i < 8; ++i) {
+                // CKFragment1: 16 bump rows, 16 stage rows, 5 program rows,
+                // then 16 border colors and 16 sampler descriptions.
+                stage[16 + i * 2][1] = 3;
+                stage[16 + i * 2][2] = 1;
+                stage[32 + i / 2][(i % 2) * 2] = float((1 << 21) |
+                    (i ? (7 | (1 << 5) | (2 << 10)) : (2 | (2 << 5))));
+                stage[32 + i / 2][(i % 2) * 2 + 1] = float(2 | (1 << 5));
+                ordinals |= i << (i * 3);
+            }
+            stage[36][0] = float(sampled - 1);
+            stage[36][1] = float(ordinals);
+            for (unsigned i = 0; i < 16; ++i) stage[53 + i][1] = stage[53 + i][2] = 1;
+            [encoder setFragmentBytes:draw length:sizeof(draw) atIndex:0];
+            [encoder setFragmentBytes:stage length:sizeof(stage) atIndex:1];
+        } else {
+            [encoder setFragmentBytes:config length:sizeof(config) atIndex:0];
+        }
         for (unsigned i = 0; i < count; ++i) {
             [encoder setFragmentTexture:textures[i] atIndex:i];
             [encoder setFragmentSamplerState:sampler atIndex:i];
