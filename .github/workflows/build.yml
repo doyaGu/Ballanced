@@ -97,10 +97,11 @@ jobs:
             archive_ext: .zip
             preset: windows-arm64
             sdl_discriminator: Windows-ARM64
-            # The windows-11-arm image ships only Visual Studio 2026.
+            # VS 2026's ARM64 optimizer crashes in SIMDe's NEON load path.
+            # The image also supplies the supported MSVC 14.44 ARM64 toolset.
             sdl_cmake_generator: Visual Studio 18 2026
-            sdl_cmake_arguments: -A ARM64 --no-warn-unused-cli
-            configure_arguments: -G "Visual Studio 18 2026"
+            sdl_cmake_arguments: -A ARM64 -T "v143,version=14.44" --no-warn-unused-cli
+            configure_arguments: -G "Visual Studio 18 2026" -T "v143,version=14.44"
 
           - name: linux-x64
             # Mesa 26 fixes fixed-point bilinear rounding on non-x86 CPUs.
