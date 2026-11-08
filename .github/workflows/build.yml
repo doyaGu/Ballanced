@@ -103,7 +103,8 @@ jobs:
             configure_arguments: -G "Visual Studio 18 2026"
 
           - name: linux-x64
-            os: ubuntu-24.04
+            # Mesa 26 fixes fixed-point bilinear rounding on non-x86 CPUs.
+            os: ubuntu-26.04
             archive_ext: .tar.gz
             preset: linux-x64
             sdl_discriminator: Linux-X64
@@ -111,7 +112,7 @@ jobs:
             sdl_cmake_arguments: --no-warn-unused-cli
 
           - name: linux-arm64
-            os: ubuntu-24.04-arm
+            os: ubuntu-26.04-arm
             archive_ext: .tar.gz
             preset: linux-arm64
             sdl_discriminator: Linux-ARM64
@@ -199,7 +200,13 @@ jobs:
 
     - name: Install Linux Vulkan test dependencies
       if: ${{ (github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name)) && startsWith(matrix.platform.name, 'linux-') }}
-      run: sudo apt-get update && sudo apt-get install -y xvfb libegl1 libgles2 libgl1-mesa-dri libglx-mesa0 mesa-utils mesa-vulkan-drivers
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y xvfb libegl1 libgles2 libgl1-mesa-dri libglx-mesa0 mesa-utils mesa-vulkan-drivers
+        mesa_version=$(dpkg-query -W -f='${Version}' mesa-vulkan-drivers)
+        echo "Mesa Vulkan driver: $mesa_version (requires fixed-point rounding from Mesa 26)"
+        dpkg --compare-versions "$mesa_version" ge 26.0.0
 
     - name: Test complete suite
       if: ${{ github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name) }}
@@ -252,7 +259,7 @@ jobs:
     name: sdl-linux-x64-full-tests
     needs: changes
     if: ${{ !cancelled() && (github.event_name != 'schedule' || needs.changes.outputs.changed == 'true') && (github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == 'sdl-linux-x64-full-tests') }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 120
 
     permissions:
@@ -290,8 +297,13 @@ jobs:
     - name: Build full test suite
       run: cmake --build --preset linux-x64-tests-release
 
-    - name: Setup virtual display
-      run: sudo apt-get update && sudo apt-get install -y xvfb mesa-vulkan-drivers
+    - name: Install Linux Vulkan test dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y xvfb mesa-vulkan-drivers
+        mesa_version=$(dpkg-query -W -f='${Version}' mesa-vulkan-drivers)
+        echo "Mesa Vulkan driver: $mesa_version (requires fixed-point rounding from Mesa 26)"
+        dpkg --compare-versions "$mesa_version" ge 26.0.0
 
     - name: Run full test suite
       env:
