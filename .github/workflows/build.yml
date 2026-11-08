@@ -197,8 +197,8 @@ jobs:
         if ($IsWindows -and '${{ inputs.gpu-debug }}' -eq 'true') {
           $diagnosticArguments += '-DCMAKE_C_FLAGS_RELEASE=/O2 /Ob2 /DNDEBUG /Zi'
           $diagnosticArguments += '-DCMAKE_CXX_FLAGS_RELEASE=/O2 /Ob2 /DNDEBUG /Zi'
-          $diagnosticArguments += '-DCMAKE_EXE_LINKER_FLAGS_RELEASE=/DEBUG /INCREMENTAL:NO'
-          $diagnosticArguments += '-DCMAKE_SHARED_LINKER_FLAGS_RELEASE=/DEBUG /INCREMENTAL:NO'
+          $diagnosticArguments += '-DCMAKE_EXE_LINKER_FLAGS_RELEASE=/DEBUG /INCREMENTAL:NO /OPT:REF /OPT:ICF'
+          $diagnosticArguments += '-DCMAKE_SHARED_LINKER_FLAGS_RELEASE=/DEBUG /INCREMENTAL:NO /OPT:REF /OPT:ICF'
         }
         cmake --preset ${{ matrix.platform.preset }}-${{ matrix.linkage.name }} `
           ${{ matrix.platform.configure_arguments }} `
@@ -225,18 +225,20 @@ jobs:
         if ($IsWindows) {
           $tool = "$buildRoot/bin/Release/ckre_scene_capture.exe"
           $engine = "$buildRoot/bin/Release"
-          $dumpRoot = New-Item -ItemType Directory -Force -Path "$captureRoot/dumps"
-          $dumpKey = 'HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps\ckre_scene_capture.exe'
-          New-Item -Path $dumpKey -Force | Out-Null
-          New-ItemProperty -Path $dumpKey -Name DumpFolder -PropertyType ExpandString -Value $dumpRoot.FullName -Force | Out-Null
-          New-ItemProperty -Path $dumpKey -Name DumpType -PropertyType DWord -Value 1 -Force | Out-Null
-          New-ItemProperty -Path $dumpKey -Name DumpCount -PropertyType DWord -Value 2 -Force | Out-Null
           $symbolRoot = New-Item -ItemType Directory -Force -Path "$captureRoot/symbols"
           Get-ChildItem $engine -File | Where-Object { $_.Extension -in '.pdb', '.dll', '.exe' } |
             Copy-Item -Destination $symbolRoot.FullName
         }
         & $tool --render-engine-dir $engine --rasterizer sdlgpu --scene all --frames 5 --capture-frames 1,5 --verbose --out $captureRoot *> "$captureRoot/capture.log"
-        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        $captureExit = $LASTEXITCODE
+        if ($captureExit -ne 0) {
+          if ($IsWindows) {
+            try {
+              ./cmake/DebugGpuCapture.ps1 -BinaryDirectory $engine -OutputDirectory "$captureRoot/debugger"
+            } catch { Write-Host $_ }
+          }
+          exit $captureExit
+        }
         if ($IsWindows) {
           $env:CKRE_SDL_GPU_FF_JIT_CACHE = '0'
           $env:CKRE_SDL_GPU_FF_JIT_STATS = '1'
