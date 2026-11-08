@@ -42,6 +42,7 @@ jobs:
       CKRE_SDL_GPU_DEBUG: '1'
       MTL_DEBUG_LAYER: '1'
       MTL_SHADER_VALIDATION: '1'
+      MTL_SHADER_VALIDATION_REPORT_TO_STDERR: '1'
       CAPTURE_FIRST_CHANCE: ${{ inputs.first-chance }}
       CAPTURE_SCENE: ${{ inputs.scene }}
       CAPTURE_TRACE_PRESENT: ${{ inputs.trace-present }}
