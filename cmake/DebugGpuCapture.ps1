@@ -55,7 +55,7 @@ $start.WorkingDirectory = $outputRoot
 $start.UseShellExecute = $false
 $start.CreateNoWindow = $true
 $exceptionFilter = if ($FirstChance) { 'sxe -c' } else { 'sxd -c2' }
-$commands = "$exceptionFilter `"r; .exr -1; kv; lmvm d3d10warp; .dump /m /o crash.dmp; q`" av; g"
+$commands = "sxi ibp; $exceptionFilter `"r; .exr -1; kv; lmvm d3d10warp; .dump /m /o crash.dmp; q`" av; g"
 $symbolCache = Join-Path ([IO.Path]::GetTempPath()) 'Ballanced-DebugSymbols'
 $arguments = @('-G', '-o', '-y', "$binaryRoot;srv*$symbolCache*https://msdl.microsoft.com/download/symbols", '-logo', 'debugger.log', '-c',
     $commands,

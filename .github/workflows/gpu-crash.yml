@@ -58,8 +58,8 @@ jobs:
         if: ${{ startsWith(inputs.platform, 'macos-') }}
         shell: pwsh
         run: |
-          $env:DYLD_LIBRARY_PATH = (Resolve-Path build/gpu-validation/runtime/lib).Path
-          $tool = (Resolve-Path build/gpu-validation/runtime/bin/sdl_gpu_ffp_pixel_tests).Path
+          $env:DYLD_LIBRARY_PATH = (Resolve-Path build/gpu-validation/runtime/Bin).Path
+          $tool = (Resolve-Path build/gpu-validation/runtime/Bin/sdl_gpu_ffp_pixel_tests).Path
           chmod +x $tool
           New-Item -ItemType Directory -Force build/gpu-crash | Out-Null
           $failed = $false
@@ -75,9 +75,9 @@ jobs:
           git submodule update --init --depth 1 Source/RenderEngine
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           if ($IsMacOS) {
-            $engine = (Resolve-Path build/gpu-validation/runtime/lib).Path
-            $env:DYLD_LIBRARY_PATH = $engine
-            $tool = (Resolve-Path build/gpu-validation/runtime/bin/ckre_scene_capture).Path
+            $engine = (Resolve-Path build/gpu-validation/runtime/RenderEngines).Path
+            $env:DYLD_LIBRARY_PATH = (Resolve-Path build/gpu-validation/runtime/Bin).Path
+            $tool = (Resolve-Path build/gpu-validation/runtime/Bin/ckre_scene_capture).Path
             chmod +x $tool
           } else {
             $engine = (Resolve-Path build/gpu-validation/symbols).Path
