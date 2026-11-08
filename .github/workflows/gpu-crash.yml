@@ -77,7 +77,39 @@ jobs:
           & "$visualStudio/Common7/Tools/Launch-VsDevShell.ps1" -Arch $compilerArchitecture -HostArch $compilerHost -SkipAutomaticLocation
           $binary = (Resolve-Path build/gpu-validation/symbols).Path
           ./cmake/SetupWindowsD3D12.ps1 -Architecture $architecture -DestinationDirectory "$binary/D3D12"
-          if ($architecture -eq 'arm64') {
+          cl /nologo /EHsc /O2 cmake/ProbeD3D12Runtime.cpp "/Fo$binary/probe-system.obj" "/Fe$binary/probe-system.exe" d3d12.lib dxgi.lib user32.lib
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cl /nologo /EHsc /O2 /DPROBE_D3D12_SDK_VERSION=620 cmake/ProbeD3D12Runtime.cpp "/Fo$binary/probe-agility.obj" "/Fe$binary/probe-agility.exe" d3d12.lib dxgi.lib user32.lib
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $sdlSource = Join-Path $env:RUNNER_TEMP 'SDL-presentation-probe'
+          git clone --depth 1 --branch release-3.4.20 https://github.com/libsdl-org/SDL.git $sdlSource
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cl /nologo /EHsc /O2 "/I$sdlSource/include" cmake/ProbeSdlGpuPresent.cpp "/Fo$binary/probe-sdl.obj" "/Fe$binary/probe-sdl.exe"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $failed = $false
+          foreach ($runtime in @('system', 'agility')) {
+            & "$binary/probe-$runtime.exe" 0 32 *> "build/gpu-crash/d3d12-$runtime-0.log"
+            Write-Host "$runtime debug=0 exit=$LASTEXITCODE"
+            if ($runtime -eq 'agility' -and $LASTEXITCODE -ne 0) { $failed = $true }
+          }
+          foreach ($mode in @(0, 1, 2)) {
+            & "$binary/probe-sdl.exe" "$binary/SDL3.dll" $mode 0 *> "build/gpu-crash/d3d12-sdl-$mode-0.log"
+            if ($LASTEXITCODE -ne 0) { $failed = $true }
+          }
+          if ($failed) { throw 'Native presentation probes failed; see d3d12 logs' }
+      - name: Upload Direct3D runtime comparison
+        if: ${{ !cancelled() && startsWith(inputs.platform, 'windows-') }}
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: d3d12-runtime-${{ inputs.platform }}
+          path: build/gpu-crash/d3d12-*.log
+          if-no-files-found: error
+      - name: Verify native Direct3D debug layers
+        if: ${{ !cancelled() && startsWith(inputs.platform, 'windows-') }}
+        timeout-minutes: 12
+        shell: pwsh
+        run: |
+          if ('${{ inputs.platform }}' -eq 'windows-arm64') {
             $capability = Get-WindowsCapability -Online -Name 'Tools.Graphics.DirectX~~~~0.0.1.0'
             $capability | Format-List *> build/gpu-crash/graphics-tools.log
             if ($capability.State -ne 'Installed') {
@@ -87,23 +119,20 @@ jobs:
               }
             }
           }
-          cl /nologo /EHsc /O2 cmake/ProbeD3D12Runtime.cpp "/Fo$binary/probe-system.obj" "/Fe$binary/probe-system.exe" d3d12.lib dxgi.lib
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          cl /nologo /EHsc /O2 /DPROBE_D3D12_SDK_VERSION=620 cmake/ProbeD3D12Runtime.cpp "/Fo$binary/probe-agility.obj" "/Fe$binary/probe-agility.exe" d3d12.lib dxgi.lib
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          $failed = $false
-          foreach ($runtime in @('system', 'agility')) { foreach ($debug in @(0, 1)) {
-            & "$binary/probe-$runtime.exe" $debug 32 *> "build/gpu-crash/d3d12-$runtime-$debug.log"
-            Write-Host "$runtime debug=$debug exit=$LASTEXITCODE"
-            if ($runtime -eq 'agility' -and $LASTEXITCODE -ne 0) { $failed = $true }
-          } }
-          if ($failed) { throw 'Agility SDK could not create the WARP device; see d3d12-agility logs' }
-      - name: Upload Direct3D runtime comparison
+          $binary = (Resolve-Path build/gpu-validation/symbols).Path
+          & "$binary/probe-agility.exe" 1 32 *> build/gpu-crash/d3d12-agility-1.log
+          $failed = $LASTEXITCODE -ne 0
+          foreach ($mode in @(0, 1, 2)) {
+            & "$binary/probe-sdl.exe" "$binary/SDL3.dll" $mode 1 *> "build/gpu-crash/d3d12-sdl-$mode-1.log"
+            if ($LASTEXITCODE -ne 0) { $failed = $true }
+          }
+          if ($failed) { throw 'Debug-layer presentation probes failed; see d3d12 logs' }
+      - name: Upload Direct3D validation logs
         if: ${{ !cancelled() && startsWith(inputs.platform, 'windows-') }}
         uses: actions/upload-artifact@v7.0.1
         with:
-          name: d3d12-runtime-${{ inputs.platform }}
-          path: build/gpu-crash/d3d12-*.log
+          name: d3d12-validation-${{ inputs.platform }}
+          path: build/gpu-crash/*.log
           if-no-files-found: error
       - name: Capture the access violation with CDB
         id: debugger

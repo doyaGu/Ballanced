@@ -45,7 +45,7 @@ static HRESULT ProbePresents(IDXGIFactory4 *factory, ID3D12Device *device, int w
                 DispatchMessageW(&message);
             }
             result = swapchain->Present(1, 0);
-            if (SUCCEEDED(result)) ++presented;
+            if (result == S_OK) ++presented;
             else printf("Present window=%d frame=%u: 0x%08lx\n", i, frame, result);
         }
         if (swapchain) swapchain->Release();
@@ -54,11 +54,12 @@ static HRESULT ProbePresents(IDXGIFactory4 *factory, ID3D12Device *device, int w
     printf("Native DXGI presents: %u/%d result=0x%08lx\n", presented, windows * 5, result);
     UnregisterClassW(windowClass.lpszClassName, windowClass.hInstance);
     queue->Release();
-    return result;
+    return SUCCEEDED(result) && presented != unsigned(windows * 5) ? E_FAIL : result;
 }
 
 int main(int argc, char **argv)
 {
+    if (argc > 2 && atoi(argv[2]) <= 0) return 1;
     const bool debug = argc > 1 && atoi(argv[1]) != 0;
     if (debug) {
         ID3D12Debug *layer = NULL;
