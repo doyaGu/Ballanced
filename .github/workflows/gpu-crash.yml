@@ -1,4 +1,4 @@
-name: GPU crash diagnostics
+name: GPU replay diagnostics
 
 on:
   workflow_dispatch:
@@ -8,10 +8,10 @@ on:
         required: true
         type: string
       platform:
-        description: Windows build platform
+        description: GPU build platform
         required: true
         type: choice
-        options: [windows-arm64, windows-x64, windows-x86]
+        options: [windows-arm64, windows-x64, windows-x86, macos-arm64, macos-x64]
       first-chance:
         description: Capture the first access violation before application exception handlers run
         type: boolean
@@ -23,11 +23,12 @@ permissions:
 
 jobs:
   capture:
-    runs-on: ${{ inputs.platform == 'windows-arm64' && 'windows-11-arm' || 'windows-2022' }}
+    runs-on: ${{ startsWith(inputs.platform, 'macos-') && 'macos-26' || inputs.platform == 'windows-arm64' && 'windows-11-arm' || 'windows-2022' }}
     timeout-minutes: 30
     env:
-      CKRE_SDL_GPU_DRIVER: direct3d12
+      CKRE_SDL_GPU_DRIVER: ${{ startsWith(inputs.platform, 'macos-') && 'metal' || 'direct3d12' }}
       CKRE_SDL_GPU_DEBUG: '1'
+      MTL_DEBUG_LAYER: '1'
       CAPTURE_FIRST_CHANCE: ${{ inputs.first-chance }}
     steps:
       - uses: actions/checkout@v6.0.2
@@ -38,21 +39,45 @@ jobs:
           run-id: ${{ inputs.run-id }}
           github-token: ${{ github.token }}
       - name: Setup current Windows software rasterizer
+        if: ${{ startsWith(inputs.platform, 'windows-') }}
         shell: pwsh
         env:
           CAPTURE_PLATFORM: ${{ inputs.platform }}
         run: ./cmake/SetupWindowsWarp.ps1 -Architecture $env:CAPTURE_PLATFORM.Substring(8) -DestinationDirectory build/gpu-validation/symbols
       - name: Capture the access violation with CDB
         id: debugger
+        if: ${{ startsWith(inputs.platform, 'windows-') }}
         shell: pwsh
         run: ./cmake/DebugGpuCapture.ps1 -BinaryDirectory build/gpu-validation/symbols -OutputDirectory build/gpu-crash -FirstChance:($env:CAPTURE_FIRST_CHANCE -eq 'true')
+      - name: Verify Metal sampler clipping and readback pixels
+        if: ${{ startsWith(inputs.platform, 'macos-') }}
+        shell: pwsh
+        run: |
+          $env:DYLD_LIBRARY_PATH = (Resolve-Path build/gpu-validation/runtime/lib).Path
+          $tool = (Resolve-Path build/gpu-validation/runtime/bin/sdl_gpu_ffp_pixel_tests).Path
+          chmod +x $tool
+          New-Item -ItemType Directory -Force build/gpu-crash | Out-Null
+          $failed = $false
+          foreach ($case in @('samplers', 'clipping', 'readbacks')) {
+            & $tool "--$case" *> "build/gpu-crash/$case.log"
+            if ($LASTEXITCODE -ne 0) { $failed = $true }
+          }
+          if ($failed) { exit 1 }
       - name: Verify scene images
+        if: ${{ !cancelled() && (startsWith(inputs.platform, 'macos-') || steps.debugger.outcome == 'success') }}
         shell: pwsh
         run: |
           git submodule update --init --depth 1 Source/RenderEngine
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          $engine = (Resolve-Path build/gpu-validation/symbols).Path
-          $tool = Join-Path $engine 'ckre_scene_capture.exe'
+          if ($IsMacOS) {
+            $engine = (Resolve-Path build/gpu-validation/runtime/lib).Path
+            $env:DYLD_LIBRARY_PATH = $engine
+            $tool = (Resolve-Path build/gpu-validation/runtime/bin/ckre_scene_capture).Path
+            chmod +x $tool
+          } else {
+            $engine = (Resolve-Path build/gpu-validation/symbols).Path
+            $tool = Join-Path $engine 'ckre_scene_capture.exe'
+          }
           cmake "-DTOOL=$tool" "-DENGINE_DIR=$engine" `
             "-DGOLDEN_ROOT=$PWD/Source/RenderEngine/tests/reference/frames/golden" `
             "-DOUT_DIR=$PWD/build/gpu-crash/scenes" -P Source/RenderEngine/tests/scene_capture_golden.cmake

@@ -236,6 +236,10 @@ jobs:
           $symbolRoot = New-Item -ItemType Directory -Force -Path "$captureRoot/symbols"
           Get-ChildItem $engine -File | Where-Object { $_.Extension -in '.pdb', '.dll', '.exe' } |
             Copy-Item -Destination $symbolRoot.FullName
+        } elseif ($IsMacOS) {
+          $runtimeRoot = New-Item -ItemType Directory -Force -Path "$captureRoot/runtime"
+          Get-ChildItem "$buildRoot/stage" -Force | Copy-Item -Destination $runtimeRoot.FullName -Recurse
+          Copy-Item -LiteralPath $tool, "$buildRoot/bin/sdl_gpu_ffp_pixel_tests" -Destination "$runtimeRoot/bin"
         }
         & $tool --render-engine-dir $engine --rasterizer sdlgpu --scene all --frames 5 --capture-frames 1,5 --verbose --out $captureRoot *> "$captureRoot/capture.log"
         $captureExit = $LASTEXITCODE
