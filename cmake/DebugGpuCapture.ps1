@@ -2,13 +2,14 @@ param(
     [Parameter(Mandatory = $true)][string]$BinaryDirectory,
     [Parameter(Mandatory = $true)][string]$OutputDirectory,
     [string]$Debugger,
-    [switch]$FirstChance
+    [switch]$FirstChance,
+    [ValidatePattern('^[A-Za-z0-9_]+$')][string]$Scene = 'opaque_lit'
 )
 
 $ErrorActionPreference = 'Stop'
 $binaryRoot = (Resolve-Path -LiteralPath $BinaryDirectory).Path
 $outputRoot = (New-Item -ItemType Directory -Force -Path $OutputDirectory).FullName
-foreach ($name in @('debugger.log', 'crash.dmp', 'opaque_lit.png')) {
+foreach ($name in @('debugger.log', 'crash.dmp', "$Scene.png")) {
     if (Test-Path -LiteralPath (Join-Path $outputRoot $name)) {
         throw 'GPU crash diagnostics require a fresh output directory'
     }
@@ -56,10 +57,10 @@ $start.CreateNoWindow = $true
 $exceptionFilter = if ($FirstChance) { 'sxe -c' } else { 'sxd -c2' }
 $commands = "$exceptionFilter `"r; .exr -1; kv; lmvm d3d10warp; .dump /m /o crash.dmp; q`" av; g"
 $symbolCache = Join-Path ([IO.Path]::GetTempPath()) 'Ballanced-DebugSymbols'
-$arguments = @('-G', '-y', "$binaryRoot;srv*$symbolCache*https://msdl.microsoft.com/download/symbols", '-logo', 'debugger.log', '-c',
+$arguments = @('-G', '-o', '-y', "$binaryRoot;srv*$symbolCache*https://msdl.microsoft.com/download/symbols", '-logo', 'debugger.log', '-c',
     $commands,
-    $tool, '--single', '--render-engine-dir', $binaryRoot, '--rasterizer', 'sdlgpu',
-    '--scene', 'opaque_lit', '--frames', '1', '--out', $outputRoot)
+    $tool, '--render-engine-dir', $binaryRoot, '--rasterizer', 'sdlgpu',
+    '--scene', $Scene, '--frames', '5', '--out', $outputRoot)
 foreach ($argument in $arguments) { $start.ArgumentList.Add($argument) }
 $process = [Diagnostics.Process]::Start($start)
 try {
@@ -70,7 +71,7 @@ try {
     if (Test-Path -LiteralPath (Join-Path $outputRoot 'crash.dmp')) {
         throw 'GPU capture crashed; see debugger.log and crash.dmp'
     }
-    if ($process.ExitCode -ne 0 -or -not (Test-Path -LiteralPath (Join-Path $outputRoot 'opaque_lit.png'))) {
+    if ($process.ExitCode -ne 0 -or -not (Test-Path -LiteralPath (Join-Path $outputRoot "$Scene.png"))) {
         throw "CDB did not complete the GPU capture (exit $($process.ExitCode))"
     }
 } finally { $process.Dispose() }

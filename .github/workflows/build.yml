@@ -246,7 +246,9 @@ jobs:
         if ($captureExit -ne 0) {
           if ($IsWindows) {
             try {
-              ./cmake/DebugGpuCapture.ps1 -BinaryDirectory $engine -OutputDirectory "$captureRoot/debugger"
+              $failedScene = Select-String -LiteralPath "$captureRoot/capture.log" -Pattern '^\[(\w+)\] child exited with code' | Select-Object -First 1
+              $scene = if ($failedScene) { $failedScene.Matches[0].Groups[1].Value } else { 'opaque_lit' }
+              ./cmake/DebugGpuCapture.ps1 -BinaryDirectory $engine -OutputDirectory "$captureRoot/debugger" -Scene $scene
             } catch { Write-Host $_ }
           }
           exit $captureExit

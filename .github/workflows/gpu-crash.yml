@@ -16,6 +16,10 @@ on:
         description: Capture the first access violation before application exception handlers run
         type: boolean
         default: false
+      scene:
+        description: Scene to replay under the Windows debugger
+        type: string
+        default: opaque_lit
 
 permissions:
   contents: read
@@ -30,6 +34,7 @@ jobs:
       CKRE_SDL_GPU_DEBUG: '1'
       MTL_DEBUG_LAYER: '1'
       CAPTURE_FIRST_CHANCE: ${{ inputs.first-chance }}
+      CAPTURE_SCENE: ${{ inputs.scene }}
     steps:
       - uses: actions/checkout@v6.0.2
       - uses: actions/download-artifact@v8
@@ -48,7 +53,7 @@ jobs:
         id: debugger
         if: ${{ startsWith(inputs.platform, 'windows-') }}
         shell: pwsh
-        run: ./cmake/DebugGpuCapture.ps1 -BinaryDirectory build/gpu-validation/symbols -OutputDirectory build/gpu-crash -FirstChance:($env:CAPTURE_FIRST_CHANCE -eq 'true')
+        run: ./cmake/DebugGpuCapture.ps1 -BinaryDirectory build/gpu-validation/symbols -OutputDirectory build/gpu-crash -Scene $env:CAPTURE_SCENE -FirstChance:($env:CAPTURE_FIRST_CHANCE -eq 'true')
       - name: Verify Metal sampler clipping and readback pixels
         if: ${{ startsWith(inputs.platform, 'macos-') }}
         shell: pwsh
