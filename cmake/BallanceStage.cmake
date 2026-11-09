@@ -153,6 +153,10 @@ add_test(NAME StageInstall
         -P "${CMAKE_CURRENT_LIST_DIR}/RunStageInstall.cmake"
 )
 
+# StageInstall may regenerate and relink libraries used by the other tests.
+# Keep the build-tree mutation separate from processes loading those libraries.
+set_tests_properties(StageInstall PROPERTIES RUN_SERIAL TRUE)
+
 add_test(NAME StageLayout
         COMMAND "${CMAKE_COMMAND}"
         -DSTAGE_ROOT:PATH=${CMAKE_INSTALL_PREFIX}

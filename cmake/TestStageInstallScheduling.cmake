@@ -1,0 +1,51 @@
+cmake_minimum_required(VERSION 3.21)
+
+set(fixture "${TEST_BINARY_DIR}/tests/stage-install-scheduling")
+file(REMOVE_RECURSE "${fixture}")
+file(MAKE_DIRECTORY "${fixture}/source")
+file(TO_CMAKE_PATH "${TEST_SOURCE_DIR}/cmake" module_dir)
+file(WRITE "${fixture}/source/CMakeLists.txt" "cmake_minimum_required(VERSION 3.21)\nproject(StageScheduling NONE)\nlist(PREPEND CMAKE_MODULE_PATH \"${module_dir}\")\n")
+file(APPEND "${fixture}/source/CMakeLists.txt" [=[
+set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/stage")
+set(BALLANCE_TEST_CONFIG Release)
+file(WRITE "${CMAKE_BINARY_DIR}/runtime.payload" "valid")
+add_custom_target(CK2 COMMAND "${CMAKE_COMMAND}"
+    "-DRUNTIME=${CMAKE_BINARY_DIR}/runtime.payload" -P "${CMAKE_SOURCE_DIR}/rebuild.cmake")
+install(FILES "${CMAKE_BINARY_DIR}/runtime.payload" DESTINATION Bin COMPONENT Runtime)
+include(BallanceStage)
+add_test(NAME RuntimeReader COMMAND "${CMAKE_COMMAND}"
+    "-DRUNTIME=${CMAKE_BINARY_DIR}/runtime.payload" -P "${CMAKE_SOURCE_DIR}/reader.cmake")
+]=])
+file(WRITE "${fixture}/source/rebuild.cmake" [=[
+file(WRITE "${RUNTIME}" "rebuilding")
+execute_process(COMMAND "${CMAKE_COMMAND}" -E sleep 0.5)
+file(WRITE "${RUNTIME}" "valid")
+]=])
+file(WRITE "${fixture}/source/reader.cmake" [=[
+foreach (attempt RANGE 1 20)
+    file(READ "${RUNTIME}" contents)
+    if (NOT contents STREQUAL "valid")
+        message(FATAL_ERROR "Runtime reader overlapped a StageInstall rebuild: ${contents}")
+    endif ()
+    execute_process(COMMAND "${CMAKE_COMMAND}" -E sleep 0.05)
+endforeach ()
+]=])
+set(configure "${CMAKE_COMMAND}" -S "${fixture}/source" -B "${fixture}/build"
+        -G "${TEST_GENERATOR}" -DCMAKE_BUILD_TYPE=Release)
+if (TEST_PLATFORM)
+    list(APPEND configure -A "${TEST_PLATFORM}")
+endif ()
+if (TEST_TOOLSET)
+    list(APPEND configure -T "${TEST_TOOLSET}")
+endif ()
+execute_process(COMMAND ${configure} RESULT_VARIABLE result OUTPUT_VARIABLE output ERROR_VARIABLE error)
+if (NOT result EQUAL 0)
+    message(FATAL_ERROR "Stage scheduling fixture configure failed: ${output}${error}")
+endif ()
+execute_process(COMMAND "${CMAKE_CTEST_COMMAND}" --test-dir "${fixture}/build"
+        -C Release --parallel 2 --no-tests=error -R "^(StageInstall|RuntimeReader)$" --output-on-failure
+        RESULT_VARIABLE result OUTPUT_VARIABLE output ERROR_VARIABLE error)
+file(WRITE "${fixture}/ctest.log" "${output}${error}")
+if (NOT result EQUAL 0)
+    message(FATAL_ERROR "StageInstall overlapped runtime readers: ${output}${error}")
+endif ()
