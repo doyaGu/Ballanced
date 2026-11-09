@@ -13,6 +13,7 @@ include(BallanceCache)
 include(BallanceProject)
 include(BallanceOptions)
 include(BallanceCompiler)
+include(BallanceLinkCache)
 include(BallanceVersion)
 include(CTest)
 

@@ -148,6 +148,7 @@ jobs:
 
     env:
       CMAKE_BUILD_PARALLEL_LEVEL: 4
+      CTEST_PARALLEL_LEVEL: 4
       CTEST_OUTPUT_ON_FAILURE: 1
       GTEST_FAIL_IF_NO_TEST_LINKED: 1
       CKRE_SDL_GPU_DRIVER: ${{ startsWith(matrix.platform.name, 'windows-') && 'direct3d12' || startsWith(matrix.platform.name, 'linux-') && 'vulkan' || 'metal' }}
@@ -191,6 +192,27 @@ jobs:
         discriminator: ${{ matrix.platform.sdl_discriminator }}
         build-type: Release
         install-linux-dependencies: true
+
+    - name: Prepare build cache key
+      if: ${{ (github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name)) && !inputs.gpu-debug }}
+      id: cache-key
+      run: |
+        $imageVersion = $env:ImageVersion
+        "prefix=build-v1-${{ matrix.platform.name }}-${{ matrix.linkage.name }}-${imageVersion}-${{ hashFiles('CMakePresets.json', '.github/workflows/build.yml', '.github/scripts/build_cache_state.py', 'cmake/BallanceCompiler.cmake', 'cmake/BallanceLinkCache.cmake') }}-" >> $env:GITHUB_OUTPUT
+
+    - name: Restore incremental build
+      if: ${{ steps.cache-key.outcome == 'success' }}
+      id: build-cache
+      continue-on-error: true
+      uses: actions/cache/restore@caa296126883cff596d87d8935842f9db880ef25 # v5
+      with:
+        path: build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }}
+        key: ${{ steps.cache-key.outputs.prefix }}${{ github.sha }}
+        restore-keys: ${{ steps.cache-key.outputs.prefix }}
+
+    - name: Restore unchanged source timestamps
+      if: ${{ steps.cache-key.outcome == 'success' }}
+      run: python3 -B .github/scripts/build_cache_state.py restore --build-dir build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }}
 
     - name: Configure
       if: ${{ github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name) }}
@@ -291,9 +313,29 @@ jobs:
         path: build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }}/gpu-validation/
         if-no-files-found: error
 
+    - name: Check numerical headers before the full test build
+      if: ${{ github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name) }}
+      run: |
+        cmake --build build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }} --config Release --target ivp_fast_path_test ivp_runtime_state_test ivp_packed_arithmetic_test --parallel $([Environment]::ProcessorCount)
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        ctest --test-dir build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }} -C Release -R '^ivp_(x87_fast_path|x87_runtime_state|packed_arithmetic)$' --output-on-failure --no-tests=error
+        exit $LASTEXITCODE
+
     - name: Build tests
       if: ${{ github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name) }}
       run: cmake --build --preset ${{ matrix.platform.preset }}-${{ matrix.linkage.name }}-release --parallel $([Environment]::ProcessorCount)
+
+    - name: Save source timestamps for incremental builds
+      if: ${{ !cancelled() && steps.cache-key.outcome == 'success' }}
+      run: python3 -B .github/scripts/build_cache_state.py save --build-dir build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }}
+
+    - name: Save incremental build
+      if: ${{ !cancelled() && steps.cache-key.outcome == 'success' && steps.build-cache.outputs.cache-primary-key != '' && steps.build-cache.outputs.cache-hit != 'true' }}
+      continue-on-error: true
+      uses: actions/cache/save@caa296126883cff596d87d8935842f9db880ef25 # v5
+      with:
+        path: build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }}
+        key: ${{ steps.build-cache.outputs.cache-primary-key }}
 
     - name: Install Linux Vulkan test dependencies
       if: ${{ (github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name)) && startsWith(matrix.platform.name, 'linux-') }}
@@ -378,6 +420,7 @@ jobs:
 
     env:
       CMAKE_BUILD_PARALLEL_LEVEL: 4
+      CTEST_PARALLEL_LEVEL: 4
       CTEST_OUTPUT_ON_FAILURE: 1
       GTEST_FAIL_IF_NO_TEST_LINKED: 1
 
@@ -401,12 +444,43 @@ jobs:
         cmake-arguments: --no-warn-unused-cli
         install-linux-dependencies: true
 
+    - name: Prepare build cache key
+      id: cache-key
+      shell: pwsh
+      run: |
+        $imageVersion = $env:ImageVersion
+        "prefix=build-v1-linux-x64-full-tests-${imageVersion}-${{ hashFiles('CMakePresets.json', '.github/workflows/build.yml', '.github/scripts/build_cache_state.py', 'cmake/BallanceCompiler.cmake', 'cmake/BallanceLinkCache.cmake') }}-" >> $env:GITHUB_OUTPUT
+
+    - name: Restore incremental build
+      id: build-cache
+      continue-on-error: true
+      uses: actions/cache/restore@caa296126883cff596d87d8935842f9db880ef25 # v5
+      with:
+        path: build/linux-x64-tests
+        key: ${{ steps.cache-key.outputs.prefix }}${{ github.sha }}
+        restore-keys: ${{ steps.cache-key.outputs.prefix }}
+
+    - name: Restore unchanged source timestamps
+      run: python3 -B .github/scripts/build_cache_state.py restore --build-dir build/linux-x64-tests
+
     - name: Configure full test suite
       shell: pwsh
       run: cmake --preset linux-x64-tests "-DCMAKE_PREFIX_PATH=${{ steps.sdl.outputs.prefix }}" -DBALLANCE_AUTO_DETECT_ASSETS=OFF -DBALLANCE_ASSETS_ROOT= -DPLAYER_BUILD_TESTS=ON -DIVP_BUILD_TESTS=ON
 
     - name: Build full test suite
       run: cmake --build --preset linux-x64-tests-release
+
+    - name: Save source timestamps for incremental builds
+      if: ${{ !cancelled() }}
+      run: python3 -B .github/scripts/build_cache_state.py save --build-dir build/linux-x64-tests
+
+    - name: Save incremental build
+      if: ${{ !cancelled() && steps.build-cache.outputs.cache-primary-key != '' && steps.build-cache.outputs.cache-hit != 'true' }}
+      continue-on-error: true
+      uses: actions/cache/save@caa296126883cff596d87d8935842f9db880ef25 # v5
+      with:
+        path: build/linux-x64-tests
+        key: ${{ steps.build-cache.outputs.cache-primary-key }}
 
     - name: Install Linux Vulkan test dependencies
       run: |
