@@ -20,6 +20,9 @@ Download the latest pre-built release:
 
 Windows does not require compatibility mode or registry edits.
 
+For a macOS `.dmg` release, open the disk image and copy its contents into the
+game root before starting `Bin/Player`.
+
 ### Flat layout (alternative)
 
 Put `Player` (`Player.exe` on Windows), `base.cmo`, `Database.tdb`, the asset folders, and all runtime modules in the same directory. When `base.cmo` is next to the executable, the player treats that directory as its root.
@@ -39,6 +42,8 @@ includes the Metal fence completion and ownership fixes required by GPU uploads.
 The macOS stage layout supports SDL3 shared-library packages, including Homebrew.
 Staging rewrites the copied SDL3 library and its consumers to use `@rpath` and
 applies ad hoc signatures. SDL3 framework packages are not part of this layout.
+An optional manual CI workflow provides Developer ID signing and notarized disk
+images once signing credentials are configured. See [macOS release signing](BUILD.md#macos-release-signing).
 
 ### Quick start (Windows x86)
 

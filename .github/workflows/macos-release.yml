@@ -1,0 +1,195 @@
+name: Release macOS
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing release tag to rebuild (macOS assets only)
+        required: true
+        default: v0.2.0
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-Release-${{ format('refs/tags/{0}', inputs.tag) }}
+  cancel-in-progress: false
+
+jobs:
+  resolve:
+    name: Check signing configuration and source
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    outputs:
+      sha: ${{ steps.source.outputs.sha }}
+      tag: ${{ steps.source.outputs.tag }}
+    steps:
+      - name: Check required secrets
+        shell: bash
+        env:
+          MACOS_CERTIFICATE_P12_BASE64: ${{ secrets.MACOS_CERTIFICATE_P12_BASE64 }}
+          MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+        run: |
+          missing=()
+          for name in MACOS_CERTIFICATE_P12_BASE64 MACOS_CERTIFICATE_PASSWORD APPLE_ID APPLE_TEAM_ID APPLE_APP_SPECIFIC_PASSWORD; do
+            if [[ -z "${!name}" ]]; then missing+=("$name"); fi
+          done
+          if (( ${#missing[@]} )); then
+            echo "::error::Missing repository secrets: ${missing[*]}"
+            exit 1
+          fi
+      - uses: actions/checkout@v6.0.2
+        with:
+          ref: ${{ format('refs/tags/{0}', inputs.tag) }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Resolve immutable source commit
+        id: source
+        shell: bash
+        env:
+          RELEASE_TAG: ${{ inputs.tag }}
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          sha=$(git rev-parse HEAD)
+          if [[ -n "$RELEASE_TAG" ]]; then
+            git check-ref-format "refs/tags/$RELEASE_TAG"
+            test "$(git rev-list -n 1 "refs/tags/$RELEASE_TAG")" = "$sha"
+            git fetch origin sdl
+            git merge-base --is-ancestor "$sha" origin/sdl
+            gh release view "$RELEASE_TAG" >/dev/null
+          fi
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          echo "tag=$RELEASE_TAG" >> "$GITHUB_OUTPUT"
+
+  package:
+    name: macos-${{ matrix.arch }}-${{ matrix.linkage }}
+    needs: resolve
+    runs-on: macos-26
+    timeout-minutes: 150
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x64
+            osx_arch: x86_64
+            linkage: runtime
+          - arch: x64
+            osx_arch: x86_64
+            linkage: static
+          - arch: arm64
+            osx_arch: arm64
+            linkage: runtime
+          - arch: arm64
+            osx_arch: arm64
+            linkage: static
+    defaults:
+      run:
+        shell: bash
+        working-directory: source
+    env:
+      CMAKE_BUILD_PARALLEL_LEVEL: 4
+      CTEST_OUTPUT_ON_FAILURE: 1
+      RELEASE_IMAGE: ../dist/ballance-sdl-macos-${{ matrix.arch }}-${{ matrix.linkage }}.dmg
+    steps:
+      - name: Checkout release tooling
+        uses: actions/checkout@v6.0.2
+        with:
+          path: tooling
+          persist-credentials: false
+      - name: Checkout exact runtime source
+        uses: actions/checkout@v6.0.2
+        with:
+          ref: ${{ needs.resolve.outputs.sha }}
+          path: source
+          persist-credentials: false
+      - name: Checkout submodules
+        shell: pwsh
+        run: ./cmake/UpdateSubmodules.ps1
+      - name: Setup SDL3
+        id: sdl
+        uses: libsdl-org/setup-sdl@a966470e7d9b6a5c93eec3f08d5dac370325c860
+        with:
+          version: 3.4.20
+          discriminator: macOS-${{ matrix.arch }}
+          cmake-arguments: -DCMAKE_OSX_ARCHITECTURES=${{ matrix.osx_arch }} -DCMAKE_OSX_DEPLOYMENT_TARGET=15.0
+          build-type: Release
+      - name: Configure
+        env:
+          SDL_PREFIX: ${{ steps.sdl.outputs.prefix }}
+        run: cmake --preset macos-${{ matrix.arch }}-${{ matrix.linkage }} "-DCMAKE_PREFIX_PATH=$SDL_PREFIX" -DCMAKE_OSX_DEPLOYMENT_TARGET=15.0 -DBALLANCE_AUTO_DETECT_ASSETS=OFF -DBALLANCE_ASSETS_ROOT=
+      - name: Build and test staged layout
+        run: |
+          cmake --build --preset macos-${{ matrix.arch }}-${{ matrix.linkage }}-stage-release
+          ctest --test-dir build/macos-${{ matrix.arch }}-${{ matrix.linkage }} -C Release --output-on-failure --no-tests=error
+      - name: Import Developer ID and validate Apple credentials
+        id: signing
+        env:
+          MACOS_CERTIFICATE_P12_BASE64: ${{ secrets.MACOS_CERTIFICATE_P12_BASE64 }}
+          MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+        run: python3 ../tooling/.github/scripts/macos_release.py setup --work-dir "$RUNNER_TEMP/ballanced-signing"
+      - name: Sign all runtime executables and libraries
+        run: python3 ../tooling/.github/scripts/macos_release.py sign --work-dir "$RUNNER_TEMP/ballanced-signing" --stage build/macos-${{ matrix.arch }}-${{ matrix.linkage }}/stage
+      - name: Notarize and staple release image
+        env:
+          SOURCE_SHA: ${{ needs.resolve.outputs.sha }}
+        run: python3 ../tooling/.github/scripts/macos_release.py notarize --work-dir "$RUNNER_TEMP/ballanced-signing" --stage build/macos-${{ matrix.arch }}-${{ matrix.linkage }}/stage --image "$RELEASE_IMAGE" --revision "$SOURCE_SHA"
+      - name: Verify Gatekeeper and quarantined runtime startup
+        run: python3 ../tooling/.github/scripts/macos_release.py verify --work-dir "$RUNNER_TEMP/ballanced-signing" --image "$RELEASE_IMAGE"
+      - name: Upload verified image and manifest
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: macos-${{ matrix.arch }}-${{ matrix.linkage }}-release
+          path: |
+            dist/*.dmg
+            dist/*.json
+          if-no-files-found: error
+          retention-days: 14
+      - name: Upload notarization diagnostics
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: macos-${{ matrix.arch }}-${{ matrix.linkage }}-notarization
+          path: |
+            ${{ runner.temp }}/ballanced-signing/notary-result.json
+            ${{ runner.temp }}/ballanced-signing/notary-log.json
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Remove temporary signing keychain
+        if: ${{ always() && (steps.signing.outcome == 'success' || steps.signing.outcome == 'failure' || steps.signing.outcome == 'cancelled') }}
+        working-directory: tooling
+        run: python3 .github/scripts/macos_release.py cleanup --work-dir "$RUNNER_TEMP/ballanced-signing"
+
+  publish:
+    name: Replace macOS release assets
+    needs: [resolve, package]
+    if: needs.resolve.outputs.tag != ''
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      actions: read
+      contents: write
+    steps:
+      - uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: false
+      - name: Download all four verified packages
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: gh run download "$GITHUB_RUN_ID" --pattern 'macos-*-release' --dir dist
+      - name: Publish macOS assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ needs.resolve.outputs.tag }}
+          SOURCE_SHA: ${{ needs.resolve.outputs.sha }}
+        run: python3 .github/scripts/publish_macos_release.py --directory dist --repo "$GITHUB_REPOSITORY" --tag "$RELEASE_TAG" --revision "$SOURCE_SHA"

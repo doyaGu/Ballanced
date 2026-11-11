@@ -96,7 +96,73 @@ cmake -DSTAGE_ROOT=build/windows-x86-runtime/stage -DARCHIVE_PATH=dist/ballance-
 cmake -DARCHIVE_PATH=dist/ballance-sdl-windows-x86-runtime.zip -DEXTRACT_ROOT=build/package-check -DBALLANCE_COMPONENT_MANIFEST=build/windows-x86-runtime/RuntimeComponents.cmake -P cmake/VerifyReleaseArchive.cmake
 ```
 
-This is the only packaging path; CI and releases use the same scripts.
+This archive packaging path is shared by local builds and CI. Signed macOS
+releases use the disk-image workflow below.
+
+## macOS release signing
+
+`.github/workflows/macos-release.yml` builds x64 and ARM64, each with runtime and
+static linkage. It signs `Player` and every bundled Mach-O library with Developer
+ID, enables Hardened Runtime for Player, submits a DMG to Apple, and staples the
+accepted notarization ticket. The DMG must pass Gatekeeper assessment and a
+startup test with download quarantine attributes before it can be published.
+
+Create a **Developer ID Application** certificate using an Apple Developer Program
+account with permission to create Developer ID certificates. Install the downloaded
+certificate on the Mac that generated its certificate signing request. In Keychain
+Access, export the identity from **My Certificates**, including its private key,
+as a password-protected `.p12` file. The same identity signs all four packages.
+This DMG workflow does not need a Developer ID Installer certificate or a
+provisioning profile.
+
+Configure these repository Actions Secrets at
+<https://github.com/doyaGu/Ballanced/settings/secrets/actions>:
+
+| Secret | Value |
+| --- | --- |
+| `MACOS_CERTIFICATE_P12_BASE64` | Base64 of the exported `.p12`, including the private key |
+| `MACOS_CERTIFICATE_PASSWORD` | Password selected when exporting that `.p12` |
+| `APPLE_ID` | Apple Account email used for notarization |
+| `APPLE_TEAM_ID` | Ten-character Developer Program Team ID matching the certificate |
+| `APPLE_APP_SPECIFIC_PASSWORD` | App-specific password generated for that Apple Account |
+
+Upload the P12 through standard input so it is not printed or stored in shell
+history:
+
+```bash
+base64 -i /path/to/DeveloperID.p12 | gh secret set MACOS_CERTIFICATE_P12_BASE64 --repo doyaGu/Ballanced
+```
+
+Set the other four values in the repository Secrets UI, or use `gh secret set
+SECRET_NAME --repo doyaGu/Ballanced` and enter the value at its prompt. Keep the
+P12, private key, and app-specific password out of commits, issue comments, and
+chat messages. CI generates its temporary keychain password and removes that
+keychain after each job.
+
+To replace the macOS assets of an existing release after configuring the Secrets:
+
+```bash
+gh workflow run macos-release.yml --repo doyaGu/Ballanced --ref sdl -f tag=v0.2.0
+```
+
+The workflow takes tooling from the selected workflow revision and builds runtime
+code from the existing release tag's immutable commit. It publishes only after all
+four images have passed. After verifying the uploaded DMGs and their SHA-256
+digests, it removes the four old macOS `.tar.gz` assets and updates their filenames
+in the release notes. Windows and Linux assets are not part of this operation.
+The release tag and its draft/published state are preserved.
+
+This workflow is manual and is not invoked by the existing tag release workflow.
+It shares the tag release concurrency group so it waits for any ordinary release
+build to finish before replacing macOS assets. Missing Secrets, invalid identities,
+rejected notarization, a changed release tag, or failed distribution checks stop
+publication.
+
+Certificate and service documentation:
+[Developer ID certificates](https://developer.apple.com/help/account/certificates/create-developer-id-certificates/),
+[exporting signing identities](https://developer.apple.com/documentation/xcode/sharing-your-teams-signing-certificates),
+[notarization workflow](https://developer.apple.com/documentation/security/customizing-the-notarization-workflow),
+[app-specific passwords](https://support.apple.com/102654).
 
 ## Preset matrix
 
