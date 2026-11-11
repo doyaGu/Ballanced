@@ -94,6 +94,7 @@ jobs:
         $buildPresets = @($rootPresets.buildPresets | ForEach-Object { $_.name })
         $workflowPaths = @(
           ".github/workflows/build.yml",
+          ".github/workflows/test.yml",
           ".github/workflows/release.yml"
         ) | Where-Object { Test-Path $_ }
 
@@ -119,8 +120,8 @@ jobs:
           }
         }
         foreach ($ref in $buildRefs) {
-          if ($ref.Name -match '-tests-') {
-            $missing += "$($ref.Path): workflow must not reference test build preset: $($ref.Name)"
+          if ($ref.Name -match '-tests-' -and $ref.Path -ne ".github/workflows/test.yml") {
+            $missing += "$($ref.Path): build and release workflows must not reference test build preset: $($ref.Name)"
           }
         }
 

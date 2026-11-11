@@ -124,10 +124,10 @@ jobs:
         env:
           SDL_PREFIX: ${{ steps.sdl.outputs.prefix }}
         run: cmake --preset macos-${{ matrix.arch }}-${{ matrix.linkage }} "-DCMAKE_PREFIX_PATH=$SDL_PREFIX" -DCMAKE_OSX_DEPLOYMENT_TARGET=15.0 -DBALLANCE_AUTO_DETECT_ASSETS=OFF -DBALLANCE_ASSETS_ROOT=
-      - name: Build and test staged layout
-        run: |
-          cmake --build --preset macos-${{ matrix.arch }}-${{ matrix.linkage }}-stage-release
-          ctest --test-dir build/macos-${{ matrix.arch }}-${{ matrix.linkage }} -C Release --output-on-failure --no-tests=error
+      - name: Build staged layout
+        run: cmake --build --preset macos-${{ matrix.arch }}-${{ matrix.linkage }}-stage-release
+      - name: Test staged layout
+        run: ctest --test-dir build/macos-${{ matrix.arch }}-${{ matrix.linkage }} -C Release --output-on-failure --no-tests=error
       - name: Import Developer ID and validate Apple credentials
         id: signing
         env:

@@ -81,8 +81,8 @@ read this ignored directory by default.
 ### Source of truth and versioning
 
 - `CMakePresets.json` defines the supported full-runtime platform, architecture, and linkage matrix.
-- `.github/workflows/build.yml` defines the configurations continuously built by CI.
-- CI runs the complete component test preset on Linux x64 in addition to the platform/linkage build matrix.
+- `.github/workflows/build.yml` builds and packages the platform/linkage matrix with tests disabled.
+- `.github/workflows/test.yml` independently builds and runs component tests across the same matrix, plus the complete Linux x64 test preset. GPU diagnostics are available through this workflow's `gpu-debug` input.
 - `BUILD.md` documents the supported superproject workflow. Component READMEs describe standalone workflows only.
 - Ballanced and its Git submodules are independently versioned. The root project version identifies the assembled runtime; Player and the engine/module projects keep their own versions. A component version should not be inferred from the root version or release tag.
 

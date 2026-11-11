@@ -14,7 +14,6 @@ on:
         default: all
         options:
           - all
-          - sdl-linux-x64-full-tests
           - sdl-windows-x86-runtime
           - sdl-windows-x64-runtime
           - sdl-windows-arm64-runtime
@@ -29,11 +28,6 @@ on:
           - sdl-linux-arm64-static
           - sdl-macos-x64-static
           - sdl-macos-arm64-static
-      gpu-debug:
-        description: "Capture GPU validation frames and enable backend diagnostics"
-        required: false
-        type: boolean
-        default: false
 
 permissions:
   contents: read
@@ -104,7 +98,6 @@ jobs:
             configure_arguments: -G "Visual Studio 18 2026" -T "v143,version=14.44"
 
           - name: linux-x64
-            # Mesa 26 fixes fixed-point bilinear rounding on non-x86 CPUs.
             os: ubuntu-26.04
             archive_ext: .tar.gz
             preset: linux-x64
@@ -121,8 +114,7 @@ jobs:
             sdl_cmake_arguments: --no-warn-unused-cli
 
           - name: macos-x64
-            # The hosted Intel VM cannot create an SDL Metal device. Build
-            # x86_64 binaries and execute them with Rosetta on the ARM VM.
+            # Build x86_64 binaries on the ARM VM; Test covers Rosetta execution.
             os: macos-26
             archive_ext: .tar.gz
             preset: macos-x64
@@ -148,12 +140,6 @@ jobs:
 
     env:
       CMAKE_BUILD_PARALLEL_LEVEL: 4
-      CTEST_PARALLEL_LEVEL: 4
-      CTEST_OUTPUT_ON_FAILURE: 1
-      GTEST_FAIL_IF_NO_TEST_LINKED: 1
-      CKRE_SDL_GPU_DRIVER: ${{ startsWith(matrix.platform.name, 'windows-') && 'direct3d12' || startsWith(matrix.platform.name, 'linux-') && 'vulkan' || 'metal' }}
-      CKRE_SDL_GPU_DEBUG: ${{ (github.event_name == 'workflow_dispatch' && inputs.gpu-debug) && '1' || '0' }}
-      MTL_DEBUG_LAYER: ${{ (github.event_name == 'workflow_dispatch' && inputs.gpu-debug) && '1' || '0' }}
 
     defaults:
       run:
@@ -173,14 +159,6 @@ jobs:
       shell: bash
       run: ./cmake/SetupWaylandScanner.sh
 
-    - name: Check x86_64 execution on macOS
-      if: ${{ matrix.platform.name == 'macos-x64' && (github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name)) }}
-      shell: bash
-      run: |
-        machine=$(/usr/bin/arch -x86_64 /usr/bin/uname -m)
-        echo "Rosetta reports: $machine"
-        test "$machine" = x86_64
-
     - name: Setup SDL3
       if: ${{ github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name) }}
       id: sdl
@@ -194,7 +172,7 @@ jobs:
         install-linux-dependencies: true
 
     - name: Prepare build cache key
-      if: ${{ (github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name)) && !inputs.gpu-debug }}
+      if: ${{ (github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name)) }}
       id: cache-key
       run: |
         $imageVersion = $env:ImageVersion
@@ -217,113 +195,14 @@ jobs:
     - name: Configure
       if: ${{ github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name) }}
       run: |
-        $diagnosticArguments = @()
-        if ($IsWindows) {
-          $diagnosticArguments += '-DCKRE_TEST_D3D12_SDK_VERSION=620'
-        }
-        if ($IsWindows -and '${{ inputs.gpu-debug }}' -eq 'true') {
-          $diagnosticArguments += '-DCMAKE_C_FLAGS_RELEASE=/O2 /Ob2 /DNDEBUG /Zi'
-          $diagnosticArguments += '-DCMAKE_CXX_FLAGS_RELEASE=/O2 /Ob2 /DNDEBUG /Zi'
-          $diagnosticArguments += '-DCMAKE_EXE_LINKER_FLAGS_RELEASE=/DEBUG /INCREMENTAL:NO /OPT:REF /OPT:ICF'
-          $diagnosticArguments += '-DCMAKE_SHARED_LINKER_FLAGS_RELEASE=/DEBUG /INCREMENTAL:NO /OPT:REF /OPT:ICF'
-        }
         cmake --preset ${{ matrix.platform.preset }}-${{ matrix.linkage.name }} `
           ${{ matrix.platform.configure_arguments }} `
           "-DCMAKE_PREFIX_PATH=${{ steps.sdl.outputs.prefix }}" `
-          -DCKRE_BUILD_TESTS=ON `
-          -DVXMATH_BUILD_TESTS=ON -DCK2_BUILD_TESTS=ON `
-          -DCKBB_BUILD_TESTS=ON -DCKPLUGINS_BUILD_TESTS=ON `
-          -DPLAYER_BUILD_TESTS=ON -DIVP_BUILD_TESTS=ON @diagnosticArguments
+          -DBUILD_TESTING=OFF -DBALLANCE_AUTO_DETECT_ASSETS=OFF -DBALLANCE_ASSETS_ROOT=
 
     - name: Build
       if: ${{ github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name) }}
       run: cmake --build --preset ${{ matrix.platform.preset }}-${{ matrix.linkage.name }}-stage-release --parallel $([Environment]::ProcessorCount)
-
-    - name: Setup Windows software rasterizer
-      if: ${{ startsWith(matrix.platform.name, 'windows-') && (github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name)) }}
-      run: |
-        $architecture = '${{ matrix.platform.name }}'.Substring(8)
-        ./cmake/SetupWindowsWarp.ps1 -Architecture $architecture -DestinationDirectory "build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }}/bin/Release"
-        ./cmake/SetupWindowsD3D12.ps1 -Architecture $architecture -DestinationDirectory "build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }}/bin/Release/D3D12"
-        $binary = (Resolve-Path "build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }}/bin/Release").Path
-        $config = Join-Path $binary 'D3D12/d3dconfig.exe'
-        # The virtual display adapter and WARP can report the same name. Select
-        # WARP explicitly instead of using the runner's GPU preference ordering.
-        foreach ($name in @('shader_jit_dxbc_validator', 'test_sdl_gpu_pixels', 'sdl_gpu_ffp_pixel_tests', 'ckre_scene_capture', 'sdl_gpu_backbuffer_benchmark')) {
-          & $config apps --add (Join-Path $binary "$name.exe")
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-        }
-        & $config device force-warp=true
-        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-
-    - name: Capture GPU validation frames
-      if: ${{ github.event_name == 'workflow_dispatch' && inputs.gpu-debug && (startsWith(matrix.platform.name, 'macos-') || startsWith(matrix.platform.name, 'windows-')) && matrix.linkage.name == 'runtime' && (inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name)) }}
-      run: |
-        $buildRoot = "build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }}"
-        cmake --build $buildRoot --config Release --target ckre_scene_capture sdl_gpu_ffp_pixel_tests --parallel $([Environment]::ProcessorCount)
-        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-        $captureRoot = "$buildRoot/gpu-validation"
-        New-Item -ItemType Directory -Force -Path $captureRoot | Out-Null
-        $tool = "$buildRoot/bin/ckre_scene_capture"
-        $engine = "$buildRoot/lib"
-        if ($IsWindows) {
-          $tool = "$buildRoot/bin/Release/ckre_scene_capture.exe"
-          $engine = "$buildRoot/bin/Release"
-          $symbolRoot = New-Item -ItemType Directory -Force -Path "$captureRoot/symbols"
-          Get-ChildItem $engine -File | Where-Object { $_.Extension -in '.pdb', '.dll', '.exe' } |
-            Copy-Item -Destination $symbolRoot.FullName
-          Copy-Item -LiteralPath "$engine/D3D12" -Destination $symbolRoot.FullName -Recurse
-        } elseif ($IsMacOS) {
-          $runtimeRoot = New-Item -ItemType Directory -Force -Path "$captureRoot/runtime"
-          Get-ChildItem "$buildRoot/stage" -Force | Copy-Item -Destination $runtimeRoot.FullName -Recurse
-          Copy-Item -LiteralPath $tool, "$buildRoot/bin/sdl_gpu_ffp_pixel_tests" -Destination "$runtimeRoot/Bin"
-        }
-        & $tool --render-engine-dir $engine --rasterizer sdlgpu --scene all --frames 5 --capture-frames 1,5 --verbose --out $captureRoot *> "$captureRoot/capture.log"
-        $captureExit = $LASTEXITCODE
-        if ($captureExit -ne 0) {
-          if ($IsWindows) {
-            try {
-              $failedScene = Select-String -LiteralPath "$captureRoot/capture.log" -Pattern '^\[(\w+)\] child exited with code' | Select-Object -First 1
-              $scene = if ($failedScene) { $failedScene.Matches[0].Groups[1].Value } else { 'opaque_lit' }
-              ./cmake/DebugGpuCapture.ps1 -BinaryDirectory $engine -OutputDirectory "$captureRoot/debugger" -Scene $scene
-            } catch { Write-Host $_ }
-          }
-          exit $captureExit
-        }
-        if ($IsWindows) {
-          $env:CKRE_SDL_GPU_FF_JIT_CACHE = '0'
-          $env:CKRE_SDL_GPU_FF_JIT_STATS = '1'
-          foreach ($mode in @('off', 'fragment', 'on')) {
-            $env:CKRE_SDL_GPU_FF_JIT = if ($mode -eq 'off') { '0' } else { '1' }
-            $env:CKRE_SDL_GPU_FF_VERTEX_JIT = if ($mode -eq 'fragment') { '0' } else { '1' }
-            $modeRoot = "$captureRoot/jit-$mode"
-            New-Item -ItemType Directory -Force -Path $modeRoot | Out-Null
-            & $tool --render-engine-dir $engine --rasterizer sdlgpu --scene cube_mip_dynamic --frames 120 --frame-delay-ms 16 --capture-frames 1,5,30,60,90,120 --out $modeRoot *> "$modeRoot/capture.log"
-            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          }
-        }
-        ctest --test-dir $buildRoot -C Release -R '^sdl_gpu_(ffp|sampler|clipping|readback)_pixel_tests$' --output-on-failure --no-tests=error *> "$captureRoot/fixed-function-pixels.log"
-        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-
-    - name: Upload GPU validation frames
-      if: ${{ !cancelled() && github.event_name == 'workflow_dispatch' && inputs.gpu-debug && (startsWith(matrix.platform.name, 'macos-') || startsWith(matrix.platform.name, 'windows-')) && matrix.linkage.name == 'runtime' && (inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name)) }}
-      uses: actions/upload-artifact@v7.0.1
-      with:
-        name: gpu-validation-${{ matrix.platform.name }}
-        path: build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }}/gpu-validation/
-        if-no-files-found: error
-
-    - name: Check numerical headers before the full test build
-      if: ${{ github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name) }}
-      run: |
-        cmake --build build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }} --config Release --target ivp_fast_path_test ivp_runtime_state_test ivp_packed_arithmetic_test --parallel $([Environment]::ProcessorCount)
-        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-        ctest --test-dir build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }} -C Release -R '^ivp_(x87_fast_path|x87_runtime_state|packed_arithmetic)$' --output-on-failure --no-tests=error
-        exit $LASTEXITCODE
-
-    - name: Build tests
-      if: ${{ github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name) }}
-      run: cmake --build --preset ${{ matrix.platform.preset }}-${{ matrix.linkage.name }}-release --parallel $([Environment]::ProcessorCount)
 
     - name: Save source timestamps for incremental builds
       if: ${{ !cancelled() && steps.cache-key.outcome == 'success' }}
@@ -336,52 +215,6 @@ jobs:
       with:
         path: build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }}
         key: ${{ steps.build-cache.outputs.cache-primary-key }}
-
-    - name: Install Linux Vulkan test dependencies
-      if: ${{ (github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name)) && startsWith(matrix.platform.name, 'linux-') }}
-      shell: bash
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y xvfb libegl1 libgles2 libgl1-mesa-dri libglx-mesa0 mesa-utils mesa-vulkan-drivers
-        mesa_version=$(dpkg-query -W -f='${Version}' mesa-vulkan-drivers)
-        echo "Mesa Vulkan driver: $mesa_version (requires fixed-point rounding from Mesa 26)"
-        dpkg --compare-versions "$mesa_version" ge 26.0.0
-
-    - name: Test complete suite
-      if: ${{ github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name) }}
-      run: |
-        if ($IsLinux) {
-          xvfb-run -a ctest --test-dir build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }} -C Release --output-on-failure --no-tests=error --output-junit "${{ github.workspace }}/build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }}/ctest-results.xml"
-        } else {
-          ctest --test-dir build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }} -C Release --output-on-failure --no-tests=error --output-junit "${{ github.workspace }}/build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }}/ctest-results.xml"
-        }
-        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-
-    - name: Verify executed tests
-      if: ${{ !cancelled() && (github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name)) }}
-      run: python3 -B .github/scripts/verify_ctest_results.py "build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }}/ctest-results.xml"
-
-    - name: Upload test results
-      if: ${{ !cancelled() && (github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name)) }}
-      uses: actions/upload-artifact@v7.0.1
-      with:
-        name: test-results-${{ matrix.platform.name }}-${{ matrix.linkage.name }}
-        path: |
-          build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }}/ctest-results.xml
-          build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }}/Testing/Temporary/
-        if-no-files-found: error
-
-    - name: Upload failed test output
-      if: ${{ failure() }}
-      uses: actions/upload-artifact@v7.0.1
-      with:
-        name: test-output-${{ matrix.platform.name }}-${{ matrix.linkage.name }}
-        path: |
-          build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }}/ctest-results.xml
-          build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }}/Testing/Temporary/
-          build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }}/scene_capture*/
-          build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }}/**/ffjit-failures/
-        if-no-files-found: ignore
 
     - name: Create package
       if: ${{ github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name) }}
@@ -407,117 +240,3 @@ jobs:
         archive: false
         if-no-files-found: error
         retention-days: 14
-
-  full-tests:
-    name: sdl-linux-x64-full-tests
-    needs: changes
-    if: ${{ !cancelled() && (github.event_name != 'schedule' || needs.changes.outputs.changed == 'true') && (github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == 'sdl-linux-x64-full-tests') }}
-    runs-on: ubuntu-26.04
-    timeout-minutes: 120
-
-    permissions:
-      contents: read
-
-    env:
-      CMAKE_BUILD_PARALLEL_LEVEL: 4
-      CTEST_PARALLEL_LEVEL: 4
-      CTEST_OUTPUT_ON_FAILURE: 1
-      GTEST_FAIL_IF_NO_TEST_LINKED: 1
-
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v6.0.2
-
-    - name: Checkout submodules
-      shell: pwsh
-      run: ./cmake/UpdateSubmodules.ps1
-
-    - name: Setup current wayland-scanner
-      run: ./cmake/SetupWaylandScanner.sh
-
-    - name: Setup SDL3
-      id: sdl
-      uses: libsdl-org/setup-sdl@a966470e7d9b6a5c93eec3f08d5dac370325c860
-      with:
-        version: 3.4.20
-        build-type: Release
-        cmake-arguments: --no-warn-unused-cli
-        install-linux-dependencies: true
-
-    - name: Prepare build cache key
-      id: cache-key
-      shell: pwsh
-      run: |
-        $imageVersion = $env:ImageVersion
-        "prefix=build-v1-linux-x64-full-tests-${imageVersion}-${{ hashFiles('CMakePresets.json', '.github/workflows/build.yml', '.github/scripts/build_cache_state.py', 'cmake/BallanceCompiler.cmake', 'cmake/BallanceLinkCache.cmake') }}-" >> $env:GITHUB_OUTPUT
-
-    - name: Restore incremental build
-      id: build-cache
-      continue-on-error: true
-      uses: actions/cache/restore@caa296126883cff596d87d8935842f9db880ef25 # v5
-      with:
-        path: build/linux-x64-tests
-        key: ${{ steps.cache-key.outputs.prefix }}${{ github.sha }}
-        restore-keys: ${{ steps.cache-key.outputs.prefix }}
-
-    - name: Restore unchanged source timestamps
-      run: python3 -B .github/scripts/build_cache_state.py restore --build-dir build/linux-x64-tests
-
-    - name: Configure full test suite
-      shell: pwsh
-      run: cmake --preset linux-x64-tests "-DCMAKE_PREFIX_PATH=${{ steps.sdl.outputs.prefix }}" -DBALLANCE_AUTO_DETECT_ASSETS=OFF -DBALLANCE_ASSETS_ROOT= -DPLAYER_BUILD_TESTS=ON -DIVP_BUILD_TESTS=ON
-
-    - name: Build full test suite
-      run: cmake --build --preset linux-x64-tests-release
-
-    - name: Save source timestamps for incremental builds
-      if: ${{ !cancelled() }}
-      run: python3 -B .github/scripts/build_cache_state.py save --build-dir build/linux-x64-tests
-
-    - name: Save incremental build
-      if: ${{ !cancelled() && steps.build-cache.outputs.cache-primary-key != '' && steps.build-cache.outputs.cache-hit != 'true' }}
-      continue-on-error: true
-      uses: actions/cache/save@caa296126883cff596d87d8935842f9db880ef25 # v5
-      with:
-        path: build/linux-x64-tests
-        key: ${{ steps.build-cache.outputs.cache-primary-key }}
-
-    - name: Install Linux Vulkan test dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y xvfb mesa-vulkan-drivers
-        mesa_version=$(dpkg-query -W -f='${Version}' mesa-vulkan-drivers)
-        echo "Mesa Vulkan driver: $mesa_version (requires fixed-point rounding from Mesa 26)"
-        dpkg --compare-versions "$mesa_version" ge 26.0.0
-
-    - name: Run full test suite
-      env:
-        SDL_VIDEODRIVER: x11
-        CKRE_SDL_GPU_DRIVER: vulkan
-      run: xvfb-run -a ctest --preset linux-x64-tests-release --no-tests=error --output-junit "${{ github.workspace }}/build/linux-x64-tests/ctest-results.xml"
-
-    - name: Verify executed tests
-      if: ${{ !cancelled() }}
-      run: python3 -B .github/scripts/verify_ctest_results.py build/linux-x64-tests/ctest-results.xml
-
-    - name: Upload test results
-      if: ${{ !cancelled() }}
-      uses: actions/upload-artifact@v7.0.1
-      with:
-        name: test-results-linux-x64-full-tests
-        path: |
-          build/linux-x64-tests/ctest-results.xml
-          build/linux-x64-tests/Testing/Temporary/
-        if-no-files-found: error
-
-    - name: Upload failed test output
-      if: ${{ failure() }}
-      uses: actions/upload-artifact@v7.0.1
-      with:
-        name: test-output-linux-x64-full-tests
-        path: |
-          build/linux-x64-tests/ctest-results.xml
-          build/linux-x64-tests/Testing/Temporary/
-          build/linux-x64-tests/scene_capture*/
-          build/linux-x64-tests/**/ffjit-failures/
-        if-no-files-found: ignore

@@ -4,11 +4,11 @@ on:
   workflow_dispatch:
     inputs:
       run-id:
-        description: Build run containing GPU validation binaries and symbols
+        description: Test run containing GPU validation binaries and symbols
         required: true
         type: string
       platform:
-        description: GPU build platform
+        description: GPU test platform
         required: true
         type: choice
         options: [windows-arm64, windows-x64, windows-x86, macos-arm64, macos-x64]

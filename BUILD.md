@@ -287,9 +287,25 @@ cmake --build --preset windows-x86-tests-release
 ctest --preset windows-x86-tests-release
 ```
 
-The regular CI matrix performs platform and linkage coverage. It runs nightly
-when `sdl` has commits the last nightly did not build, and on manual dispatch.
-A dedicated Linux x64 job builds and runs this complete test preset.
+CI has independent **Build** (`build.yml`) and **Test** (`test.yml`) workflows.
+Build compiles and packages the platform/linkage matrix with `BUILD_TESTING=OFF`.
+Test builds and runs all component tests across the same matrix and includes a
+dedicated Linux x64 job for the complete test preset above. Test publishes JUnit
+reports and failure logs; Build publishes runtime packages. Their incremental
+build caches are separate.
+
+Both workflows run nightly when `sdl` has commits their own previous nightly did
+not cover, and each can be dispatched manually with its own `target` selector:
+
+```bash
+gh workflow run build.yml --ref sdl -f target=sdl-linux-x64-runtime
+gh workflow run test.yml --ref sdl -f target=sdl-linux-x64-runtime
+gh workflow run test.yml --ref sdl -f target=sdl-linux-x64-full-tests
+```
+
+GPU validation captures belong to Test. Dispatch `test.yml` with `gpu-debug=true`
+and a Windows or macOS runtime target, then pass that Test run's ID to the
+**GPU replay diagnostics** workflow.
 
 ## RenderEngine standalone
 
