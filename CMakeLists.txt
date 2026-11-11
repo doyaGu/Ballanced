@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.21)
 
 project(Ballanced
-        VERSION 0.1.0
+        VERSION 0.2.0
         DESCRIPTION "Ballance Decompilation"
         HOMEPAGE_URL https://github.com/doyaGu/Ballanced
         LANGUAGES C CXX

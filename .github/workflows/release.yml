@@ -2,7 +2,7 @@ name: Release
 
 on:
   push:
-    tags: [ "sdl-v*" ]
+    tags: [ "v*", "sdl-v*" ]
   workflow_dispatch:
 
 permissions:
@@ -89,13 +89,13 @@ jobs:
             archive_ext: .zip
             preset: windows-arm64
             sdl_discriminator: Windows-ARM64
-            # The windows-11-arm image ships only Visual Studio 2026.
+            # Use the same supported ARM64 toolset as the Build workflow.
             sdl_cmake_generator: Visual Studio 18 2026
-            sdl_cmake_arguments: -A ARM64
-            configure_arguments: -G "Visual Studio 18 2026"
+            sdl_cmake_arguments: -A ARM64 -T "v143,version=14.44"
+            configure_arguments: -G "Visual Studio 18 2026" -T "v143,version=14.44"
 
           - name: linux-x64
-            os: ubuntu-24.04
+            os: ubuntu-26.04
             archive_ext: .tar.gz
             preset: linux-x64
             sdl_discriminator: Linux-X64
@@ -103,7 +103,7 @@ jobs:
             sdl_cmake_arguments: ""
 
           - name: linux-arm64
-            os: ubuntu-24.04-arm
+            os: ubuntu-26.04-arm
             archive_ext: .tar.gz
             preset: linux-arm64
             sdl_discriminator: Linux-ARM64
@@ -111,20 +111,22 @@ jobs:
             sdl_cmake_arguments: ""
 
           - name: macos-x64
-            os: macos-15-intel
+            os: macos-26
             archive_ext: .tar.gz
             preset: macos-x64
             sdl_discriminator: macOS-X64
             sdl_cmake_generator: ""
-            sdl_cmake_arguments: -DCMAKE_OSX_ARCHITECTURES=x86_64
+            sdl_cmake_arguments: -DCMAKE_OSX_ARCHITECTURES=x86_64 -DCMAKE_OSX_DEPLOYMENT_TARGET=15.0
+            configure_arguments: '"-DCMAKE_OSX_DEPLOYMENT_TARGET=15.0"'
 
           - name: macos-arm64
-            os: macos-15
+            os: macos-26
             archive_ext: .tar.gz
             preset: macos-arm64
             sdl_discriminator: macOS-ARM64
             sdl_cmake_generator: ""
-            sdl_cmake_arguments: -DCMAKE_OSX_ARCHITECTURES=arm64
+            sdl_cmake_arguments: -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=15.0
+            configure_arguments: '"-DCMAKE_OSX_DEPLOYMENT_TARGET=15.0"'
         linkage:
           - name: runtime
             ballance_build_static: "OFF"
@@ -146,6 +148,11 @@ jobs:
 
     - name: Checkout submodules
       run: ./cmake/UpdateSubmodules.ps1
+
+    - name: Setup current wayland-scanner
+      if: startsWith(matrix.platform.name, 'linux-')
+      shell: bash
+      run: ./cmake/SetupWaylandScanner.sh
 
     - name: Setup SDL3
       id: sdl
