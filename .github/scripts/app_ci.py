@@ -59,7 +59,7 @@ def main():
     if args.selection:
         result = dict(json.loads(args.selection), scripts=[], layout=False, build=True)
     else:
-        result = classify(changed_paths(Path.cwd(), baseline(Path.cwd(), args.base), args.head))
+        result = classify(changed_paths(Path.cwd(), baseline(Path.cwd(), args.base, '.github/scripts/app_ci.py'), args.head))
         if args.modules != 'changed':
             result['modules'] = ['assembly', 'player'] if args.modules == 'all' else [args.modules]
     if set(result['modules']) - {'assembly', 'player'}:
