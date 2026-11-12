@@ -8,6 +8,9 @@ file(WRITE "${fixture}/source/CMakeLists.txt" "cmake_minimum_required(VERSION 3.
 file(APPEND "${fixture}/source/CMakeLists.txt" [=[
 set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/stage")
 set(BALLANCE_TEST_CONFIG Release)
+set(_manifest "${CMAKE_BINARY_DIR}/engine-components.cmake")
+file(WRITE "${_manifest}" "set(NEMO_RUNTIME_TARGETS CK2)\n")
+set_property(GLOBAL PROPERTY NEMO_RUNTIME_COMPONENT_MANIFEST "${_manifest}")
 file(WRITE "${CMAKE_BINARY_DIR}/runtime.payload" "valid")
 add_custom_target(CK2 COMMAND "${CMAKE_COMMAND}"
     "-DRUNTIME=${CMAKE_BINARY_DIR}/runtime.payload" -P "${CMAKE_SOURCE_DIR}/rebuild.cmake")

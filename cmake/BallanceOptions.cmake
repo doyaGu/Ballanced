@@ -27,59 +27,7 @@ ballance_set_cache_default(BALLANCE_BUILD_STATIC OFF BOOL
 ballance_set_cache_default(BALLANCE_TARGET_ARCH "" STRING
         "Optional target architecture label used by platform presets")
 
+# NeMo2 owns all engine module defaults and test dependency selection.
 find_package(SDL3 3.4.20 CONFIG REQUIRED)
-
-foreach (_component IN ITEMS VXMATH CK2 CKRE)
-    if (BALLANCE_BUILD_STATIC)
-        ballance_set_cache_default(${_component}_BUILD_SHARED OFF BOOL "")
-        ballance_set_cache_default(${_component}_BUILD_STATIC ON BOOL "")
-    else ()
-        ballance_set_cache_default(${_component}_BUILD_SHARED ON BOOL "")
-        ballance_set_cache_default(${_component}_BUILD_STATIC OFF BOOL "")
-    endif ()
-    ballance_set_cache_default(${_component}_INSTALL ON BOOL "")
-    ballance_set_cache_default(${_component}_BUILD_TESTS OFF BOOL "")
-endforeach ()
-
-if (BALLANCE_BUILD_STATIC)
-    ballance_set_cache_default(CKBB_BUILD_SHARED OFF BOOL "")
-    ballance_set_cache_default(CKBB_BUILD_STATIC ON BOOL "")
-    ballance_set_cache_default(CKPLUGINS_BUILD_SHARED OFF BOOL "")
-    ballance_set_cache_default(CKPLUGINS_BUILD_STATIC ON BOOL "")
-    foreach (_mgr IN ITEMS SDLINPUT SDLSOUND CKPARAMOP)
-        ballance_set_cache_default(${_mgr}_BUILD_SHARED OFF BOOL "")
-        ballance_set_cache_default(${_mgr}_BUILD_STATIC ON BOOL "")
-    endforeach ()
-else ()
-    ballance_set_cache_default(CKBB_BUILD_SHARED ON BOOL "")
-    ballance_set_cache_default(CKBB_BUILD_STATIC OFF BOOL "")
-    ballance_set_cache_default(CKPLUGINS_BUILD_SHARED ON BOOL "")
-    foreach (_mgr IN ITEMS SDLINPUT SDLSOUND CKPARAMOP)
-        ballance_set_cache_default(${_mgr}_BUILD_SHARED ON BOOL "")
-    endforeach ()
-endif ()
-ballance_set_cache_default(CKBB_INSTALL ON BOOL "")
-ballance_set_cache_default(CKBB_BUILD_TESTS OFF BOOL "")
-
-if (CKBB_BUILD_TESTS AND NOT CKRE_BUILD_STATIC)
-    message(STATUS "[Ballance] Enabling CKRE_BUILD_STATIC for physics host tests")
-    set(CKRE_BUILD_STATIC ON CACHE BOOL "Build static library" FORCE)
-endif ()
-
-# Internal engine and physics tests need CK2's unexported APIs and globals.
-# Choose that dependency before Source/ adds CK2 and the render engine.
-if ((CKRE_BUILD_TESTS OR CKBB_BUILD_TESTS) AND NOT CK2_BUILD_STATIC)
-    message(STATUS "[Ballance] Enabling CK2_BUILD_STATIC for module tests")
-    set(CK2_BUILD_STATIC ON CACHE BOOL "Build CK2 as a static library" FORCE)
-endif ()
-
-ballance_set_cache_default(CKPLUGINS_INSTALL ON BOOL "")
-ballance_set_cache_default(CKPLUGINS_BUILD_TESTS OFF BOOL "")
-
-foreach (_mgr IN ITEMS SDLINPUT SDLSOUND CKPARAMOP)
-    ballance_set_cache_default(${_mgr}_INSTALL ON BOOL "")
-endforeach ()
-
-if (NOT WIN32)
-    ballance_set_cache_default(CKBB_BUILD_MidiManager OFF BOOL "")
-endif ()
+set(NEMO_BUILD_STATIC "${BALLANCE_BUILD_STATIC}")
+set(NEMO_TARGET_ARCH "${BALLANCE_TARGET_ARCH}")

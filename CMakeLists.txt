@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.25)
 
 project(Ballanced
         VERSION 0.2.0
@@ -18,15 +18,11 @@ include(BallanceVersion)
 include(CTest)
 
 if (BUILD_TESTING)
-    add_test(NAME NumericalIsolation
+    add_test(NAME ApplicationNumericalIsolation
             COMMAND "${CMAKE_COMMAND}"
             "-DTEST_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}"
-            -P "${CMAKE_CURRENT_SOURCE_DIR}/cmake/TestNumericalIsolation.cmake")
-    add_test(NAME NumericalIsolationRules
-            COMMAND "${CMAKE_COMMAND}"
-            "-DTEST_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}"
-            "-DTEST_BINARY_DIR=${CMAKE_CURRENT_BINARY_DIR}/Testing"
-            -P "${CMAKE_CURRENT_SOURCE_DIR}/cmake/TestNumericalIsolationRules.cmake")
+            "-DTEST_ENGINE_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}/Source/NeMo2"
+            -P "${CMAKE_CURRENT_SOURCE_DIR}/Source/NeMo2/cmake/TestNumericalIsolation.cmake")
     add_test(NAME CMakeRegeneration
             COMMAND "${CMAKE_COMMAND}"
             "-DTEST_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}"

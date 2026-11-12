@@ -1,6 +1,6 @@
 # Ballanced build system
 
-CMake presets are the primary entry point. The root project assembles a Ballance-compatible runtime from the submodules under `Source/`.
+CMake presets are the primary entry point. The root project combines `Source/Player` with the engine provided by `Source/NeMo2`.
 
 Use manual `cmake -S ... -B ...` commands only when a preset does not cover your generator or architecture.
 
@@ -20,7 +20,7 @@ SDL3 must be locatable by CMake (`find_package(SDL3 CONFIG REQUIRED)`). Install 
 
 ## Getting the source
 
-The repository has two levels of Git submodules. Top-level submodules are the components under `Source/`. Several have their own nested submodules (VxMath -> stb/simde, CK2 -> miniz, BuildingBlocks -> ivp/qhull).
+Ballanced directly tracks Player and NeMo2. NeMo2 tracks the engine repositories, which retain their own nested dependencies (VxMath -> stb/simde/libx87, CK2 -> miniz, BuildingBlocks -> ivp/qhull). Every level must be initialized.
 
 ### Fresh clone
 
@@ -44,6 +44,20 @@ If a submodule URL changed (e.g. after a `.gitmodules` edit):
 git submodule sync --recursive
 git submodule update --init --recursive
 ```
+
+### Upgrading from the direct-module layout
+
+Use a fresh recursive clone and a new build directory when switching to the
+NeMo2 layout. Existing CMake caches contain the old source paths and cannot be
+reused. Preserve local module changes before updating an existing checkout.
+The former NeMo2 implementation is retained at its
+`legacy/pre-ballanced-split` tag.
+
+The engine's module list comes from the `NEMO_RUNTIME_COMPONENT_MANIFEST` global
+property. Ballanced adds Player and checks its static declarations against that
+manifest. `BALLANCE_BUILD_STATIC` selects `NEMO_BUILD_STATIC`; individual engine
+options such as `CKRE_BUILD_TESTS` continue to work. Ballanced only overrides
+Player's version; engine modules use their own versions.
 
 ### Checking submodule state
 
@@ -289,8 +303,8 @@ ctest --preset windows-x86-tests-release
 
 CI has independent **Build** (`build.yml`) and **Test** (`test.yml`) workflows.
 Build compiles and packages the platform/linkage matrix with `BUILD_TESTING=OFF`.
-Test builds and runs all component tests across the same matrix and includes a
-dedicated Linux x64 job for the complete test preset above. Test publishes JUnit
+Test builds and runs Player tests, engine/application assembly checks, and stage
+checks across the same matrix. NeMo2 owns the full engine test matrix. Test publishes JUnit
 reports and failure logs; Build publishes runtime packages. Their incremental
 build caches are separate.
 
@@ -300,19 +314,19 @@ not cover, and each can be dispatched manually with its own `target` selector:
 ```bash
 gh workflow run build.yml --ref sdl -f target=sdl-linux-x64-runtime
 gh workflow run test.yml --ref sdl -f target=sdl-linux-x64-runtime
-gh workflow run test.yml --ref sdl -f target=sdl-linux-x64-full-tests
 ```
 
-GPU validation captures belong to Test. Dispatch `test.yml` with `gpu-debug=true`
-and a Windows or macOS runtime target, then pass that Test run's ID to the
-**GPU replay diagnostics** workflow.
+GPU validation captures and replay diagnostics run in the NeMo2 repository.
+Dispatch its `test.yml` with `gpu-debug=true`, then pass that run ID to its
+**GPU replay diagnostics** workflow. Player JIT acceptance scripts and the level
+route remain in Ballanced under `tests/player/`.
 
 ## RenderEngine standalone
 
-Build independently from `Source/RenderEngine`:
+Build independently from `Source/NeMo2/Source/RenderEngine`:
 
 ```powershell
-cd Source/RenderEngine
+cd Source/NeMo2/Source/RenderEngine
 cmake --preset renderengine-runtime-msvc-win32
 cmake --build --preset renderengine-runtime-win32-release
 ```

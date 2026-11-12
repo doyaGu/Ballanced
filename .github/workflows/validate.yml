@@ -32,7 +32,10 @@ jobs:
       run: ./cmake/UpdateSubmodules.ps1
 
     - name: Check CTest execution verification
-      run: python3 -B -m unittest discover -s .github/scripts -p "test_*.py"
+      run: |
+        python3 -B -m unittest discover -s .github/scripts -p "test_*.py"
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        python3 -B -m unittest discover -s Source/NeMo2/.github/scripts -p "test_*.py"
 
     - name: Check submodule pointers
       run: |
@@ -57,35 +60,15 @@ jobs:
           }
         }
 
-    - name: Check SDL branch manager layout
+    - name: Check application submodule layout
       run: |
-        $tracked = @(git ls-files)
-        $required = @(
-          "Source/Managers/SdlInputManager",
-          "Source/Managers/SdlSoundManager"
-        )
-        $forbidden = @(
-          "Source/Managers/Dx8InputManager",
-          "Source/Managers/Dx8SoundManager"
-        )
-
-        $errors = @()
-        foreach ($path in $required) {
-          if ($tracked -notcontains $path) {
-            $errors += "missing SDL manager submodule: $path"
-          }
+        $links = @(git ls-files --stage | Where-Object { $_ -match '^160000 ' } | ForEach-Object { ($_ -split "`t", 2)[1] } | Sort-Object)
+        $expected = @('Source/NeMo2', 'Source/Player')
+        if (Compare-Object $expected $links) {
+          throw "Application must track exactly NeMo2 and Player submodules"
         }
-        foreach ($path in $forbidden) {
-          if ($tracked -contains $path) {
-            $errors += "SDL branch must not track DX8 manager submodule: $path"
-          }
-        }
-
-        if ($errors.Count -gt 0) {
-          Write-Error ($errors -join "`n")
-        }
-
-        Write-Host "SDL manager layout OK"
+        git -C Source/NeMo2 ls-files --error-unmatch Source/Managers/SdlInputManager Source/Managers/SdlSoundManager
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
     - name: Check workflow preset references
       run: |

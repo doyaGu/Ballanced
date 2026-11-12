@@ -157,7 +157,7 @@ jobs:
     - name: Setup current wayland-scanner
       if: ${{ (github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name)) && startsWith(matrix.platform.name, 'linux-') }}
       shell: bash
-      run: ./cmake/SetupWaylandScanner.sh
+      run: ./Source/NeMo2/cmake/SetupWaylandScanner.sh
 
     - name: Setup SDL3
       if: ${{ github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name) }}
@@ -176,7 +176,7 @@ jobs:
       id: cache-key
       run: |
         $imageVersion = $env:ImageVersion
-        "prefix=build-v1-${{ matrix.platform.name }}-${{ matrix.linkage.name }}-${imageVersion}-${{ hashFiles('CMakePresets.json', '.github/workflows/build.yml', '.github/scripts/build_cache_state.py', 'cmake/BallanceCompiler.cmake', 'cmake/BallanceLinkCache.cmake') }}-" >> $env:GITHUB_OUTPUT
+        "prefix=build-v2-nemo-${{ matrix.platform.name }}-${{ matrix.linkage.name }}-${imageVersion}-${{ hashFiles('CMakePresets.json', '.github/workflows/build.yml', 'Source/NeMo2/.github/scripts/build_cache_state.py', 'cmake/BallanceCompiler.cmake', 'cmake/BallanceLinkCache.cmake', 'Source/NeMo2/CMakeLists.txt', 'Source/NeMo2/cmake/*.cmake') }}-" >> $env:GITHUB_OUTPUT
 
     - name: Restore incremental build
       if: ${{ steps.cache-key.outcome == 'success' }}
@@ -190,7 +190,7 @@ jobs:
 
     - name: Restore unchanged source timestamps
       if: ${{ steps.cache-key.outcome == 'success' }}
-      run: python3 -B .github/scripts/build_cache_state.py restore --build-dir build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }}
+      run: python3 -B Source/NeMo2/.github/scripts/build_cache_state.py restore --build-dir build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }}
 
     - name: Configure
       if: ${{ github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name) }}
@@ -206,7 +206,7 @@ jobs:
 
     - name: Save source timestamps for incremental builds
       if: ${{ !cancelled() && steps.cache-key.outcome == 'success' }}
-      run: python3 -B .github/scripts/build_cache_state.py save --build-dir build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }}
+      run: python3 -B Source/NeMo2/.github/scripts/build_cache_state.py save --build-dir build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }}
 
     - name: Save incremental build
       if: ${{ !cancelled() && steps.cache-key.outcome == 'success' && steps.build-cache.outputs.cache-primary-key != '' && steps.build-cache.outputs.cache-hit != 'true' }}

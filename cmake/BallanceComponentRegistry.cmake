@@ -1,63 +1,26 @@
-# Root runtime component registry.
-#
-# Component repositories keep their own standalone CMake declarations. This
-# registry only describes how the superproject assembles and verifies them.
-
+# NeMo2 owns engine declarations; Ballanced adds its application to that list.
 include_guard(GLOBAL)
-
-set(BALLANCE_CORE_RUNTIME_TARGETS
-        VxMath CK2
-)
 
 if (BALLANCE_COMPONENT_MANIFEST)
     include("${BALLANCE_COMPONENT_MANIFEST}")
 else ()
-    get_property(BALLANCE_RENDER_ENGINE_RUNTIME_TARGETS GLOBAL PROPERTY CKRE_RUNTIME_TARGETS)
-    get_property(BALLANCE_RENDER_ENGINE_DISABLED_OUTPUTS GLOBAL PROPERTY CKRE_DISABLED_RUNTIME_OUTPUTS)
-    get_property(BALLANCE_RENDER_ENGINE_RUNTIME_CONFIGS GLOBAL PROPERTY CKRE_RUNTIME_CONFIGS)
+    get_property(_nemo_manifest GLOBAL PROPERTY NEMO_RUNTIME_COMPONENT_MANIFEST)
+    if (NOT _nemo_manifest OR NOT EXISTS "${_nemo_manifest}")
+        message(FATAL_ERROR "NeMo2 did not publish its runtime component manifest")
+    endif ()
+    include("${_nemo_manifest}")
     get_property(PLAYER_DECLARED_RUNTIME_TARGETS GLOBAL PROPERTY PLAYER_RUNTIME_MODULES)
 endif ()
-set(BALLANCE_RENDER_ENGINE_RUNTIME_OUTPUTS ${BALLANCE_RENDER_ENGINE_RUNTIME_TARGETS})
 
-set(BALLANCE_MANAGER_RUNTIME_TARGETS
-        SdlInputManager SdlSoundManager ParameterOperations
-)
-set(BALLANCE_MANAGER_RUNTIME_OUTPUTS
-        SdlInputManager SdlSoundManager ParameterOperations
-)
-
-set(BALLANCE_PLUGIN_RUNTIME_TARGETS
-        AVIReader ImageReader WavReader VirtoolsLoader
-)
-set(BALLANCE_PLUGIN_RUNTIME_OUTPUTS
-        AVIReader ImageReader WavReader VirtoolsLoader
-)
-
-set(BALLANCE_BUILDING_BLOCK_RUNTIME_TARGETS
-        3DTrans BuildingBlocksAddons1 Cameras Characters Collision Controllers
-        Grids Interface Lights Logics Materials MeshModifiers MidiManager Narratives
-        Sounds Visuals WorldEnvironment physics_RT TT_DatabaseManager_RT
-        TT_Gravity_RT TT_InterfaceManager_RT TT_ParticleSystems_RT TT_Toolbox_RT
-)
-set(BALLANCE_BUILDING_BLOCK_REQUIRED_OUTPUTS
-        3DTransfo BuildingBlocksAddons1 Cameras Characters Collisions Controllers
-        Grids Interface Lights Logics Materials MeshModifiers Narratives Sounds
-        Visuals WorldEnvironment physics_RT TT_DatabaseManager_RT TT_Gravity_RT
-        TT_InterfaceManager_RT TT_ParticleSystems_RT TT_Toolbox_RT
-)
-set(BALLANCE_BUILDING_BLOCK_OPTIONAL_OUTPUTS
-        MidiManager
-)
-
-set(BALLANCE_MODULE_RUNTIME_TARGETS
-        ${BALLANCE_RENDER_ENGINE_RUNTIME_TARGETS}
-        ${BALLANCE_MANAGER_RUNTIME_TARGETS}
-        ${BALLANCE_PLUGIN_RUNTIME_TARGETS}
-        ${BALLANCE_BUILDING_BLOCK_RUNTIME_TARGETS}
-)
-
-set(BALLANCE_RUNTIME_TARGETS
-        ${BALLANCE_CORE_RUNTIME_TARGETS}
-        ${BALLANCE_MODULE_RUNTIME_TARGETS}
-        Player
-)
+# Keep the staging script interface stable while taking every engine group
+# from NeMo2's resolved manifest.
+foreach (_group IN ITEMS
+        CORE_RUNTIME_TARGETS RENDER_ENGINE_RUNTIME_TARGETS
+        RENDER_ENGINE_DISABLED_OUTPUTS RENDER_ENGINE_RUNTIME_CONFIGS
+        RENDER_ENGINE_RUNTIME_OUTPUTS MANAGER_RUNTIME_TARGETS MANAGER_RUNTIME_OUTPUTS
+        PLUGIN_RUNTIME_TARGETS PLUGIN_RUNTIME_OUTPUTS
+        BUILDING_BLOCK_RUNTIME_TARGETS BUILDING_BLOCK_REQUIRED_OUTPUTS
+        BUILDING_BLOCK_OPTIONAL_OUTPUTS MODULE_RUNTIME_TARGETS)
+    set(BALLANCE_${_group} "${NEMO_${_group}}")
+endforeach ()
+set(BALLANCE_RUNTIME_TARGETS ${NEMO_RUNTIME_TARGETS} Player)

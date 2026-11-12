@@ -152,7 +152,7 @@ jobs:
     - name: Setup current wayland-scanner
       if: startsWith(matrix.platform.name, 'linux-')
       shell: bash
-      run: ./cmake/SetupWaylandScanner.sh
+      run: ./Source/NeMo2/cmake/SetupWaylandScanner.sh
 
     - name: Setup SDL3
       id: sdl

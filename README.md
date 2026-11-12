@@ -1,6 +1,6 @@
 # Ballanced
 
-Source-level reimplementation of the **Ballance** game runtime. Rebuilds the player, engine libraries, building blocks, and plugins from source into a Ballance-compatible directory layout.
+Source-level reimplementation of the **Ballance** game runtime. Combines BallancePlayer with the NeMo2 Virtools engine in a Ballance-compatible directory layout.
 
 Original game assets are not included - you need a copy of the original game to run it.
 
@@ -82,25 +82,23 @@ read this ignored directory by default.
 
 - `CMakePresets.json` defines the supported full-runtime platform, architecture, and linkage matrix.
 - `.github/workflows/build.yml` builds and packages the platform/linkage matrix with tests disabled.
-- `.github/workflows/test.yml` independently builds and runs component tests across the same matrix, plus the complete Linux x64 test preset. GPU diagnostics are available through this workflow's `gpu-debug` input.
+- `.github/workflows/test.yml` tests Player and application assembly across the same matrix. NeMo2 owns the complete engine test suite and GPU diagnostic workflows.
 - `BUILD.md` documents the supported superproject workflow. Component READMEs describe standalone workflows only.
 - Ballanced and its Git submodules are independently versioned. The root project version identifies the assembled runtime; Player and the engine/module projects keep their own versions. A component version should not be inferred from the root version or release tag.
 
 ## Repository structure
 
-Components under `Source/` are Git submodules:
+Ballanced manages two Git submodules:
 
 | Submodule | Repository | Description |
 |-----------|-----------|-------------|
 | `Source/Player` | [BallancePlayer](https://github.com/doyaGu/BallancePlayer) | Game player executable |
-| `Source/CK2` | [CK2](https://github.com/doyaGu/CK2) | Virtools behavioral engine |
-| `Source/VxMath` | [VxMath](https://github.com/doyaGu/VxMath) | Math and platform utilities |
-| `Source/RenderEngine` | [CKRenderEngine](https://github.com/doyaGu/CKRenderEngine) | Render engine (SDL GPU) |
-| `Source/BuildingBlocks` | [CKBuildingBlocks](https://github.com/doyaGu/CKBuildingBlocks) | Virtools building block modules |
-| `Source/Plugins` | [CKPlugins](https://github.com/doyaGu/CKPlugins) | File format plugins (image, audio, CMO) |
-| `Source/Managers/ParameterOperations` | [CKParameterOperations](https://github.com/doyaGu/CKParameterOperations) | Parameter operations manager |
-| `Source/Managers/SdlInputManager` | [SdlInputManager](https://github.com/doyaGu/SdlInputManager) | SDL3 input manager |
-| `Source/Managers/SdlSoundManager` | [SdlSoundManager](https://github.com/doyaGu/SdlSoundManager) | SDL3 sound manager |
+| `Source/NeMo2` | [NeMo2](https://github.com/doyaGu/NeMo2) | Virtools engine and its nested module repositories |
+
+NeMo2 owns VxMath, CK2, RenderEngine, Managers, Plugins, and BuildingBlocks under
+`Source/NeMo2/Source/`. Their independent repository histories and pinned versions
+are retained. See [NeMo2's build guide](Source/NeMo2/BUILD.md) for engine-only work.
+Ballance acceptance tools and the level route are under `tests/player/`.
 
 ## Contributing
 
