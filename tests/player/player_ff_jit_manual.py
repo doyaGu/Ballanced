@@ -1,8 +1,9 @@
 """Prepare or launch a manual Player JIT session with private saves and logs.
 
-No game assets are copied into the package. Gameplay and menu navigation are
-entirely manual. Run `prepare --help` to assemble a package, then launch its
-launch.py with `play --driver vulkan` (or direct3d12).
+Preparation copies the runtime; each play session copies its startup composition
+and save, and links the remaining asset directories. Gameplay and menu navigation
+are manual. Run `prepare --help` to assemble a package, then run its launch.py
+with `play --driver vulkan` (or direct3d12).
 """
 import argparse
 from datetime import datetime, timezone
@@ -14,6 +15,8 @@ import re
 import shutil
 import subprocess
 import sys
+
+from player_session import prepare_session
 
 
 def digest(path):
@@ -52,6 +55,7 @@ def prepare(args):
     (out / "binaries.json").write_text(json.dumps(identities, indent=2), encoding="utf-8")
     (out / "settings.json").write_text(json.dumps(dict(stage=str(stage)), indent=2), encoding="utf-8")
     shutil.copy2(__file__, out / "launch.py")
+    shutil.copy2(Path(__file__).with_name("player_session.py"), out / "player_session.py")
     for driver in ("direct3d12", "vulkan"):
         (out / f"play-{driver}.cmd").write_bytes(
             f'@echo off\r\npython "%~dp0launch.py" play --driver {driver}\r\npause\r\n'.encode("ascii"))
@@ -61,9 +65,9 @@ def prepare(args):
         "Alternatively: python launch.py play --driver vulkan --mode on\n"
         "Modes: on (full JIT), fragment, off. Default: full JIT.\n"
         "Navigate and play normally; exit through the game to finish the log.\n"
-        "Each session has separate Player.ini, Database.tdb and logs in sessions/.\n"
+        "Each session has private base.cmo, Player.ini, Database.tdb and logs in sessions/.\n"
         "No automated input or level selection is performed. Game assets remain\n"
-        "in the legal installation named by settings.json.\n"
+        "linked from the legal installation named by settings.json.\n"
         "The JIT manifest is disabled for repeatable cold sessions; the GPU driver's\n"
         "own cache is not cleared. Runtime hashes are checked before each launch.\n"
         "A clean log is not evidence of visual correctness or level completion.\n",
@@ -83,8 +87,7 @@ def play(args):
     session = root / "sessions" / (datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S-%fZ") +
                                     f"-{args.driver}-{args.mode}")
     session.mkdir(parents=True)
-    shutil.copy2(stage / "Bin/Player.ini", session / "Player.ini")
-    shutil.copy2(stage / "Database.tdb", session / "Database.tdb")
+    composition = prepare_session(stage, session)
     env = os.environ.copy()
     env.update(CKRE_SDL_GPU_DRIVER=args.driver, CKRE_SDL_GPU_FF_JIT_CACHE="0",
                CKRE_SDL_GPU_FF_JIT="0" if args.mode == "off" else "1",
@@ -97,7 +100,7 @@ def play(args):
                f'--render-engine-path={runtime / "RenderEngines"}',
                f'--manager-path={runtime / "Managers"}',
                f'--building-block-path={runtime / "BuildingBlocks"}',
-               f'--plugin-path={runtime / "Plugins"}', f'--cmo={stage / "base.cmo"}',
+               f'--plugin-path={runtime / "Plugins"}', f'--cmo={composition}',
                f'--config={session / "Player.ini"}', f'--log={session / "Player.log"}',
                f"--data-path={session}", "--rasterizer=sdlgpu", "--skip-opening", "--verbose"]
     print(f"Manual session: {args.driver}, JIT {args.mode}\nLogs: {session}", flush=True)

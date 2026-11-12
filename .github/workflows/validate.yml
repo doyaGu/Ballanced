@@ -113,3 +113,13 @@ jobs:
         }
 
         Write-Host "Workflow preset references OK"
+
+  player-sessions:
+    name: Check Windows Player test sessions
+    runs-on: windows-2022
+    timeout-minutes: 10
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v6.0.2
+    - name: Check composition-relative save isolation
+      run: python -B -m unittest discover -s .github/scripts -p "test_player_sessions.py"

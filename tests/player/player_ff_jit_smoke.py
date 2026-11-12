@@ -1,8 +1,9 @@
 """Run authored menu, Level 01 entry, lifecycle and route smokes.
 
-Requires a local staged legal game installation. Copies binaries and a private
-save database, not game assets. Never pass the flat build/bin directory as a
-Player plugin directory: CKPluginManager parses every plugin in that directory.
+Requires a local staged legal game installation. Copies binaries, the startup
+composition, and a private save database; links the remaining asset directories.
+Never pass the flat build/bin directory as a Player plugin directory:
+CKPluginManager parses every plugin in that directory.
 """
 import argparse
 import csv
@@ -14,6 +15,8 @@ from pathlib import Path
 import re
 import shutil
 import subprocess
+
+from player_session import prepare_session
 
 
 def validate_gameplay(folder):
@@ -174,15 +177,14 @@ def main():
             for scene in scenes:
                 folder = output / driver / mode / scene
                 folder.mkdir(parents=True)
-                shutil.copy2(stage / "Bin/Player.ini", folder / "Player.ini")
-                shutil.copy2(stage / "Database.tdb", folder / "Database.tdb")
+                composition = prepare_session(stage, folder)
                 option = {"menu": "--stage-smoke-output", "level": "--level-entry-smoke-output",
                           "gameplay": "--gameplay-smoke-output", "route": "--gameplay-smoke-output"}[scene]
                 command = [str(runtime / "Bin/Player.exe"), f"--root-path={stage}",
                            f"--render-engine-path={runtime / 'RenderEngines'}",
                            f"--manager-path={runtime / 'Managers'}",
                            f"--building-block-path={runtime / 'BuildingBlocks'}",
-                           f"--plugin-path={runtime / 'Plugins'}", f"--cmo={stage / 'base.cmo'}",
+                           f"--plugin-path={runtime / 'Plugins'}", f"--cmo={composition}",
                            f"--config={folder / 'Player.ini'}", f"--log={folder / 'Player.log'}",
                            f"--data-path={folder}", "--rasterizer=sdlgpu", "--skip-opening",
                            f"{option}={folder}", "--verbose"]

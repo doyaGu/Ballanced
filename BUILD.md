@@ -370,8 +370,18 @@ recompiled 64 source files; these configurations use different compile definitio
 
 With local game assets, the migrated Player loaded the menu and Level 01,
 accepted keyboard input, paused, and exited normally. This smoke used a private
-runtime/save directory. Audible output and persistent game-save round trips were
-not separately measured by that smoke.
+runtime/save directory. A subsequent session changed the music-volume setting,
+exited normally, restarted, and read the saved value back. The isolated run
+changed its private `Database.tdb` while preserving the source database's hash.
+Audible output was not separately measured.
+
+Player test sessions copy `base.cmo`, `Database.tdb`, and `Player.ini`, and link
+the remaining asset directories. Copying the composition is required because
+game scripts save relative to its directory through the `Gravity` environment
+variable; `--data-path` alone does not redirect those writes. The manual JIT
+package includes the session helper alongside `launch.py`. Regression checks
+exercise composition-relative writes for both manual and authored sessions on
+Linux and Windows, without compiling or launching the engine.
 
 ## RenderEngine standalone
 
