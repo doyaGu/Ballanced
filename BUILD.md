@@ -390,6 +390,13 @@ package includes the session helper alongside `launch.py`. Regression checks
 exercise composition-relative writes for both manual and authored sessions on
 Linux and Windows, without compiling or launching the engine.
 
+The Player explicitly selects the `Ballance` configuration namespace and
+`BALLANCE_USER_CONFIG_HOME` override before initializing the engine. Its TT game
+info uses the existing `Software\\Ballance\\Settings` registry path. NeMo2's
+standalone defaults therefore do not redirect the game's existing settings or
+saves. `Player.ini`, asset paths, and the `Gravity` environment behavior remain
+application-owned.
+
 ## RenderEngine standalone
 
 Build independently from `Source/NeMo2/Source/RenderEngine`:
