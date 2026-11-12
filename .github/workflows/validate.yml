@@ -16,7 +16,37 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  changes:
+    name: Select changed modules
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    outputs:
+      build: ${{ steps.scope.outputs.build }}
+      test: ${{ steps.scope.outputs.test }}
+      selection: ${{ steps.scope.outputs.selection }}
+      compile: ${{ steps.scope.outputs.compile }}
+      modules: ${{ steps.scope.outputs.modules }}
+      scripts: ${{ steps.scope.outputs.scripts }}
+      layout: ${{ steps.scope.outputs.layout }}
+      cache_scope: ${{ steps.scope.outputs.cache_scope }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v6.0.2
+      with:
+        fetch-depth: 0
+        submodules: true
+    - name: Compare source revisions
+      id: scope
+      shell: bash
+      env:
+        BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        MODULES: changed
+      run: |
+        python3 -B .github/scripts/app_ci.py --base "$BASE" --modules "$MODULES"
+
   validate:
+    needs: changes
+    if: ${{ needs.changes.outputs.layout == 'true' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 20
 
@@ -31,11 +61,7 @@ jobs:
     - name: Checkout submodules
       run: ./cmake/UpdateSubmodules.ps1
 
-    - name: Check CTest execution verification
-      run: |
-        python3 -B -m unittest discover -s .github/scripts -p "test_*.py"
-        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-        python3 -B -m unittest discover -s Source/NeMo2/.github/scripts -p "test_*.py"
+
 
     - name: Check submodule pointers
       run: |
@@ -115,6 +141,8 @@ jobs:
         Write-Host "Workflow preset references OK"
 
   player-sessions:
+    needs: changes
+    if: ${{ contains(fromJSON(needs.changes.outputs.scripts), 'player_sessions') }}
     name: Check Windows Player test sessions
     runs-on: windows-2022
     timeout-minutes: 10
@@ -123,3 +151,24 @@ jobs:
       uses: actions/checkout@v6.0.2
     - name: Check composition-relative save isolation
       run: python -B -m unittest discover -s .github/scripts -p "test_player_sessions.py"
+
+  scripts:
+    name: Check changed CI tools
+    needs: changes
+    if: ${{ needs.changes.outputs.scripts != '[]' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v6.0.2
+      with:
+        submodules: true
+    - name: Check ci
+      if: ${{ contains(fromJSON(needs.changes.outputs.scripts), 'ci') }}
+      run: python3 -B -m unittest discover -s .github/scripts -p "test_ci_selection.py"
+    - name: Check release
+      if: ${{ contains(fromJSON(needs.changes.outputs.scripts), 'release') }}
+      run: python3 -B -m unittest discover -s .github/scripts -p "test_macos_release.py"
+    - name: Check player_sessions
+      if: ${{ contains(fromJSON(needs.changes.outputs.scripts), 'player_sessions') }}
+      run: python3 -B -m unittest discover -s .github/scripts -p "test_player_sessions.py"

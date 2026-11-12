@@ -303,22 +303,29 @@ ctest --preset windows-x86-tests-release
 
 CI has **Build** (`build.yml`) and **Test** (`test.yml`) workflows.
 Build compiles and packages the platform/linkage matrix with `BUILD_TESTING=OFF`.
-Test builds and runs Player tests, engine/application assembly checks, and stage
-checks across the same matrix. NeMo2 owns the full engine test matrix. Test publishes JUnit
-reports and failure logs; Build publishes runtime packages. Both workflows share
+Test selects Player tests when Player source changes and assembly checks when
+application build inputs or engine code changes. It does not rerun engine suites. NeMo2 owns the engine test matrix. Test
+publishes JUnit reports and failure logs; Build publishes runtime packages. Both workflows share
 incremental build caches for each platform and linkage. Cached source timestamps
 are restored by content hash, so a fresh checkout, Player-only change, or test
 script update does not recompile unchanged engine targets. Configure still runs;
 stage layouts and test reports are regenerated.
 
-The nightly Build runs when `sdl` has new commits. After the entire Build matrix
-succeeds and saves its caches, it calls Test at the same commit. Each workflow
-can also be dispatched independently with its own `target` selector:
+The nightly Build compares actual source changes, including nested submodule
+contents, with the previous completed nightly. Documentation-only and license
+updates skip compilation and testing. After a required Build matrix succeeds and
+saves its caches, it calls Test at the same commit with the selected test scope.
+Each workflow can also be dispatched independently with its own `target` selector:
 
 ```bash
 gh workflow run build.yml --ref sdl -f target=sdl-linux-x64-runtime
-gh workflow run test.yml --ref sdl -f target=sdl-linux-x64-runtime
+gh workflow run test.yml --ref sdl -f modules=player -f target=sdl-linux-x64-runtime
 ```
+
+Manual Test defaults to `modules=changed`. Use `modules=player` or
+`modules=assembly` to select a scope, and `modules=all` for an explicit complete
+application test run. CI tools are checked only when their corresponding scripts
+change; release-tool and Player-session checks are selected separately.
 
 Cache compatibility includes the runner image, architecture, linkage, SDL version,
 presets, and compiler/linker policy. Source revisions select snapshots within that

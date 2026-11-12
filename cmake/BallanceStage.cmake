@@ -32,7 +32,7 @@ elseif (TARGET SDL3::SDL3)
     endif ()
 endif ()
 
-if (BUILD_TESTING AND TARGET SDL3::SDL3 AND _ballance_can_run_target_executables)
+if (BUILD_TESTING AND PLAYER_BUILD_TESTS AND TARGET SDL3::SDL3 AND _ballance_can_run_target_executables)
     add_executable(PlayerSdlShortcutsTest
             "${CMAKE_SOURCE_DIR}/Source/Player/tests/PlayerSdlShortcutsTest.cpp"
             "${CMAKE_SOURCE_DIR}/Source/Player/src/PlayerSdlShortcuts.cpp"
@@ -50,7 +50,7 @@ if (BUILD_TESTING AND TARGET SDL3::SDL3 AND _ballance_can_run_target_executables
         )
     endif ()
     add_test(NAME PlayerSdlShortcutsTest COMMAND PlayerSdlShortcutsTest)
-elseif (BUILD_TESTING AND NOT _ballance_can_run_target_executables)
+elseif (BUILD_TESTING AND PLAYER_BUILD_TESTS AND NOT _ballance_can_run_target_executables)
     message(STATUS "PlayerSdlShortcutsTest disabled: host cannot run target executables")
 endif ()
 

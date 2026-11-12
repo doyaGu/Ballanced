@@ -38,31 +38,45 @@ concurrency:
 
 jobs:
   changes:
-    name: Check for new commits
-    if: ${{ github.event_name == 'schedule' }}
+    name: Select changed modules
     runs-on: ubuntu-24.04
-    timeout-minutes: 5
-
+    timeout-minutes: 10
     permissions:
+      contents: read
       actions: read
-
     outputs:
-      changed: ${{ steps.check.outputs.changed }}
-
+      build: ${{ steps.scope.outputs.build }}
+      test: ${{ steps.scope.outputs.test }}
+      selection: ${{ steps.scope.outputs.selection }}
+      compile: ${{ steps.scope.outputs.compile }}
+      modules: ${{ steps.scope.outputs.modules }}
+      scripts: ${{ steps.scope.outputs.scripts }}
+      layout: ${{ steps.scope.outputs.layout }}
+      cache_scope: ${{ steps.scope.outputs.cache_scope }}
     steps:
-    - name: Compare with the last nightly build
-      id: check
+    - name: Checkout
+      uses: actions/checkout@v6.0.2
+      with:
+        fetch-depth: 0
+        submodules: true
+    - name: Compare source revisions
+      id: scope
+      shell: bash
       env:
+        BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        MODULES: changed
         GH_TOKEN: ${{ github.token }}
       run: |
-        built=$(gh run list -R "$GITHUB_REPOSITORY" --workflow build.yml --event schedule --limit 30 \
-          --json headSha,conclusion --jq 'map(select(.conclusion == "success" or .conclusion == "failure"))[0].headSha // ""')
-        echo "changed=$([ "$built" != "$GITHUB_SHA" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+        if [ "$GITHUB_EVENT_NAME" = schedule ]; then
+          BASE=$(gh run list -R "$GITHUB_REPOSITORY" --workflow build.yml --event schedule --limit 30 \
+            --json headSha,conclusion --jq 'map(select(.conclusion == "success" or .conclusion == "failure"))[0].headSha // ""')
+        fi
+        python3 -B .github/scripts/app_ci.py --base "$BASE" --modules "$MODULES"
 
   build:
     name: sdl-${{ matrix.platform.name }}-${{ matrix.linkage.name }}
     needs: changes
-    if: ${{ !cancelled() && (github.event_name != 'schedule' || needs.changes.outputs.changed == 'true') }}
+    if: ${{ !cancelled() && needs.changes.result == 'success' && (github.event_name != 'schedule' || needs.changes.outputs.build == 'true') }}
     runs-on: ${{ matrix.platform.os }}
     timeout-minutes: 180
 
@@ -249,6 +263,8 @@ jobs:
 
   test:
     name: Test nightly build
-    needs: build
-    if: ${{ github.event_name == 'schedule' }}
+    needs: [changes, build]
+    if: ${{ !cancelled() && github.event_name == 'schedule' && needs.changes.outputs.test == 'true' && (needs.build.result == 'success' || needs.build.result == 'skipped') }}
     uses: ./.github/workflows/test.yml
+    with:
+      selection: ${{ needs.changes.outputs.selection }}

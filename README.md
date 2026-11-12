@@ -82,7 +82,7 @@ read this ignored directory by default.
 
 - `CMakePresets.json` defines the supported full-runtime platform, architecture, and linkage matrix.
 - `.github/workflows/build.yml` builds and packages the platform/linkage matrix with tests disabled.
-- `.github/workflows/test.yml` tests Player and application assembly across the same matrix. NeMo2 owns the complete engine test suite and GPU diagnostic workflows.
+- `.github/workflows/test.yml` selects Player and assembly checks from source changes across the same matrix. NeMo2 owns the complete engine test suite and GPU diagnostic workflows.
 - `BUILD.md` documents the supported superproject workflow. Component READMEs describe standalone workflows only.
 - Ballanced and its Git submodules are independently versioned. The root project version identifies the assembled runtime; Player and the engine/module projects keep their own versions. A component version should not be inferred from the root version or release tag.
 

@@ -3,8 +3,22 @@ name: Test
 on:
   # Nightly Build calls this workflow after saving its incremental caches.
   workflow_call:
+    inputs:
+      selection:
+        type: string
+        required: false
+        default: ""
   workflow_dispatch:
     inputs:
+      modules:
+        description: "Test modules (changed source by default)"
+        type: choice
+        default: changed
+        options:
+          - changed
+          - all
+          - player
+          - assembly
       target:
         description: "Test target"
         required: false
@@ -35,7 +49,38 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  changes:
+    name: Select changed modules
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    outputs:
+      build: ${{ steps.scope.outputs.build }}
+      test: ${{ steps.scope.outputs.test }}
+      selection: ${{ steps.scope.outputs.selection }}
+      compile: ${{ steps.scope.outputs.compile }}
+      modules: ${{ steps.scope.outputs.modules }}
+      scripts: ${{ steps.scope.outputs.scripts }}
+      layout: ${{ steps.scope.outputs.layout }}
+      cache_scope: ${{ steps.scope.outputs.cache_scope }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v6.0.2
+      with:
+        fetch-depth: 0
+        submodules: true
+    - name: Compare source revisions
+      id: scope
+      shell: bash
+      env:
+        BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        MODULES: ${{ inputs.modules || 'changed' }}
+        SELECTION: ${{ inputs.selection }}
+      run: |
+        python3 -B .github/scripts/app_ci.py --base "$BASE" --modules "$MODULES" --selection "$SELECTION"
+
   test:
+    needs: changes
+    if: ${{ needs.changes.outputs.test == 'true' }}
     name: sdl-${{ matrix.platform.name }}-${{ matrix.linkage.name }}
     runs-on: ${{ matrix.platform.os }}
     timeout-minutes: 180
@@ -165,7 +210,7 @@ jobs:
       uses: actions/cache/restore@caa296126883cff596d87d8935842f9db880ef25 # v5
       with:
         path: build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }}
-        key: ${{ steps.cache-key.outputs.prefix }}${{ github.sha }}-test
+        key: ${{ steps.cache-key.outputs.prefix }}${{ github.sha }}-test-${{ needs.changes.outputs.cache_scope }}
         restore-keys: |
           ${{ steps.cache-key.outputs.prefix }}${{ github.sha }}-
           ${{ steps.cache-key.outputs.prefix }}
@@ -182,7 +227,7 @@ jobs:
         cmake --preset ${{ matrix.platform.preset }}-${{ matrix.linkage.name }} `
           ${{ matrix.platform.configure_arguments }} `
           "-DCMAKE_PREFIX_PATH=${{ steps.sdl.outputs.prefix }}" `
-          -DBUILD_TESTING=ON -DPLAYER_BUILD_TESTS=ON `
+          -DBUILD_TESTING=ON "-DPLAYER_BUILD_TESTS=${{ contains(fromJSON(needs.changes.outputs.modules), 'player') && 'ON' || 'OFF' }}" `
           -DBALLANCE_AUTO_DETECT_ASSETS=OFF -DBALLANCE_ASSETS_ROOT=
 
     - name: Build staged runtime
@@ -205,16 +250,17 @@ jobs:
         path: build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }}
         key: ${{ steps.build-cache.outputs.cache-primary-key }}
 
-    - name: Test complete suite
+    - name: Test selected modules
+      id: selected-tests
       if: ${{ github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name) }}
-      run: ctest --test-dir build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }} -C Release --output-on-failure --no-tests=error --output-junit "${{ github.workspace }}/build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }}/ctest-results.xml"
+      run: python3 -B Source/NeMo2/.github/scripts/ctest_selection.py --build-dir build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }} --selection '${{ needs.changes.outputs.selection }}' --owner 'player=Source/Player' --owner 'assembly=.'
 
     - name: Verify executed tests
-      if: ${{ !cancelled() && (github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name)) }}
-      run: python3 -B Source/NeMo2/.github/scripts/verify_ctest_results.py "build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }}/ctest-results.xml"
+      if: ${{ steps.selected-tests.outputs.has_tests == 'true' && (!cancelled() && (github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name))) }}
+      run: python3 -B Source/NeMo2/.github/scripts/verify_ctest_results.py ${{ !(contains(fromJSON(needs.changes.outputs.modules), 'player')) && '--allow-no-gtest' || '' }} "build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }}/ctest-results.xml"
 
     - name: Upload test results
-      if: ${{ !cancelled() && (github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name)) }}
+      if: ${{ steps.selected-tests.outputs.has_tests == 'true' && (!cancelled() && (github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name))) }}
       uses: actions/upload-artifact@v7.0.1
       with:
         name: test-results-${{ matrix.platform.name }}-${{ matrix.linkage.name }}
