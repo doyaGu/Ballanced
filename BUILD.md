@@ -336,6 +336,43 @@ Dispatch its `test.yml` with `gpu-debug=true`, then pass that run ID to its
 **GPU replay diagnostics** workflow. Player JIT acceptance scripts and the level
 route remain in Ballanced under `tests/player/`.
 
+### Migration verification (2026-11-12)
+
+The pre-migration macOS log `build/logs/libx87-integrated-tests.log` recorded
+13 failing CTest entries: `ConfigurationSectionReferenceTest` and 12 rendering
+checks (`SdlGpuPixelTests`, three scene-capture checks, four FFP/sampler/clipping/
+readback pixel checks, and four render-manager/context checks). The first
+standalone NeMo2 run reproduced the same 13 failures. The configuration test now
+uses a private writable directory; all 13 passed when rerun in a macOS GUI
+session, and the full local engine suite passed 1,007 CTest entries / 13,111
+GoogleTest cases with no skips. The older `build/logs/ci-speed-full-ctest.log`
+also recorded `SceneGraphRootTraversalTest`; it passed in that full rerun.
+
+A fresh recursive NeMo2 clone configured runtime, static, and full-test presets
+without Player or game assets. Its static build and aggregator checks passed;
+standalone CI subsequently built and ran the complete engine suite from fresh
+recursive checkouts. Ballanced's Windows, Linux, and macOS build and application
+test matrices passed all 14 platform/linkage combinations at `4d63ec1`:
+[Build](https://github.com/doyaGu/Ballanced/actions/runs/43161143793) and
+[Test](https://github.com/doyaGu/Ballanced/actions/runs/43161147097).
+These checks include nested numerical isolation, the component registry,
+staging, archive verification, and macOS runtime relocation.
+
+The shared-cache round trip at Ballanced `26a099a` restored the previous Test
+snapshot into Build, then restored that Build snapshot into Test. Both stages
+compiled zero C/C++ files; all 16 macOS application/assembly checks passed
+([Build](https://github.com/doyaGu/Ballanced/actions/runs/43163838259),
+[Test](https://github.com/doyaGu/Ballanced/actions/runs/43164148493)).
+NeMo2 `1439a4a` passed the same round trip with 998 CTest entries / 13,094
+GoogleTest cases ([Test](https://github.com/doyaGu/NeMo2/actions/runs/43164150349)).
+Switching its renderer static libraries between release and test-hook settings
+recompiled 64 source files; these configurations use different compile definitions.
+
+With local game assets, the migrated Player loaded the menu and Level 01,
+accepted keyboard input, paused, and exited normally. This smoke used a private
+runtime/save directory. Audible output and persistent game-save round trips were
+not separately measured by that smoke.
+
 ## RenderEngine standalone
 
 Build independently from `Source/NeMo2/Source/RenderEngine`:
