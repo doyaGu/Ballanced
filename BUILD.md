@@ -301,20 +301,35 @@ cmake --build --preset windows-x86-tests-release
 ctest --preset windows-x86-tests-release
 ```
 
-CI has independent **Build** (`build.yml`) and **Test** (`test.yml`) workflows.
+CI has **Build** (`build.yml`) and **Test** (`test.yml`) workflows.
 Build compiles and packages the platform/linkage matrix with `BUILD_TESTING=OFF`.
 Test builds and runs Player tests, engine/application assembly checks, and stage
 checks across the same matrix. NeMo2 owns the full engine test matrix. Test publishes JUnit
-reports and failure logs; Build publishes runtime packages. Their incremental
-build caches are separate.
+reports and failure logs; Build publishes runtime packages. Both workflows share
+incremental build caches for each platform and linkage. Cached source timestamps
+are restored by content hash, so a fresh checkout, Player-only change, or test
+script update does not recompile unchanged engine targets. Configure still runs;
+stage layouts and test reports are regenerated.
 
-Both workflows run nightly when `sdl` has commits their own previous nightly did
-not cover, and each can be dispatched manually with its own `target` selector:
+The nightly Build runs when `sdl` has new commits. After the entire Build matrix
+succeeds and saves its caches, it calls Test at the same commit. Each workflow
+can also be dispatched independently with its own `target` selector:
 
 ```bash
 gh workflow run build.yml --ref sdl -f target=sdl-linux-x64-runtime
 gh workflow run test.yml --ref sdl -f target=sdl-linux-x64-runtime
 ```
+
+Cache compatibility includes the runner image, architecture, linkage, SDL version,
+presets, and compiler/linker policy. Source revisions select snapshots within that
+cache family; workflow and test-script edits do not change the family. Existing
+pre-sharing caches are accepted as fallback inputs. NeMo2's standalone CI caches
+stay in its own repository because CMake build trees contain absolute source paths.
+
+For local incremental builds, keep using the same configured build directory and
+run `cmake --build --preset ...`; unchanged NeMo2 targets are reused automatically.
+Use a fresh directory for the initial repository migration or a generator/toolchain
+change, as described above.
 
 GPU validation captures and replay diagnostics run in the NeMo2 repository.
 Dispatch its `test.yml` with `gpu-debug=true`, then pass that run ID to its

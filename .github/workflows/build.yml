@@ -176,7 +176,9 @@ jobs:
       id: cache-key
       run: |
         $imageVersion = $env:ImageVersion
-        "prefix=build-v2-nemo-${{ matrix.platform.name }}-${{ matrix.linkage.name }}-${imageVersion}-${{ hashFiles('CMakePresets.json', '.github/workflows/build.yml', 'Source/NeMo2/.github/scripts/build_cache_state.py', 'cmake/BallanceCompiler.cmake', 'cmake/BallanceLinkCache.cmake', 'Source/NeMo2/CMakeLists.txt', 'Source/NeMo2/cmake/*.cmake') }}-" >> $env:GITHUB_OUTPUT
+        "prefix=ballance-build-v3-${{ matrix.platform.name }}-${{ matrix.linkage.name }}-${imageVersion}-sdl3.4.20-${{ hashFiles('CMakePresets.json', 'cmake/BallanceCompiler.cmake', 'cmake/BallanceLinkCache.cmake', 'Source/NeMo2/cmake/NeMo2Compiler.cmake', 'Source/NeMo2/cmake/NeMo2LinkCache.cmake') }}-" >> $env:GITHUB_OUTPUT
+        "legacy-test=test-v2-nemo-${{ matrix.platform.name }}-${{ matrix.linkage.name }}-${imageVersion}-" >> $env:GITHUB_OUTPUT
+        "legacy-build=build-v2-nemo-${{ matrix.platform.name }}-${{ matrix.linkage.name }}-${imageVersion}-" >> $env:GITHUB_OUTPUT
 
     - name: Restore incremental build
       if: ${{ steps.cache-key.outcome == 'success' }}
@@ -185,8 +187,12 @@ jobs:
       uses: actions/cache/restore@caa296126883cff596d87d8935842f9db880ef25 # v5
       with:
         path: build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }}
-        key: ${{ steps.cache-key.outputs.prefix }}${{ github.sha }}
-        restore-keys: ${{ steps.cache-key.outputs.prefix }}
+        key: ${{ steps.cache-key.outputs.prefix }}${{ github.sha }}-build
+        restore-keys: |
+          ${{ steps.cache-key.outputs.prefix }}${{ github.sha }}-
+          ${{ steps.cache-key.outputs.prefix }}
+          ${{ steps.cache-key.outputs.legacy-test }}
+          ${{ steps.cache-key.outputs.legacy-build }}
 
     - name: Restore unchanged source timestamps
       if: ${{ steps.cache-key.outcome == 'success' }}
@@ -198,7 +204,7 @@ jobs:
         cmake --preset ${{ matrix.platform.preset }}-${{ matrix.linkage.name }} `
           ${{ matrix.platform.configure_arguments }} `
           "-DCMAKE_PREFIX_PATH=${{ steps.sdl.outputs.prefix }}" `
-          -DBUILD_TESTING=OFF -DBALLANCE_AUTO_DETECT_ASSETS=OFF -DBALLANCE_ASSETS_ROOT=
+          -DBUILD_TESTING=OFF -DPLAYER_BUILD_TESTS=OFF -DBALLANCE_AUTO_DETECT_ASSETS=OFF -DBALLANCE_ASSETS_ROOT=
 
     - name: Build
       if: ${{ github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name) }}
@@ -240,3 +246,9 @@ jobs:
         archive: false
         if-no-files-found: error
         retention-days: 14
+
+  test:
+    name: Test nightly build
+    needs: build
+    if: ${{ github.event_name == 'schedule' }}
+    uses: ./.github/workflows/test.yml

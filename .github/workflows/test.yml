@@ -1,9 +1,7 @@
 name: Test
 
 on:
-  # Nightly, and only when sdl has commits the last nightly did not test.
-  schedule:
-    - cron: "0 19 * * *"
+  # Nightly Build calls this workflow after saving its incremental caches.
   workflow_call:
   workflow_dispatch:
     inputs:
@@ -37,32 +35,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  changes:
-    name: Check for new commits
-    if: ${{ github.event_name == 'schedule' }}
-    runs-on: ubuntu-24.04
-    timeout-minutes: 5
-
-    permissions:
-      actions: read
-
-    outputs:
-      changed: ${{ steps.check.outputs.changed }}
-
-    steps:
-    - name: Compare with the last nightly test
-      id: check
-      env:
-        GH_TOKEN: ${{ github.token }}
-      run: |
-        tested=$(gh run list -R "$GITHUB_REPOSITORY" --workflow test.yml --event schedule --limit 30 \
-          --json headSha,conclusion --jq 'map(select(.conclusion == "success" or .conclusion == "failure"))[0].headSha // ""')
-        echo "changed=$([ "$tested" != "$GITHUB_SHA" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
-
   test:
     name: sdl-${{ matrix.platform.name }}-${{ matrix.linkage.name }}
-    needs: changes
-    if: ${{ !cancelled() && (github.event_name != 'schedule' || needs.changes.outputs.changed == 'true') }}
     runs-on: ${{ matrix.platform.os }}
     timeout-minutes: 180
 
@@ -180,7 +154,9 @@ jobs:
       id: cache-key
       run: |
         $imageVersion = $env:ImageVersion
-        "prefix=test-v2-nemo-${{ matrix.platform.name }}-${{ matrix.linkage.name }}-${imageVersion}-${{ hashFiles('CMakePresets.json', '.github/workflows/test.yml', 'Source/NeMo2/.github/scripts/build_cache_state.py', 'cmake/BallanceCompiler.cmake', 'cmake/BallanceLinkCache.cmake', 'Source/NeMo2/CMakeLists.txt', 'Source/NeMo2/cmake/*.cmake') }}-" >> $env:GITHUB_OUTPUT
+        "prefix=ballance-build-v3-${{ matrix.platform.name }}-${{ matrix.linkage.name }}-${imageVersion}-sdl3.4.20-${{ hashFiles('CMakePresets.json', 'cmake/BallanceCompiler.cmake', 'cmake/BallanceLinkCache.cmake', 'Source/NeMo2/cmake/NeMo2Compiler.cmake', 'Source/NeMo2/cmake/NeMo2LinkCache.cmake') }}-" >> $env:GITHUB_OUTPUT
+        "legacy-test=test-v2-nemo-${{ matrix.platform.name }}-${{ matrix.linkage.name }}-${imageVersion}-" >> $env:GITHUB_OUTPUT
+        "legacy-build=build-v2-nemo-${{ matrix.platform.name }}-${{ matrix.linkage.name }}-${imageVersion}-" >> $env:GITHUB_OUTPUT
 
     - name: Restore incremental build
       if: ${{ steps.cache-key.outcome == 'success' }}
@@ -189,8 +165,12 @@ jobs:
       uses: actions/cache/restore@caa296126883cff596d87d8935842f9db880ef25 # v5
       with:
         path: build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }}
-        key: ${{ steps.cache-key.outputs.prefix }}${{ github.sha }}
-        restore-keys: ${{ steps.cache-key.outputs.prefix }}
+        key: ${{ steps.cache-key.outputs.prefix }}${{ github.sha }}-test
+        restore-keys: |
+          ${{ steps.cache-key.outputs.prefix }}${{ github.sha }}-
+          ${{ steps.cache-key.outputs.prefix }}
+          ${{ steps.cache-key.outputs.legacy-test }}
+          ${{ steps.cache-key.outputs.legacy-build }}
 
     - name: Restore unchanged source timestamps
       if: ${{ steps.cache-key.outcome == 'success' }}
