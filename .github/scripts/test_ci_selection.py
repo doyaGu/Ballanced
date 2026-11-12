@@ -18,6 +18,13 @@ class ApplicationSelectionTest(unittest.TestCase):
         result = classify(['Source/NeMo2/Source/VxMath/src/VxVector.cpp'])
         self.assertEqual(result['modules'], ['assembly'])
 
+    def test_windows_version_resources_keep_the_application_matrix_on_windows(self):
+        result = classify(['Source/NeMo2/Source/CK2/src/Version.rc.in'])
+        self.assertTrue(result['resources_only'])
+        self.assertEqual(result['modules'], ['assembly'])
+        mixed = classify(['Source/NeMo2/Source/CK2/src/Version.rc.in', 'Source/Player/src/GamePlayer.cpp'])
+        self.assertFalse(mixed['resources_only'])
+
     def test_player_tools_do_not_build_or_test_engine(self):
         result = classify(['tests/player/player_session.py'])
         self.assertEqual(result['scripts'], ['player_sessions'])

@@ -9,7 +9,7 @@ import sys
 ENGINE_SCRIPTS = Path(__file__).resolve().parents[2] / 'Source/NeMo2/.github/scripts'
 sys.path.insert(0, str(ENGINE_SCRIPTS))
 from change_detection import baseline, changed_paths, documentation, emit
-from engine_ci import classify as engine_changes
+from engine_ci import classify as engine_changes, job_matrix
 
 
 def classify(paths):
@@ -18,16 +18,19 @@ def classify(paths):
                             if path.startswith('Source/NeMo2/'))
     modules, scripts, checks = set(), set(), set()
     layout = False
+    application_build = False
     for path in paths:
         if documentation(path):
             continue
         if path == 'Source/Player' or path.startswith('Source/Player/'):
+            application_build = True
             modules.add('player')
             checks.update(['ApplicationNumericalIsolation', 'PlayerSdlShortcutsTest'])
             if path.endswith(('.cmake', 'CMakeLists.txt')) or 'StaticPlugin' in Path(path).name:
                 modules.add('assembly')
                 layout = True
         elif path == 'Source/NeMo2':
+            application_build = True
             modules.add('assembly')
             layout = True
         elif path.startswith('Source/NeMo2/'):
@@ -40,13 +43,15 @@ def classify(paths):
         elif path.startswith('.github/'):
             scripts.add('ci')
         elif path.endswith(('.cmake', 'CMakeLists.txt')) or path in {'CMakePresets.json', '.gitmodules'}:
+            application_build = True
             modules.add('assembly')
             layout = True
     if engine['build']:
         modules.add('assembly')
         layout |= engine['layout']
     return dict(modules=sorted(modules), checks=sorted(checks), scripts=sorted(scripts),
-                build=bool(modules), layout=layout)
+                build=bool(modules), layout=layout,
+                resources_only=engine.get('resources_only', False) and not application_build)
 
 
 def main():
@@ -55,6 +60,7 @@ def main():
     parser.add_argument('--head', default='HEAD')
     parser.add_argument('--modules', default='changed')
     parser.add_argument('--selection', default='')
+    parser.add_argument('--target', default='all')
     args = parser.parse_args()
     if args.selection:
         result = dict(json.loads(args.selection), scripts=[], layout=False, build=True)
@@ -62,6 +68,7 @@ def main():
         result = classify(changed_paths(Path.cwd(), baseline(Path.cwd(), args.base, '.github/scripts/app_ci.py'), args.head))
         if args.modules != 'changed':
             result['modules'] = ['assembly', 'player'] if args.modules == 'all' else [args.modules]
+            result['resources_only'] = False
     if set(result['modules']) - {'assembly', 'player'}:
         raise ValueError('unknown application test module')
     if 'player' in result['modules']:
@@ -69,9 +76,12 @@ def main():
     if set(result['checks']) - {'ApplicationNumericalIsolation', 'PlayerSdlShortcutsTest'}:
         raise ValueError('unknown application check')
     scope = dict(modules=result['modules'], checks=result['checks'])
+    if result.get('resources_only'):
+        scope['resources_only'] = True
     encoded = json.dumps(scope, separators=(',', ':'))
     result.update(selection=encoded, test=bool(scope['modules'] or scope['checks']), compile=bool(scope['modules']),
-                  cache_scope=hashlib.sha256(encoded.encode()).hexdigest()[:12])
+                  cache_scope=hashlib.sha256(encoded.encode()).hexdigest()[:12],
+                  matrix=job_matrix(args.target, result.get('resources_only', False) and args.target == 'all'))
     emit(result)
 
 

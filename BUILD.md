@@ -333,6 +333,10 @@ cache family; workflow and test-script edits do not change the family. Existing
 pre-sharing caches are accepted as fallback inputs. NeMo2's standalone CI caches
 stay in its own repository because CMake build trees contain absolute source paths.
 
+The application and engine workflows use NeMo2's shared platform definitions.
+Selecting one target creates one job. Changes limited to Windows version
+resources restrict automatic assembly checks to Windows dynamic builds.
+
 For local incremental builds, keep using the same configured build directory and
 run `cmake --build --preset ...`; unchanged NeMo2 targets are reused automatically.
 Use a fresh directory for the initial repository migration or a generator/toolchain

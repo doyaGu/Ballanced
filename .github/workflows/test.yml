@@ -62,6 +62,7 @@ jobs:
       scripts: ${{ steps.scope.outputs.scripts }}
       layout: ${{ steps.scope.outputs.layout }}
       cache_scope: ${{ steps.scope.outputs.cache_scope }}
+      matrix: ${{ steps.scope.outputs.matrix }}
     steps:
     - name: Checkout
       uses: actions/checkout@v6.0.2
@@ -73,10 +74,11 @@ jobs:
       shell: bash
       env:
         BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        TARGET: ${{ inputs.target || 'all' }}
         MODULES: ${{ inputs.modules || 'changed' }}
         SELECTION: ${{ inputs.selection }}
       run: |
-        python3 -B .github/scripts/app_ci.py --base "$BASE" --modules "$MODULES" --selection "$SELECTION"
+        python3 -B .github/scripts/app_ci.py --base "$BASE" --modules "$MODULES" --target "$TARGET" --selection "$SELECTION"
 
   test:
     needs: changes
@@ -87,68 +89,7 @@ jobs:
 
     strategy:
       fail-fast: false
-      matrix:
-        platform:
-          - name: windows-x86
-            os: windows-2022
-            preset: windows-x86
-            sdl_discriminator: Windows-X86
-            sdl_cmake_generator: Visual Studio 17 2022
-            sdl_cmake_arguments: -A Win32 --no-warn-unused-cli
-
-          - name: windows-x64
-            os: windows-2022
-            preset: windows-x64
-            sdl_discriminator: Windows-X64
-            sdl_cmake_generator: Visual Studio 17 2022
-            sdl_cmake_arguments: -A x64 --no-warn-unused-cli
-
-          - name: windows-arm64
-            os: windows-11-arm
-            preset: windows-arm64
-            sdl_discriminator: Windows-ARM64
-            # VS 2026's ARM64 optimizer crashes in SIMDe's NEON load path.
-            # The image also supplies the supported MSVC 14.44 ARM64 toolset.
-            sdl_cmake_generator: Visual Studio 18 2026
-            sdl_cmake_arguments: -A ARM64 -T "v143,version=14.44" --no-warn-unused-cli
-            configure_arguments: -G "Visual Studio 18 2026" -T "v143,version=14.44"
-
-          - name: linux-x64
-            # Mesa 26 fixes fixed-point bilinear rounding on non-x86 CPUs.
-            os: ubuntu-26.04
-            preset: linux-x64
-            sdl_discriminator: Linux-X64
-            sdl_cmake_generator: ""
-            sdl_cmake_arguments: --no-warn-unused-cli
-
-          - name: linux-arm64
-            os: ubuntu-26.04-arm
-            preset: linux-arm64
-            sdl_discriminator: Linux-ARM64
-            sdl_cmake_generator: ""
-            sdl_cmake_arguments: --no-warn-unused-cli
-
-          - name: macos-x64
-            # The hosted Intel VM cannot create an SDL Metal device. Build
-            # x86_64 binaries and execute them with Rosetta on the ARM VM.
-            os: macos-26
-            preset: macos-x64
-            sdl_discriminator: macOS-X64
-            sdl_cmake_generator: ""
-            sdl_cmake_arguments: -DCMAKE_OSX_ARCHITECTURES=x86_64 -DCMAKE_OSX_DEPLOYMENT_TARGET=15.0 --no-warn-unused-cli
-            configure_arguments: '"-DCMAKE_OSX_DEPLOYMENT_TARGET=15.0"'
-
-          - name: macos-arm64
-            os: macos-26
-            preset: macos-arm64
-            sdl_discriminator: macOS-ARM64
-            sdl_cmake_generator: ""
-            sdl_cmake_arguments: -DCMAKE_OSX_ARCHITECTURES=arm64 -DCMAKE_OSX_DEPLOYMENT_TARGET=15.0 --no-warn-unused-cli
-            configure_arguments: '"-DCMAKE_OSX_DEPLOYMENT_TARGET=15.0"'
-        linkage:
-          - name: runtime
-
-          - name: static
+      matrix: ${{ fromJSON(needs.changes.outputs.matrix) }}
 
     env:
       CMAKE_BUILD_PARALLEL_LEVEL: 4
