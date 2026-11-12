@@ -28,8 +28,11 @@ def prepare_session(stage, session):
             "powershell.exe", "-NoProfile", "-NonInteractive", "-Command",
             "$ErrorActionPreference = 'Stop'; "
             "$links = ConvertFrom-Json $env:BALLANCED_SESSION_LINKS; "
-            "foreach ($link in $links) { New-Item -ItemType Junction "
-            "-Path $link.path -Target $link.target | Out-Null }",
+            # Windows PowerShell 5.1 resolves link-target wildcards twice.
+            # https://github.com/PowerShell/PowerShell/issues/6232
+            "foreach ($link in $links) { "
+            "$target = [WildcardPattern]::Escape([WildcardPattern]::Escape($link.target)); "
+            "New-Item -ItemType Junction -Path $link.path -Target $target | Out-Null }",
         ], env=env, check=True)
     else:
         for link in links:
