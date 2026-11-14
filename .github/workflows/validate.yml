@@ -24,6 +24,7 @@ jobs:
       build: ${{ steps.scope.outputs.build }}
       test: ${{ steps.scope.outputs.test }}
       selection: ${{ steps.scope.outputs.selection }}
+      light_checks: ${{ steps.scope.outputs.light_checks }}
       compile: ${{ steps.scope.outputs.compile }}
       modules: ${{ steps.scope.outputs.modules }}
       scripts: ${{ steps.scope.outputs.scripts }}
@@ -43,6 +44,23 @@ jobs:
         MODULES: changed
       run: |
         python3 -B .github/scripts/app_ci.py --base "$BASE" --modules "$MODULES"
+
+  light-checks:
+    name: Run selected CMake checks
+    needs: changes
+    if: ${{ needs.changes.outputs.light_checks != '[]' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v6.0.2
+      with:
+        submodules: true
+    - name: Checkout numerical-isolation sources
+      if: ${{ contains(fromJSON(needs.changes.outputs.light_checks), 'ApplicationNumericalIsolation') }}
+      run: git submodule update --init --recursive
+    - name: Run selected checks
+      run: python3 -B Source/NeMo2/.github/scripts/run_cmake_checks.py --checks '${{ needs.changes.outputs.light_checks }}'
 
   validate:
     needs: changes
@@ -165,7 +183,7 @@ jobs:
         submodules: true
     - name: Check ci
       if: ${{ contains(fromJSON(needs.changes.outputs.scripts), 'ci') }}
-      run: python3 -B -m unittest discover -s .github/scripts -p "test_ci_selection.py"
+      run: python3 -B -m unittest discover -s .github/scripts -p "test_ci_*.py"
     - name: Check release
       if: ${{ contains(fromJSON(needs.changes.outputs.scripts), 'release') }}
       run: python3 -B -m unittest discover -s .github/scripts -p "test_macos_release.py"

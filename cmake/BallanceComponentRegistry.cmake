@@ -10,7 +10,26 @@ else ()
     endif ()
     include("${_nemo_manifest}")
     get_property(PLAYER_DECLARED_RUNTIME_TARGETS GLOBAL PROPERTY PLAYER_RUNTIME_MODULES)
+    get_property(PLAYER_REQUIRED_RUNTIME_TARGETS GLOBAL PROPERTY PLAYER_REQUIRED_RUNTIME_MODULES)
 endif ()
+
+# The engine may provide modules that this application does not consume.
+foreach (_module IN LISTS PLAYER_DECLARED_RUNTIME_TARGETS)
+    list(FIND NEMO_SUPPORTED_MODULE_RUNTIME_TARGETS "${_module}" _module_index)
+    if (_module_index EQUAL -1)
+        message(FATAL_ERROR "Player declares unsupported engine module: ${_module}")
+    endif ()
+endforeach ()
+foreach (_module IN LISTS PLAYER_REQUIRED_RUNTIME_TARGETS)
+    list(FIND PLAYER_DECLARED_RUNTIME_TARGETS "${_module}" _module_index)
+    if (_module_index EQUAL -1)
+        message(FATAL_ERROR "Player requires an undeclared engine module: ${_module}")
+    endif ()
+    list(FIND NEMO_MODULE_RUNTIME_TARGETS "${_module}" _module_index)
+    if (_module_index EQUAL -1)
+        message(FATAL_ERROR "Player requires an unavailable engine module: ${_module}")
+    endif ()
+endforeach ()
 
 # Keep the staging script interface stable while taking every engine group
 # from NeMo2's resolved manifest.

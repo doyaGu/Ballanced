@@ -1,0 +1,8 @@
+{
+  "ComponentRegistrySelection": {"script": "cmake/TestComponentRegistrySelection.cmake"},
+  "StageInstallScheduling": {"script": "cmake/TestStageInstallScheduling.cmake"},
+  "ApplicationNumericalIsolation": {
+    "script": "Source/NeMo2/cmake/TestNumericalIsolation.cmake",
+    "variables": {"TEST_ENGINE_SOURCE_DIR": "Source/NeMo2"}
+  }
+}

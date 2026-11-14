@@ -312,9 +312,15 @@ script update does not recompile unchanged engine targets. Configure still runs;
 stage layouts and test reports are regenerated.
 
 The nightly Build compares actual source changes, including nested submodule
-contents, with the previous completed nightly. Documentation-only and license
+contents, with the previous successful nightly. Failed runs do not advance that
+baseline. Documentation-only and license
 updates skip compilation and testing. After a required Build matrix succeeds and
 saves its caches, it calls Test at the same commit with the selected test scope.
+Test-source-only changes skip runtime packaging and build the application test
+targets and their dependencies. Validate runs the selected script-mode CMake
+checks directly, including module requirements and stage scheduling checks.
+Missing requested tests fail selection; explicitly documented unavailable suites
+are reported with their reason.
 Each workflow can also be dispatched independently with its own `target` selector:
 
 ```bash

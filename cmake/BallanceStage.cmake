@@ -43,6 +43,9 @@ if (BUILD_TESTING AND PLAYER_BUILD_TESTS AND TARGET SDL3::SDL3 AND _ballance_can
     )
     target_link_libraries(PlayerSdlShortcutsTest PRIVATE SDL3::SDL3)
     set_target_properties(PlayerSdlShortcutsTest PROPERTIES FOLDER "Tests")
+    if (COMMAND ckre_copy_runtime_dependencies)
+        ckre_copy_runtime_dependencies(PlayerSdlShortcutsTest)
+    endif ()
     if (_ballance_sdl3_runtime_target)
         set_target_properties(PlayerSdlShortcutsTest PROPERTIES
                 BUILD_WITH_INSTALL_RPATH FALSE
@@ -55,6 +58,13 @@ elseif (BUILD_TESTING AND PLAYER_BUILD_TESTS AND NOT _ballance_can_run_target_ex
 endif ()
 
 get_property(_ballance_stage_is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+
+add_custom_target(ballance_ci_tests)
+foreach (_test_target IN ITEMS player_ci_tests PlayerSdlShortcutsTest)
+    if (TARGET ${_test_target})
+        add_dependencies(ballance_ci_tests ${_test_target})
+    endif ()
+endforeach ()
 
 if (_ballance_stage_is_multi_config)
     set(_ballance_install_cmd "${CMAKE_COMMAND}" --install "${CMAKE_BINARY_DIR}" --config "$<CONFIG>" --component Runtime)

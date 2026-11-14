@@ -172,12 +172,12 @@ jobs:
           -DBALLANCE_AUTO_DETECT_ASSETS=OFF -DBALLANCE_ASSETS_ROOT=
 
     - name: Build staged runtime
-      if: ${{ github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name) }}
+      if: ${{ needs.changes.outputs.build == 'true' && (github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name)) }}
       run: cmake --build --preset ${{ matrix.platform.preset }}-${{ matrix.linkage.name }}-stage-release --parallel $([Environment]::ProcessorCount)
 
     - name: Build tests
       if: ${{ github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name) }}
-      run: cmake --build --preset ${{ matrix.platform.preset }}-${{ matrix.linkage.name }}-release --parallel $([Environment]::ProcessorCount)
+      run: cmake --build --preset ${{ matrix.platform.preset }}-${{ matrix.linkage.name }}-release --target ballance_ci_tests --parallel $([Environment]::ProcessorCount)
 
     - name: Save source timestamps for incremental builds
       if: ${{ !cancelled() && steps.cache-key.outcome == 'success' }}
@@ -198,7 +198,7 @@ jobs:
 
     - name: Verify executed tests
       if: ${{ steps.selected-tests.outputs.has_tests == 'true' && (!cancelled() && (github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name))) }}
-      run: python3 -B Source/NeMo2/.github/scripts/verify_ctest_results.py ${{ !(contains(fromJSON(needs.changes.outputs.modules), 'player')) && '--allow-no-gtest' || '' }} "build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }}/ctest-results.xml"
+      run: python3 -B Source/NeMo2/.github/scripts/verify_ctest_results.py ${{ steps.selected-tests.outputs.require_gtest != 'true' && '--allow-no-gtest' || '' }} "build/${{ matrix.platform.preset }}-${{ matrix.linkage.name }}/ctest-results.xml"
 
     - name: Upload test results
       if: ${{ steps.selected-tests.outputs.has_tests == 'true' && (!cancelled() && (github.event_name != 'workflow_dispatch' || inputs.target == 'all' || inputs.target == format('sdl-{0}-{1}', matrix.platform.name, matrix.linkage.name))) }}

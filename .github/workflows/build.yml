@@ -70,8 +70,8 @@ jobs:
         GH_TOKEN: ${{ github.token }}
       run: |
         if [ "$GITHUB_EVENT_NAME" = schedule ]; then
-          BASE=$(gh run list -R "$GITHUB_REPOSITORY" --workflow build.yml --event schedule --limit 30 \
-            --json headSha,conclusion --jq 'map(select(.conclusion == "success" or .conclusion == "failure"))[0].headSha // ""')
+          BASE=$(gh run list -R "$GITHUB_REPOSITORY" --workflow build.yml --event schedule --status success --limit 1 \
+            --json headSha --jq '.[0].headSha // ""')
         fi
         python3 -B .github/scripts/app_ci.py --base "$BASE" --modules "$MODULES" --target "$TARGET"
 
