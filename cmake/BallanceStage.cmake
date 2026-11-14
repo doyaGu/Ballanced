@@ -97,6 +97,12 @@ add_test(NAME ComponentRegistry
             -DBALLANCE_COMPONENT_MANIFEST:FILEPATH=${_ballance_component_manifest}
             -P "${CMAKE_CURRENT_LIST_DIR}/VerifyComponentRegistry.cmake"
 )
+add_test(NAME ComponentRegistrySelection
+        COMMAND "${CMAKE_COMMAND}"
+            "-DTEST_SOURCE_DIR=${CMAKE_SOURCE_DIR}"
+            "-DTEST_BINARY_DIR=${CMAKE_CURRENT_BINARY_DIR}/Testing"
+            -P "${CMAKE_CURRENT_LIST_DIR}/TestComponentRegistrySelection.cmake"
+)
 if (TARGET PlayerSdlShortcutsTest)
     add_dependencies(stage PlayerSdlShortcutsTest)
 endif ()
