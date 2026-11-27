@@ -5,4 +5,4 @@
 [submodule "Source/NeMo2"]
 	path = Source/NeMo2
 	url = https://github.com/doyaGu/NeMo2.git
-	branch = main
+	branch = sdl
